@@ -2,6 +2,7 @@
 #include "system/noncopyable.h"
 #include "system/Framework/ObjectManager/ObjectManager.h"
 #include "system/Framework/Scene/IScene.h"
+#include "system/SceneClassFactory.h"
 
 /**
  * @brief シーン管理クラス
@@ -21,7 +22,7 @@ public:
 	{
 		// シーン保持しているコンテナを空にする
 		this->m_pScenes.clear();
-		this->m_CurrentSceneName = SceneName::TITLE;	// 初期シーンはタイトル
+		this->m_CurrentSceneName = "";
 		this->IsQuit = false;
 	};
 	~SceneManager() {};
@@ -43,9 +44,10 @@ public:
 	void SetIsQuit(bool _Flg) { IsQuit = _Flg; }	//! ゲーム終了フラグ設定
 
 private:
-	std::unordered_map<SceneName, std::unique_ptr<IScene>> m_pScenes;	//! シーン配列
-	SceneName m_CurrentSceneName = SceneName::TITLE;		//! 現在のシーン名
+	std::unordered_map<std::string, std::unique_ptr<IScene>> m_pScenes;	//! シーン配列
+	std::string m_CurrentSceneName;				//! 現在のシーン名
 	ObjectManager* m_pObjectManager = nullptr;	//! オブジェクト管理クラスへのポインタ
+	SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
 	bool IsQuit = false;
 };
 

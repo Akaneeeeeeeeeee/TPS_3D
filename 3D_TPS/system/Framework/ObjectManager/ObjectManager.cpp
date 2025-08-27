@@ -59,6 +59,10 @@ void ObjectManager::Init(ComponentFactory* _factory)
 	m_ObjectsByTag.clear();
 }
 
+void ObjectManager::Init(void)
+{
+}
+
 void ObjectManager::Update(void)
 {
 	// 範囲for文

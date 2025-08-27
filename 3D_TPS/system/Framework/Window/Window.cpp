@@ -1,5 +1,8 @@
 ﻿#include "Window.h"
+#include "system/imgui/imgui_impl_win32.h"
 
+// ImGuiのWin32プロシージャハンドラ(マウス対応)
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /**
  * @brief ウィンドウの初期化
@@ -133,6 +136,8 @@ LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	// 状態管理用変数
 	static bool isFullScreen = false;
 	static bool isMessageBoxShowed = false;
+
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) { return true; }
 
 	switch (uMsg)
 	{
