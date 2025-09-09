@@ -10,25 +10,24 @@
 #include "system/CAnimationMesh.h"
 #include "system/CAnimationData.h"
 #include "system/CAnimationObject.h"
-#include "system/CPlaneMesh.h"
 
 /**
  * @brief スケルタルメッシュを表示する
  */
-class SkeltalmeshScene : public IScene {
+class TitleScene : public IScene {
 public:
 	/// @brief コピーコンストラクタは使用不可
-	SkeltalmeshScene(const SkeltalmeshScene&) = delete;
+	TitleScene(const TitleScene&) = delete;
 
 	/// @brief 代入演算子も使用不可
-	SkeltalmeshScene& operator=(const SkeltalmeshScene&) = delete;
+	TitleScene& operator=(const TitleScene&) = delete;
 
 	/**
 	 * @brief コンストラクタ
 	 *
 	 * カメラや画像スプライト、遷移演出の初期化を行う。
 	 */
-	explicit SkeltalmeshScene();
+	explicit TitleScene();
 
 	/**
 	 * @brief 毎フレームの更新処理
@@ -114,8 +113,6 @@ private:
 	 * @brief ワールド変換行列
 	 */
 	Matrix4x4 m_mtxWorld{};
-	//Matrix4x4 m_mtxView{};
-	//Matrix4x4 m_mtxProj{};
 
 	/**
 	 * @brief 描画のための情報(ユニークポインタ用)
@@ -123,8 +120,6 @@ private:
 	std::unique_ptr<CAnimationMesh>			m_pmesh;		// メッシュデータ
 	std::unique_ptr<CAnimationObject>		m_panimobject;	// アニメーションオブジェクト
 	std::unique_ptr<CAnimationData>			m_panimdata;	// アニメーションデータ
-
-	std::unique_ptr<CPlaneMesh>				m_pplanemesh;	// 地形メッシュ
 
 	/**
 	 * @brief 光の方向を表すための矢印メッシュ
@@ -137,4 +132,4 @@ private:
 	CShader			m_arrowshader;						// シェーダ
 };
 
-REGISTER_CLASS(SkeltalmeshScene)
+REGISTER_CLASS(TitleScene)

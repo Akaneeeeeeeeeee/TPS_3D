@@ -1,14 +1,8 @@
 ﻿#pragma once
 #include "system/Framework/ObjectManager/ObjectManager.h"
+#include "system/Framework/Application/Entry/main.h"
 
-enum class SceneName {
-	NONE = -1,		// シーンなし
-	TITLE,
-	GAME,
-	RESULT,
-
-	SCENE_MAX
-};
+class ObjectManager; // 前方宣言
 
 /**
  * @brief シーンの抽象クラス
@@ -20,23 +14,20 @@ class IScene
 public:
 	virtual ~IScene() {};
 
-	virtual void Init(void) = 0;
-	virtual void Update(void) = 0;
-	virtual void Draw(void) = 0;
+	virtual void Init(ObjectManager* _pObjectMgr) = 0;
+	virtual void Update(uint64_t deltatime) = 0;
+	virtual void Draw(uint64_t deltatime) = 0;
 	virtual void Uninit(void) = 0;
 
 	virtual void SetChangeScene(bool _Flg) { ChangeScene = _Flg; }
 	virtual bool GetChangeScene(void) const { return ChangeScene; };
-	virtual SceneName GetSceneName(void) const { return m_SceneName; }
-	virtual SceneName GetRequestSceneName(void) const { return m_NextSceneName; }
 
-	virtual void SetObjectManager(ObjectManager* _pObjectMgr) { m_pObjectManager = _pObjectMgr; }
+	virtual const std::string& GetNextSceneName(void) { return m_NextSceneName; }
 
 protected:
 	IScene() {};
-	ObjectManager* m_pObjectManager = nullptr;		// オブジェクト管理クラスへのポインタ
-	SceneName m_SceneName = SceneName::NONE;		// シーン名
-	SceneName m_NextSceneName = SceneName::NONE;	// 次のシーン名
+	std::string m_NextSceneName;
+	ObjectManager* m_pObjectManager;		// オブジェクト管理クラスへのポインタ
 	bool ChangeScene = false;						// シーン切り替えフラグ
 };
 

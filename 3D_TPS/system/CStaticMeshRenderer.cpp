@@ -45,6 +45,9 @@ void CStaticMeshRenderer::Draw()
 			m_DiffuseTextures[m_Subsets[i].MaterialIdx]->SetGPU();
 		}
 
+		//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->Bind();
+		//ShaderManager::GetInstance().GetShader("vertexLightingPS")->Bind();
+
 		// サブセットの描画
 		DrawSubset(
 			m_Subsets[i].IndexNum,							// 描画するインデックス数

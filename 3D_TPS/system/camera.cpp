@@ -1,7 +1,6 @@
 #include "commonTypes.h"
 #include "renderer.h"
 #include "camera.h"
-#include "../application.h"
 
 void Camera::Init()
 {
@@ -40,7 +39,7 @@ void Camera::Draw()
 	//プロジェクション行列の生成
 	constexpr float fieldOfView = DirectX::XMConvertToRadians(45.0f);    // 視野角
 	
-	float aspectRatio = static_cast<float>(Application::GetWidth()) / static_cast<float>(Application::GetHeight());	// アスペクト比	
+	float aspectRatio = static_cast<float>(Window::GetInstance().GetWidth()) / static_cast<float>(Window::GetInstance().GetHeight());	// アスペクト比	
 	float nearPlane = 1.0f;       // ニアクリップ
 	float farPlane = 1000.0f;      // ファークリップ
 

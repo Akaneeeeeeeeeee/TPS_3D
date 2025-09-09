@@ -1,38 +1,39 @@
 ﻿#include "SceneManager.h"
+#include "system/Framework/ObjectManager/ObjectManager.h"
 
 /**
  * @brief シーン配列初期化
 */
-void SceneManager::Init(void) 
+void SceneManager::Init(ObjectManager* _pObjectMgr)
 {
+	// オブジェクト管理クラスのポインタをセット
+	m_pObjectManager = _pObjectMgr;
 	//! タイトルシーンを生成してコンテナに追加
-	this->CreateSceneInstance(SceneName::TITLE);
-	//! Scenes現在シーンをタイトルシーンに設定
-	m_CurrentSceneName = SceneName::TITLE;
-	//! シーンの初期化
-	m_pScenes[m_CurrentSceneName]->Init();
+	this->m_CurrentSceneName = "SkeltalmeshScene";
+	//this->m_CurrentSceneName = "TitleScene";
+	this->SetCurrentScene(m_CurrentSceneName);
 }
 
 /**
  * @brief 更新
 */
-void SceneManager::Update(void)
+void SceneManager::Update(uint64_t deltatime)
 {
 	// 現在シーンの更新
-	m_pScenes[m_CurrentSceneName]->Update();
+	m_pScenes[m_CurrentSceneName]->Update(deltatime);
 
 	// 現在シーンの遷移フラグが立っている場合、シーン遷移
 	if (m_pScenes[m_CurrentSceneName]->GetChangeScene())
 	{
 		// シーン遷移処理実行
-		ChangeScene(m_pScenes[m_CurrentSceneName]->GetRequestSceneName());
+		this->SetCurrentScene(m_pScenes[m_CurrentSceneName]->GetNextSceneName());
 	}
 }
 
-void SceneManager::Draw(void)
+void SceneManager::Draw(uint64_t deltatime)
 {
 	//! 現在シーンによってそのシーンを描画
-	m_pScenes[m_CurrentSceneName]->Draw();
+	m_pScenes[m_CurrentSceneName]->Draw(deltatime);
 }
 
 void SceneManager::Uninit(void)
@@ -44,79 +45,31 @@ void SceneManager::Uninit(void)
 		scene.second.reset();
 	}
 	// シーン配列全体を解放
-	m_pScenes.clear();
+	this->m_pScenes.clear();
+	// 名前も開放
+	this->m_CurrentSceneName.clear();
 }
 
 /// <summary>
 /// 指定されたシーン名に対応するシーンインスタンスを作成し、オブジェクト管理クラスを設定する
 /// </summary>
 /// <param name="_NewScene">作成するシーンの種類を示す SceneName 型の値</param>
-void SceneManager::CreateSceneInstance(SceneName _NewScene)
+void SceneManager::SetCurrentScene(const std::string& scenename)
 {
-	switch (_NewScene)
-	{
-	case SceneName::TITLE:
-		m_pScenes[_NewScene] = std::make_unique<TitleScene>();
-		break;
-		/*case SceneName::GAME:
-			m_pScenes[_NewScene] = std::make_unique<GameScene>();
-			break;*/
-	case SceneName::RESULT:
-		m_pScenes[_NewScene] = std::make_unique<ResultScene>();
-		break;
-	default:
-		break;
-	}
-	// オブジェクト管理クラスを設定
-	m_pScenes[_NewScene]->SetObjectManager(m_pObjectManager);
+	this->m_CurrentSceneName = scenename;
+	auto obj = SceneClassFactory::getInstance().create(scenename);
+	obj->Init(this->m_pObjectManager);
+	// ここで所有権がなくなるので自動で解放される
+	m_pScenes[m_CurrentSceneName] = std::move(obj);
 }
 
-/**
- * @brief シーン切り替え関数
- * タイトル、終了画面（？）、ステージ選択シーンはシーンとして保持し続けておきたい（頻繁に使うため、毎回生成→解放しなくても良くない？）
- * @param  次のシーンタグ
-*/
-void SceneManager::ChangeScene(SceneName _NextScene)
+void SceneManager::SetSceneFactory(SceneClassFactory* factory)
 {
-	// 切り替え前のシーンステージ選択画面ではない（保持しておきたいシーンではない）場合、
-	//if (m_CurrentSceneName != SceneName::SCENE_MAX)
-	//{
-	//	// 現在シーンを解放
-	//	DeleteScene(m_CurrentSceneName);
-	//}
-
-	if (_NextScene == SceneName::NONE) {
-		this->IsQuit = true;
-		return;
-	}
-
-	// 現シーン削除（残しておきたいなら条件でスキップ）
-	m_pScenes.erase(m_CurrentSceneName);
-
-	// 次のシーンが未生成なら生成
-	if (m_pScenes.find(_NextScene) == m_pScenes.end()) {
-		CreateSceneInstance(_NextScene);
-	}
-
-	// 次のシーンを現在のシーンに設定し、初期化
-	m_CurrentSceneName = _NextScene;
-	m_pScenes[m_CurrentSceneName]->Init();
+	//m_pSceneFactory = factory;
 }
 
-/**
- * @brief シーン削除関数
- * @param _SceneName 削除したいシーンの型（mapのキー）
- * 3. Init の呼び直しタイミング
-切り替え時に Init を呼んでますが、再プレイ時などで状態をリセットしないシーンもあるかもしれません。
-Init を呼ぶかどうかもシーンごとに制御できると便利です。
-
-4. NONE で終了するのはシーン側でフラグを立てさせる
-NONE というシーン名で終了扱いはちょっと不自然なので、
-IScene に bool IsQuitRequested() みたいな関数を用意して SceneManager がそれを見る形にした方が直感的です。
-*/
-void SceneManager::DeleteScene(SceneName _SceneName)
+void SceneManager::SetObjectManager(ObjectManager* manager)
 {
-	// 指定したシーンを削除
-	m_pScenes.erase(_SceneName);
+	m_pObjectManager = manager;
 }
 

@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include "system/Framework/Application/Entry/main.h"
+#include "system/commontypes.h"
 
-class GameObject;
+class GameObject; // 前方宣言
 
 /// <summary>
 /// Transformクラス：全てのオブジェクトが持っている情報（ここでは数値のみを扱う）
@@ -37,9 +38,9 @@ public:
 	const Vector3& GetScale() const { return Scale; }
 	void SetScale(const Vector3& scale) { Scale = scale; }
 
-	void SetParent(GameObject* _parent) { m_pParent = _parent; }
+	void SetParent(GameObject* _parent);
 
-	void SetChild(GameObject* _child) { m_pChildren.push_back(_child); }
+	void SetChild(GameObject* _child);
 
 private:
 	Vector3		Position;	// 座標

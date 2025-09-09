@@ -1,15 +1,7 @@
 ﻿#include "GameObject.h"
-#include "Src/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
+//#include "Src/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
 
 GameObject::GameObject() {
-
-}
-
-/**
- * @brief コンストラクタ
- * @param cam カメラのポインタ
-*/
-GameObject::GameObject(Camera* cam) :m_Camera(cam) {
 
 }
 
@@ -23,15 +15,15 @@ GameObject::~GameObject() {
 void GameObject::Init(void)
 {
 	// コンポーネントの初期化
-	m_Components.clear();
+	//m_Components.clear();
 }
 
-void GameObject::Update(void)
+void GameObject::Update(uint64_t deltatime)
 {
 	// コンポーネントの更新
-	for(auto& component : m_Components) {
+	/*for(auto& component : m_Components) {
 		component.second->Update();
-	}
+	}*/
 }
 
 /// <summary>
@@ -39,25 +31,25 @@ void GameObject::Update(void)
 /// →毎フレームコンポーネントを捜索するのは非効率的なのでフラグを持たせるべきかも
 /// </summary>
 /// <param name=""></param>
-void GameObject::Draw(void)
+void GameObject::Draw(uint64_t deltatime)
 {
 	// レンダラー系コンポーネントを保持していれば描画する
-	for (auto& component : m_Components) 
+	/*for (auto& component : m_Components) 
 	{
 		if (auto renderer = dynamic_cast<IRenderer*>(component.second.get())) 
 		{
 			renderer->Render();
 		}
-	}
+	}*/
 }
 
 void GameObject::Uninit(void)
 {
 	// コンポーネントの終了処理
-	for (auto& component : m_Components) {
+	/*for (auto& component : m_Components) {
 		component.second->Uninit();
 	}
-	m_Components.clear();
+	m_Components.clear();*/
 }
 
 // Positionゲッター

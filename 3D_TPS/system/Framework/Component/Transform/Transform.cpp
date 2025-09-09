@@ -1,8 +1,17 @@
 ﻿#include "Transform.h"
-#include "../../../Game/Object_3D/BaseModel/GameObject.h"
+#include "system//Framework/GameObject/GameObject.h"
+
 
 // エイリアス
 using Matrix = DirectX::SimpleMath::Matrix;
+
+void Transform::SetParent(GameObject* _parent) {
+    m_pParent = _parent;
+}
+
+void Transform::SetChild(GameObject* _child) {
+    m_pChildren.push_back(_child);
+}
 
 /*
 * 関数の後ろにconstがつく場合→その関数内でメンバ変数を書き換える（編集する）権限を無くすことができる

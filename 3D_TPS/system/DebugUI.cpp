@@ -17,7 +17,7 @@ void DebugUI::Init(ID3D11Device* device, ID3D11DeviceContext* context)
     //ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(Application::GetWindow());
+    ImGui_ImplWin32_Init(Window::GetInstance().GetHandleWindow());
     ImGui_ImplDX11_Init(device, context);
 }
 

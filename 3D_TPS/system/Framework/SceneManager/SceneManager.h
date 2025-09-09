@@ -1,8 +1,18 @@
 ﻿#pragma once
 #include "system/noncopyable.h"
-#include "system/Framework/ObjectManager/ObjectManager.h"
-#include "system/Framework/Scene/IScene.h"
 #include "system/SceneClassFactory.h"
+
+class IScene;
+class ObjectManager;
+
+struct Load3DInfo {
+	std::string filename;
+	std::string texdirectoryname;
+	Load3DInfo(std::string p1, std::string p2) {
+		filename = p1;
+		texdirectoryname = p2;
+	}
+};
 
 /**
  * @brief シーン管理クラス
@@ -27,18 +37,15 @@ public:
 	};
 	~SceneManager() {};
 
-	void Init(void);		//! 初期化
-	void Update(void);		//! 更新
-	void Draw(void);		//! 描画
-	void Uninit(void);		//! 終了
+	void Init(ObjectManager* _pObjectMgr);		//! 初期化
+	void Update(uint64_t deltatime);			//! 更新
+	void Draw(uint64_t deltatime);				//! 描画
+	void Uninit(void);							//! 終了
 
-	void ChangeScene(SceneName _NextScene);	//! シーン切り替え
+	void SetCurrentScene(const std::string& scenename);
 
-	void CreateSceneInstance(SceneName _NewScene);
-	
-	void DeleteScene(SceneName _SceneName);
-	
-	void SetObjectManager(ObjectManager* _pObjectManager) { m_pObjectManager = _pObjectManager; }	//! オブジェクト管理クラスへのポインタをセット
+	void SetSceneFactory(SceneClassFactory* factory);
+	void SetObjectManager(ObjectManager* _pObjectManager);	//! オブジェクト管理クラスへのポインタをセット
 
 	bool GetIsQuit(void) const { return IsQuit; }	//! ゲーム終了フラグ取得
 	void SetIsQuit(bool _Flg) { IsQuit = _Flg; }	//! ゲーム終了フラグ設定
@@ -46,8 +53,8 @@ public:
 private:
 	std::unordered_map<std::string, std::unique_ptr<IScene>> m_pScenes;	//! シーン配列
 	std::string m_CurrentSceneName;				//! 現在のシーン名
-	ObjectManager* m_pObjectManager = nullptr;	//! オブジェクト管理クラスへのポインタ
-	SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
+	ObjectManager* m_pObjectManager;			//! オブジェクト管理クラスへのポインタ
+	//SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
 	bool IsQuit = false;
 };
 

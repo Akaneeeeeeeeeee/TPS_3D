@@ -15,12 +15,6 @@
 #include <wrl/client.h>
 
 
-// エイリアス
-using Vector3 = DirectX::SimpleMath::Vector3;
-using Quaternion = DirectX::SimpleMath::Quaternion;
-using Vector2 = DirectX::SimpleMath::Vector2;
-using Color = DirectX::SimpleMath::Color;
-
 #pragma warning(push)
 #pragma warning(disable:4005)
 

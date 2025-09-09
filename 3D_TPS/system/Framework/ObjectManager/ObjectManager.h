@@ -1,10 +1,9 @@
 ﻿#pragma once
-#include <span>
 #include "system/Framework/ObjectManager/SnowFlakeID.h"
-#include "system/Framework/Application/Entry/main.h"
-#include "system/Framework/GameObject.h"
+#include "system/Framework/GameObject/GameObject.h"
 //#include "system/Framework/Graphics/RenderManager.h"
-#include "system/Framework/ShaderManager/ShaderManager.h"
+
+class ShaderManager;
 
 /**
  * @brief オブジェクトを管理するクラス
@@ -29,9 +28,11 @@ public:
 		// コンパイル時チェック
 		static_assert(std::is_base_of_v<GameObject, T>, "このオブジェクトはObjectを継承していません");
 		// オブジェクト生成
-		auto obj = std::make_unique<T>(m_pComponentFactory, id, _Name, _Tag);
+		auto obj = std::make_unique<T>(id, _Name, _Tag);
 		// オブジェクトの生ポインタを取得
 		GameObject* rawPtr = obj.get();
+		// オブジェクトを初期化
+		obj->Init();
 		// コンテナに追加
 		m_pObjects.push_back(std::move(obj));
 		// タグごとにオブジェクトを管理するためのmapに追加
@@ -41,7 +42,7 @@ public:
 		// 名前ごとにオブジェクトを管理するためのmapに追加
 		m_ObjectsByName[_Name] = rawPtr;
 
-		return rawPtr;
+		return static_cast<T*>(rawPtr);
 	}
 
 	// IDからオブジェクトを取得
@@ -104,20 +105,26 @@ public:
 	*/
 	bool ChangeTag(uint64_t _id, const Tag& _newTag);
 
-	void Init(ComponentFactory* _factory);
-	void Update(void);
-	void Draw(void);
+	//void Init(ComponentFactory* _factory);
+	//void Init(ShaderManager* shaderMgr);
+	void Init(void);
+	void Update(uint64_t deltatime);
+	void Draw(uint64_t deltatime);
 	void Uninit(void);
 
 	//! DI
-	void SetComponentFactory(ComponentFactory* _factory) { m_pComponentFactory = _factory; }
-	void SetRenderManager(RenderManager* _renderManager) { m_pRenderManager = _renderManager; }
+	//void SetComponentFactory(ComponentFactory* _factory) { m_pComponentFactory = _factory; }
+	//void SetRenderManager(RenderManager* _renderManager) { m_pRenderManager = _renderManager; }
+	void SetShaderManager(ShaderManager* _shaderManager);
+	//void SetAssetManager(AssetManager* _assetManager) { m_pAssetManager = _assetManager; }
 
 private:
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
 	
-	ComponentFactory* m_pComponentFactory = nullptr;	//! コンポーネントファクトリーへのポインタ
-	RenderManager* m_pRenderManager = nullptr;			//! レンダーマネージャーへのポインタ
+	//ComponentFactory* m_pComponentFactory = nullptr;	//! コンポーネントファクトリーへのポインタ
+	//RenderManager* m_pRenderManager = nullptr;			//! レンダーマネージャーへのポインタ
+	//ShaderManager* m_pShaderManager;			//! シェーダーマネージャーへのポインタ
+	//AssetManager* m_pAssetManager;				//! アセットマネージャーへのポインタ
 	
 	std::vector<std::unique_ptr<GameObject>> m_pObjects;					//! オブジェクトのコンテナ(ここが所有権を持つ)
 	std::unordered_map<Tag, std::vector<GameObject*>> m_ObjectsByTag;	//! タグごとにオブジェクトを管理するためのmap

@@ -1,6 +1,9 @@
 ﻿#include "Game.h"
-//#include "system/Framework/Input/Input.h"
 #include "system/Framework/Window/Window.h"
+#include	"system/renderer.h"
+#include    "system/DebugUI.h"
+#include    "system/CDirectInput.h"
+#include	"fpscontrol.h"
 
 /**
  * @brief
@@ -10,15 +13,40 @@ void Game::Init(void)
 {
 	// シーンマネージャ、サウンドの初期化
 	//Sound::GetInstance().Init();
-	m_GraphicsDevice.Init();
-	m_SceneManager.SetObjectManager(&m_ObjectManager);
+	//m_GraphicsDevice.Init();
+	//m_SceneManager.SetSceneFactory(&m_SceneFactory);
 	//m_RenderManager.Init(&m_GraphicsDevice, &m_ShaderManager);
-	RenderManager::GetInstance().Init(&m_GraphicsDevice, &m_ShaderManager);
-	m_ComponentFactory.Init(&m_ShaderManager);
+	//RenderManager::GetInstance().Init(&m_GraphicsDevice, &m_ShaderManager);
+	//m_ComponentFactory.Init(&m_ShaderManager);
 	//m_ComponentFactory.Init(&m_RenderManager, &m_ShaderManager);
-	m_ObjectManager.Init(&m_ComponentFactory);
-	m_ShaderManager.Init();
-	m_SceneManager.Init();
+	//m_ObjectManager.Init(&m_ComponentFactory);
+	
+	
+	// レンダラの初期化    
+	Renderer::Init();
+
+	// DirectInputの初期化
+	CDirectInput::GetInstance().Init(Window::GetInstance().GetHandleInstance(),
+		Window::GetInstance().GetHandleWindow(),
+		Window::GetInstance().GetWidth(),
+		Window::GetInstance().GetHeight());
+
+	// デバッグUIの初期化
+	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
+	
+	// シェーダー管理クラスの初期化
+	//m_ShaderManager.Init();
+	//ShaderManager::GetInstance().Init();
+
+	// アセット管理クラスの初期化
+	AssetManager::GetInstance().Init();
+
+	// オブジェクトマネージャの初期化
+	//m_ObjectManager.Init(&m_ShaderManager);
+	m_ObjectManager.Init();
+
+	// シーンマネージャの初期化
+	m_SceneManager.Init(&m_ObjectManager);
 }
 
 
@@ -26,13 +54,16 @@ void Game::Init(void)
  * @brief ゲームのループ処理
  * 主なゲーム処理はここに書く
 */
-void Game::Update(void)
+void Game::Update(uint64_t deltatime)
 {
+	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
+	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
+
 	// ゲーム終了フラグが立っていない場合
 	if (!m_SceneManager.GetIsQuit())
 	{
 		// イベント発生まではループし続ける
-		m_SceneManager.Update();
+		m_SceneManager.Update(deltatime);
 	}
 	// ゲーム終了フラグが立ったら
 	else
@@ -44,14 +75,30 @@ void Game::Update(void)
 	}
 }
 
-void Game::Draw(void)
+void Game::Draw(uint64_t deltatime)
 {
-	m_SceneManager.Draw();
+	// レンダリング前処理
+	Renderer::Begin();
+
+	// シーンマネージャの描画
+	m_SceneManager.Draw(deltatime);
+
+	// デバッグUIの描画
+	DebugUI::Render();
+
+	// レンダリング後処理
+	Renderer::End();
 }
 
 void Game::Uninit(void)
 {
+	// デバッグUIの終了処理
+	DebugUI::DisposeUI();
+
+	// シーンマネージャの終了処理
 	m_SceneManager.Uninit();
-	//Sound::GetInstance().Uninit();
+
+	// レンダラの終了処理
+	Renderer::Uninit();
 }
 

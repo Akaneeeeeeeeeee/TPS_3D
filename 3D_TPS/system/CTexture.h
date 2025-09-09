@@ -21,6 +21,10 @@ public:
 	bool Load(const std::string& filename);
 	bool LoadFromFemory(const unsigned char* data,int len);
 
+	ID3D11ShaderResourceView* GetResource() const {
+		return m_srv.Get();
+	}
+
 	bool Load(const std::u8string& filename);		// 20250711
 
 	void SetGPU();

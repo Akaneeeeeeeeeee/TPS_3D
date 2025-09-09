@@ -1,5 +1,6 @@
 #include "PixelShader.h"
-#include "Src/Framework/Graphics/RenderManager.h"
+//#include "system/Framework/Graphics/RenderManager.h"
+#include "system/renderer.h"
 
 /// <summary>
 /// 型はコンストラクタで自動で設定
@@ -16,13 +17,13 @@ PixelShader::~PixelShader()
 
 HRESULT PixelShader::Create(void* pData, UINT size)
 {
-	ID3D11Device* device = RenderManager::GetInstance().GetGraphicsDevice()->GetDevice();
+	ID3D11Device* device = Renderer::GetDevice();
 	return device->CreatePixelShader(pData, size, NULL, &m_pPixelShader);
 }
 
 void PixelShader::Bind(void)
 {
-	ID3D11DeviceContext* pContext = RenderManager::GetInstance().GetGraphicsDevice()->GetContext();
+	ID3D11DeviceContext* pContext = Renderer::GetDeviceContext();
 	pContext->PSSetShader(m_pPixelShader.Get(), nullptr, 0);
 	for (int i = 0; i < m_pCBuffers.size(); ++i)
 	{
@@ -40,5 +41,5 @@ void PixelShader::Bind(void)
 
 void PixelShader::Unbind(void)
 {
-	RenderManager::GetInstance().GetGraphicsDevice()->GetContext()->PSSetShader(nullptr, nullptr, 0);
+	Renderer::GetDeviceContext()->PSSetShader(nullptr, nullptr, 0);
 }

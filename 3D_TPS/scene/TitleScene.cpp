@@ -8,10 +8,9 @@
 #include "system/utility.h"
 #include "system/AimOrientation.h"
 
-#include "SkeltalmeshScene.h"
-#include "system/Framework/GameObject/Character/Character.h"
+#include "TitleScene.h"
 
-//struct Load3DInfo{
+//struct Load3DInfo {
 //	std::string filename;
 //	std::string texdirectoryname;
 //	Load3DInfo(std::string p1, std::string p2) {
@@ -20,7 +19,7 @@
 //	}
 //};
 
-std::array<Load3DInfo,1> g_loadmodel = 
+std::array<Load3DInfo, 1> g_loadmodel2 =
 {
 		Load3DInfo(
 			"assets/model/akai/akai.fbx",			// モデル名
@@ -28,7 +27,7 @@ std::array<Load3DInfo,1> g_loadmodel =
 };
 
 // 平行光源の方向セット
-void SkeltalmeshScene::debugDirectionalLight()
+void TitleScene::debugDirectionalLight()
 {
 	static Vector4 direction = Vector4(0.0f, 0.0f, 1.0f, 0.0f); // Z軸+方向に光を当てる	
 
@@ -52,7 +51,7 @@ void SkeltalmeshScene::debugDirectionalLight()
 }
 
 // デバッグフリーカメラ
-void SkeltalmeshScene::debugFreeCamera()
+void TitleScene::debugFreeCamera()
 {
 	ImGui::Begin("debug Free camera");
 
@@ -83,7 +82,7 @@ void SkeltalmeshScene::debugFreeCamera()
 }
 
 // デバッグModel select
-void SkeltalmeshScene::debug3DModelSelect()
+void TitleScene::debug3DModelSelect()
 {
 	ImGui::Begin("debug Shape Select");
 
@@ -93,35 +92,35 @@ void SkeltalmeshScene::debug3DModelSelect()
 
 	// アイテムのリスト
 	const char* items[] = {
-		g_loadmodel[0].filename.c_str(),
-//		g_loadmodel[1].filename.c_str(),
-//		g_loadmodel[2].filename.c_str(),
-//		g_loadmodel[3].filename.c_str(),
-//		g_loadmodel[4].filename.c_str(),
-//		g_loadmodel[5].filename.c_str(),
-//		g_loadmodel[6].filename.c_str(),
-//		g_loadmodel[7].filename.c_str(),
-//		g_loadmodel[8].filename.c_str(),
+		g_loadmodel2[0].filename.c_str(),
+		//		g_loadmodel[1].filename.c_str(),
+		//		g_loadmodel[2].filename.c_str(),
+		//		g_loadmodel[3].filename.c_str(),
+		//		g_loadmodel[4].filename.c_str(),
+		//		g_loadmodel[5].filename.c_str(),
+		//		g_loadmodel[6].filename.c_str(),
+		//		g_loadmodel[7].filename.c_str(),
+		//		g_loadmodel[8].filename.c_str(),
 	};
 
 	ImGui::Text("\n\n");
 	ImGui::Separator();
 
-	ImGui::Text("%s",g_loadmodel[current_item].filename.c_str());
-	ImGui::Text("\n\n");
+	//ImGui::Text("%s", g_loadmodel[current_item].filename.c_str());
+	//ImGui::Text("\n\n");
 
-	ImGui::Separator();
-	// 頂点数　三角形数　サブセット数　マテリアル数
-	ImGui::Text("vertex num : %d", m_pmesh->GetVertices().size());
-	ImGui::Text("triangle num : %d", m_pmesh->GetIndices().size()/3);
-	ImGui::Text("subset num : %d", m_pmesh->GetSubsets().size());
-	ImGui::Text("material num : %d", m_pmesh->GetMaterials().size());
+	//ImGui::Separator();
+	//// 頂点数　三角形数　サブセット数　マテリアル数
+	//ImGui::Text("vertex num : %d", m_pmesh->GetVertices().size());
+	//ImGui::Text("triangle num : %d", m_pmesh->GetIndices().size() / 3);
+	//ImGui::Text("subset num : %d", m_pmesh->GetSubsets().size());
+	//ImGui::Text("material num : %d", m_pmesh->GetMaterials().size());
 
 	ImGui::End();
 }
 
 // デバッグSRT
-void SkeltalmeshScene::debugSRT()
+void TitleScene::debugSRT()
 {
 	ImGui::Begin("debug SRT");
 
@@ -162,8 +161,9 @@ void SkeltalmeshScene::debugSRT()
 /**
  * @brief コンストラクタ
  */
-SkeltalmeshScene::SkeltalmeshScene()
+TitleScene::TitleScene()
 {
+	m_NextSceneName = "SkeltalmeshScene";
 }
 
 /**
@@ -171,10 +171,14 @@ SkeltalmeshScene::SkeltalmeshScene()
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void SkeltalmeshScene::Update(uint64_t deltatime)
+void TitleScene::Update(uint64_t deltatime)
 {
-	m_panimobject->Update(1.0f);
-	//m_pObjectManager->Update(deltatime);
+	// キーボードの状態を取得
+	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
+	{
+		this->ChangeScene = true;
+	}
+	//m_panimobject->Update(1.0f);
 }
 
 /**
@@ -182,7 +186,7 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void SkeltalmeshScene::Draw(uint64_t deltatime)
+void TitleScene::Draw(uint64_t deltatime)
 {
 	m_camera.Draw();
 
@@ -211,41 +215,23 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 	Vector3 dir = Vector3(-l.Direction.x, -l.Direction.y, -l.Direction.z);
 
 	// 図形の描画（ANIMMESH描画）
-	Renderer::SetWorldMatrix(&m_mtxWorld);
+	//Renderer::SetWorldMatrix(&m_mtxWorld);
+	//m_shader.SetGPU();
+	//m_panimobject->Draw();
 
-	//LIGHT light{};
-	//light.Enable = true;
-	//light.Direction = Vector4(0.5f, -1.0f, 0.8f, 0.0f);
-	//light.Direction.Normalize();
-	//light.Ambient = Color(0.2f, 0.2f, 0.2f, 1.0f);
-	//light.Diffuse = Color(1.5f, 1.5f, 1.5f, 1.0f);
-	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(4, &light);
-	//Matrix4x4 view = m_camera.GetViewMatrix();
-	//Matrix4x4 proj = m_camera.GetProjMatrix();
-	//auto transposedWorld = m_mtxWorld.Transpose();
-	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(0, &m_mtxWorld);
-	//auto transposedView = view.Transpose();
-	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(1, &transposedView);
-	//auto transposedProj = proj.Transpose();
-	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(2, &transposedProj);
-
-	m_shader.SetGPU();
-	m_panimobject->Draw();
-	//m_pObjectManager->Draw(deltatime);
-
-	// 目標方向の姿勢を作る
-	AimOrientation aimorien(dir);
-	aimorien.VisualizeDirection(
-		Vector3(0, 0, 0),20,1,Color(1,1,0,1),2,Color(1,0,0,1)
-	);
+	//// 目標方向の姿勢を作る
+	//AimOrientation aimorien(dir);
+	//aimorien.VisualizeDirection(
+	//	Vector3(0, 0, 0), 20, 1, Color(1, 1, 0, 1), 2, Color(1, 0, 0, 1)
+	//);
 }
 
 /**
  * @brief シーンの初期化処理
  */
-void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
+void TitleScene::Init(ObjectManager* _pObjectMgr)
 {
-	// オブジェクトマネージャーのセット
+	// オブジェクト管理クラスのポインタをセット
 	this->m_pObjectManager = _pObjectMgr;
 
 	// カメラ(3D)の初期化
@@ -258,50 +244,36 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 
 	// メッシュを生成
 	m_pmesh = std::make_unique<CAnimationMesh>();
-	m_pmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
+	//m_pmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
 
-	// アニメーションオブジェクトを生成
-	m_panimobject = std::make_unique<CAnimationObject>();
-	m_panimobject->Init();	
+	//// アニメーションオブジェクトを生成
+	//m_panimobject = std::make_unique<CAnimationObject>();
+	//m_panimobject->Init();
 
-	// アニメーションメッシュをセット
-	m_panimobject->SetAnimationMesh(m_pmesh.get());
+	//// アニメーションメッシュをセット
+	//m_panimobject->SetAnimationMesh(m_pmesh.get());
 
-	// アニメーションデータ読み込み
-	m_panimdata = std::make_unique<CAnimationData>();
-	m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx","Run");
+	//// アニメーションデータ読み込み
+	//m_panimdata = std::make_unique<CAnimationData>();
+	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx", "Run");
 
-	// 現在のアニメーションをセット
-	aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
-	m_pmesh->SetCurentAnimation(animation);
+	//// 現在のアニメーションをセット
+	//aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
+	//m_pmesh->SetCurentAnimation(animation);
 
-	// シェーダーの初期化
-	m_shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	//// シェーダーの初期化
+	//m_shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
 
-	//m_pObjectManager->CreateObject<Character>("testcharacter");
-
-
-	// メッシュを生成
-	m_arrowmesh = std::make_unique<CStaticMesh>();
-	m_arrowmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
-	m_arrowmeshrenderer = std::make_unique<CStaticMeshRenderer>();
-	m_arrowmeshrenderer->Init(*m_arrowmesh);
+	//// メッシュを生成
+	//m_arrowmesh = std::make_unique<CStaticMesh>();
+	//m_arrowmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
+	//m_arrowmeshrenderer = std::make_unique<CStaticMeshRenderer>();
+	//m_arrowmeshrenderer->Init(*m_arrowmesh);
 
 	// シェーダーの初期化
 	m_arrowshader.Create(
 		"shader/unlitTextureVS.hlsl",			// 頂点シェーダー
 		"shader/unlitTexturePS.hlsl");			// ピクセルシェーダー
-
-
-	// 地形生成
-	m_pplanemesh = std::make_unique<CPlaneMesh>();
-	m_pplanemesh->Init(
-		20, 20,					// 分割数
-		200, 200,				// 幅、高さ
-		Color(0.5f, 0.5f, 0.5f, 1.0f),	// 色
-		Vector3(0, 1, 0),		// 法線
-		true,					// XZ平面フラグ
-		true);					// 時計回りフラグ
 
 	// デバッグSRT
 	DebugUI::RedistDebugFunction([this]() {
@@ -324,6 +296,6 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 /**
  * @brief シーンの終了処理
  */
-void SkeltalmeshScene::Uninit()
+void TitleScene::Uninit()
 {
 }

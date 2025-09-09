@@ -2,6 +2,7 @@
 
 #include	"BoneCombMatrix.h"
 #include	"dx11helper.h"
+#include	"system/Framework/ShaderManager/ShaderManager.h"
 
 // 定数バッファ生成し内容を更新する
 bool BoneCombMatrix::Create() {
@@ -53,5 +54,6 @@ void BoneCombMatrix::SetGPU() {
 	devcontext = Renderer::GetDeviceContext();
 
 	// コンスタントバッファをｂ５レジスタへセット（頂点シェーダー用）
+	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(5, &ConstantBufferMemory);
 	devcontext->VSSetConstantBuffers(5, 1, ConstantBuffer.GetAddressOf());
 }

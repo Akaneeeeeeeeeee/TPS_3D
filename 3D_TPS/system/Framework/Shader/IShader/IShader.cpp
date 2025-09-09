@@ -1,6 +1,6 @@
 #include "IShader.h"
-#include "Src/Framework/Graphics/RenderManager.h"
-#include "Src/Framework/Texture/LowLevel/Texture.h"
+#include "system/renderer.h"
+#include "system/CTexture.h"
 
 IShader::IShader(ShaderStage _Kind, const std::string& _Name) : m_Kind(_Kind), m_Name(_Name)
 {
@@ -19,7 +19,7 @@ IShader::~IShader()
 HRESULT IShader::Analyze_to_Adjust(void* pData, UINT size)
 {
 	HRESULT hr;
-	ID3D11Device* pDevice = RenderManager::GetInstance().GetGraphicsDevice()->GetDevice();
+	ID3D11Device* pDevice = Renderer::GetDevice();
 
 	// 解析用のリフレクション作成
 	ID3D11ShaderReflection* pReflection;
@@ -89,20 +89,20 @@ void IShader::WriteCBuffer(UINT _slot, const void* _pData)
 {
 	if (_slot < m_pCBuffers.size())
 	{
-		auto context = RenderManager::GetInstance().GetGraphicsDevice()->GetContext();
+		auto context = Renderer::GetDeviceContext();
 		context->UpdateSubresource(m_pCBuffers[_slot].Get(), 0, nullptr, _pData, 0, 0);
 		//RenderManager::GetInstance().GetGraphicsDevice()->GetContext()->
 		//	UpdateSubresource(m_pCBuffers[_slot].Get(), 0, nullptr, _pData, 0, 0);
 	}
 }
 
-void IShader::SetTexture(UINT slot, Texture_Low* tex)
+void IShader::SetTexture(UINT slot, CTexture* tex)
 {
 	if (slot >= m_pSRVs.size()) { return; }
 	ID3D11ShaderResourceView* pTex = tex ? tex->GetResource() : nullptr;
 	m_pSRVs[slot] = pTex;
 	auto srv = m_pSRVs[slot].Get();
-	auto context = RenderManager::GetInstance().GetGraphicsDevice()->GetContext();
+	auto context = Renderer::GetDeviceContext();
 	switch (m_Kind)
 	{
 		using enum ShaderStage;

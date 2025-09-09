@@ -1,7 +1,8 @@
 ﻿#pragma once
-#include "../../Framework/SceneManager/SceneManager.h"
-#include "system/Framework/Component/ComponentFactory/ComponentFactory.h"
-#include "../../Framework/Graphics/GraphicsDevice.h"
+#include "system/Framework/ObjectManager/ObjectManager.h"
+#include "system/Framework/SceneManager/SceneManager.h"
+#include "system/Framework/ShaderManager/ShaderManager.h"
+#include "system/Framework/AssetManager/AssetManager.h"
 
 /**
  * @brief ゲームクラス
@@ -11,19 +12,21 @@
 class Game
 {
 public:
-	Game() : m_ObjectManager(), m_SceneManager() {};
+	Game() {};
 	~Game() {};
 
 	void Init(void);
-	void Update(void);
-	void Draw(void);
+	void Update(uint64_t deltatime);
+	void Draw(uint64_t deltatime);
 	void Uninit(void);
 
 private:
-	GraphicsDevice m_GraphicsDevice;	// グラフィックスデバイス
+	//GraphicsDevice m_GraphicsDevice;	// グラフィックスデバイス
 	ObjectManager m_ObjectManager;			// オブジェクト管理クラス
 	SceneManager m_SceneManager;			// シーン管理クラス
-	ComponentFactory m_ComponentFactory;	// コンポーネントファクトリー
-	ShaderManager m_ShaderManager;			// シェーダーマネージャー
+	//SceneClassFactory m_SceneFactory;	// シーンファクトリー
+	//ComponentFactory m_ComponentFactory;	// コンポーネントファクトリー
+	//ShaderManager m_ShaderManager;			// シェーダーマネージャー
+	//AssetManager m_AssetManager;			// アセットマネージャー
 	//RenderManager m_RenderManager;			// レンダーマネージャー
 };

@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 #include "renderer.h"
-#include "../Application.h"
+#include "system/Framework/Application/Application.h"
 
 //------------------------------------------------------------------------------
 // スタティックメンバ変数の初期化
@@ -53,13 +53,13 @@ void Renderer::Init()
 
     DXGI_SWAP_CHAIN_DESC swapChainDesc{};
     swapChainDesc.BufferCount = 1;
-    swapChainDesc.BufferDesc.Width = Application::GetWidth();
-    swapChainDesc.BufferDesc.Height = Application::GetHeight();
+    swapChainDesc.BufferDesc.Width = Window::GetInstance().GetWidth();
+    swapChainDesc.BufferDesc.Height = Window::GetInstance().GetHeight();
     swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.OutputWindow = Application::GetWindow();
+    swapChainDesc.OutputWindow = Window::GetInstance().GetHandleWindow();
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.Windowed = TRUE;
@@ -107,8 +107,8 @@ void Renderer::Init()
     m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
 
     D3D11_VIEWPORT viewport;
-    viewport.Width = static_cast<FLOAT>(Application::GetWidth());
-    viewport.Height = static_cast<FLOAT>(Application::GetHeight());
+    viewport.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
+    viewport.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     viewport.TopLeftX = 0;
@@ -325,8 +325,8 @@ void Renderer::SetWorldViewProjection2D()
 
     Matrix4x4 projection = DirectX::XMMatrixOrthographicOffCenterLH(
         0.0f,
-        static_cast<float>(Application::GetWidth()),
-        static_cast<float>(Application::GetHeight()),
+        static_cast<float>(Window::GetInstance().GetWidth()),
+        static_cast<float>(Window::GetInstance().GetHeight()),
         0.0f,
         0.0f,
         1.0f);

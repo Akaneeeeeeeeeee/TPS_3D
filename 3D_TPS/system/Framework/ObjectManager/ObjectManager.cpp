@@ -1,7 +1,8 @@
 ﻿#include "ObjectManager.h"
-#include "../../Framework/Component/Collider/2D/BoxCollider2D/BoxCollider2D.h"
-#include "../../Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
-#include "Src//Framework/Graphics/RenderManager.h"
+//#include "../../Framework/Component/Collider/2D/BoxCollider2D/BoxCollider2D.h"
+//#include "../../Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
+#include "system/renderer.h"
+#include "system/Framework/ShaderManager/ShaderManager.h"
 
 /**
  * @brief オブジェクト削除関数
@@ -48,27 +49,27 @@ bool ObjectManager::ChangeTag(uint64_t _id, const Tag& _newTag)
  *
  * ここではコンテナの初期化だけを行う
 */
-void ObjectManager::Init(ComponentFactory* _factory)
-{
-	// コンポーネントファクトリーへのポインタをセット
-	m_pComponentFactory = _factory;
-	// オブジェクト管理用コンテナの初期化
-	m_pObjects.clear();
-	m_ObjectsByID.clear();
-	m_ObjectsByName.clear();
-	m_ObjectsByTag.clear();
-}
+//void ObjectManager::Init(ComponentFactory* _factory)
+//{
+//	// コンポーネントファクトリーへのポインタをセット
+//	m_pComponentFactory = _factory;
+//	// オブジェクト管理用コンテナの初期化
+//	m_pObjects.clear();
+//	m_ObjectsByID.clear();
+//	m_ObjectsByName.clear();
+//	m_ObjectsByTag.clear();
+//}
 
 void ObjectManager::Init(void)
 {
 }
 
-void ObjectManager::Update(void)
+void ObjectManager::Update(uint64_t deltatime)
 {
 	// 範囲for文
 	for (auto& obj : m_pObjects)
 	{
-		obj->Update();
+		obj->Update(deltatime);
 	}
 }
 
@@ -78,18 +79,12 @@ void ObjectManager::Update(void)
  * カメラがある場合は、そのオブジェクトの大きさ以内にいるものだけを描画する
  * カメラがない場合はそのまま描画
 */
-void ObjectManager::Draw(void)
+void ObjectManager::Draw(uint64_t deltatime)
 {
-	RenderManager::GetInstance().StartRender();
-
-	RenderManager::GetInstance().RenderAll();
-	
-	RenderManager::GetInstance().EndRender();
-	//m_pRenderManager->StartRender();
-
-	//m_pRenderManager->RenderAll();
-
-	//m_pRenderManager->EndRender();
+	for(auto& obj : m_pObjects)
+	{
+		obj->Draw(deltatime);
+	}
 }
 
 void ObjectManager::Uninit(void) {
@@ -105,5 +100,10 @@ void ObjectManager::Uninit(void) {
 	m_ObjectsByID.clear();
 	m_ObjectsByName.clear();
 	m_ObjectsByTag.clear();
-	m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
+	//m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
+}
+
+void ObjectManager::SetShaderManager(ShaderManager* _shaderManager)
+{ 
+	//m_pShaderManager = _shaderManager;
 }

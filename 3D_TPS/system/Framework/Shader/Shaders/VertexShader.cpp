@@ -1,5 +1,6 @@
 #include "VertexShader.h"
-#include "Src/Framework/Graphics/RenderManager.h"
+//#include "system/Framework/Graphics/RenderManager.h"
+#include "system/renderer.h"
 
 /// <summary>
 /// 型はコンストラクタで自動で設定
@@ -17,7 +18,7 @@ HRESULT VertexShader::Create(void* pData, UINT size)
 {
 	HRESULT hr;
 	// デバイス取得
-	ID3D11Device* device = RenderManager::GetInstance().GetGraphicsDevice()->GetDevice();
+	ID3D11Device* device = Renderer::GetDevice();
 
 	// シェーダー作成
 	hr = device->CreateVertexShader(pData, size, NULL, &m_pVertexShader);
@@ -113,7 +114,7 @@ HRESULT VertexShader::Create(void* pData, UINT size)
 
 void VertexShader::Bind(void)
 {
-	ID3D11DeviceContext* pContext = RenderManager::GetInstance().GetGraphicsDevice()->GetContext();
+	ID3D11DeviceContext* pContext = Renderer::GetDeviceContext();
 	pContext->VSSetShader(m_pVertexShader.Get(), NULL, 0);
 	pContext->IASetInputLayout(m_pInputLayout.Get());
 	for (int i = 0; i < m_pCBuffers.size(); ++i)
@@ -132,5 +133,5 @@ void VertexShader::Bind(void)
 
 void VertexShader::Unbind(void)
 {
-	RenderManager::GetInstance().GetGraphicsDevice()->GetContext()->VSSetShader(nullptr, nullptr, 0);
+	Renderer::GetDeviceContext()->VSSetShader(nullptr, nullptr, 0);
 }

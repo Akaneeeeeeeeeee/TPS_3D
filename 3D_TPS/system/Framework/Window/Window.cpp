@@ -212,3 +212,7 @@ HWND Window::GetHandleWindow(void)
 	return this->m_hWnd;
 }
 
+HINSTANCE Window::GetHandleInstance(void)
+{
+	return this->m_hInst;
+}

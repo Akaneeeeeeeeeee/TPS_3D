@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "system/Framework/Application/Entry/main.h"
 #include "system/Framework/NonCopyable/Singleton_Template.h"
+#include "system/Framework/Application/Entry/main.h"
 
 /**
  * @brief ゲームクラスを保持するウィンドウクラス
@@ -33,7 +33,7 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	HWND GetHandleWindow(void);		//! ウィンドウハンドル取得関数
-	//MSG* GetMessage(void)
+	HINSTANCE GetHandleInstance(void);
 
 	uint32_t GetWidth(void) const { return m_Width; }		//! ウィンドウの横幅取得関数
 	uint32_t GetHeight(void) const { return m_Height; }	//! ウィンドウの縦幅取得関数

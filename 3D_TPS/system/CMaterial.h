@@ -5,6 +5,7 @@
 #include	"dx11helper.h"
 #include	"renderer.h"
 #include	"NonCopyable.h"
+#include	"system/Framework/ShaderManager/ShaderManager.h"
 
 // マテリアル
 /*
@@ -90,9 +91,11 @@ public:
 			0, 0);
 
 		// コンスタントバッファ4をｂ3レジスタへセット（頂点シェーダー用）
+		//ShaderManager::GetInstance().GetShader("vertexLightingVS")->WriteCBuffer(3, m_pConstantBufferMaterial.GetAddressOf());
 		devcontext->VSSetConstantBuffers(3, 1, m_pConstantBufferMaterial.GetAddressOf());
 
 		// コンスタントバッファ4をｂ3レジスタへセット(ピクセルシェーダー用)
+		//ShaderManager::GetInstance().GetShader("vertexLightingPS")->WriteCBuffer(3, m_pConstantBufferMaterial.GetAddressOf());
 		devcontext->PSSetConstantBuffers(3, 1, m_pConstantBufferMaterial.GetAddressOf());
 
 	}
@@ -103,9 +106,11 @@ public:
 		devcontext = Renderer::GetDeviceContext();
 
 		// コンスタントバッファ4をｂ3レジスタへセット（頂点シェーダー用）
+		//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(3, m_pConstantBufferMaterial.GetAddressOf());
 		devcontext->VSSetConstantBuffers(3, 1, m_pConstantBufferMaterial.GetAddressOf());
 
 		// コンスタントバッファ4をｂ3レジスタへセット(ピクセルシェーダー用)
+		//ShaderManager::GetInstance().GetShader("vertexLightingPS")->WriteCBuffer(0, m_pConstantBufferMaterial.GetAddressOf());
 		devcontext->PSSetConstantBuffers(3, 1, m_pConstantBufferMaterial.GetAddressOf());
 	}
 

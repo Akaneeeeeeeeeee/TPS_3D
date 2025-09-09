@@ -9,7 +9,7 @@
 
 using namespace Microsoft::WRL;
 
-class Texture_Low; // 前方宣言
+class CTexture; // 前方宣言
 
 //! 各シェーダーの識別用
 enum class ShaderStage {
@@ -34,7 +34,7 @@ public:
 	virtual void Bind() = 0;	// 各シェーダーの割り当て用純粋仮想関数
 	virtual void Unbind() = 0;	// 各シェーダーの割り当て解除用純粋仮想関数
 	virtual void WriteCBuffer(UINT _Slot, const void* _pData);
-	virtual void SetTexture(UINT slot, Texture_Low* tex);
+	virtual void SetTexture(UINT slot, CTexture* tex);
 
 
 	//virtual void SetSRV(UINT _Slot, ID3D11ShaderResourceView* _pSRV) = 0;	// シェーダーリソースビューをセット

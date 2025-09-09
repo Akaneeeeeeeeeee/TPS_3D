@@ -20,6 +20,12 @@ public:
 	ShaderManager();
 	~ShaderManager();
 
+	static ShaderManager& GetInstance()
+	{
+		static ShaderManager instance;
+		return instance;
+	}
+
 	//! 外側の初期化処理で使いたいシェーダーをすべてLoad()し、登録しておく
 	//! m_ShaderManager->Load(ShaderStage::Vertex, Assets/Shader/VS_PBR.cso, "VS_PBR");みたいな感じ
 	void Init(void);	//! 初期化処理

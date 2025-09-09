@@ -2,9 +2,9 @@
 #include <d3dcompiler.h>
 #pragma comment(lib, "d3dcompiler.lib")
 #include <fstream>
-#include "Src/Framework/Shader/Shaders/VertexShader.h"
-#include "Src/Framework/Shader/Shaders/PixelShader.h"
-#include "Src/Framework/Graphics/RenderManager.h"
+#include "system/Framework/Shader/Shaders/VertexShader.h"
+#include "system/Framework/Shader/Shaders/PixelShader.h"
+#include "system/renderer.h"
 
 ShaderManager::ShaderManager()
 {
@@ -22,6 +22,9 @@ void ShaderManager::Init()
 	this->Load(ShaderStage::Pixel, "Assets/Shader/unlitTexturePS.cso", "unlitTexturePS");
 	this->Load(ShaderStage::Vertex, "Assets/Shader/DefaultVS.cso", "DefaultVS");
 	this->Load(ShaderStage::Pixel, "Assets/Shader/DefaultPS.cso", "DefaultPS");
+    this->Load(ShaderStage::Vertex, "Assets/Shader/vertexLightingVS.cso", "vertexLightingVS");
+	this->Load(ShaderStage::Pixel, "Assets/Shader/vertexLightingPS.cso", "vertexLightingPS");
+	this->Load(ShaderStage::Vertex, "Assets/Shader/vertexLightingOneSkinVS.cso", "vertexLightingOneSkinVS");
 }
 
 /// <summary>

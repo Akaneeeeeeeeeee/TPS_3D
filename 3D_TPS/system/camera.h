@@ -2,7 +2,7 @@
 
 #include	"commontypes.h"
 #include	"renderer.h"
-#include	"../application.h"
+#include	"system/Framework/Application/Application.h"
 #include	"CPolar3D.h"
 
 class Camera {
@@ -90,7 +90,7 @@ public:
 		//プロジェクション行列の生成
 		constexpr float fieldOfView = DirectX::XMConvertToRadians(45.0f);    // 視野角
 
-		float aspectRatio = static_cast<float>(Application::GetWidth()) / static_cast<float>(Application::GetHeight());	// アスペクト比	
+		float aspectRatio = static_cast<float>(Window::GetInstance().GetWidth()) / static_cast<float>(Window::GetInstance().GetHeight());	// アスペクト比	
 		float nearPlane = 1.0f;			// ニアクリップ
 		float farPlane = 3000.0f;		// ファークリップ
 
