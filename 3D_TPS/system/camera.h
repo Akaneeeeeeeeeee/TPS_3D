@@ -36,18 +36,14 @@ private:
 
 	Vector3 m_up = { 0.0f, 1.0f, 0.0f };			// 上方向ベクトル
 public:
-	void SetElevation(float elevation) {
-		m_elevation = elevation;
-	}
 
-	void SetAzimuth(float azimuth) {
-		m_azimuth = azimuth;
-	}
+	void SetElevation(float elevation) { m_elevation = elevation; }
+	void SetAzimuth(float azimuth) { m_azimuth = azimuth; }
+	void SetRadius(float radius) { m_radius = radius; }
 
-	void SetRadius(float radius) 
-{
-		m_radius = radius;
-	}
+	float GetElevation(void) const { return m_elevation; }
+	float GetAzimuth(void) const { return m_azimuth; }
+	float GetRadius(void) const { return m_radius; }
 
 	void CalcCameraPosition() 
 	{
@@ -92,7 +88,7 @@ public:
 
 		float aspectRatio = static_cast<float>(Window::GetInstance().GetWidth()) / static_cast<float>(Window::GetInstance().GetHeight());	// アスペクト比	
 		float nearPlane = 1.0f;			// ニアクリップ
-		float farPlane = 3000.0f;		// ファークリップ
+		float farPlane = 10000.0f;		// ファークリップ
 
 		//プロジェクション行列の生成
 		Matrix4x4 projectionMatrix;

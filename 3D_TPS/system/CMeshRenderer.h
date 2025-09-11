@@ -80,4 +80,10 @@ public:
 	{
 		m_VertexBuffer.Modify(vertices);
 	}
+	// 頂点バッファ・インデックスバッファを更新
+	void Modify(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices)
+	{
+		m_VertexBuffer.Modify(vertices);
+		m_IndexBuffer.Modify(indices);
+	}
 };

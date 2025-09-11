@@ -1,9 +1,10 @@
 #pragma once
 #include "system/CPlaneMesh.h"
 #include "system/CTexture.h"
-#include "system/CVertexBuffer.h"
-#include "system/CIndexBuffer.h"
+#include "system/CMeshRenderer.h"
 #include "system/CMaterial.h"
+#include "system/transform.h"
+#include "system/CShader.h"
 
 /// <summary>
 /// 3D地形クラス
@@ -15,22 +16,18 @@ public:
 	~Terrain();
 
 	void Init(int divx, int divy,
-		float width, float height,
-		const std::string& texfilename,
-		MATERIAL mtrl);
+		float width, float height);
 
-	void Draw();
+	void Draw(void);
+
+	void SetImage(const std::filesystem::path& _filepath);
 
 private:
+	SRT m_transform;
 	CPlaneMesh m_plane{};
-	CTexture m_texture{};
-	std::unique_ptr<CMaterial> m_material{};
+	CMeshRenderer m_MeshRenderer{};
+	CShader m_Shader;
+
+	CTexture m_Texture{};
+	std::unique_ptr<CMaterial> m_Material{};
 };
-
-Terrain::Terrain()
-{
-}
-
-Terrain::~Terrain()
-{
-}

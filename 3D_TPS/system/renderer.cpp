@@ -87,7 +87,7 @@ void Renderer::Init()
     textureDesc.Height = swapChainDesc.BufferDesc.Height;
     textureDesc.MipLevels = 1;
     textureDesc.ArraySize = 1;
-    textureDesc.Format = DXGI_FORMAT_D16_UNORM;
+    textureDesc.Format = DXGI_FORMAT_D32_FLOAT;     // Zファイティング解決のため深度バッファの精度を上げる
     textureDesc.SampleDesc = swapChainDesc.SampleDesc;
     textureDesc.Usage = D3D11_USAGE_DEFAULT;
     textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -119,6 +119,8 @@ void Renderer::Init()
     // --- ラスタライザステート設定 ---
     D3D11_RASTERIZER_DESC rasterizerDesc{};
     rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    //rasterizerDesc.CullMode = D3D11_CULL_NONE;      // カリングオフ(デバッグ用)
+    //rasterizerDesc.CullMode = D3D11_CULL_FRONT;      // カリングオフ(デバッグ用)
     rasterizerDesc.CullMode = D3D11_CULL_BACK;
     rasterizerDesc.DepthClipEnable = TRUE;
 

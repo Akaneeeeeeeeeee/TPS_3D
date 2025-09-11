@@ -175,6 +175,104 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
 {
 	m_panimobject->Update(1.0f);
 	//m_pObjectManager->Update(deltatime);
+
+	auto& input = CDirectInput::GetInstance();
+
+	// --- カメラ回転 ---
+	static float azimuth = m_camera.GetAzimuth();
+	static float elevation = m_camera.GetElevation();
+	if (input.GetMouseRButtonCheck()) {
+		// マウスの相対移動量を取得
+		//LONG dx = input.GetMouseStateData().lX;
+		//LONG dy = input.GetMouseStateData().lY;
+
+		//float sensitivity = 0.005f; // マウス感度
+
+		//// アジマス(水平方向)と仰角(垂直方向)を更新
+		//float newAzimuth = m_camera.GetAzimuth() + dx * sensitivity;
+		//float newElevation = m_camera.GetElevation() - dy * sensitivity;
+
+		//// 上下の制限を設定
+		//const float limit = (PI / 2.0f) - 0.01f;
+		//if (newElevation > limit) newElevation = limit;
+		//if (newElevation < -limit) newElevation = -limit;
+
+		//m_camera.SetAzimuth(newAzimuth);
+		//m_camera.SetElevation(newElevation);
+		LONG dx = input.GetMouseStateData().lX;
+		LONG dy = input.GetMouseStateData().lY;
+
+		float sensitivity = 0.005f;
+
+		azimuth += dx * sensitivity;
+		elevation -= dy * sensitivity;
+
+		const float limit = (PI / 2.0f) - 0.01f;
+		if (elevation > limit) elevation = limit;
+		if (elevation < -limit) elevation = -limit;
+	}
+
+	// --- 移動入力 ---
+	Vector3 move(0, 0, 0);
+
+	if (input.CheckKeyBuffer(DIK_W)) {
+		// キャラの forward 方向へ
+		move.z += 1.0f;
+	}
+	if (input.CheckKeyBuffer(DIK_S)) {
+		move.z -= 1.0f;
+	}
+	if (input.CheckKeyBuffer(DIK_A)) {
+		move.x -= 1.0f;
+	}
+	if (input.CheckKeyBuffer(DIK_D)) {
+		move.x += 1.0f;
+	}
+	// move に入力があるなら、キャラの向きを更新
+	if (move.LengthSquared() > 0.0f) {
+		move.Normalize();
+
+		// 進行方向の角度を求める (XZ 平面)
+		float targetYaw = std::atan2(-move.x, -move.z);
+
+		// キャラの向きを更新（スナップ式）
+		rotate.y = targetYaw;
+
+		// 回転行列を作って move をワールド方向へ変換
+		Matrix4x4 rotY = Matrix4x4::CreateRotationY(rotate.y);
+		Vector3 forward = Vector3::TransformNormal(Vector3(0, 0, -1), rotY);
+
+		pos += forward * moveSpeed;
+	}
+	else {
+		// 入力がない場合はアニメーションをアイドル状態に変更
+		//aiAnimation* animation = m_panimdata->GetAnimation("Idle", 0);
+		//m_pmesh->SetCurentAnimation(animation);
+
+	}
+
+	Matrix4x4 mtxscale = Matrix4x4::CreateScale(scale);
+
+	Matrix4x4 mtxrotx = Matrix4x4::CreateRotationX(rotate.x);
+	Matrix4x4 mtxroty = Matrix4x4::CreateRotationY(rotate.y);
+	Matrix4x4 mtxrotz = Matrix4x4::CreateRotationZ(rotate.z);
+
+	Matrix4x4 mtxtrans = Matrix4x4::CreateTranslation(pos);
+
+	// 描画時に使用する行列にまとめる
+	m_mtxWorld = mtxscale * mtxrotx * mtxroty * mtxrotz * mtxtrans;
+
+	// キャラを追従するようにカメラ座標調整
+	//m_camera.SetLookat(pos);
+	//m_camera.SetAzimuth(rotate.y);
+	//m_camera.SetPosition(Vector3(pos.x, pos.y + 200, pos.z - 750));
+
+	//m_camera.SetLookat(pos);  // キャラ位置を注視
+	//m_camera.CalcCameraPositionTranslate(Vector3(pos.x, pos.y + 200, pos.z - 750)); // キャラを中心に回転
+	m_camera.SetAzimuth(azimuth);
+	m_camera.SetElevation(elevation);
+	m_camera.SetLookat(pos);
+	m_camera.CalcCameraPositionTranslate(pos);
 }
 
 /**
@@ -231,7 +329,10 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 
 	m_shader.SetGPU();
 	m_panimobject->Draw();
+	m_pTerrain->Draw();
+	m_pSkydome->Draw();
 	//m_pObjectManager->Draw(deltatime);
+	
 
 	// 目標方向の姿勢を作る
 	AimOrientation aimorien(dir);
@@ -246,7 +347,7 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 {
 	// オブジェクトマネージャーのセット
-	this->m_pObjectManager = _pObjectMgr;
+	//this->m_pObjectManager = _pObjectMgr;
 
 	// カメラ(3D)の初期化
 	m_camera.Init();
@@ -270,6 +371,7 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	// アニメーションデータ読み込み
 	m_panimdata = std::make_unique<CAnimationData>();
 	m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx","Run");
+	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Idle.fbx", "Idle");
 
 	// 現在のアニメーションをセット
 	aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
@@ -286,6 +388,12 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	m_arrowmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
 	m_arrowmeshrenderer = std::make_unique<CStaticMeshRenderer>();
 	m_arrowmeshrenderer->Init(*m_arrowmesh);
+	m_pTerrain = std::make_unique<Terrain>();
+	m_pTerrain->Init(1, 1, 5000, 5000);
+	m_pTerrain->SetImage("assets/texture/Hole1.png");
+	m_pSkydome = std::make_unique<Skydome>();
+	m_pSkydome->Init();
+	m_pSkydome->SetTexture("assets/texture/haikei.jpg");
 
 	// シェーダーの初期化
 	m_arrowshader.Create(
@@ -294,14 +402,14 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 
 
 	// 地形生成
-	m_pplanemesh = std::make_unique<CPlaneMesh>();
-	m_pplanemesh->Init(
-		20, 20,					// 分割数
-		200, 200,				// 幅、高さ
-		Color(0.5f, 0.5f, 0.5f, 1.0f),	// 色
-		Vector3(0, 1, 0),		// 法線
-		true,					// XZ平面フラグ
-		true);					// 時計回りフラグ
+	//m_pplanemesh = std::make_unique<CPlaneMesh>();
+	//m_pplanemesh->Init(
+	//	20, 20,					// 分割数
+	//	200, 200,				// 幅、高さ
+	//	Color(0.5f, 0.5f, 0.5f, 1.0f),	// 色
+	//	Vector3(0, 1, 0),		// 法線
+	//	true,					// XZ平面フラグ
+	//	true);					// 時計回りフラグ
 
 	// デバッグSRT
 	DebugUI::RedistDebugFunction([this]() {
@@ -319,6 +427,7 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 		debugFreeCamera();
 		});
 
+	m_camera.SetLookat(pos);
 }
 
 /**

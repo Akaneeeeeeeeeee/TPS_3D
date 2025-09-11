@@ -11,6 +11,8 @@
 #include "system/CAnimationData.h"
 #include "system/CAnimationObject.h"
 #include "system/CPlaneMesh.h"
+#include "system/Terrain.h"
+#include "system/Skydome/Skydome.h"
 
 /**
  * @brief スケルタルメッシュを表示する
@@ -123,8 +125,14 @@ private:
 	std::unique_ptr<CAnimationMesh>			m_pmesh;		// メッシュデータ
 	std::unique_ptr<CAnimationObject>		m_panimobject;	// アニメーションオブジェクト
 	std::unique_ptr<CAnimationData>			m_panimdata;	// アニメーションデータ
+	Vector3 scale = Vector3(1, 1, 1);
+	Vector3 rotate = Vector3(0, -DirectX::XM_PI, 0); // (ラジアン);
+	Vector3 pos = Vector3(0, 0, 0);
+	float moveSpeed = 5.0f;
 
-	std::unique_ptr<CPlaneMesh>				m_pplanemesh;	// 地形メッシュ
+
+	std::unique_ptr<Terrain>				m_pTerrain;		// 地形メッシュ
+	std::unique_ptr<Skydome>				m_pSkydome;		// スカイドーム
 
 	/**
 	 * @brief 光の方向を表すための矢印メッシュ

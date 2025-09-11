@@ -42,4 +42,19 @@ public:
 		devicecontext->IASetIndexBuffer(m_IndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	}
+
+	// インデックスバッファを書き換える
+	void Modify(const std::vector<unsigned int>& indices)
+	{
+		D3D11_MAPPED_SUBRESOURCE msr;
+		HRESULT hr = Renderer::GetDeviceContext()->Map(
+			m_IndexBuffer.Get(),
+			0,
+			D3D11_MAP_WRITE_DISCARD, 0, &msr);
+
+		if (SUCCEEDED(hr)) {
+			memcpy(msr.pData, indices.data(), indices.size() * sizeof(unsigned int));
+			Renderer::GetDeviceContext()->Unmap(m_IndexBuffer.Get(), 0);
+		}
+	}
 };

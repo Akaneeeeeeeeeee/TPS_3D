@@ -67,6 +67,12 @@
     <Filter Include="ソース ファイル\MyFramework\Transform">
       <UniqueIdentifier>{739c2985-2086-408b-983d-ca8233610bd7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\system\Terrain">
+      <UniqueIdentifier>{42ddcaf7-018f-4a73-a445-4255bbf086dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\system\Skydome">
+      <UniqueIdentifier>{24710b1b-d93d-4035-9674-99e4f82c85d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -277,7 +283,10 @@
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
     <ClInclude Include="system\Terrain.h">
-      <Filter>ソース ファイル\system</Filter>
+      <Filter>ソース ファイル\system\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Skydome\Skydome.h">
+      <Filter>ソース ファイル\system\Skydome</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -435,7 +444,10 @@
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
     <ClCompile Include="system\Terrain.cpp">
-      <Filter>ソース ファイル\system</Filter>
+      <Filter>ソース ファイル\system\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Skydome\Skydome.cpp">
+      <Filter>ソース ファイル\system\Skydome</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -458,6 +470,12 @@
       <Filter>リソース ファイル</Filter>
     </FxCompile>
     <FxCompile Include="shader\vertexLightingVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\litTexturePS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\litTextureVS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
   </ItemGroup>

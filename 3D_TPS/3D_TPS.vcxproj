@@ -213,10 +213,11 @@
     <ClInclude Include="system\noncopyable.h" />
     <ClInclude Include="system\renderer.h" />
     <ClInclude Include="system\SceneClassFactory.h" />
+    <ClInclude Include="system\Skydome\Skydome.h" />
     <ClInclude Include="system\SphereDrawer.h" />
     <ClInclude Include="system\stb_image.h" />
     <ClInclude Include="system\Terrain.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\transform.h" />
     <ClInclude Include="system\utility.h" />
@@ -282,10 +283,11 @@
     <ClCompile Include="system\imgui\imgui_widgets.cpp" />
     <ClCompile Include="system\LineDrawer.cpp" />
     <ClCompile Include="system\renderer.cpp" />
+    <ClCompile Include="system\Skydome\Skydome.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />
     <ClCompile Include="system\stb.cpp" />
     <ClCompile Include="system\Terrain.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\utility.cpp" />
   </ItemGroup>
@@ -298,6 +300,14 @@
     <FxCompile Include="shader\GeometryShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shader\litTexturePS.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shader\litTextureVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\unlitTexturePS.hlsl">

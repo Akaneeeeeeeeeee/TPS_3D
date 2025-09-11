@@ -8,7 +8,7 @@ protected:
 	std::vector<uint32_t>	m_indices;		// インデックスデータ群
 public:
 	// 頂点データ取得
-	const std::vector<VERTEX_3D>& GetVertices() const{
+	const std::vector<VERTEX_3D>& GetVertices() const {
 		return m_vertices;
 	}
 
