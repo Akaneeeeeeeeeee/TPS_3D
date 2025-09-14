@@ -178,7 +178,6 @@ void TitleScene::Update(uint64_t deltatime)
 	{
 		this->ChangeScene = true;
 	}
-	//m_panimobject->Update(1.0f);
 }
 
 /**
@@ -188,42 +187,20 @@ void TitleScene::Update(uint64_t deltatime)
  */
 void TitleScene::Draw(uint64_t deltatime)
 {
+
+	// 描画時に使用する行列にまとめる
+	m_mtxWorld = Matrix4x4::Identity;
+
 	m_camera.Draw();
 
-	// 3軸カラー
-	Color axiscol[3] = {
-		Color(1, 0, 0, 1),
-		Color(0, 1, 0, 1),
-		Color(0, 1, 1, 1)
-	};
+	Renderer::SetWorldMatrix(&m_mtxWorld);
 
-	// ワールド軸を描画
-	for (int axisno = 0; axisno < 3; axisno++)
-	{
-		Matrix4x4 rotmtx = Matrix4x4::Identity;
-		m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
-	}
-
-	// ローカル軸を描画
-	for (int axisno = 0; axisno < 3; axisno++)
-	{
-		m_segments[axisno]->Draw(m_mtxWorld, axiscol[axisno]);
-	}
-
-	// 平行光源の方向を示す矢印を描画 
-	LIGHT l = Renderer::GetLight();
-	Vector3 dir = Vector3(-l.Direction.x, -l.Direction.y, -l.Direction.z);
-
-	// 図形の描画（ANIMMESH描画）
-	//Renderer::SetWorldMatrix(&m_mtxWorld);
-	//m_shader.SetGPU();
-	//m_panimobject->Draw();
-
-	//// 目標方向の姿勢を作る
-	//AimOrientation aimorien(dir);
-	//aimorien.VisualizeDirection(
-	//	Vector3(0, 0, 0), 20, 1, Color(1, 1, 0, 1), 2, Color(1, 0, 0, 1)
-	//);
+	// タイトル画像の描画
+	Vector3 pos = Vector3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 1.0f);
+	Vector3 rot = Vector3(0.0f, 0.0f, 0.0f);
+	Vector3 scale = Vector3(1.0f, 1.0f, 1.0f);
+	m_TitleImage->Draw(scale, rot, pos);
+	//m_TitleImage->Draw(m_mtxWorld);
 }
 
 /**
@@ -237,59 +214,8 @@ void TitleScene::Init(ObjectManager* _pObjectMgr)
 	// カメラ(3D)の初期化
 	m_camera.Init();
 
-	// ローカル軸表示用線分の初期化
-	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
-	m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
-	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
-
-	// メッシュを生成
-	m_pmesh = std::make_unique<CAnimationMesh>();
-	//m_pmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
-
-	//// アニメーションオブジェクトを生成
-	//m_panimobject = std::make_unique<CAnimationObject>();
-	//m_panimobject->Init();
-
-	//// アニメーションメッシュをセット
-	//m_panimobject->SetAnimationMesh(m_pmesh.get());
-
-	//// アニメーションデータ読み込み
-	//m_panimdata = std::make_unique<CAnimationData>();
-	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx", "Run");
-
-	//// 現在のアニメーションをセット
-	//aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
-	//m_pmesh->SetCurentAnimation(animation);
-
-	//// シェーダーの初期化
-	//m_shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
-
-	//// メッシュを生成
-	//m_arrowmesh = std::make_unique<CStaticMesh>();
-	//m_arrowmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
-	//m_arrowmeshrenderer = std::make_unique<CStaticMeshRenderer>();
-	//m_arrowmeshrenderer->Init(*m_arrowmesh);
-
-	// シェーダーの初期化
-	m_arrowshader.Create(
-		"shader/unlitTextureVS.hlsl",			// 頂点シェーダー
-		"shader/unlitTexturePS.hlsl");			// ピクセルシェーダー
-
-	// デバッグSRT
-	DebugUI::RedistDebugFunction([this]() {
-		debugSRT();
-		});
-
-
-	// デバッグ Directional light
-	DebugUI::RedistDebugFunction([this]() {
-		debugDirectionalLight();
-		});
-
-	// デバッグ Free Camera
-	DebugUI::RedistDebugFunction([this]() {
-		debugFreeCamera();
-		});
+	// タイトル画像の生成
+	m_TitleImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/HideAndSeek.jpg");
 
 }
 

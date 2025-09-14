@@ -41,6 +41,7 @@ public:
 
 	// 姿勢情報のゲッター/セッター
 	virtual Transform& GetTransform(void) { return m_Transform; };
+	virtual const Transform& GetTransform() const { return m_Transform; }
 	virtual void SetTransform(const Transform& transform) { m_Transform = transform; }
 	virtual const Vector3& GetPosition(void) const;
 	virtual void SetPosition(const Vector3& position);
@@ -49,16 +50,15 @@ public:
 	virtual const Vector3& GetScale(void) const;
 	virtual void SetScale(const Vector3& scale);
 
-	DirectX::SimpleMath::Matrix GetWorldMatrix(const DirectX::SimpleMath::Matrix& _parentmatrix);
+	// Transform関連は直接委譲
+	virtual Matrix4x4 GetWorldMatrix() const { return m_Transform.GetWorldMatrix(); }
 
 	virtual Tag& GetTag(void) { return m_Tag; }
 	virtual void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
 
 protected:
 	// SRT情報（姿勢情報）
-	Transform m_Transform =
-		Transform(Vector3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f)); // SRT情報を管理
-
+	Transform m_Transform{};
 	//! 描画の為の情報（見た目に関わる部分）
 	//Shader m_Shader; // シェーダー
 

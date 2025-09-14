@@ -165,6 +165,7 @@ public:
     static void SetDepthAllwaysWrite();
     static void SetATCEnable(bool Enable);
     static void SetWorldViewProjection2D();
+    //static void SetWorldViewProjection2D
     static void SetWorldMatrix(Matrix4x4* WorldMatrix);
     static void SetViewMatrix(Matrix4x4* ViewMatrix);
     static void SetProjectionMatrix(Matrix4x4* ProjectionMatrix);

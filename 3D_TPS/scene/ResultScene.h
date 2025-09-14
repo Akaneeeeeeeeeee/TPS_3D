@@ -7,27 +7,23 @@
 #include "system/SceneClassFactory.h"
 #include "system/Framework/Scene/IScene.h"
 
-#include "system/CAnimationMesh.h"
-#include "system/CAnimationData.h"
-#include "system/CAnimationObject.h"
-
 /**
  * @brief スケルタルメッシュを表示する
  */
-class TitleScene : public IScene {
+class ResultScene : public IScene {
 public:
 	/// @brief コピーコンストラクタは使用不可
-	TitleScene(const TitleScene&) = delete;
+	ResultScene(const ResultScene&) = delete;
 
 	/// @brief 代入演算子も使用不可
-	TitleScene& operator=(const TitleScene&) = delete;
+	ResultScene& operator=(const ResultScene&) = delete;
 
 	/**
 	 * @brief コンストラクタ
 	 *
 	 * カメラや画像スプライト、遷移演出の初期化を行う。
 	 */
-	explicit TitleScene();
+	explicit ResultScene();
 
 	/**
 	 * @brief 毎フレームの更新処理
@@ -52,6 +48,8 @@ public:
 	 */
 	void Init(ObjectManager* _pObjectMgr) override;
 
+	void Init(bool _isClear, ObjectManager* _pObjectMgr);
+
 	/**
 	 * @brief シーンの終了処理
 	 *
@@ -59,34 +57,9 @@ public:
 	 */
 	void Uninit() override;
 
-	/**
-	 * @brief ワールド変換行列を調整
-	 *
-	 * ワールド変換行列を調整
-	 */
-	void debugSRT();
+	// 結果に応じて画像を変更するために実装
+	void SetTexture(std::unique_ptr<CSprite> sprite);
 
-
-	/**
-	 * @brief shape select
-	 *
-	 * 3D Model Select
-	 */
-	void debug3DModelSelect();
-
-	/**
-	 * @brief Directional Light
-	*
-		* Directional Light
-	 */
-	void debugDirectionalLight();
-
-	/**
-	 * @brief Free Camera
-	 *
-	 * Free Camera
-	 */
-	void debugFreeCamera();
 
 private:
 	/**
@@ -100,7 +73,7 @@ private:
 	std::unique_ptr<C3DShape> m_shape;
 
 	// タイトル画像スプライト
-	std::unique_ptr<CSprite> m_TitleImage;
+	std::unique_ptr<CSprite> m_ResultImage;
 
 	/**
 	 * @brief SRT
@@ -116,4 +89,4 @@ private:
 	CShader			m_shader;							// シェーダ
 };
 
-REGISTER_CLASS(TitleScene)
+REGISTER_CLASS(ResultScene)

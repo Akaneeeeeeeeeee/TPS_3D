@@ -23,6 +23,7 @@ public:
 	virtual bool GetChangeScene(void) const { return ChangeScene; };
 
 	virtual const std::string& GetNextSceneName(void) { return m_NextSceneName; }
+	virtual void SetNextSceneName(const std::string& name) { m_NextSceneName = name; }
 
 protected:
 	IScene() {};

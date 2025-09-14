@@ -60,6 +60,11 @@ public:
                 v.Normal = Normal;
                 v.Diffuse = m_color;
 
+                // ===== UV座標 =====
+                float u = (float)x / (float)m_divX;  // 経度に沿って 0～1
+                float vcoord = (float)y / (float)m_divY;  // 緯度に沿って 0～1
+                v.TexCoord = Vector2(u, 1.0f - vcoord); // DirectX系はvを反転させるのが一般的
+
                 m_vertices.emplace_back(v);
             }
         }

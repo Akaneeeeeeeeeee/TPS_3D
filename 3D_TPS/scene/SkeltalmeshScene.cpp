@@ -164,6 +164,7 @@ void SkeltalmeshScene::debugSRT()
  */
 SkeltalmeshScene::SkeltalmeshScene()
 {
+	m_NextSceneName = "ResultScene";
 }
 
 /**
@@ -173,82 +174,12 @@ SkeltalmeshScene::SkeltalmeshScene()
  */
 void SkeltalmeshScene::Update(uint64_t deltatime)
 {
-	m_panimobject->Update(1.0f);
+	//m_panimobject->Update(1.0f);
 	//m_pObjectManager->Update(deltatime);
 
-	auto& input = CDirectInput::GetInstance();
-
-	// --- カメラ回転 ---
-	static float azimuth = m_camera.GetAzimuth();
-	static float elevation = m_camera.GetElevation();
-	if (input.GetMouseRButtonCheck()) {
-		// マウスの相対移動量を取得
-		//LONG dx = input.GetMouseStateData().lX;
-		//LONG dy = input.GetMouseStateData().lY;
-
-		//float sensitivity = 0.005f; // マウス感度
-
-		//// アジマス(水平方向)と仰角(垂直方向)を更新
-		//float newAzimuth = m_camera.GetAzimuth() + dx * sensitivity;
-		//float newElevation = m_camera.GetElevation() - dy * sensitivity;
-
-		//// 上下の制限を設定
-		//const float limit = (PI / 2.0f) - 0.01f;
-		//if (newElevation > limit) newElevation = limit;
-		//if (newElevation < -limit) newElevation = -limit;
-
-		//m_camera.SetAzimuth(newAzimuth);
-		//m_camera.SetElevation(newElevation);
-		LONG dx = input.GetMouseStateData().lX;
-		LONG dy = input.GetMouseStateData().lY;
-
-		float sensitivity = 0.005f;
-
-		azimuth += dx * sensitivity;
-		elevation -= dy * sensitivity;
-
-		const float limit = (PI / 2.0f) - 0.01f;
-		if (elevation > limit) elevation = limit;
-		if (elevation < -limit) elevation = -limit;
-	}
-
-	// --- 移動入力 ---
-	Vector3 move(0, 0, 0);
-
-	if (input.CheckKeyBuffer(DIK_W)) {
-		// キャラの forward 方向へ
-		move.z += 1.0f;
-	}
-	if (input.CheckKeyBuffer(DIK_S)) {
-		move.z -= 1.0f;
-	}
-	if (input.CheckKeyBuffer(DIK_A)) {
-		move.x -= 1.0f;
-	}
-	if (input.CheckKeyBuffer(DIK_D)) {
-		move.x += 1.0f;
-	}
-	// move に入力があるなら、キャラの向きを更新
-	if (move.LengthSquared() > 0.0f) {
-		move.Normalize();
-
-		// 進行方向の角度を求める (XZ 平面)
-		float targetYaw = std::atan2(-move.x, -move.z);
-
-		// キャラの向きを更新（スナップ式）
-		rotate.y = targetYaw;
-
-		// 回転行列を作って move をワールド方向へ変換
-		Matrix4x4 rotY = Matrix4x4::CreateRotationY(rotate.y);
-		Vector3 forward = Vector3::TransformNormal(Vector3(0, 0, -1), rotY);
-
-		pos += forward * moveSpeed;
-	}
-	else {
-		// 入力がない場合はアニメーションをアイドル状態に変更
-		//aiAnimation* animation = m_panimdata->GetAnimation("Idle", 0);
-		//m_pmesh->SetCurentAnimation(animation);
-
+	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
+	{
+		this->ChangeScene = true;
 	}
 
 	Matrix4x4 mtxscale = Matrix4x4::CreateScale(scale);
@@ -269,10 +200,14 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
 
 	//m_camera.SetLookat(pos);  // キャラ位置を注視
 	//m_camera.CalcCameraPositionTranslate(Vector3(pos.x, pos.y + 200, pos.z - 750)); // キャラを中心に回転
-	m_camera.SetAzimuth(azimuth);
-	m_camera.SetElevation(elevation);
-	m_camera.SetLookat(pos);
-	m_camera.CalcCameraPositionTranslate(pos);
+	
+	
+	//m_camera.SetAzimuth(azimuth);
+	//m_camera.SetElevation(elevation);
+	//m_camera.SetLookat(pos);
+	//m_camera.CalcCameraPositionTranslate(pos);
+
+	m_pCharacter->Update(deltatime);
 }
 
 /**
@@ -282,7 +217,7 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
  */
 void SkeltalmeshScene::Draw(uint64_t deltatime)
 {
-	m_camera.Draw();
+	//m_camera.Draw();
 
 	// 3軸カラー
 	Color axiscol[3] = {
@@ -328,10 +263,11 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(2, &transposedProj);
 
 	m_shader.SetGPU();
-	m_panimobject->Draw();
+	//m_panimobject->Draw();
 	m_pTerrain->Draw();
 	m_pSkydome->Draw();
 	//m_pObjectManager->Draw(deltatime);
+	m_pCharacter->Draw(deltatime);
 	
 
 	// 目標方向の姿勢を作る
@@ -358,47 +294,42 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
 
 	// メッシュを生成
-	m_pmesh = std::make_unique<CAnimationMesh>();
-	m_pmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
+	//m_pmesh = std::make_unique<CAnimationMesh>();
+	//m_pmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
 
 	// アニメーションオブジェクトを生成
-	m_panimobject = std::make_unique<CAnimationObject>();
-	m_panimobject->Init();	
+	//m_panimobject = std::make_unique<CAnimationObject>();
+	//m_panimobject->Init();	
 
 	// アニメーションメッシュをセット
-	m_panimobject->SetAnimationMesh(m_pmesh.get());
+	//m_panimobject->SetAnimationMesh(m_pmesh.get());
 
 	// アニメーションデータ読み込み
-	m_panimdata = std::make_unique<CAnimationData>();
-	m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx","Run");
+	//m_panimdata = std::make_unique<CAnimationData>();
+	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx","Run");
 	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Idle.fbx", "Idle");
 
+	m_pCharacter = std::make_unique<Player>();
+	m_pCharacter->Init();
+	m_pCharacter->SetCamera(&m_camera);
+
 	// 現在のアニメーションをセット
-	aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
-	m_pmesh->SetCurentAnimation(animation);
+	//aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
+	//m_pmesh->SetCurentAnimation(animation);
 
 	// シェーダーの初期化
-	m_shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	//m_shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
 
 	//m_pObjectManager->CreateObject<Character>("testcharacter");
 
 
 	// メッシュを生成
-	m_arrowmesh = std::make_unique<CStaticMesh>();
-	m_arrowmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
-	m_arrowmeshrenderer = std::make_unique<CStaticMeshRenderer>();
-	m_arrowmeshrenderer->Init(*m_arrowmesh);
 	m_pTerrain = std::make_unique<Terrain>();
-	m_pTerrain->Init(1, 1, 5000, 5000);
+	m_pTerrain->Init(50, 50, 5000, 5000);
 	m_pTerrain->SetImage("assets/texture/Hole1.png");
 	m_pSkydome = std::make_unique<Skydome>();
 	m_pSkydome->Init();
 	m_pSkydome->SetTexture("assets/texture/haikei.jpg");
-
-	// シェーダーの初期化
-	m_arrowshader.Create(
-		"shader/unlitTextureVS.hlsl",			// 頂点シェーダー
-		"shader/unlitTexturePS.hlsl");			// ピクセルシェーダー
 
 
 	// 地形生成
@@ -427,7 +358,7 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 		debugFreeCamera();
 		});
 
-	m_camera.SetLookat(pos);
+	//m_camera.SetLookat(pos);
 }
 
 /**

@@ -81,12 +81,3 @@ const Vector3& GameObject::GetScale(void) const {
 void GameObject::SetScale(const Vector3& _scale) {
 	this->m_Transform.SetScale(_scale);
 }
-
-// ワールド行列を取得
-DirectX::SimpleMath::Matrix GameObject::GetWorldMatrix(const DirectX::SimpleMath::Matrix& _parentmatrix) {
-	return this->m_Transform.GetWorldMatrix(_parentmatrix);
-}
-
-
-//今のところ記述内容は無し
-

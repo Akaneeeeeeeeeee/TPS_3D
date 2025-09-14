@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "system/noncopyable.h"
 #include "system/SceneClassFactory.h"
+#include "system/Framework/SceneManager/Transition/SceneTransition.h"
+#include <future>
 
 class IScene;
 class ObjectManager;
@@ -37,12 +39,24 @@ public:
 	};
 	~SceneManager() {};
 
+	template <typename T>
+	void AddScene(const std::string& name)
+	{
+		static_assert(std::is_base_of_v<IScene, T>, "T must be derived from IScene");
+		if (m_pScenes.find(name) == m_pScenes.end()) {
+			m_pScenes[name] = std::make_unique<T>();
+			m_pScenes[name]->Init(m_pObjectManager);
+		}
+	}
+
 	void Init(ObjectManager* _pObjectMgr);		//! 初期化
+	//void Init(SceneClassFactory* _factory, ObjectManager* _pObjectMgr);		//! 初期化
 	void Update(uint64_t deltatime);			//! 更新
 	void Draw(uint64_t deltatime);				//! 描画
 	void Uninit(void);							//! 終了
 
-	void SetCurrentScene(const std::string& scenename);
+	void SetCurrentScene(const std::string& name, std::unique_ptr<SceneTransition> transition = nullptr);
+	void ChangeScene(const std::string& nextscenename);
 
 	void SetSceneFactory(SceneClassFactory* factory);
 	void SetObjectManager(ObjectManager* _pObjectManager);	//! オブジェクト管理クラスへのポインタをセット
@@ -55,6 +69,12 @@ private:
 	std::string m_CurrentSceneName;				//! 現在のシーン名
 	ObjectManager* m_pObjectManager;			//! オブジェクト管理クラスへのポインタ
 	//SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
-	bool IsQuit = false;
+	std::unique_ptr<SceneTransition> m_Transition;	//! シーン遷移演出オブジェクト
+	bool IsSceneChanging = false;	//! シーン遷移中フラグ
+	bool IsQuit = false;			//! ゲーム終了フラグ
+
+	// 非同期シーンロード用
+	std::future<void> m_LoadingTask;
+	std::atomic<bool> m_LoadingDone{ false };
 };
 

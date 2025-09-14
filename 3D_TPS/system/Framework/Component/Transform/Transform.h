@@ -2,8 +2,6 @@
 #include "system/Framework/Application/Entry/main.h"
 #include "system/commontypes.h"
 
-class GameObject; // 前方宣言
-
 /// <summary>
 /// Transformクラス：全てのオブジェクトが持っている情報（ここでは数値のみを扱う）
 /// ・座標
@@ -11,20 +9,19 @@ class GameObject; // 前方宣言
 /// ・大きさ
 /// の情報を持つ
 /// 
-/// 各数値の行列変換は毎フレーム行う→更新は不要
-/// ワールド行列への変換はTransform内で行う
+/// 回転情報はQuaternionで管理しておき、必要に応じて回転角からQuaternionに変換する
 /// </summary>
 class Transform
 {
 public:
-	Transform() :Position(0.0f, 0.0f, 0.0f), Rotation(0.0f, 0.0f, 0.0f, 0.0f), Scale(75.0f, 75.0f, 0.0f) {};
+	Transform() : Position(0, 0, 0), Rotation(0, 0, 0, 1), Scale(1, 1, 1) {};
 	Transform(const Vector3& _pos, const Quaternion& _rot, const Vector3& _scale) : Position(_pos), Rotation(_rot), Scale(_scale) {};
 	~Transform() {};
 
 	// 行列変換
 	DirectX::SimpleMath::Matrix GetLocalMatrix(void) const;
 
-	DirectX::SimpleMath::Matrix GetWorldMatrix(const DirectX::SimpleMath::Matrix& _parentmatrix);
+	DirectX::SimpleMath::Matrix GetWorldMatrix(void) const;
 
 	//-----------------------------------------
 	//				ゲッターセッター
@@ -38,17 +35,15 @@ public:
 	const Vector3& GetScale() const { return Scale; }
 	void SetScale(const Vector3& scale) { Scale = scale; }
 
-	void SetParent(GameObject* _parent);
+	void SetParent(Transform* _parent);
 
-	void SetChild(GameObject* _child);
+	void SetChild(Transform* _child);
 
 private:
-	Vector3		Position;	// 座標
-	Quaternion	Rotation;	// 回転
-	Vector3		Scale;		// 大きさ	
+	Vector3		Position{ 0,0,0 };		// ローカル座標
+	Quaternion	Rotation{ 0,0,0,1 };	// ローカル回転
+	Vector3		Scale{ 1,1,1 };			// ローカル大きさ
 	
-	GameObject* m_pParent = nullptr;		// 親オブジェクトのポインタ
-	std::vector<GameObject*> m_pChildren;	// 子オブジェクトのコンテナ
+	Transform* m_pParent = nullptr;		// 親オブジェクトのポインタ
+	std::vector<Transform*> m_pChildren;	// 子オブジェクトのコンテナ
 };
-
-

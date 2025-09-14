@@ -73,6 +73,15 @@
     <Filter Include="ソース ファイル\system\Skydome">
       <UniqueIdentifier>{24710b1b-d93d-4035-9674-99e4f82c85d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\Player">
+      <UniqueIdentifier>{29d175bf-93ae-4d27-a397-4ee5ac09e729}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\SceneManager\Transition">
+      <UniqueIdentifier>{46fac984-ae10-4175-bb81-65e36411503e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\Enemy">
+      <UniqueIdentifier>{cf270e59-ac75-4ddb-818c-607c0ee97999}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -288,6 +297,21 @@
     <ClInclude Include="system\Skydome\Skydome.h">
       <Filter>ソース ファイル\system\Skydome</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Player\Player.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SceneManager\Transition\FadeTransition.h">
+      <Filter>ソース ファイル\MyFramework\SceneManager\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
+      <Filter>ソース ファイル\MyFramework\SceneManager\Transition</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Enemy\Enemy.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="scene\ResultScene.h">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -448,6 +472,18 @@
     </ClCompile>
     <ClCompile Include="system\Skydome\Skydome.cpp">
       <Filter>ソース ファイル\system\Skydome</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Player\Player.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\SceneManager\Transition\FadeTransition.cpp">
+      <Filter>ソース ファイル\MyFramework\SceneManager\Transition</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\ResultScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,7 @@
 #include "system/CPlaneMesh.h"
 #include "system/Terrain.h"
 #include "system/Skydome/Skydome.h"
+#include "system/Framework/GameObject/Player/Player.h"
 
 /**
  * @brief スケルタルメッシュを表示する
@@ -91,6 +92,8 @@ public:
 	 */
 	void debugFreeCamera();
 
+	bool GetIsClear() const { return IsClear; }
+
 private:
 	/**
 	 * @brief このシーンで使用するカメラ
@@ -125,10 +128,13 @@ private:
 	std::unique_ptr<CAnimationMesh>			m_pmesh;		// メッシュデータ
 	std::unique_ptr<CAnimationObject>		m_panimobject;	// アニメーションオブジェクト
 	std::unique_ptr<CAnimationData>			m_panimdata;	// アニメーションデータ
+	std::unique_ptr<Player> m_pCharacter;
 	Vector3 scale = Vector3(1, 1, 1);
-	Vector3 rotate = Vector3(0, -DirectX::XM_PI, 0); // (ラジアン);
+	Vector3 rotate = Vector3(0, -DirectX::XM_PI, 0); // (ラジアン)
 	Vector3 pos = Vector3(0, 0, 0);
 	float moveSpeed = 5.0f;
+
+	bool IsClear = false; // クリアしたかどうか
 
 
 	std::unique_ptr<Terrain>				m_pTerrain;		// 地形メッシュ
