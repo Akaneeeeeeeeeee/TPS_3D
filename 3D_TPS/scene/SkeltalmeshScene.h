@@ -14,6 +14,7 @@
 #include "system/Terrain.h"
 #include "system/Skydome/Skydome.h"
 #include "system/Framework/GameObject/Player/Player.h"
+#include "system/Framework/GameObject/Enemy/Enemy.h"
 
 /**
  * @brief スケルタルメッシュを表示する
@@ -128,7 +129,11 @@ private:
 	std::unique_ptr<CAnimationMesh>			m_pmesh;		// メッシュデータ
 	std::unique_ptr<CAnimationObject>		m_panimobject;	// アニメーションオブジェクト
 	std::unique_ptr<CAnimationData>			m_panimdata;	// アニメーションデータ
+
+	// キャラクター
 	std::unique_ptr<Player> m_pCharacter;
+	std::array<std::unique_ptr<Enemy>, 3> m_pEnemies;
+	
 	Vector3 scale = Vector3(1, 1, 1);
 	Vector3 rotate = Vector3(0, -DirectX::XM_PI, 0); // (ラジアン)
 	Vector3 pos = Vector3(0, 0, 0);
@@ -136,15 +141,14 @@ private:
 
 	bool IsClear = false; // クリアしたかどうか
 
-
 	std::unique_ptr<Terrain>				m_pTerrain;		// 地形メッシュ
 	std::unique_ptr<Skydome>				m_pSkydome;		// スカイドーム
 
 	/**
 	 * @brief 光の方向を表すための矢印メッシュ
 	 */
-	std::unique_ptr<CStaticMeshRenderer>	m_arrowmeshrenderer;
-	std::unique_ptr<CStaticMesh>			m_arrowmesh;	// メッシュデータ
+	//std::unique_ptr<CStaticMeshRenderer>	m_arrowmeshrenderer;
+	//std::unique_ptr<CStaticMesh>			m_arrowmesh;	// メッシュデータ
 
 	// 描画の為の情報（見た目に関わる部分）
 	CShader			m_shader;							// シェーダ

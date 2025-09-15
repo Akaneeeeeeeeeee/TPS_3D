@@ -19,6 +19,8 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 	//! タイトルシーンを生成してコンテナに追加
 	//this->m_CurrentSceneName = "SkeltalmeshScene";
 	this->m_CurrentSceneName = "TitleScene";
+	// 現在のシーンを初期化
+	m_pScenes[m_CurrentSceneName]->Init(this->m_pObjectManager);
 	this->SetCurrentScene(m_CurrentSceneName);
 }
 
@@ -131,27 +133,30 @@ void SceneManager::ChangeScene(const std::string& nextscenename)
 	if (m_pScenes.count(nextscenename))
 	{
 		// 現在のシーンがゲームシーンである場合、結果が必要なためキャストする
+		bool isClear = false;
 		if (m_CurrentSceneName == "SkeltalmeshScene")
 		{
 			SkeltalmeshScene* gameScene = dynamic_cast<SkeltalmeshScene*>(m_pScenes[m_CurrentSceneName].get());
-			bool isClear = gameScene->GetIsClear();
-			// クリアしている場合は
-			if (isClear)
-			{
-				// 
-			}
+			isClear = gameScene->GetIsClear();
 		}
-		else
-		{
-			// 現在のシーンを終了
-			if (!m_CurrentSceneName.empty())
-			{
-				m_pScenes[m_CurrentSceneName]->Uninit();
-				// 現在のシーン名を変更
-				m_CurrentSceneName = nextscenename;
-				m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
 
-			}
+		// 現在のシーンを終了
+		if (!m_CurrentSceneName.empty())
+		{
+			m_pScenes[m_CurrentSceneName]->Uninit();
+			// 現在のシーン名を変更
+			m_CurrentSceneName = nextscenename;
+			m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
+		}
+
+		// ゲームをクリアしていた場合
+		if (isClear)
+		{
+			// リザルトシーンの画像を変更
+			ResultScene* scene = reinterpret_cast<ResultScene*>(m_pScenes["ResultScene"].get());
+			scene->SetTexture(std::make_unique<CSprite>
+				(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameClear.jpg")
+			);
 		}
 	}
 }

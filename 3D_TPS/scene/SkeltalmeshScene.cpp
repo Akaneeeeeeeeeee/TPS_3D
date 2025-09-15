@@ -174,7 +174,6 @@ SkeltalmeshScene::SkeltalmeshScene()
  */
 void SkeltalmeshScene::Update(uint64_t deltatime)
 {
-	//m_panimobject->Update(1.0f);
 	//m_pObjectManager->Update(deltatime);
 
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
@@ -193,21 +192,11 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
 	// 描画時に使用する行列にまとめる
 	m_mtxWorld = mtxscale * mtxrotx * mtxroty * mtxrotz * mtxtrans;
 
-	// キャラを追従するようにカメラ座標調整
-	//m_camera.SetLookat(pos);
-	//m_camera.SetAzimuth(rotate.y);
-	//m_camera.SetPosition(Vector3(pos.x, pos.y + 200, pos.z - 750));
-
-	//m_camera.SetLookat(pos);  // キャラ位置を注視
-	//m_camera.CalcCameraPositionTranslate(Vector3(pos.x, pos.y + 200, pos.z - 750)); // キャラを中心に回転
-	
-	
-	//m_camera.SetAzimuth(azimuth);
-	//m_camera.SetElevation(elevation);
-	//m_camera.SetLookat(pos);
-	//m_camera.CalcCameraPositionTranslate(pos);
-
 	m_pCharacter->Update(deltatime);
+	for(size_t i = 0; i < m_pEnemies.size(); i++)
+	{
+		m_pEnemies[i]->Update(deltatime);
+	}
 }
 
 /**
@@ -263,12 +252,15 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(2, &transposedProj);
 
 	m_shader.SetGPU();
-	//m_panimobject->Draw();
 	m_pTerrain->Draw();
 	m_pSkydome->Draw();
 	//m_pObjectManager->Draw(deltatime);
 	m_pCharacter->Draw(deltatime);
-	
+
+	for(size_t i = 0; i < m_pEnemies.size(); i++)
+	{
+		m_pEnemies[i]->Draw(deltatime);
+	}
 
 	// 目標方向の姿勢を作る
 	AimOrientation aimorien(dir);
@@ -293,35 +285,19 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
 	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
 
-	// メッシュを生成
-	//m_pmesh = std::make_unique<CAnimationMesh>();
-	//m_pmesh->Load(g_loadmodel[0].filename, g_loadmodel[0].texdirectoryname);
-
-	// アニメーションオブジェクトを生成
-	//m_panimobject = std::make_unique<CAnimationObject>();
-	//m_panimobject->Init();	
-
-	// アニメーションメッシュをセット
-	//m_panimobject->SetAnimationMesh(m_pmesh.get());
-
-	// アニメーションデータ読み込み
-	//m_panimdata = std::make_unique<CAnimationData>();
-	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Run.fbx","Run");
-	//m_panimdata->LoadAnimation("assets/model/akai/Akai_Idle.fbx", "Idle");
-
+	// プレイヤー生成
 	m_pCharacter = std::make_unique<Player>();
 	m_pCharacter->Init();
 	m_pCharacter->SetCamera(&m_camera);
 
-	// 現在のアニメーションをセット
-	//aiAnimation* animation = m_panimdata->GetAnimation("Run", 0);
-	//m_pmesh->SetCurentAnimation(animation);
-
-	// シェーダーの初期化
-	//m_shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	// 敵生成
+	for (size_t i = 0; i < m_pEnemies.size(); i++)
+	{
+		m_pEnemies[i] = std::make_unique<Enemy>();
+		m_pEnemies[i]->Init();
+	}
 
 	//m_pObjectManager->CreateObject<Character>("testcharacter");
-
 
 	// メッシュを生成
 	m_pTerrain = std::make_unique<Terrain>();
@@ -330,7 +306,6 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	m_pSkydome = std::make_unique<Skydome>();
 	m_pSkydome->Init();
 	m_pSkydome->SetTexture("assets/texture/haikei.jpg");
-
 
 	// 地形生成
 	//m_pplanemesh = std::make_unique<CPlaneMesh>();
@@ -357,8 +332,6 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	DebugUI::RedistDebugFunction([this]() {
 		debugFreeCamera();
 		});
-
-	//m_camera.SetLookat(pos);
 }
 
 /**
@@ -366,4 +339,5 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
  */
 void SkeltalmeshScene::Uninit()
 {
+	this->ChangeScene = false;
 }

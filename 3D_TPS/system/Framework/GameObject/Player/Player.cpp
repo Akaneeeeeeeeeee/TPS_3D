@@ -12,7 +12,24 @@ Player::~Player()
 
 void Player::Init(void)
 {
-	Character::Init();
+	// アニメーションオブジェクトを生成
+	this->m_pAnimationObject = std::make_unique<CAnimationObject>();
+	this->m_pAnimationObject->Init();
+
+	// メッシュを取得
+	this->m_pAnimationMesh = AssetManager::GetInstance().GetAnimationMesh("Akai");
+	// シェーダーの初期化
+	this->m_Shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	// アニメーションデータ取得
+	this->m_pAnimationData = AssetManager::GetInstance().GetAnimationData("Akai_Idle");
+	// 現在のアニメーションをセット
+	aiAnimation* animation = m_pAnimationData->GetAnimation("Akai_Idle", 0);
+	this->m_pCurrentAnimation = animation;
+	m_pAnimationMesh->SetCurentAnimation(animation);
+	// アニメーションメッシュをセット
+	this->m_pAnimationObject->SetAnimationMesh(m_pAnimationMesh);
+
+	// ステータスを設定
 	this->m_MoveSpeed = 10.0f;
 	this->m_AnimationSpeed = 1.5f;
 }
@@ -33,7 +50,7 @@ void Player::Update(uint64_t deltatime)
 	aiAnimation* animdata;
 
 	// 移動ベクトルが0でなければ正規化して移動
-    if (move.LengthSquared() > 0.0f) {
+    if (move.Length() > 0.0f) {
 		// 移動ベクトルを正規化
         move.Normalize();
 		// 入力に基づいてキャラクターの向きを更新
@@ -116,7 +133,14 @@ void Player::Update(uint64_t deltatime)
 void Player::Draw(uint64_t deltatime)
 {
 	this->m_pCamera->Draw();
-	Character::Draw(deltatime);
+	// シェーダーをセット
+	m_Shader.SetGPU();
+
+	// ワールド行列をセット
+	Matrix4x4 worldMatrix = this->GetWorldMatrix();
+	Renderer::SetWorldMatrix(&worldMatrix);
+
+	m_pAnimationObject->Draw();
 }
 
 void Player::Uninit(void)

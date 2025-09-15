@@ -5,24 +5,6 @@ void Character::Init(void)
 {
 	// キャラクターの初期化処理
 	// 例: モデルの読み込み、アニメーションの設定など
-	
-	
-	// アニメーションオブジェクトを生成
-	this->m_pAnimationObject = std::make_unique<CAnimationObject>();
-	this->m_pAnimationObject->Init();
-
-	// メッシュを取得
-	this->m_pAnimationMesh = AssetManager::GetInstance().GetAnimationMesh("Akai");
-	// シェーダーの初期化
-	m_Shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
-	// アニメーションデータ取得
-	this->m_pAnimationData = AssetManager::GetInstance().GetAnimationData("Akai_Idle");
-	// 現在のアニメーションをセット
-	aiAnimation* animation = m_pAnimationData->GetAnimation("Akai_Idle", 0);
-	this->m_pCurrentAnimation = animation;
-	m_pAnimationMesh->SetCurentAnimation(animation);
-	// アニメーションメッシュをセット
-	this->m_pAnimationObject->SetAnimationMesh(m_pAnimationMesh);
 }
 
 void Character::Update(uint64_t deltatime)

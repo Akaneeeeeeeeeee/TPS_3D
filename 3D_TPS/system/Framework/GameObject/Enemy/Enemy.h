@@ -19,5 +19,11 @@ private:
 	float m_ViewAngle = 60.0f;
 	// Å‘å‹–ì‹——£
 	float m_ViewDistance = 20.0f;
+
+	// ˆÚ“®—p•Ï”
+	Vector3 m_StartPos{};
+	Vector3 m_EndPos{};
+	Vector3 m_TargetPos{};
+	bool m_GoingToEnd = true; // true: Start¨End, false: End¨Start
 };
 

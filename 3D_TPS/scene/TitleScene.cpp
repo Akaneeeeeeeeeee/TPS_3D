@@ -224,4 +224,5 @@ void TitleScene::Init(ObjectManager* _pObjectMgr)
  */
 void TitleScene::Uninit()
 {
+	this->ChangeScene = false;
 }

@@ -69,26 +69,7 @@ void ResultScene::Init(ObjectManager* _pObjectMgr)
 	m_camera.Init();
 
 	// リザルト画像の生成
-	//m_ResultImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/HideAndSeek.jpg");
-}
-
-void ResultScene::Init(bool _isClear, ObjectManager* _pObjectMgr)
-{
-	// オブジェクト管理クラスのポインタをセット
-	this->m_pObjectManager = _pObjectMgr;
-
-	// カメラ(3D)の初期化
-	m_camera.Init();
-
-	// リザルト画像の生成
-	if(_isClear)
-	{
-		m_ResultImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameClear.jpg");
-	}
-	else
-	{
-		m_ResultImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameOver.jpg");
-	}
+	m_ResultImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameOver.jpg");
 }
 
 /**
@@ -96,6 +77,7 @@ void ResultScene::Init(bool _isClear, ObjectManager* _pObjectMgr)
  */
 void ResultScene::Uninit()
 {
+	this->ChangeScene = false;
 }
 
 void ResultScene::SetTexture(std::unique_ptr<CSprite> _sprite)

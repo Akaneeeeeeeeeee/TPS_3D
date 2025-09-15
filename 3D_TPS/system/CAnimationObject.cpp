@@ -13,7 +13,7 @@ void CAnimationObject::Update(float dt)
 	int frame = static_cast<int>(m_CurrentFrame);
 	// アニメーションメッシュ更新
 	m_AnimMesh->Update(m_BoneCombMatrix,frame);
-	m_CurrentFrame+=dt;
+	m_CurrentFrame += dt;
 }
 
 void CAnimationObject::Draw()

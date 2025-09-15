@@ -5,6 +5,9 @@
 /// <summary>
 /// ゲーム内のプレイヤーキャラクターを表すクラスです。
 /// Character クラスを継承し、初期化、更新、描画、終了処理のメソッドをオーバーライドします。
+/// 
+/// TODO:シーン終了時にカメラの座標が原点付近になるバグを修正
+/// 
 /// </summary>
 class Player final : public Character
 {

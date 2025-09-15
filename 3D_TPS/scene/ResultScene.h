@@ -48,8 +48,6 @@ public:
 	 */
 	void Init(ObjectManager* _pObjectMgr) override;
 
-	void Init(bool _isClear, ObjectManager* _pObjectMgr);
-
 	/**
 	 * @brief ƒV[ƒ“‚ÌI—¹ˆ—
 	 *

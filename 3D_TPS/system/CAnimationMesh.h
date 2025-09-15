@@ -13,7 +13,7 @@ class CAnimationMesh : public CStaticMesh
 	// ボーン辞書
 	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DX化
 
-	// カレントのアニメーションデータ
+	// 再生中のアニメーションデータ
 	aiAnimation* m_CurrentAnimation{};
 
 	// assimp ノード名ツリー（親子関係がわかる）
