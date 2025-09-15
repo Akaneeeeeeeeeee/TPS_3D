@@ -26,7 +26,7 @@ void Application::Run(void)
 		uint64_t deltatime = 0;
 
 		// フレームの待ち時間を計算する
-		static FPS fpsrate(65);
+		static FPS fpsrate(80);
 
 		// 前回実行されてからの経過時間を計算する
 		deltatime = fpsrate.CalcDelta();

@@ -82,6 +82,13 @@ public:
 	 */
 	void Draw(Matrix4x4 mtx);
 
+	/**
+	 * @brief ビルボード用の描画関数
+	 *
+	 * @param Matrix4x4 行列
+	 */
+	void Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj);
+
 
 	/// @brief リソースの解放（明示的に呼び出すことを推奨）
 	void Dispose();

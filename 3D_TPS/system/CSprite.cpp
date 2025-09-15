@@ -171,6 +171,28 @@ void CSprite::Draw(Matrix4x4 mtx)
 }
 
 /**
+ * @brief スプライトを描画
+ *
+ * @param Matrix4x4 行列
+ */
+void CSprite::Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj)
+{
+	Renderer::SetWorldMatrix(&world);
+	ID3D11DeviceContext* devicecontext = Renderer::GetDeviceContext();
+	devicecontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	m_Shader.SetGPU();
+	m_VertexBuffer.SetGPU();
+	m_IndexBuffer.SetGPU();
+	m_Material.SetGPU();
+	m_Texture.SetGPU();
+	devicecontext->DrawIndexed(
+		4, // インデックス数
+		0, // 開始インデックス
+		0  // 頂点バッファのオフセット
+	);
+}
+
+/**
  * @brief 使用しているリソースを解放する
  *
  * @note 現在は未実装ですが、明示的な解放処理を追加する際に使用します。

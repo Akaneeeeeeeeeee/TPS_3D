@@ -36,10 +36,10 @@ void Enemy::Init(void)
 	static std::mt19937 mt(rd());
 
 	// マップ内のランダム開始位置範囲
-	float mapMinX = -50.0f;
-	float mapMaxX = 500.0f;
-	float mapMinZ = -50.0f;
-	float mapMaxZ = 500.0f;
+	float mapMinX = -2500.0f;
+	float mapMaxX = 2500.0f;
+	float mapMinZ = -2500.0f;
+	float mapMaxZ = 2500.0f;
 	std::uniform_real_distribution<float> distX(mapMinX, mapMaxX);
 	std::uniform_real_distribution<float> distZ(mapMinZ, mapMaxZ);
 
@@ -63,7 +63,6 @@ void Enemy::Update(uint64_t deltatime)
 	
 	// 目標地点同士を往復する
 	Vector3 pos = m_Transform.GetPosition();
-	std::cout << "Enemy Pos: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 	Vector3 dir = m_TargetPos - pos;
 	
 	// 移動ベクトルが0でなければ正規化して移動
@@ -126,4 +125,29 @@ void Enemy::Draw(uint64_t deltatime)
 void Enemy::Uninit(void)
 {
 	Character::Uninit();
+}
+
+bool Enemy::CanSeePlayer(const Vector3& playerPos) const
+{
+	Vector3 enemyPos = m_Transform.GetPosition();
+
+	// 前方向ベクトル
+	Vector3 forward = Vector3::TransformNormal(Vector3(0, 0, -1),
+		Matrix4x4::CreateFromQuaternion(m_Transform.GetRotation()));
+
+	// プレイヤーへのベクトル（高さを無視）
+	Vector3 toPlayer = playerPos - enemyPos;
+	toPlayer.y = 0; // 水平面だけで判定
+	float distance = toPlayer.Length();
+	if (distance > m_ViewDistance) return false;
+
+	toPlayer.Normalize();
+	forward.y = 0;
+	forward.Normalize();
+
+	// 内積で角度判定
+	float dot = std::clamp(forward.Dot(toPlayer), -1.0f, 1.0f);
+	float angle = std::acos(dot) * (180.0f / 3.14159f);
+
+	return angle <= (m_ViewAngle * 0.5f);
 }

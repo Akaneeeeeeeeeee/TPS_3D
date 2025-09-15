@@ -15,6 +15,7 @@
 #include "system/Skydome/Skydome.h"
 #include "system/Framework/GameObject/Player/Player.h"
 #include "system/Framework/GameObject/Enemy/Enemy.h"
+#include "system/Billboard/Billboard.h"
 
 /**
  * @brief スケルタルメッシュを表示する
@@ -142,7 +143,9 @@ private:
 	bool IsClear = false; // クリアしたかどうか
 
 	std::unique_ptr<Terrain>				m_pTerrain;		// 地形メッシュ
-	std::unique_ptr<Skydome>				m_pSkydome;		// スカイドーム
+	std::unique_ptr<Skydome>				m_pSkydome;		// スカイドーム(カリングおかしい)
+	std::unique_ptr<Billboard>				m_pBillboard;	// ビルボード(カリングおかしい)
+	//std::unique_ptr<CPlaneMesh>			m_pplanemesh;	// 平面メッシュ
 
 	/**
 	 * @brief 光の方向を表すための矢印メッシュ

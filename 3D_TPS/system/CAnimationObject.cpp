@@ -28,3 +28,35 @@ void CAnimationObject::Draw()
 	m_AnimMesh->Draw();
 }
 
+
+//void CAnimationObject::SetAnimation(aiAnimation* anim) {
+//    m_CurrentAnimation = anim;
+//    m_CurrentTime = 0.0f;
+//}
+//
+//void CAnimationObject::Update(float dt) {
+//    if (!m_AnimMesh || !m_CurrentAnimation) return;
+//
+//    m_CurrentTime += dt * m_PlaySpeed;
+//
+//    float duration = static_cast<float>(m_CurrentAnimation->mDuration);
+//    float ticksPerSecond = static_cast<float>(
+//        m_CurrentAnimation->mTicksPerSecond != 0 ?
+//        m_CurrentAnimation->mTicksPerSecond : 25.0f);
+//
+//    float timeInTicks = fmod(m_CurrentTime * ticksPerSecond, duration);
+//
+//    // ƒƒbƒVƒ…‚ÉŒvŽZ‚µ‚Ä‚à‚ç‚¤
+//    m_AnimMesh->UpdateBoneMatrix(
+//        m_AnimMesh->GetRootNode(),
+//        DirectX::SimpleMath::Matrix::Identity,
+//        m_BoneCombMatrix,
+//        timeInTicks,
+//        m_CurrentAnimation);
+//}
+
+//void CAnimationObject::Draw() {
+//    if (m_AnimMesh) {
+//        m_AnimMesh->Draw();
+//    }
+//}

@@ -20,7 +20,9 @@ public:
 	void Dispose();
 	void Update();
 	void Draw();
+	Vector3 GetPosition() const { return m_position; }
 	void SetPosition(const Vector3& position) { m_position = position; }
+	Vector3 GetLookat() const { return m_lookat; }
 	void SetLookat(const Vector3& position) { m_lookat = position; }
 
 	Matrix4x4 GetViewMatrix() const { return m_viewmtx; }

@@ -82,6 +82,12 @@
     <Filter Include="ソース ファイル\MyFramework\GameObject\Enemy">
       <UniqueIdentifier>{cf270e59-ac75-4ddb-818c-607c0ee97999}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\system\Animation">
+      <UniqueIdentifier>{2bfaacd4-a85c-4cec-9f84-409e57fd4d8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\Billboard">
+      <UniqueIdentifier>{dc72e1b8-4404-4bed-a060-22d10924a58b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -100,15 +106,6 @@
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
     <ClInclude Include="system\camera.h">
-      <Filter>ソース ファイル\system</Filter>
-    </ClInclude>
-    <ClInclude Include="system\CAnimationData.h">
-      <Filter>ソース ファイル\system</Filter>
-    </ClInclude>
-    <ClInclude Include="system\CAnimationMesh.h">
-      <Filter>ソース ファイル\system</Filter>
-    </ClInclude>
-    <ClInclude Include="system\CAnimationObject.h">
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
     <ClInclude Include="system\CapsuleDrawer.h">
@@ -312,6 +309,18 @@
     <ClInclude Include="scene\ResultScene.h">
       <Filter>ソース ファイル\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="system\CAnimationData.h">
+      <Filter>ソース ファイル\system\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="system\CAnimationMesh.h">
+      <Filter>ソース ファイル\system\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="system\CAnimationObject.h">
+      <Filter>ソース ファイル\system\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Billboard\Billboard.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Billboard</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -327,15 +336,6 @@
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
     <ClCompile Include="system\camera.cpp">
-      <Filter>ソース ファイル\system</Filter>
-    </ClCompile>
-    <ClCompile Include="system\CAnimationData.cpp">
-      <Filter>ソース ファイル\system</Filter>
-    </ClCompile>
-    <ClCompile Include="system\CAnimationMesh.cpp">
-      <Filter>ソース ファイル\system</Filter>
-    </ClCompile>
-    <ClCompile Include="system\CAnimationObject.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
     <ClCompile Include="system\CapsuleDrawer.cpp">
@@ -484,6 +484,18 @@
     </ClCompile>
     <ClCompile Include="scene\ResultScene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="system\CAnimationData.cpp">
+      <Filter>ソース ファイル\system\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="system\CAnimationMesh.cpp">
+      <Filter>ソース ファイル\system\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="system\CAnimationObject.cpp">
+      <Filter>ソース ファイル\system\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Billboard\Billboard.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Billboard</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

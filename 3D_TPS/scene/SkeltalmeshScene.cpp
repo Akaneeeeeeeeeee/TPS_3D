@@ -193,9 +193,33 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
 	m_mtxWorld = mtxscale * mtxrotx * mtxroty * mtxrotz * mtxtrans;
 
 	m_pCharacter->Update(deltatime);
+	m_pBillboard->Update(deltatime);
+
+	// 敵の更新
 	for(size_t i = 0; i < m_pEnemies.size(); i++)
 	{
 		m_pEnemies[i]->Update(deltatime);
+	}
+
+	// 敵がプレイヤーを発見したかのチェック
+	for(size_t i = 0; i < m_pEnemies.size(); i++)
+	{
+		// 見つかったらクリア状態に変更し、シーン遷移フラグを立てる
+		if(m_pEnemies[i]->CanSeePlayer(m_pCharacter->GetPosition()))
+		{
+			this->ChangeScene = true;
+			this->IsClear = false;
+		}
+	}
+
+	// ビルボードとキャラが触れればクリア
+	auto charaPos = m_pCharacter->GetPosition();
+	auto billPos = m_pBillboard->GetPosition();
+	// ビルボードの中心から一定範囲内にいればクリア
+	if((charaPos - billPos).Length() < 300.0f)
+	{
+		this->ChangeScene = true;
+		this->IsClear = true;
 	}
 }
 
@@ -252,6 +276,8 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(2, &transposedProj);
 
 	m_shader.SetGPU();
+	m_pBillboard->Draw(deltatime);
+
 	m_pTerrain->Draw();
 	m_pSkydome->Draw();
 	//m_pObjectManager->Draw(deltatime);
@@ -306,6 +332,11 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	m_pSkydome = std::make_unique<Skydome>();
 	m_pSkydome->Init();
 	m_pSkydome->SetTexture("assets/texture/haikei.jpg");
+
+	// ビルボード生成
+	m_pBillboard = std::make_unique<Billboard>(300, 300, "assets/texture/emblem.png", &m_camera);
+	m_pBillboard->Init();
+	m_pBillboard->SetPosition(Vector3(0, 150, 3000));
 
 	// 地形生成
 	//m_pplanemesh = std::make_unique<CPlaneMesh>();

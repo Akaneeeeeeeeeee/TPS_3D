@@ -36,3 +36,28 @@ public:
 	// 描画
 	void Draw();
 };
+
+//class CAnimationMesh : public CStaticMesh {
+//    std::unordered_map<std::string, BONE> m_BoneDictionary{};
+//    CTreeNode<std::string> m_AssimpNodeNameTree{};
+//    CStaticMeshRenderer m_StaticMeshRenderer{};
+//    const aiScene* m_pScene = nullptr;
+//
+//public:
+//    void Load(std::string filename, std::string texturedirectory = "");
+//
+//    // アニメーションを名前で返すだけ（状態は持たない）
+//    aiAnimation* GetAnimation(const std::string& name);
+//
+//    // ルートノードを取得する getter
+//    CTreeNode<std::string>* GetRootNode() { return &m_AssimpNodeNameTree; }
+//
+//    // ボーン更新（アニメーションの状態は外から渡す）
+//    void UpdateBoneMatrix(CTreeNode<std::string>* ptree,
+//        const DirectX::SimpleMath::Matrix& parent,
+//        BoneCombMatrix& outMatrix,
+//        float timeInTicks,
+//        aiAnimation* anim);
+//
+//    void Draw();
+//};

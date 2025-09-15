@@ -32,7 +32,9 @@ void Game::Init(void)
 		Window::GetInstance().GetHeight());
 
 	// デバッグUIの初期化
+#ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
+#endif // _DEBUG
 	
 	// シェーダー管理クラスの初期化
 	//m_ShaderManager.Init();
@@ -84,7 +86,9 @@ void Game::Draw(uint64_t deltatime)
 	m_SceneManager.Draw(deltatime);
 
 	// デバッグUIの描画
+#ifdef _DEBUG
 	DebugUI::Render();
+#endif // _DEBUG
 
 	// レンダリング後処理
 	Renderer::End();
@@ -93,7 +97,9 @@ void Game::Draw(uint64_t deltatime)
 void Game::Uninit(void)
 {
 	// デバッグUIの終了処理
+#ifdef _DEBUG
 	DebugUI::DisposeUI();
+#endif // _DEBUG
 
 	// シーンマネージャの終了処理
 	m_SceneManager.Uninit();

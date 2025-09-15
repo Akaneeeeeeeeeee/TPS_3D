@@ -8,6 +8,23 @@ void CAnimationMesh::SetCurentAnimation(aiAnimation * currentanimation) {
 	m_CurrentAnimation = currentanimation;
 }
 
+//aiAnimation* CAnimationMesh::GetAnimation(const std::string& name)
+//{
+//	if (!m_pScene)
+//		return nullptr;
+//
+//	// m_pScene 内のアニメーションから名前で検索
+//	for (unsigned int i = 0; i < m_pScene->mNumAnimations; i++)
+//	{
+//		aiAnimation* anim = m_pScene->mAnimations[i];
+//		if (anim->mName.C_Str() == name)
+//			return anim;
+//	}
+//
+//	return nullptr; // 見つからなければ nullptr
+//}
+
+
 // ノードツリー表示(debug用)
 static void DispNodeTree(CTreeNode<std::string>* ptree) 
 {
@@ -72,6 +89,67 @@ void CAnimationMesh::Load(std::string filename, std::string texturedirectory)
 }
 
 // 階層構造を考慮したボーンコンビネーション行列を更新
+//void CAnimationMesh::UpdateBoneMatrix(CTreeNode<std::string>* ptree,
+//	const DirectX::SimpleMath::Matrix& parent,
+//	BoneCombMatrix& outMatrix,
+//	float timeInTicks,
+//	aiAnimation* anim)															// 20240714 DX化	
+//{
+//	// ノード名からボーン辞書を使ってボーン情報を取得
+//	BONE* bone = &m_BoneDictionary[ptree->m_nodedata];
+//
+//	// チャンネル取得
+//	aiNodeAnim* nodeAnim = nullptr;
+//	for (unsigned int c = 0; c < anim->mNumChannels; c++)
+//	{
+//		if (anim->mChannels[c]->mNodeName.C_Str() == ptree->m_nodedata)
+//		{
+//			nodeAnim = anim->mChannels[c];
+//			break;
+//		}
+//	}
+//
+//	Matrix animMatrix = Matrix::Identity;
+//
+//	if (nodeAnim)
+//	{
+//		// Rotation
+//		aiQuaternion rot;
+//		int rotIndex = static_cast<int>(timeInTicks) % nodeAnim->mNumRotationKeys;
+//		rot = nodeAnim->mRotationKeys[rotIndex].mValue;
+//
+//		// Position
+//		aiVector3D pos;
+//		int posIndex = static_cast<int>(timeInTicks) % nodeAnim->mNumPositionKeys;
+//		pos = nodeAnim->mPositionKeys[posIndex].mValue;
+//
+//		// Scale
+//		Vector3 s = { 1.0f, 1.0f, 1.0f };
+//		Vector3 t = { pos.x, pos.y, pos.z };
+//		Quaternion r = { rot.x, rot.y, rot.z, rot.w };
+//
+//		Matrix scaleMtx = Matrix::CreateScale(s.x, s.y, s.z);
+//		Matrix rotMtx = Matrix::CreateFromQuaternion(r);
+//		Matrix transMtx = Matrix::CreateTranslation(t.x, t.y, t.z);
+//
+//		animMatrix = scaleMtx * rotMtx * transMtx;
+//	}
+//
+//	// ワールド行列に親行列を掛ける
+//	Matrix finalMtx = animMatrix * parent;
+//
+//	// ボーンコンビネーション行列に反映
+//	bone->Matrix = bone->OffsetMatrix * finalMtx;
+//	outMatrix.ConstantBufferMemory.BoneCombMtx[bone->idx] = bone->Matrix.Transpose();
+//
+//	// 子ノードを再帰処理
+//	for (unsigned int n = 0; n < ptree->m_children.size(); n++)
+//	{
+//		UpdateBoneMatrix(ptree->m_children[n].get(), finalMtx, outMatrix, timeInTicks, anim);
+//	}																// 20240714 DX化
+//}
+
+//// 階層構造を考慮したボーンコンビネーション行列を更新
 void CAnimationMesh::UpdateBoneMatrix(
 	CTreeNode<std::string>* ptree, 
 	Matrix matrix)															// 20240714 DX化	

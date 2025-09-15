@@ -136,7 +136,7 @@ void SceneManager::ChangeScene(const std::string& nextscenename)
 		bool isClear = false;
 		if (m_CurrentSceneName == "SkeltalmeshScene")
 		{
-			SkeltalmeshScene* gameScene = dynamic_cast<SkeltalmeshScene*>(m_pScenes[m_CurrentSceneName].get());
+			SkeltalmeshScene* gameScene = static_cast<SkeltalmeshScene*>(m_pScenes[m_CurrentSceneName].get());
 			isClear = gameScene->GetIsClear();
 		}
 
@@ -153,7 +153,7 @@ void SceneManager::ChangeScene(const std::string& nextscenename)
 		if (isClear)
 		{
 			// リザルトシーンの画像を変更
-			ResultScene* scene = reinterpret_cast<ResultScene*>(m_pScenes["ResultScene"].get());
+			ResultScene* scene = static_cast<ResultScene*>(m_pScenes["ResultScene"].get());
 			scene->SetTexture(std::make_unique<CSprite>
 				(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameClear.jpg")
 			);

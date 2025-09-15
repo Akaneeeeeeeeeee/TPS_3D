@@ -31,7 +31,7 @@ void Player::Init(void)
 
 	// ステータスを設定
 	this->m_MoveSpeed = 10.0f;
-	this->m_AnimationSpeed = 1.5f;
+	this->m_AnimationSpeed = 1.0f;
 }
 
 void Player::Update(uint64_t deltatime)
