@@ -28,7 +28,7 @@ ResultScene::ResultScene()
 void ResultScene::Update(uint64_t deltatime)
 {
 	// キーボードの状態を取得
-	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
+	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_L))
 	{
 		this->ChangeScene = true;
 	}
