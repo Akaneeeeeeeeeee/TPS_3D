@@ -2,6 +2,9 @@
 #include	<vector>
 #include	"renderer.h"
 
+/// <summary>
+/// 3Dのデータをもつ頂点の集まりとして定義
+/// </summary>
 class CMesh {
 protected:
 	std::vector<VERTEX_3D>	m_vertices;		// 頂点座標群
