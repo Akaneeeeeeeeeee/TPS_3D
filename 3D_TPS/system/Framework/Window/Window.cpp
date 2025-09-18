@@ -159,8 +159,8 @@ LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		if (LOWORD(wParam) == VK_ESCAPE) { //入力されたキーがESCAPEなら
 			PostMessage(hWnd, WM_CLOSE, wParam, lParam);//「WM_CLOSE」を送る
 		}
-		else if (LOWORD(wParam) == VK_SPACE) {
-			// F11キーでフルスクリーンに切り替えVK_F11
+		else if (LOWORD(wParam) == VK_F11) {
+			// F11キーでフルスクリーンに切り替えVK_SPACE
 			isFullScreen = !isFullScreen;
 			if (isFullScreen) {
 				// 疑似フルスクリーンモードに変更

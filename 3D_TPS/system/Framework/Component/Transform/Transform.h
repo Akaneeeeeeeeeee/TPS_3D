@@ -19,9 +19,9 @@ public:
 	~Transform() {};
 
 	// 行列変換
-	DirectX::SimpleMath::Matrix GetLocalMatrix(void) const;
+	Matrix4x4 GetLocalMatrix(void) const;
 
-	DirectX::SimpleMath::Matrix GetWorldMatrix(void) const;
+	Matrix4x4 GetWorldMatrix(void) const;
 
 	//-----------------------------------------
 	//				ゲッターセッター
