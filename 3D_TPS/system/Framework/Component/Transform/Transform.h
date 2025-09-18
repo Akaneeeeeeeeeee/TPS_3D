@@ -26,13 +26,16 @@ public:
 	//-----------------------------------------
 	//				ゲッターセッター
 	//-----------------------------------------
-	const Vector3& GetPosition() const { return Position; }
+	Vector3 GetPosition(void) const { return Position; }
+	const Vector3& GetPositionRef(void) const { return Position; }		// 参照渡し
 	void SetPosition(const Vector3& pos) { Position = pos; }
 
-	const Quaternion& GetRotation() const { return Rotation; }
+	Quaternion GetRotation(void) const { return Rotation; }
+	const Quaternion& GetRotationRef(void) const { return Rotation; }	// 参照渡し
 	void SetRotation(const Quaternion& rot) { Rotation = rot; }
 
-	const Vector3& GetScale() const { return Scale; }
+	Vector3 GetScale(void) const { return Scale; }
+	const Vector3& GetScaleRef(void) const { return Scale; }			// 参照渡し
 	void SetScale(const Vector3& scale) { Scale = scale; }
 
 	void SetParent(Transform* _parent);
@@ -40,9 +43,9 @@ public:
 	void SetChild(Transform* _child);
 
 private:
-	Vector3		Position{ 0,0,0 };		// ローカル座標
-	Quaternion	Rotation{ 0,0,0,1 };	// ローカル回転
-	Vector3		Scale{ 1,1,1 };			// ローカル大きさ
+	Vector3		Position;	// ローカル座標
+	Quaternion	Rotation;	// ローカル回転
+	Vector3		Scale;		// ローカル大きさ
 	
 	Transform* m_pParent = nullptr;		// 親オブジェクトのポインタ
 	std::vector<Transform*> m_pChildren;	// 子オブジェクトのコンテナ

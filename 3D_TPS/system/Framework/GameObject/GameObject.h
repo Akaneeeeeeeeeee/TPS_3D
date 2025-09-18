@@ -2,13 +2,12 @@
 #include <typeindex>
 #include "system/CVertexBuffer.h"
 #include "system/CIndexBuffer.h"
-//#include "system/camera.h"
 #include "system/Framework/Component/Transform/Transform.h"
 #include "system/Framework/Component/IComponent/IComponent.h"
 //#include "system/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
 //#include "system/Framework/Component/ComponentFactory/ComponentFactory.h"
-#include "system/Framework/AssetManager/AssetManager.h"
-#include "system/Framework/ShaderManager/ShaderManager.h"
+//#include "system/Framework/AssetManager/AssetManager.h"
+//#include "system/Framework/ShaderManager/ShaderManager.h"
 
 //! オブジェクト管理用タグ
 enum class Tag {
@@ -23,13 +22,8 @@ enum class Tag {
 
 class GameObject {
 public:
-	GameObject();
-	GameObject(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
-		:m_ID(id), m_Name(name), m_Tag(tag),
-		  m_Transform(Vector3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f)) {
-		// カメラはnullptrで初期化
-		//m_Camera = nullptr;
-	}
+	GameObject() = delete;
+	GameObject(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
 
 	//GameObject(Camera* cam);	//! コンストラクタ
 	virtual ~GameObject();		//! デストラクタ
@@ -40,14 +34,17 @@ public:
 	virtual void Uninit(void);
 
 	// 姿勢情報のゲッター/セッター
-	virtual Transform& GetTransform(void) { return m_Transform; };
-	virtual const Transform& GetTransform() const { return m_Transform; }
+	virtual Transform GetTransform(void) const { return m_Transform; }
+	virtual const Transform& GetTransformRef(void) const { return m_Transform; }
 	virtual void SetTransform(const Transform& transform) { m_Transform = transform; }
-	virtual const Vector3& GetPosition(void) const;
+	virtual Vector3 GetPosition(void) const;
+	virtual const Vector3& GetPositionRef(void) const { return m_Transform.GetPositionRef(); }
 	virtual void SetPosition(const Vector3& position);
-	virtual const Quaternion& GetRotation(void) const;
+	virtual Quaternion GetRotation(void) const;
+	virtual const Quaternion& GetRotationRef(void) const { return m_Transform.GetRotationRef(); }
 	virtual void SetRotation(const Quaternion& rotation);
-	virtual const Vector3& GetScale(void) const;
+	virtual Vector3 GetScale(void) const;
+	virtual const Vector3& GetScaleRef(void) const { return m_Transform.GetScaleRef(); }
 	virtual void SetScale(const Vector3& scale);
 
 	// Transform関連は直接委譲
@@ -61,9 +58,6 @@ protected:
 	Transform m_Transform{};
 	//! 描画の為の情報（見た目に関わる部分）
 	//Shader m_Shader; // シェーダー
-
-	//! カメラ
-	//Camera* m_Camera;
 
 	//! 一意のID
 	uint64_t m_ID = 0;

@@ -24,7 +24,7 @@ enum class AnimationState {
 class Character : public GameObject
 {
 public:
-	Character() {};
+	Character() = delete;
 	Character(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
 		: GameObject(id, name, tag)
 	{

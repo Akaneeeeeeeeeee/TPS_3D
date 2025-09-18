@@ -7,8 +7,10 @@
 class Billboard : public GameObject
 {
 public:
-	Billboard(int width, int height, const std::string& texfilename, FreeCamera* cam)
-		: m_Sprite(width, height, texfilename), m_pCamera(cam)
+	Billboard(int width, int height, const std::string& texfilename, FreeCamera* cam,
+		uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
+		: GameObject(id, name, tag),
+		m_Sprite(width, height, texfilename), m_pCamera(cam)
 	{
 	}
 

@@ -14,7 +14,7 @@ class IScene
 public:
 	virtual ~IScene() {};
 
-	virtual void Init(ObjectManager* _pObjectMgr) = 0;
+	virtual void Init(void) = 0;
 	virtual void Update(uint64_t deltatime) = 0;
 	virtual void Draw(uint64_t deltatime) = 0;
 	virtual void Uninit(void) = 0;
@@ -26,9 +26,9 @@ public:
 	virtual void SetNextSceneName(const std::string& name) { m_NextSceneName = name; }
 
 protected:
-	IScene() {};
+	IScene(ObjectManager& _Mgr) : m_ObjectManagerRef(_Mgr){};
 	std::string m_NextSceneName;
-	ObjectManager* m_pObjectManager;		// オブジェクト管理クラスへのポインタ
+	ObjectManager& m_ObjectManagerRef;		// オブジェクト管理クラスへのポインタ
 	bool ChangeScene = false;						// シーン切り替えフラグ
 };
 

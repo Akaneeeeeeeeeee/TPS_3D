@@ -68,7 +68,7 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<IScene>> m_pScenes;	//! シーン配列
 	std::string m_CurrentSceneName;				//! 現在のシーン名
 	ObjectManager* m_pObjectManager;			//! オブジェクト管理クラスへのポインタ
-	//SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
+	SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
 	std::unique_ptr<SceneTransition> m_Transition;	//! シーン遷移演出オブジェクト
 	bool IsSceneChanging = false;	//! シーン遷移中フラグ
 	bool IsQuit = false;			//! ゲーム終了フラグ

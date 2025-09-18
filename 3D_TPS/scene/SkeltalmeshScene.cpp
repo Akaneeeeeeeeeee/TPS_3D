@@ -162,7 +162,7 @@ void SkeltalmeshScene::debugSRT()
 /**
  * @brief コンストラクタ
  */
-SkeltalmeshScene::SkeltalmeshScene()
+SkeltalmeshScene::SkeltalmeshScene(ObjectManager& _Mgr) : IScene(_Mgr)
 {
 	m_NextSceneName = "ResultScene";
 }
@@ -278,8 +278,8 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 	m_shader.SetGPU();
 	m_pBillboard->Draw(deltatime);
 
-	m_pTerrain->Draw();
-	m_pSkydome->Draw();
+	m_pTerrain->Draw(deltatime);
+	m_pSkydome->Draw(deltatime);
 	//m_pObjectManager->Draw(deltatime);
 	m_pCharacter->Draw(deltatime);
 
@@ -298,7 +298,7 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
+void SkeltalmeshScene::Init(void)
 {
 	// オブジェクトマネージャーのセット
 	//this->m_pObjectManager = _pObjectMgr;

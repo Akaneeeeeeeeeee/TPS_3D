@@ -161,7 +161,7 @@ void TitleScene::debugSRT()
 /**
  * @brief コンストラクタ
  */
-TitleScene::TitleScene()
+TitleScene::TitleScene(ObjectManager& _Mgr) : IScene(_Mgr)
 {
 	m_NextSceneName = "SkeltalmeshScene";
 }
@@ -206,17 +206,13 @@ void TitleScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void TitleScene::Init(ObjectManager* _pObjectMgr)
+void TitleScene::Init(void)
 {
-	// オブジェクト管理クラスのポインタをセット
-	this->m_pObjectManager = _pObjectMgr;
-
 	// カメラ(3D)の初期化
 	m_camera.Init();
 
 	// タイトル画像の生成
 	m_TitleImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/HideAndSeek.jpg");
-
 }
 
 /**

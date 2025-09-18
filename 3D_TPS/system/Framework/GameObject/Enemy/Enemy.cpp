@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include <random>
 #include <iostream>
+#include "system/Framework/AssetManager/AssetManager.h"
 
 Enemy::Enemy(uint64_t id, const std::string& name, const Tag& tag)
 	: Character(id, name, tag)

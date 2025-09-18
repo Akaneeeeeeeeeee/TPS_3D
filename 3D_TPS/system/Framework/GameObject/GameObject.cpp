@@ -1,7 +1,10 @@
 ﻿#include "GameObject.h"
-//#include "Src/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
 
-GameObject::GameObject() {
+GameObject::GameObject(uint64_t id, const std::string& name, const Tag& tag)
+	:m_ID(id), m_Name(name), m_Tag(tag),
+	m_Transform(
+		Vector3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f))
+{
 
 }
 
@@ -53,7 +56,7 @@ void GameObject::Uninit(void)
 }
 
 // Positionゲッター
-const Vector3& GameObject::GetPosition(void) const {
+Vector3 GameObject::GetPosition(void) const {
 	return m_Transform.GetPosition();
 }
 
@@ -63,7 +66,7 @@ void GameObject::SetPosition(const Vector3& _pos) {
 }
 
 // Rotationゲッター
-const Quaternion& GameObject::GetRotation(void) const {
+Quaternion GameObject::GetRotation(void) const {
 	return m_Transform.GetRotation();
 }
 
@@ -73,7 +76,7 @@ void GameObject::SetRotation(const Quaternion& _rot) {
 }
 
 // Scaleゲッター
-const Vector3& GameObject::GetScale(void) const {
+Vector3 GameObject::GetScale(void) const {
 	return m_Transform.GetScale();
 }
 

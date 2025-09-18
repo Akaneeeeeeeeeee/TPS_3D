@@ -15,7 +15,7 @@
 /**
  * @brief コンストラクタ
  */
-ResultScene::ResultScene()
+ResultScene::ResultScene(ObjectManager& _Mgr) : IScene(_Mgr)
 {
 	m_NextSceneName = "TitleScene";
 }
@@ -60,11 +60,8 @@ void ResultScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void ResultScene::Init(ObjectManager* _pObjectMgr)
+void ResultScene::Init(void)
 {
-	// オブジェクト管理クラスのポインタをセット
-	this->m_pObjectManager = _pObjectMgr;
-
 	// カメラ(3D)の初期化
 	m_camera.Init();
 

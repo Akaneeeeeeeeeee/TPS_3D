@@ -1,7 +1,8 @@
 #include "Skydome.h"
 
 
-Skydome::Skydome()
+Skydome::Skydome(uint64_t id, const std::string& name, const Tag& tag)
+	: GameObject(id, name, tag)
 {
 }
 
@@ -13,7 +14,6 @@ void Skydome::Init(void)
 {
     // 半径大きめの球体を作成 (例: 半径1000.0f)
     m_SphereMesh.Init(5000.0f, Color(1.0f, 1.0f, 1.0f, 1.0f), 32, 16);
-	m_Transform.scale = Vector3(1, 1, 1);
 
     // マテリアル設定
 	// マテリアル情報取得
@@ -30,12 +30,17 @@ void Skydome::Init(void)
 	m_MeshRenderer.Init(this->m_SphereMesh);
 }
 
-void Skydome::Draw(void)
+void Skydome::Draw(uint64_t deltatime)
 {
 	// SRT情報作成
-	Matrix4x4 r = Matrix4x4::CreateFromYawPitchRoll(m_Transform.rot.y, m_Transform.rot.x, m_Transform.rot.z);
-	Matrix4x4 t = Matrix4x4::CreateTranslation(m_Transform.pos.x, m_Transform.pos.y, m_Transform.pos.z);
-	Matrix4x4 s = Matrix4x4::CreateScale(m_Transform.scale.x, m_Transform.scale.y, m_Transform.scale.z);
+	const Quaternion& rot = m_Transform.GetRotationRef();
+	const Vector3& pos = m_Transform.GetPositionRef();
+	const Vector3& scale = m_Transform.GetScaleRef();
+
+	// ワールド行列計算
+	Matrix4x4 r = Matrix4x4::CreateFromQuaternion(rot);
+	Matrix4x4 t = Matrix4x4::CreateTranslation(pos.x, pos.y, pos.z);
+	Matrix4x4 s = Matrix4x4::CreateScale(scale.x, scale.y, scale.z);
 
 	Matrix4x4 worldmtx;
 	worldmtx = s * r * t;
