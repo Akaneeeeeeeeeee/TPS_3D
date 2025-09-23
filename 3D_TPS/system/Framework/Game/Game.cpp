@@ -22,7 +22,7 @@ void Game::Init(void)
 	//m_ObjectManager.Init(&m_ComponentFactory);
 	
 	
-	// レンダラの初期化    
+	// レンダラの初期化
 	Renderer::Init();
 
 	// DirectInputの初期化
@@ -30,15 +30,10 @@ void Game::Init(void)
 		Window::GetInstance().GetHandleWindow(),
 		Window::GetInstance().GetWidth(),
 		Window::GetInstance().GetHeight());
-
-	// デバッグUIの初期化
-#ifdef _DEBUG
-	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
-#endif // _DEBUG
 	
 	// シェーダー管理クラスの初期化
 	//m_ShaderManager.Init();
-	//ShaderManager::GetInstance().Init();
+	ShaderManager::GetInstance().Init();
 
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
@@ -49,6 +44,12 @@ void Game::Init(void)
 
 	// シーンマネージャの初期化
 	m_SceneManager.Init(&m_ObjectManager);
+	
+	// デバッグ時のみ、デバッグUIの初期化
+#ifdef _DEBUG
+	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
+#endif // _DEBUG
+	
 }
 
 

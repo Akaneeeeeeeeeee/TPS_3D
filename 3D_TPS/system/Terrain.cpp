@@ -12,6 +12,10 @@ Terrain::~Terrain()
 {
 }
 
+void Terrain::Init(void)
+{
+}
+
 void Terrain::Init(int divx, int divy,
 	float width, float height)
 {
@@ -40,6 +44,11 @@ void Terrain::Init(int divx, int divy,
 	mtrl.Shiness = 1;
 	mtrl.TextureEnable = true;		// テクスチャ使用確認フラグ
 	m_Material->Create(mtrl);
+}
+
+void Terrain::Update(uint64_t deltatime)
+{
+
 }
 
 void Terrain::Draw(uint64_t deltatime)
@@ -72,6 +81,11 @@ void Terrain::Draw(uint64_t deltatime)
 		4 * this->m_plane.GetWidth() * this->m_plane.GetHeight(),		// 描画するインデックス数（四角形なので４）
 		0,
 		0);
+}
+
+void Terrain::Uninit(void)
+{
+    
 }
 
 //void Terrain::SetImage(const std::filesystem::path& _filepath)

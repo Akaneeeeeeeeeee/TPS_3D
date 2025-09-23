@@ -90,6 +90,42 @@ CSprite::CSprite(int width, int height, std::string texfilename, std::array<Vect
 	m_IndexBuffer.Create(indices);
 }
 
+/// <summary>
+/// 初期化処理
+/// オブジェクトマネージャを使って管理するため、コンストラクタではなくInitで初期化する
+/// </summary>
+/// <param name="width"></param>
+/// <param name="height"></param>
+/// <param name="texfilename"></param>
+/// <param name="uv"></param>
+void CSprite::Init(int width, int height, std::string texfilename, std::array<Vector2, 4> uv)
+{
+	m_Width = width;
+	m_Height = height;
+
+	CreateMtrl();
+	CreateShader();
+	CreateTexture(texfilename);
+
+	m_Vertices.clear();
+	m_Vertices.resize(4);
+
+	m_Vertices[0].Position = Vector3(-width / 2.0f, -height / 2.0f, 0);
+	m_Vertices[1].Position = Vector3(width / 2.0f, -height / 2.0f, 0);
+	m_Vertices[2].Position = Vector3(-width / 2.0f, height / 2.0f, 0);
+	m_Vertices[3].Position = Vector3(width / 2.0f, height / 2.0f, 0);
+
+	for (int i = 0; i < 4; ++i) {
+		m_Vertices[i].Diffuse = Color(1, 1, 1, 1);
+		m_Vertices[i].TexCoord = uv[i];
+	}
+
+	m_VertexBuffer.Create(m_Vertices);
+
+	std::vector<unsigned int> indices = { 0, 1, 2, 3 };
+	m_IndexBuffer.Create(indices);
+}
+
 /**
  * @brief UV座標を更新する
  *

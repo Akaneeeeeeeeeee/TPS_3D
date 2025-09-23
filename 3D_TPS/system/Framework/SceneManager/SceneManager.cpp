@@ -20,7 +20,7 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 	//this->m_CurrentSceneName = "SkeltalmeshScene";
 	this->m_CurrentSceneName = "TitleScene";
 	// 現在のシーンを初期化
-	m_pScenes[m_CurrentSceneName]->Init();
+	m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
 	this->SetCurrentScene(m_CurrentSceneName);
 }
 
@@ -146,7 +146,7 @@ void SceneManager::ChangeScene(const std::string& nextscenename)
 			m_pScenes[m_CurrentSceneName]->Uninit();
 			// 現在のシーン名を変更
 			m_CurrentSceneName = nextscenename;
-			m_pScenes[m_CurrentSceneName]->Init();
+			m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
 		}
 
 		// ゲームをクリアしていた場合

@@ -27,7 +27,8 @@ public:
 	 *
 	 * カメラや画像スプライト、遷移演出の初期化を行う。
 	 */
-	explicit TitleScene(ObjectManager& _Mgr);
+	explicit TitleScene();
+	//explicit TitleScene(ObjectManager& _Mgr);
 
 	/**
 	 * @brief 毎フレームの更新処理
@@ -50,7 +51,8 @@ public:
 	 *
 	 * スプライトの生成、カメラ設定、音声再生など、表示に必要な準備を行う。
 	 */
-	void Init(void) override;
+	void Init(ObjectManager* _Mgr) override;
+	//void Init(void) override;
 
 	/**
 	 * @brief シーンの終了処理

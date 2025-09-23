@@ -13,6 +13,8 @@
 enum class Tag {
 	None,			//! タグなし
 	Player,			//! プレイヤー
+	Field,			//! フィールド
+	Skydome,		//! スカイドーム
 	Enemy,			//! 敵
 	Item,			//! アイテム
 	Light,			//! ライト
@@ -25,7 +27,6 @@ public:
 	GameObject() = delete;
 	GameObject(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
 
-	//GameObject(Camera* cam);	//! コンストラクタ
 	virtual ~GameObject();		//! デストラクタ
 
 	virtual void Init(void);
@@ -52,6 +53,8 @@ public:
 
 	virtual Tag& GetTag(void) { return m_Tag; }
 	virtual void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
+	virtual uint64_t GetID(void) const { return m_ID; }
+	virtual std::string GetName(void) const { return m_Name; }
 
 protected:
 	// SRT情報（姿勢情報）

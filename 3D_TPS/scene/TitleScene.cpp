@@ -161,10 +161,14 @@ void TitleScene::debugSRT()
 /**
  * @brief コンストラクタ
  */
-TitleScene::TitleScene(ObjectManager& _Mgr) : IScene(_Mgr)
+TitleScene::TitleScene() : IScene()
 {
 	m_NextSceneName = "SkeltalmeshScene";
 }
+//TitleScene::TitleScene(ObjectManager& _Mgr) : IScene(_Mgr)
+//{
+//	m_NextSceneName = "SkeltalmeshScene";
+//}
 
 /**
  * @brief クリアシーンの更新処理
@@ -206,8 +210,11 @@ void TitleScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void TitleScene::Init(void)
+void TitleScene::Init(ObjectManager* _Mgr)
 {
+	// オブジェクトマネージャのセット
+	this->m_pObjectManager = _Mgr;
+
 	// カメラ(3D)の初期化
 	m_camera.Init();
 

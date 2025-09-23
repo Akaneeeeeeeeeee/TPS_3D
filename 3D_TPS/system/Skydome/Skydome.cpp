@@ -30,6 +30,11 @@ void Skydome::Init(void)
 	m_MeshRenderer.Init(this->m_SphereMesh);
 }
 
+void Skydome::Update(uint64_t deltatime)
+{
+	// 特に更新処理はなし
+}
+
 void Skydome::Draw(uint64_t deltatime)
 {
 	// SRT情報作成
@@ -46,8 +51,8 @@ void Skydome::Draw(uint64_t deltatime)
 	worldmtx = s * r * t;
 	Renderer::SetWorldMatrix(&worldmtx); // GPUにセット
 
-
-	Renderer::DisableCulling(false); // カリング無効化(法線・インデックスバッファを逆転しても描画できなかったため一時的な対策)
+	// カリング無効化(法線・インデックスバッファを逆転しても描画できなかったため一時的な対策)
+	Renderer::DisableCulling(false);
 
 	m_Shader.SetGPU();
 
@@ -67,7 +72,13 @@ void Skydome::Draw(uint64_t deltatime)
 	//	0,                                               // baseindex : 先頭から
 	//	0                                                // basevertexindex : 頂点バッファ先頭から
 	//);
-	Renderer::DisableCulling(true); // カリング有効化
+	//Renderer::DisableCulling(true); // カリング有効化
+}
+
+
+void Skydome::Uninit(void)
+{
+	// 特に終了処理はなし
 }
 
 void Skydome::SetTexture(const std::filesystem::path& filepath)
@@ -89,11 +100,11 @@ void Skydome::InvertNormal(void)
 
 	std::vector<uint32_t> indices = m_SphereMesh.GetIndices();
 	// 各三角形ごとに 2番目と3番目を入れ替え
-	/*for (size_t i = 0; i < indices.size(); i += 3) {
+	for (size_t i = 0; i < indices.size(); i += 3) {
 		std::swap(indices[i + 1], indices[i + 2]);
-	}*/
+	}
 	// インデックスバッファを反転
-	std::reverse(indices.begin(), indices.end());
+	//std::reverse(indices.begin(), indices.end());
 
 	// 頂点バッファ書き換え
 	m_MeshRenderer.Modify(vertices, indices);

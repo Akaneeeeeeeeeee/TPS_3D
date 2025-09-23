@@ -32,7 +32,7 @@ public:
 		// オブジェクトの生ポインタを取得
 		GameObject* rawPtr = obj.get();
 		// オブジェクトを初期化
-		obj->Init();
+		//obj->Init();
 		// コンテナに追加
 		m_pObjects.push_back(std::move(obj));
 		// タグごとにオブジェクトを管理するためのmapに追加
@@ -65,7 +65,7 @@ public:
 
 	// 指定タグのオブジェクトを取得
 	template <typename T = GameObject>
-	std::vector<T*> GetObjectsByTag(Tag& tag) 
+	std::vector<T*> GetObjectsByTag(const Tag& tag) 
 	{
 		std::vector<T*> result;
 
@@ -126,7 +126,7 @@ private:
 	//ShaderManager* m_pShaderManager;			//! シェーダーマネージャーへのポインタ
 	//AssetManager* m_pAssetManager;				//! アセットマネージャーへのポインタ
 	
-	std::vector<std::unique_ptr<GameObject>> m_pObjects;					//! オブジェクトのコンテナ(ここが所有権を持つ)
+	std::vector<std::unique_ptr<GameObject>> m_pObjects;				//! オブジェクトのコンテナ(ここが所有権を持つ)
 	std::unordered_map<Tag, std::vector<GameObject*>> m_ObjectsByTag;	//! タグごとにオブジェクトを管理するためのmap
 	std::unordered_map<uint64_t, GameObject*> m_ObjectsByID;			//! IDごとにオブジェクトを管理するためのmap
 	std::unordered_map<std::string, GameObject*> m_ObjectsByName;		//! 名前ごとにオブジェクトを管理するためのmap

@@ -62,9 +62,14 @@ public:
 	 */
 	CSprite(int width, int height, std::string texfilename,
 		std::array<Vector2, 4> uv = { Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1) });
+
+	CSprite() {};
 	
 	/// @brief デストラクタ
 	virtual ~CSprite() {}
+
+	void Init(int width, int height, std::string texfilename,
+		std::array<Vector2, 4> uv = { Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1) });
 
 	/**
 	 * @brief スプライトを描画

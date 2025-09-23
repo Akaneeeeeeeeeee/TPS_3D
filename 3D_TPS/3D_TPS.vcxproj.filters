@@ -252,9 +252,6 @@
     <ClInclude Include="system\renderer.h">
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
-    <ClInclude Include="system\SceneClassFactory.h">
-      <Filter>ソース ファイル\system\SampleFramework</Filter>
-    </ClInclude>
     <ClInclude Include="fpscontrol.h">
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
@@ -320,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="system\Billboard\Billboard.h">
       <Filter>ソース ファイル\MyFramework\GameObject\Billboard</Filter>
+    </ClInclude>
+    <ClInclude Include="system\SceneClassFactory.h">
+      <Filter>ソース ファイル\MyFramework\SceneManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

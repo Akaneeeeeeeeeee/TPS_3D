@@ -7,16 +7,21 @@
 class Billboard : public GameObject
 {
 public:
-	Billboard(int width, int height, const std::string& texfilename, FreeCamera* cam,
-		uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
+	Billboard(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
+		: GameObject(id, name, tag),
+		m_Sprite(), m_pCamera()
+	{
+	}
+	/*Billboard(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
 		: GameObject(id, name, tag),
 		m_Sprite(width, height, texfilename), m_pCamera(cam)
 	{
-	}
+	}*/
 
 	virtual ~Billboard() { m_Sprite.Dispose(); }
 
 	void Init(void) override;
+	void Init(int width, int height, const std::string& texfilename, FreeCamera* cam);
 
 	void Update(uint64_t deltatime) override;
 

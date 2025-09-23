@@ -15,10 +15,14 @@
 /**
  * @brief コンストラクタ
  */
-ResultScene::ResultScene(ObjectManager& _Mgr) : IScene(_Mgr)
+ResultScene::ResultScene() : IScene()
 {
 	m_NextSceneName = "TitleScene";
 }
+//ResultScene::ResultScene(ObjectManager& _Mgr) : IScene(_Mgr)
+//{
+//	m_NextSceneName = "TitleScene";
+//}
 
 /**
  * @brief クリアシーンの更新処理
@@ -60,7 +64,7 @@ void ResultScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void ResultScene::Init(void)
+void ResultScene::Init(ObjectManager* _Mgr)
 {
 	// カメラ(3D)の初期化
 	m_camera.Init();

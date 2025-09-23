@@ -201,7 +201,7 @@
     <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h" />
     <ClInclude Include="system\Framework\Scene\IScene.h" />
     <ClInclude Include="system\Framework\ShaderManager\ShaderManager.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Shader\IShader\IShader.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -224,7 +224,9 @@
     <ClInclude Include="system\LineDrawer.h" />
     <ClInclude Include="system\noncopyable.h" />
     <ClInclude Include="system\renderer.h" />
-    <ClInclude Include="system\SceneClassFactory.h" />
+    <ClInclude Include="system\SceneClassFactory.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\Skydome\Skydome.h" />
     <ClInclude Include="system\SphereDrawer.h" />
     <ClInclude Include="system\stb_image.h" />
@@ -279,7 +281,7 @@
     <ClCompile Include="system\Framework\SceneManager\Transition\FadeTransition.cpp" />
     <ClCompile Include="system\Framework\Scene\IScene.cpp" />
     <ClCompile Include="system\Framework\ShaderManager\ShaderManager.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Shader\IShader\IShader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

@@ -8,9 +8,10 @@
 /**
  * @brief シーンのクラスを名前で登録・生成するためのファクトリクラス
  *
- * @details このクラスはシングルトンとして動作し、文字列名に対応する IScene 派生クラスの
+ * @details このクラスは現状はシングルトンとして動作し、文字列名に対応する IScene 派生クラスの
  * インスタンスを生成するための関数を登録・管理します。create() 関数を通じて文字列から
  * シーンインスタンスを動的に生成できます。
+ * 必要に応じてインスタンス化し、シーンマネージャの生成時に参照渡しに変更する
  */
 class SceneClassFactory {
 public:
@@ -24,7 +25,7 @@ public:
      *
      * @return SceneClassFactory の唯一のインスタンス
      */
-    static SceneClassFactory& getInstance() {
+    static SceneClassFactory& GetInstance() {
         static SceneClassFactory instance;
         return instance;
     }
@@ -35,8 +36,8 @@ public:
      * @param name クラス名（create() で指定するキー）
      * @param func クラスインスタンスを生成する関数（例：std::make_unique）
      */
-    void registerClass(const std::string& name, SceneCreatorFunc func) {
-        registry[name] = func;
+    void RegisterScene(const std::string& name, SceneCreatorFunc func) {
+        m_Registry[name] = func;
     }
 
     /**
@@ -45,9 +46,9 @@ public:
      * @param name 生成したいクラスの名前（registerClass で登録されたキー）
      * @return std::unique_ptr<IScene> 該当クラスのユニークポインタ（見つからなければ nullptr）
      */
-    std::unique_ptr<IScene> create(const std::string& name) {
-        auto it = registry.find(name);
-        if (it != registry.end()) {
+    std::unique_ptr<IScene> Create(const std::string& name) {
+        auto it = m_Registry.find(name);
+        if (it != m_Registry.end()) {
             return it->second();
         }
         return nullptr;
@@ -57,7 +58,7 @@ private:
     /**
      * @brief クラス名と生成関数のマッピングテーブル
      */
-    std::unordered_map<std::string, SceneCreatorFunc> registry;
+    std::unordered_map<std::string, SceneCreatorFunc> m_Registry;
 };
 
 /**
@@ -78,7 +79,7 @@ private:
     namespace { \
         struct CLASSNAME##Registrar { \
             CLASSNAME##Registrar() { \
-                SceneClassFactory::getInstance().registerClass(#CLASSNAME, []() { \
+                SceneClassFactory::GetInstance().RegisterScene(#CLASSNAME, []() { \
                     return std::make_unique<CLASSNAME>(); \
                 }); \
             } \
