@@ -1,11 +1,15 @@
 ﻿#include "RenderManager.h"
-#include "Src/Framework/Graphics/GraphicsDevice.h"
-#include "Src/Framework/Component/Renderer/IRenderer/IRenderer.h"
+#include "system/Framework/Graphics/GraphicsDevice.h"
+#include "system/Framework/ShaderManager/ShaderManager.h"
+#include "system/Framework/Component/Renderer/IRenderer/IRenderer.h"
 
 // 初期化処理
 bool RenderManager::Init(GraphicsDevice* graphicsDevice, ShaderManager* shaderMgr)
 {
-	if (graphicsDevice == nullptr) return false;
+	if (graphicsDevice == nullptr) { return false; }
+	if (shaderMgr == nullptr) { return false; }
+
+	// DI
 	this->m_pGraphicsDevice = graphicsDevice;
 	this->m_pShaderManager = shaderMgr;
 	return true;	// 初期化成功
@@ -13,30 +17,88 @@ bool RenderManager::Init(GraphicsDevice* graphicsDevice, ShaderManager* shaderMg
 
 void RenderManager::Uninit(void)
 {
-	// 描画コンポーネントリストを単純にクリア（各コンポーネントのUninitは呼ばない）
+	// 描画コンポーネントリストと描画情報コンテナを単純にクリア（各コンポーネントのUninitは呼ばない）
 	m_RenderComponents.clear();
-	m_pGraphicsDevice = nullptr;	// GraphicsDeviceへのポインタをクリア
+	m_RenderInfos.clear();
+
+	// 依存性の解消
+	m_pGraphicsDevice = nullptr;
+	m_pShaderManager = nullptr;
 }
 
 // 描画コンポーネントの登録
-void RenderManager::RegisterRenderComponent(IRenderer* component)
+void RenderManager::Register(IRenderer* component)
 {
-	if (component == nullptr) return;
+	if (!component) { return; }
 	this->m_RenderComponents.push_back(component);
 }
 
 // 描画コンポーネントの解除
-void RenderManager::UnregisterRenderComponent(IRenderer* component)
+void RenderManager::Unregister(IRenderer* component)
 {
 	this->m_RenderComponents.erase(
 		std::remove(this->m_RenderComponents.begin(), this->m_RenderComponents.end(), component),
 		this->m_RenderComponents.end());
 }
 
+
+//////////////////////////////////////////////////
+//					描画処理						//
+//////////////////////////////////////////////////
+
 // 描画開始処理
 void RenderManager::StartRender(void)
 {
 	m_pGraphicsDevice->StartRender();
+}
+
+// 描画情報収集
+void RenderManager::CollectRenderInfo(void)
+{
+	m_RenderInfos.clear(); // 前のフレームの描画情報をクリア
+	for (auto& component : m_RenderComponents)
+	{
+		// コンポーネントが存在し、有効な場合のみ描画情報を取得
+		if (component && component->GetIsValid())
+		{
+			RenderInfo info;
+			// 取得できた場合は描画情報リストに追加
+			if (component->GetRenderInfo(info))
+			{
+				m_RenderInfos.push_back(info); // 描画情報をリストに追加
+			}
+		}
+	}
+}
+
+// 描画コンポーネント1つ分の描画
+void RenderManager::Render(const RenderInfo& info)
+{
+	auto context = m_pGraphicsDevice->GetContext();
+	// 頂点バッファの設定
+	UINT offset = 0;
+	context->IASetVertexBuffers(0, 1, &info.vertexBuffer, &info.stride, &offset);
+	// インデックスバッファの設定
+	context->IASetIndexBuffer(info.indexBuffer, info.indexFormat, 0);
+	// ワールド変換行列をシェーダーに渡す（将来: 定数バッファにまとめて渡す）
+	// 将来: シェーダーマネージャーからシェーダーを取得してセットする
+	IShader* vs = m_pShaderManager->GetShader(info.vsName);
+	IShader* ps = m_pShaderManager->GetShader(info.psName);
+	if (vs) {
+		vs->Bind();
+	}
+	if (ps) {
+		ps->Bind();
+	}
+	// 描画コール
+	context->DrawIndexed(info.indexCount, 0, 0);
+	// シェーダーのアンバインド（将来: シェーダーマネージャーにアンバインド処理を追加する）
+	if (vs) {
+		vs->Unbind();
+	}
+	if (ps) {
+		ps->Unbind();
+	}
 }
 
 /// <summary>
@@ -48,10 +110,9 @@ void RenderManager::StartRender(void)
 /// </summary>
 void RenderManager::RenderAll(void)
 {
-	for(auto& component : m_RenderComponents) {
-		if (component) {
-			component->Render(); // 各コンポーネントのRenderメソッドを呼び出す
-		}
+	for (auto& info : m_RenderInfos)
+	{
+		this->Render(info);
 	}
 }
 
@@ -59,4 +120,15 @@ void RenderManager::RenderAll(void)
 void RenderManager::EndRender(void)
 {
 	m_pGraphicsDevice->FinishRender();
+}
+
+
+GraphicsDevice* RenderManager::GetGraphicsDevice(void) const
+{
+	return m_pGraphicsDevice;
+}
+
+ShaderManager* RenderManager::GetShaderManager(void) const
+{
+	return m_pShaderManager;
 }

@@ -3,6 +3,14 @@
 #include "system/Framework/SceneManager/SceneManager.h"
 #include "system/Framework/ShaderManager/ShaderManager.h"
 #include "system/Framework/AssetManager/AssetManager.h"
+#include "system/Framework/Graphics/RenderManager.h"
+
+struct EngineContext
+{
+	RenderManager& renderManager;
+	ShaderManager& shaderManager;
+	AssetManager& assetManager;
+};
 
 /**
  * @brief ゲームクラス

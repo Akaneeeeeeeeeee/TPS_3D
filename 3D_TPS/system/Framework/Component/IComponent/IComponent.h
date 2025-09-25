@@ -2,6 +2,7 @@
 #include "system/Framework/Application/Entry/main.h"
 
 class GameObject;	// 前方宣言
+struct EngineContext;	// 前方宣言(管理システム)
 
 /// <summary>
 /// 全てのコンポーネントの元となるクラス
@@ -18,19 +19,23 @@ public:
 	virtual void Update(void) = 0;		// 更新
 	virtual void Uninit(void) = 0;		// 終了
 
-	virtual void SetIsActive(const bool flg) { IsActive = flg; }
-	virtual bool GetIsActive(void) { return IsActive; }
+	virtual void SetIsValid(bool flg) { IsValid = flg; }
+	virtual bool GetIsValid(void) { return IsValid; }
 
 	void SetOwner(GameObject* _obj);		// オブジェクトのアタッチ(参照渡し)
 	GameObject* GetOwner(void);				// アタッチ先のオブジェクトの取得
 	//void RemoveOwner(void);			// アタッチされているオブジェクトからの取り外し
 
+	virtual void Attach(EngineContext& context) = 0;	// アタッチされたときの処理(各派生コンポーネントでどの管理システムに登録するかを実装)
+	virtual void Detach(EngineContext& context) = 0;	// デタッチされたときの処理(各派生コンポーネントでどの管理システムから解除するかを実装)
+
 protected:
 	// インターフェースクラスなのでprotected
-	IComponent() {};
-	// sharedだとややこしくなるので生ポインタにする
+	IComponent(GameObject* owner)
+		:m_pOwner(owner) {};
+	// コンポーネントの所有者(sharedだとややこしくなるので生ポインタにする)
 	GameObject* m_pOwner = nullptr;
 	// 有効化フラグ
-	bool IsActive = true;
+	bool IsValid = true;
 };
 

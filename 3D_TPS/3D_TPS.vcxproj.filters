@@ -88,6 +88,27 @@
     <Filter Include="ソース ファイル\MyFramework\GameObject\Billboard">
       <UniqueIdentifier>{dc72e1b8-4404-4bed-a060-22d10924a58b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component">
+      <UniqueIdentifier>{600c6668-5964-4dd9-a4ed-cb3dffe95cce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\IComponent">
+      <UniqueIdentifier>{74b4ad61-0dc9-41ad-ac53-0b41c803476c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\IRenderer">
+      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\MeshRenderer">
+      <UniqueIdentifier>{79e534d6-6e10-4f75-a981-4e229bdbdc7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\RenderManager">
+      <UniqueIdentifier>{b029af05-7bfa-4a8d-8cf5-2a7a6d3c3e5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GraphicsSystem">
+      <UniqueIdentifier>{d3c78b8c-6a5d-4623-b1e4-b324918a8282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\EngineContext">
+      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -321,6 +342,24 @@
     <ClInclude Include="system\SceneClassFactory.h">
       <Filter>ソース ファイル\MyFramework\SceneManager</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\IComponent\IComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\IRenderer\IRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Graphics\RenderManager.h">
+      <Filter>ソース ファイル\MyFramework\RenderManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Graphics\GraphicsDevice.h">
+      <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
+      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -496,6 +535,21 @@
     </ClCompile>
     <ClCompile Include="system\Billboard\Billboard.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\Billboard</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\IRenderer\IRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Graphics\RenderManager.cpp">
+      <Filter>ソース ファイル\MyFramework\RenderManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
+      <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
