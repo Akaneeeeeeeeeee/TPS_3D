@@ -57,4 +57,21 @@ public:
 			Renderer::GetDeviceContext()->Unmap(m_IndexBuffer.Get(), 0);
 		}
 	}
+
+	ID3D11Buffer* GetBuffer(void)
+	{
+		return m_IndexBuffer.Get();
+	}
+
+	UINT GetIndexCount(void)
+	{
+		D3D11_BUFFER_DESC descriptor;
+		m_IndexBuffer->GetDesc(&descriptor);
+		return descriptor.ByteWidth / sizeof(unsigned int);
+	}
+
+	DXGI_FORMAT GetIndexFormat(void)
+	{
+
+	}
 };

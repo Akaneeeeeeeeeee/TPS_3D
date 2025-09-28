@@ -3,6 +3,17 @@
 #include "system/Framework/ShaderManager/ShaderManager.h"
 #include "system/Framework/Component/Renderer/IRenderer/IRenderer.h"
 
+RenderManager::RenderManager()
+	: m_pGraphicsDevice(nullptr)
+	, m_pShaderManager(nullptr)
+{
+}
+
+RenderManager::~RenderManager()
+{
+	this->Uninit();
+}
+
 // 初期化処理
 bool RenderManager::Init(GraphicsDevice* graphicsDevice, ShaderManager* shaderMgr)
 {

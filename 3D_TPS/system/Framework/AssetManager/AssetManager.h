@@ -23,9 +23,12 @@ public:
 	CAnimationData* GetAnimationData(const std::string& name) const;
 	void LoadAnimationMesh(const std::string& name, const std::filesystem::path& filepath, const std::filesystem::path& texturepath);
 	CAnimationMesh* GetAnimationMesh(const std::string& name) const;
+	void LoadStaticMesh(const std::string& name, const std::filesystem::path& filepath, const std::filesystem::path& texturepath);
+	CStaticMesh* GetStaticMesh(const std::string& name) const;
 
 private:
 	std::unordered_map<std::string, std::unique_ptr<CAnimationData>> m_AnimationDataList;	// アニメーションデータリスト
 	std::unordered_map<std::string, std::unique_ptr<CAnimationMesh>> m_AnimationMeshList;	// アニメーションメッシュリスト
+	std::unordered_map<std::string, std::unique_ptr<CStaticMesh>> m_StaticMeshList;			// 静的メッシュリスト
 };
 

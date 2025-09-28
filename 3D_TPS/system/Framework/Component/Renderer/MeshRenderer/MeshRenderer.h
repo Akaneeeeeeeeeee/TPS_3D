@@ -35,9 +35,17 @@ public:
 		// ワールド行列を取得
 		Matrix4x4* mtx = m_pOwner->GetWorldMatrix();
 
-		// 描画情報をセット
-		outInfo.vertexBuffer = m_VertexBuffer.;
+		// 描画必要情報をセット
+		outInfo.vertexBuffer = m_VertexBuffer.GetBuffer();
+		outInfo.indexBuffer = m_IndexBuffer.GetBuffer();
+		outInfo.stride = m_VertexBuffer.GetStride();
+		outInfo.indexCount = m_IndexBuffer.GetIndexCount();
+		outInfo.indexFormat = m_IndexBuffer.GetIndexFormat();
+		outInfo.world = mtx;
+		outInfo.vsName = m_VSName;
+		outInfo.psName = m_PSName;
 
+		return true;
 	}
 
 private:

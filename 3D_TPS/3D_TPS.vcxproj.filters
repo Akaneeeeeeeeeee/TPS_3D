@@ -109,6 +109,9 @@
     <Filter Include="ソース ファイル\MyFramework\EngineContext">
       <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Time">
+      <UniqueIdentifier>{c8c1bc89-3915-410e-9378-dcc40e5d6a05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">

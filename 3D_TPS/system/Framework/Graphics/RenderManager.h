@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "system/Framework/Application/Entry/main.h"
+#include "system/Framework/Graphics/RenderInfo.h"
 
 class IRenderer;
 class GraphicsDevice;
@@ -13,8 +14,8 @@ class ShaderManager;
 class RenderManager
 {
 public:
-	RenderManager() {};
-	~RenderManager() {};
+	RenderManager();
+	~RenderManager();
 
 	bool Init(GraphicsDevice* graphicsDevice, ShaderManager* shaderMgr);	//! 初期化処理
 	void Uninit(void);			//! 終了処理
@@ -39,4 +40,3 @@ private:
 	std::vector<IRenderer*> m_RenderComponents;		//! レンダラー系コンポーネントのリスト
 	std::vector<RenderInfo> m_RenderInfos;			//! 描画情報のリスト(毎フレーム取得)
 };
-

@@ -346,6 +346,9 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 	billboard->Init(300, 300, "assets/texture/emblem.png", &m_camera);
 	billboard->SetPosition(Vector3(0, 150, 3000));
 
+	// メッシュデータの読み込み
+	//auto rock = m_pObjectManager->CreateObject<CStaticMesh>("rock", Tag::Object);
+
 	// 地形生成
 	//m_pplanemesh = std::make_unique<CPlaneMesh>();
 	//m_pplanemesh->Init(

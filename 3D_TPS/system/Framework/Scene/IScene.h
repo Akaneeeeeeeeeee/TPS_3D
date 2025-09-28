@@ -2,8 +2,6 @@
 #include "system/Framework/ObjectManager/ObjectManager.h"
 #include "system/Framework/Application/Entry/main.h"
 
-class ObjectManager; // 前方宣言
-
 /**
  * @brief シーンの抽象クラス
  *
