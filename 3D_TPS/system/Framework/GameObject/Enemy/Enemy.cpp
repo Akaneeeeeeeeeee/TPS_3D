@@ -3,8 +3,8 @@
 #include <iostream>
 #include "system/Framework/AssetManager/AssetManager.h"
 
-Enemy::Enemy(uint64_t id, const std::string& name, const Tag& tag)
-	: Character(id, name, tag)
+Enemy::Enemy(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
+	: Character(context, id, name, tag)
 {
 }
 
@@ -58,14 +58,18 @@ void Enemy::Init(void)
 
 void Enemy::Update(uint64_t deltatime)
 {
+	// 巡回ポイントが設定されていなければ処理しない
+	if (m_PatrolPoints.empty()) { return; }
+
 	// アニメーション比較用変数	this->m_Transform.SetPosition(Vector3(500.0f, 0.0f, 500.0f));
 
-	aiAnimation* animdata;
+
 	
 	// 目標地点同士を往復する
 	Vector3 pos = m_Transform.GetPosition();
 	Vector3 dir = m_TargetPos - pos;
 	
+	aiAnimation* animdata;
 	// 移動ベクトルが0でなければ正規化して移動
 	if (dir.Length() > 5.0f) {
 		// 移動ベクトルを正規化

@@ -5,7 +5,6 @@
 
 RenderManager::RenderManager()
 	: m_pGraphicsDevice(nullptr)
-	, m_pShaderManager(nullptr)
 {
 }
 
@@ -15,14 +14,12 @@ RenderManager::~RenderManager()
 }
 
 // 初期化処理
-bool RenderManager::Init(GraphicsDevice* graphicsDevice, ShaderManager* shaderMgr)
+bool RenderManager::Init(GraphicsDevice* graphicsDevice)
 {
 	if (graphicsDevice == nullptr) { return false; }
-	if (shaderMgr == nullptr) { return false; }
 
 	// DI
 	this->m_pGraphicsDevice = graphicsDevice;
-	this->m_pShaderManager = shaderMgr;
 	return true;	// 初期化成功
 }
 
@@ -34,7 +31,6 @@ void RenderManager::Uninit(void)
 
 	// 依存性の解消
 	m_pGraphicsDevice = nullptr;
-	m_pShaderManager = nullptr;
 }
 
 // 描画コンポーネントの登録
@@ -93,22 +89,20 @@ void RenderManager::Render(const RenderInfo& info)
 	context->IASetIndexBuffer(info.indexBuffer, info.indexFormat, 0);
 	// ワールド変換行列をシェーダーに渡す（将来: 定数バッファにまとめて渡す）
 	// 将来: シェーダーマネージャーからシェーダーを取得してセットする
-	IShader* vs = m_pShaderManager->GetShader(info.vsName);
-	IShader* ps = m_pShaderManager->GetShader(info.psName);
-	if (vs) {
-		vs->Bind();
+	if (info.vs) {
+		info.vs->Bind();
 	}
-	if (ps) {
-		ps->Bind();
+	if (info.ps) {
+		info.ps->Bind();
 	}
 	// 描画コール
 	context->DrawIndexed(info.indexCount, 0, 0);
 	// シェーダーのアンバインド（将来: シェーダーマネージャーにアンバインド処理を追加する）
-	if (vs) {
-		vs->Unbind();
+	if (info.vs) {
+		info.vs->Unbind();
 	}
-	if (ps) {
-		ps->Unbind();
+	if (info.ps) {
+		info.ps->Unbind();
 	}
 }
 
@@ -121,6 +115,7 @@ void RenderManager::Render(const RenderInfo& info)
 /// </summary>
 void RenderManager::RenderAll(void)
 {
+	// 描画情報リストをループして各コンポーネントの描画を実行
 	for (auto& info : m_RenderInfos)
 	{
 		this->Render(info);
@@ -133,13 +128,3 @@ void RenderManager::EndRender(void)
 	m_pGraphicsDevice->FinishRender();
 }
 
-
-GraphicsDevice* RenderManager::GetGraphicsDevice(void) const
-{
-	return m_pGraphicsDevice;
-}
-
-ShaderManager* RenderManager::GetShaderManager(void) const
-{
-	return m_pShaderManager;
-}

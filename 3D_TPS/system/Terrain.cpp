@@ -3,8 +3,8 @@
 #include "commontypes.h"
 
 
-Terrain::Terrain(uint64_t id, const std::string& name, const Tag& tag)
-    : GameObject(id, name, tag)
+Terrain::Terrain(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
+    : GameObject(context, id, name, tag)
 {
 }
 

@@ -43,6 +43,7 @@ public:
 
 	}
 
+	// インデックスバッファを書き換える
 	void Modify(const std::vector<unsigned int>& indices)
 	{
 		D3D11_MAPPED_SUBRESOURCE msr;
@@ -55,5 +56,22 @@ public:
 			memcpy(msr.pData, indices.data(), indices.size() * sizeof(unsigned int));
 			Renderer::GetDeviceContext()->Unmap(m_IndexBuffer.Get(), 0);
 		}
+	}
+
+	ID3D11Buffer* GetBuffer(void)
+	{
+		return m_IndexBuffer.Get();
+	}
+
+	UINT GetIndexCount(void)
+	{
+		D3D11_BUFFER_DESC descriptor;
+		m_IndexBuffer->GetDesc(&descriptor);
+		return descriptor.ByteWidth / sizeof(unsigned int);
+	}
+
+	DXGI_FORMAT GetIndexFormat(void)
+	{
+
 	}
 };

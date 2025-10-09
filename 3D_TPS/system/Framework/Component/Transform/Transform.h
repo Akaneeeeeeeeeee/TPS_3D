@@ -14,9 +14,14 @@
 class Transform
 {
 public:
-	Transform() : Position(0, 0, 0), Rotation(0, 0, 0, 1), Scale(1, 1, 1) {};
-	Transform(const Vector3& _pos, const Quaternion& _rot, const Vector3& _scale) : Position(_pos), Rotation(_rot), Scale(_scale) {};
-	~Transform() {};
+	Transform()
+		: Position(Vector3::Zero), Rotation(Quaternion::Identity), Scale(Vector3::One) {};
+	Transform(
+		const Vector3& _pos = Vector3::Zero, 
+		const Quaternion& _rot = Quaternion::Identity,
+		const Vector3& _scale = Vector3::Zero) 
+		: Position(_pos), Rotation(_rot), Scale(_scale) {};
+	~Transform() = default;
 
 	// 行列変換
 	Matrix4x4 GetLocalMatrix(void) const;

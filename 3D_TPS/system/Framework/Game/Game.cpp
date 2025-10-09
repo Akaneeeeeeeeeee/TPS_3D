@@ -1,9 +1,17 @@
 ﻿#include "Game.h"
 #include "system/Framework/Window/Window.h"
-#include	"system/renderer.h"
-#include    "system/DebugUI.h"
-#include    "system/CDirectInput.h"
-#include	"fpscontrol.h"
+#include "system/renderer.h"
+#include "system/DebugUI.h"
+#include "system/CDirectInput.h"
+#include "fpscontrol.h"
+
+Game::Game()
+{
+}
+
+Game::~Game()
+{
+}
 
 /**
  * @brief
@@ -37,10 +45,16 @@ void Game::Init(void)
 
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
+	//m_GraphicsDevice.Init();
+	// レンダーマネージャの初期化
+	/*m_RenderManager.Init(&m_GraphicsDevice);
+	m_pContext = std::make_unique<EngineContext>(
+		m_RenderManager,
+		ShaderManager::GetInstance(),
+		AssetManager::GetInstance());*/
 
 	// オブジェクトマネージャの初期化
-	//m_ObjectManager.Init(&m_ShaderManager);
-	m_ObjectManager.Init();
+	m_ObjectManager.Init(m_pContext.get());
 
 	// シーンマネージャの初期化
 	m_SceneManager.Init(&m_ObjectManager);
@@ -82,9 +96,12 @@ void Game::Draw(uint64_t deltatime)
 {
 	// レンダリング前処理
 	Renderer::Begin();
+	//m_RenderManager.StartRender();
 
 	// シーンマネージャの描画
 	m_SceneManager.Draw(deltatime);
+	/*m_RenderManager.CollectRenderInfo();
+	m_RenderManager.RenderAll();*/
 
 	// デバッグUIの描画
 #ifdef _DEBUG
@@ -92,6 +109,7 @@ void Game::Draw(uint64_t deltatime)
 #endif // _DEBUG
 
 	// レンダリング後処理
+	//m_RenderManager.EndRender();
 	Renderer::End();
 }
 
@@ -106,6 +124,7 @@ void Game::Uninit(void)
 	m_SceneManager.Uninit();
 
 	// レンダラの終了処理
+	//m_RenderManager.Uninit();
 	Renderer::Uninit();
 }
 

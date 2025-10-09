@@ -1,9 +1,8 @@
 ﻿#pragma once
 #include "system/Framework/ObjectManager/SnowFlakeID.h"
 #include "system/Framework/GameObject/GameObject.h"
-//#include "system/Framework/Graphics/RenderManager.h"
+#include "system/Framework/EngineContext/EngineContext.h"
 
-class ShaderManager;
 
 /**
  * @brief オブジェクトを管理するクラス
@@ -11,7 +10,8 @@ class ShaderManager;
 class ObjectManager
 {
 public:
-	ObjectManager() : m_IDGenerator(0) {};
+	ObjectManager()
+		: m_Context(nullptr), m_IDGenerator(0) {};
 	~ObjectManager() {};
 
 	/**
@@ -21,14 +21,14 @@ public:
 	 * ID設定、タグ設定、名前設定を行ってコンテナに追加
 	*/
 	template <typename T>
-	T* CreateObject(const std::string& _Name, const Tag& _Tag = Tag::None)
+	T* Instantiate(const std::string& _Name, const Tag& _Tag = Tag::None)
 	{
 		// SnowfrakeIDを付与
 		uint64_t id = this->m_IDGenerator.next_id();
 		// コンパイル時チェック
 		static_assert(std::is_base_of_v<GameObject, T>, "このオブジェクトはObjectを継承していません");
 		// オブジェクト生成
-		auto obj = std::make_unique<T>(id, _Name, _Tag);
+		auto obj = std::make_unique<T>(*m_Context, id, _Name, _Tag);
 		// オブジェクトの生ポインタを取得
 		GameObject* rawPtr = obj.get();
 		// オブジェクトを初期化
@@ -107,7 +107,7 @@ public:
 
 	//void Init(ComponentFactory* _factory);
 	//void Init(ShaderManager* shaderMgr);
-	void Init(void);
+	void Init(EngineContext* context);
 	void Update(uint64_t deltatime);
 	void Draw(uint64_t deltatime);
 	void Uninit(void);
@@ -119,6 +119,7 @@ public:
 	//void SetAssetManager(AssetManager* _assetManager) { m_pAssetManager = _assetManager; }
 
 private:
+	EngineContext* m_Context;	//! エンジンコンテキストのポインタ(参照での保持にするとさらに一階層必要なためポインタで保持)
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
 	
 	//ComponentFactory* m_pComponentFactory = nullptr;	//! コンポーネントファクトリーへのポインタ
@@ -126,6 +127,7 @@ private:
 	//ShaderManager* m_pShaderManager;			//! シェーダーマネージャーへのポインタ
 	//AssetManager* m_pAssetManager;				//! アセットマネージャーへのポインタ
 	
+
 	std::vector<std::unique_ptr<GameObject>> m_pObjects;				//! オブジェクトのコンテナ(ここが所有権を持つ)
 	std::unordered_map<Tag, std::vector<GameObject*>> m_ObjectsByTag;	//! タグごとにオブジェクトを管理するためのmap
 	std::unordered_map<uint64_t, GameObject*> m_ObjectsByID;			//! IDごとにオブジェクトを管理するためのmap

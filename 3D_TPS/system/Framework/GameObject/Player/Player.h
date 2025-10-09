@@ -13,7 +13,7 @@ class Player final : public Character
 {
 public:
 	Player() = default;
-	Player(uint64_t id, const std::string& name = "", const Tag& tag = Tag::Player);
+	Player(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::Player);
 	~Player();
 
 	void Init(void) override;

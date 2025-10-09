@@ -17,16 +17,13 @@ public:
 	RenderManager();
 	~RenderManager();
 
-	bool Init(GraphicsDevice* graphicsDevice, ShaderManager* shaderMgr);	//! 初期化処理
+	bool Init(GraphicsDevice* graphicsDevice);	//! 初期化処理
 	void Uninit(void);			//! 終了処理
 
 	void StartRender(void);		//! 描画開始処理
 	void Render(const RenderInfo& info);	//! 描画コンポーネント1つ分の描画(これをinfoコンテナ数分ループさせる)
 	void RenderAll(void);		//! 登録されている全ての描画コンポーネントを描画
 	void EndRender(void);		//! 描画終了処理
-
-	GraphicsDevice* GetGraphicsDevice(void) const;
-	ShaderManager* GetShaderManager(void) const;
 
 	void CollectRenderInfo(void);	//! 登録されている全ての描画コンポーネントから描画情報を収集
 
@@ -36,7 +33,6 @@ public:
 
 private:
 	GraphicsDevice* m_pGraphicsDevice = nullptr;	//! GraphicsDeviceへのポインタ
-	ShaderManager* m_pShaderManager = nullptr;		//! シェーダーマネージャーへのポインタ
 	std::vector<IRenderer*> m_RenderComponents;		//! レンダラー系コンポーネントのリスト
 	std::vector<RenderInfo> m_RenderInfos;			//! 描画情報のリスト(毎フレーム取得)
 };

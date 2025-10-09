@@ -1,8 +1,8 @@
 #include "Player.h"
 #include "system/CDirectInput.h"
 
-Player::Player(uint64_t id, const std::string& name, const Tag& tag)
-	: Character(id, name, tag)
+Player::Player(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
+	: Character(context, id, name, tag)
 {
 }
 

@@ -12,6 +12,9 @@ template <typename T>
 class CVertexBuffer : NonCopyable{
 
 	ComPtr<ID3D11Buffer> m_VertexBuffer;
+	UINT m_Stride = sizeof(T);
+	UINT m_VertexCount = 0;
+	DXGI_FORMAT m_Format = DXGI_FORMAT_R32_UINT;
 
 public:
 	void Create(const std::vector<T>& vertices) {
@@ -20,12 +23,15 @@ public:
 		ID3D11Device* device = nullptr;
 		device = Renderer::GetDevice();
 		assert(device);
+		// 頂点数取得
+		m_VertexCount = static_cast<UINT>(vertices.size());
+		m_Format = DXGI_FORMAT_R32_UINT;
 
 		// 頂点バッファ作成
 		bool sts = CreateVertexBufferWrite(
 			device,
-			sizeof(T),						// １頂点当たりバイト数
-			(unsigned int)vertices.size(),	// 頂点数
+			m_Stride,						// １頂点当たりバイト数
+			m_VertexCount,					// 頂点数
 			(void*)vertices.data(),			// 頂点データ格納メモリ先頭アドレス
 			&m_VertexBuffer);				// 頂点バッファ
 
@@ -60,5 +66,27 @@ public:
 			memcpy(msr.pData, vertices.data(), vertices.size() * sizeof(T));
 			Renderer::GetDeviceContext()->Unmap(m_VertexBuffer.Get(), 0);
 		}
+	}
+
+	ID3D11Buffer* GetBuffer(void)
+	{
+		// バッファのポインタを返す
+		return m_VertexBuffer.Get();
+	}
+
+	UINT GetStride(void)
+	{
+		// 頂点データのサイズを返す
+		return m_Stride;
+	}
+
+	UINT GetVertexCount(void)
+	{
+		return m_VertexCount;
+	}
+
+	DXGI_FORMAT GetFormat(void)
+	{
+		return m_Format;
 	}
 };

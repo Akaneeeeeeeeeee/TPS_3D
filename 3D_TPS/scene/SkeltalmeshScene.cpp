@@ -319,30 +319,30 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
 
 	// プレイヤー生成
-	auto player = m_pObjectManager->CreateObject<Player>("player", Tag::Player);
+	auto player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
 	player->Init();
 	player->SetCamera(&m_camera);
 
 	// 敵生成
 	for (size_t i = 0; i < m_pEnemies.size(); i++)
 	{
-		auto enemy = m_pObjectManager->CreateObject<Enemy>("enemy" + std::to_string(i), Tag::Enemy);
+		auto enemy = m_pObjectManager->Instantiate<Enemy>("enemy" + std::to_string(i), Tag::Enemy);
 		enemy->Init();
 	}
 
 	//m_pObjectManager->CreateObject<Character>("testcharacter");
 
 	// メッシュを生成
-	auto terrain = m_pObjectManager->CreateObject<Terrain>("field", Tag::Field);
+	auto terrain = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
 	terrain->Init(50, 50, 5000, 5000);
 	terrain->SetImage("assets/texture/Hole1.png");
 	// スカイドーム生成
-	auto skydome = m_pObjectManager->CreateObject<Skydome>("skydome", Tag::Skydome);
+	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Skydome);
 	skydome->Init();
 	skydome->SetTexture("assets/texture/haikei.jpg");
 
 	// ビルボード生成
-	auto billboard = m_pObjectManager->CreateObject<Billboard>("billboard", Tag::Item);
+	auto billboard = m_pObjectManager->Instantiate<Billboard>("billboard", Tag::Item);
 	billboard->Init(300, 300, "assets/texture/emblem.png", &m_camera);
 	billboard->SetPosition(Vector3(0, 150, 3000));
 

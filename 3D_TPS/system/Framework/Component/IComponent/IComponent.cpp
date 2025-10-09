@@ -1,6 +1,14 @@
-﻿#include "Src/Application/Application/Entry/main.h"
-#include "IComponent.h"
-#include "Src/Game/Object_3D/BaseModel/GameObject.h"
+﻿#include "IComponent.h"
+#include "system/Framework/GameObject/GameObject.h"
+
+IComponent::IComponent(GameObject* owner) :m_pOwner(owner)
+{
+}
+
+IComponent::~IComponent()
+{
+	m_pOwner = nullptr;
+}
 
 // そのコンポーネントを持つオブジェクトの割り当て(引数：オブジェクト(参照))
 void IComponent::SetOwner(GameObject* _obj) {

@@ -3,7 +3,6 @@
 #include "system/CAnimationMesh.h"
 #include "system/CAnimationObject.h"
 #include "system/CShader.h"
-//#include "system/"
 #include "system/Framework/GameObject/GameObject.h"
 
 /// <summary>
@@ -25,8 +24,8 @@ class Character : public GameObject
 {
 public:
 	Character() = delete;
-	Character(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
-		: GameObject(id, name, tag)
+	Character(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
+		: GameObject(context, id, name, tag)
 	{
 	};
 	virtual ~Character() {};

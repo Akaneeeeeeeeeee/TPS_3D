@@ -1,9 +1,9 @@
 ﻿#include "GameObject.h"
 
-GameObject::GameObject(uint64_t id, const std::string& name, const Tag& tag)
-	:m_ID(id), m_Name(name), m_Tag(tag),
+GameObject::GameObject(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
+	:m_Context(context), m_ID(id), m_Name(name), m_Tag(tag),
 	m_Transform(
-		Vector3(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3(1.0f, 1.0f, 1.0f))
+		Vector3::Zero, Quaternion::Identity, Vector3::One)
 {
 
 }

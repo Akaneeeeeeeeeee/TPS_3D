@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "system/Framework/Application/Entry/main.h"
 
 class GameObject;	// 前方宣言
 struct EngineContext;	// 前方宣言(管理システム)
@@ -13,7 +12,7 @@ struct EngineContext;	// 前方宣言(管理システム)
 class IComponent
 {
 public:
-	virtual ~IComponent() = default;	// デストラクタ
+	virtual ~IComponent();	// デストラクタ
 
 	virtual void Init(void) = 0;		// 初期化
 	virtual void Update(void) = 0;		// 更新
@@ -31,8 +30,7 @@ public:
 
 protected:
 	// インターフェースクラスなのでprotected
-	IComponent(GameObject* owner)
-		:m_pOwner(owner) {};
+	IComponent(GameObject* owner);
 	// コンポーネントの所有者(sharedだとややこしくなるので生ポインタにする)
 	GameObject* m_pOwner = nullptr;
 	// 有効化フラグ

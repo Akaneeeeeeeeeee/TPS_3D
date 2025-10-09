@@ -12,7 +12,7 @@
 class Terrain : public GameObject
 {
 public:
-	Terrain(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
+	Terrain(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
 	~Terrain();
 
 	void Init(int divx, int divy,

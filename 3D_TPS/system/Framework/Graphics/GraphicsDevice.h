@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "system/Framework/Application/Entry/main.h"
 #include "system/noncopyable.h"
 #include "d3d11.h"
+#include "system/commontypes.h"
 
 using namespace Microsoft::WRL;
 

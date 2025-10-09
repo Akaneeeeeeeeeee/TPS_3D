@@ -7,8 +7,8 @@
 class Billboard : public GameObject
 {
 public:
-	Billboard(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
-		: GameObject(id, name, tag),
+	Billboard(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
+		: GameObject(context, id, name, tag),
 		m_Sprite(), m_pCamera()
 	{
 	}

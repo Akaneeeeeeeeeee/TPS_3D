@@ -9,7 +9,7 @@
 class Skydome : public GameObject
 {
 public:
-	Skydome(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
+	Skydome(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
 	~Skydome();
 
 	void Init(void) override;

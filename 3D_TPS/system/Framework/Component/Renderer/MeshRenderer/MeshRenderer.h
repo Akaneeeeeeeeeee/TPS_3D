@@ -30,10 +30,10 @@ public:
 	bool GetRenderInfo(RenderInfo& outInfo) override
 	{
 		// 所有者がいない/シェーダー名が設定されていない場合は描画しない
-		if (!m_pOwner || !m_VsName || !m_PSName) { return false; }
+		if (!m_pOwner || !m_VSName || !m_PSName) { return false; }
 
 		// ワールド行列を取得
-		Matrix4x4* mtx = m_pOwner->GetWorldMatrix();
+		Matrix4x4* mtx = &m_pOwner->GetWorldMatrix();
 
 		// 描画必要情報をセット
 		outInfo.vertexBuffer = m_VertexBuffer.GetBuffer();
@@ -42,7 +42,7 @@ public:
 		outInfo.indexCount = m_IndexBuffer.GetIndexCount();
 		outInfo.indexFormat = m_IndexBuffer.GetIndexFormat();
 		outInfo.world = mtx;
-		outInfo.vsName = m_VSName;
+		outInfo.VSName = m_VSName;
 		outInfo.psName = m_PSName;
 
 		return true;

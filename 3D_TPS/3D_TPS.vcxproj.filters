@@ -112,6 +112,18 @@
     <Filter Include="ソース ファイル\MyFramework\Time">
       <UniqueIdentifier>{c8c1bc89-3915-410e-9378-dcc40e5d6a05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\Rock">
+      <UniqueIdentifier>{c6e762ff-0b82-4155-bd34-e02da903fc4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Buffer">
+      <UniqueIdentifier>{377c53f3-5ee4-48a7-91d7-5e1609a47091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\ColliderManager">
+      <UniqueIdentifier>{371a09ce-76e2-4fdb-929f-eb6ba1928b2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Collider">
+      <UniqueIdentifier>{ee20d9c5-75db-446d-9df9-ff91f3ca24ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -267,9 +279,6 @@
     <ClInclude Include="system\CTexture.h">
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
-    <ClInclude Include="system\CVertexBuffer.h">
-      <Filter>ソース ファイル\system\SampleFramework</Filter>
-    </ClInclude>
     <ClInclude Include="system\noncopyable.h">
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
@@ -277,9 +286,6 @@
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
     <ClInclude Include="fpscontrol.h">
-      <Filter>ソース ファイル\system\SampleFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="system\CIndexBuffer.h">
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Application\Application.h">
@@ -362,6 +368,30 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
       <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\EngineContext\EngineContext.h">
+      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Rock\Rock.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Rock</Filter>
+    </ClInclude>
+    <ClInclude Include="system\MyIndexBuffer.h">
+      <Filter>ソース ファイル\MyFramework\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\MyVertexBuffer.h">
+      <Filter>ソース ファイル\MyFramework\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\CIndexBuffer.h">
+      <Filter>ソース ファイル\system\SampleFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="system\CVertexBuffer.h">
+      <Filter>ソース ファイル\system\SampleFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h">
+      <Filter>ソース ファイル\MyFramework\ColliderManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -553,6 +583,15 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Rock\Rock.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Rock</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\ColliderManager\ColliderManager.cpp">
+      <Filter>ソース ファイル\MyFramework\ColliderManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,8 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
+class IShader;
+
 /// <summary>
 /// 描画に必要な情報をまとめた構造体
 /// </summary>
@@ -14,8 +16,8 @@ struct RenderInfo {
 
 	const DirectX::XMMATRIX* world = nullptr;			// ワールド変換行列
 
-	const char* vsName = nullptr;						// 頂点シェーダー名
-	const char* psName = nullptr;						// ピクセルシェーダー名
+	IShader* vs = nullptr;							// 頂点シェーダー
+	IShader* ps = nullptr;							// ピクセルシェーダー
 
 	// 将来: RenderPhase phase / Material* material / BoneCB 等を追加
 };

@@ -60,8 +60,15 @@ bool ObjectManager::ChangeTag(uint64_t _id, const Tag& _newTag)
 //	m_ObjectsByTag.clear();
 //}
 
-void ObjectManager::Init(void)
+void ObjectManager::Init(EngineContext* context)
 {
+	// エンジンコンテキストのポインタをセット
+	m_Context = context;
+	// オブジェクト管理用コンテナの初期化
+	m_pObjects.clear();
+	m_ObjectsByID.clear();
+	m_ObjectsByName.clear();
+	m_ObjectsByTag.clear();
 }
 
 void ObjectManager::Update(uint64_t deltatime)

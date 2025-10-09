@@ -160,6 +160,12 @@
     <ClInclude Include="system\CCylinderMesh.h" />
     <ClInclude Include="system\CDirectInput.h" />
     <ClInclude Include="system\CIndexBuffer.h" />
+    <ClInclude Include="system\CVertexBuffer.h" />
+    <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h" />
+    <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h" />
+    <ClInclude Include="system\MyIndexBuffer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\CLineMesh.h" />
     <ClInclude Include="system\CMaterial.h" />
     <ClInclude Include="system\CMesh.h" />
@@ -175,7 +181,9 @@
     <ClInclude Include="system\CStaticMeshRenderer.h" />
     <ClInclude Include="system\CTexture.h" />
     <ClInclude Include="system\CTreeNode.h" />
-    <ClInclude Include="system\CVertexBuffer.h" />
+    <ClInclude Include="system\MyVertexBuffer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\CylinderDrawer.h" />
     <ClInclude Include="system\DebugUI.h" />
     <ClInclude Include="system\dx11helper.h" />
@@ -192,6 +200,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Transform\Transform.h" />
+    <ClInclude Include="system\Framework\EngineContext\EngineContext.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Character\Character.h" />
     <ClInclude Include="system\Framework\GameObject\Enemy\Enemy.h" />
     <ClInclude Include="system\Framework\GameObject\GameObject.h" />
@@ -200,7 +211,9 @@
     <ClInclude Include="system\Framework\Graphics\GraphicsDevice.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="system\Framework\Graphics\RenderInfo.h" />
+    <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderManager.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -240,6 +253,9 @@
     <ClInclude Include="system\LineDrawer.h" />
     <ClInclude Include="system\noncopyable.h" />
     <ClInclude Include="system\renderer.h" />
+    <ClInclude Include="system\Rock\Rock.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\SceneClassFactory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -282,6 +298,8 @@
     <ClCompile Include="system\Framework\Application\Application.cpp" />
     <ClCompile Include="system\Framework\Application\Entry\main.cpp" />
     <ClCompile Include="system\Framework\AssetManager\AssetManager.cpp" />
+    <ClCompile Include="system\Framework\ColliderManager\ColliderManager.cpp" />
+    <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp" />
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -333,6 +351,9 @@
     <ClCompile Include="system\imgui\imgui_widgets.cpp" />
     <ClCompile Include="system\LineDrawer.cpp" />
     <ClCompile Include="system\renderer.cpp" />
+    <ClCompile Include="system\Rock\Rock.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\Skydome\Skydome.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />
     <ClCompile Include="system\stb.cpp" />
