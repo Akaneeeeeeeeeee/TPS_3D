@@ -33,8 +33,8 @@ public:
 	}
 
 	// GPUにセット
-	void SetGPU() {
-
+	void SetGPU() const
+	{
 		// デバイスコンテキスト取得
 		ID3D11DeviceContext* devicecontext = nullptr;
 		devicecontext = Renderer::GetDeviceContext();

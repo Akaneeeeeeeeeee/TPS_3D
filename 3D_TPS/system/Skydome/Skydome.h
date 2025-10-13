@@ -9,12 +9,14 @@
 class Skydome : public GameObject
 {
 public:
-	Skydome(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
+	Skydome(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None,
+		const Transform& transform = Transform::One());
 	~Skydome();
 
 	void Init(void) override;
 	void Update(uint64_t deltatime) override;
-	void Draw(uint64_t deltatime) override;
+	void Draw(const uint64_t deltatime) const override;
 	void Uninit(void) override;
 
 	void SetTexture(const std::filesystem::path& filepath);

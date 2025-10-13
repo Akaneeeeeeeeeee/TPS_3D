@@ -17,7 +17,7 @@ public:
 	}
 
 	// 描画前処理
-	virtual void BeforeDraw(D3D_PRIMITIVE_TOPOLOGY primtype)
+	virtual void BeforeDraw(D3D_PRIMITIVE_TOPOLOGY primtype) const
 	{
 		ID3D11DeviceContext* devicecontext;
 
@@ -31,7 +31,7 @@ public:
 	}
 
 	// 描画前処理
-	virtual void BeforeDraw()
+	virtual void BeforeDraw() const
 	{
 		ID3D11DeviceContext* devicecontext;
 
@@ -45,7 +45,7 @@ public:
 	}
 
 	// サブセット描画
-	virtual void DrawSubset(unsigned int indexnum,unsigned int baseindex,unsigned int basevertexindex ) 
+	virtual void DrawSubset(unsigned int indexnum,unsigned int baseindex,unsigned int basevertexindex) const
 	{
 		Renderer::GetDeviceContext()->DrawIndexed(
 			indexnum,								// 描画するインデックス数（面数×３）
@@ -54,7 +54,7 @@ public:
 	}
 
 	// 描画
-	virtual void Draw() 
+	virtual void Draw() const
 	{
 		BeforeDraw();								// 描画前処理
 
@@ -65,7 +65,7 @@ public:
 	}
 
 	// 描画
-	virtual void Draw(D3D_PRIMITIVE_TOPOLOGY primtype)
+	virtual void Draw(D3D_PRIMITIVE_TOPOLOGY primtype) const
 	{
 		BeforeDraw(primtype);								// 描画前処理
 

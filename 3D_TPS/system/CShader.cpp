@@ -73,7 +73,8 @@ void CShader::Create(std::string vs, std::string ps, std::string gs)
 	return;
 }
 
-void CShader::SetGPU() {
+void CShader::SetGPU() const
+{
 
 	ID3D11DeviceContext* devicecontext;
 

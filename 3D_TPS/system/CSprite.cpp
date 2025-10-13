@@ -152,7 +152,7 @@ void CSprite::ModifyUV(const Vector2* uv)
  * @param rotation 回転角（X, Y, Z：ラジアン）
  * @param pos ワールド空間上の位置
  */
-void CSprite::Draw(Vector3 scale, Vector3 rotation, Vector3 pos)
+void CSprite::Draw(Vector3 scale, Vector3 rotation, Vector3 pos) const
 {
 	SRT srt;
 	srt.scale = scale;
@@ -185,7 +185,7 @@ void CSprite::Draw(Vector3 scale, Vector3 rotation, Vector3 pos)
  *
  * @param Matrix4x4 行列
  */
-void CSprite::Draw(Matrix4x4 mtx) 
+void CSprite::Draw(Matrix4x4 mtx) const
 {
 	Renderer::SetWorldViewProjection2D();
 	Renderer::SetWorldMatrix(&mtx);
@@ -211,7 +211,7 @@ void CSprite::Draw(Matrix4x4 mtx)
  *
  * @param Matrix4x4 行列
  */
-void CSprite::Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj)
+void CSprite::Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj) const
 {
 	Renderer::SetWorldMatrix(&world);
 	ID3D11DeviceContext* devicecontext = Renderer::GetDeviceContext();

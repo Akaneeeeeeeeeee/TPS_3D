@@ -12,7 +12,9 @@
 class Terrain : public GameObject
 {
 public:
-	Terrain(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
+	Terrain(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None, 
+		const Transform& transform = Transform::One());
 	~Terrain();
 
 	void Init(int divx, int divy,
@@ -20,7 +22,7 @@ public:
 
 	void Init(void) override;
 	void Update(uint64_t deltatime) override;
-	void Draw(uint64_t deltatime) override;
+	void Draw(const uint64_t deltatime) const override;
 	void Uninit(void) override;
 
 	void SetImage(const std::filesystem::path& _filepath);

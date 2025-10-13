@@ -30,7 +30,7 @@ public:
 
 protected:
 	// インターフェースクラスなのでprotected
-	IComponent(GameObject* owner);
+	IComponent();
 	// コンポーネントの所有者(sharedだとややこしくなるので生ポインタにする)
 	GameObject* m_pOwner = nullptr;
 	// 有効化フラグ

@@ -115,7 +115,7 @@ void Enemy::Update(uint64_t deltatime)
 	m_pAnimationObject->Update(m_AnimationSpeed);
 }
 
-void Enemy::Draw(uint64_t deltatime)
+void Enemy::Draw(const uint64_t deltatime) const
 {
 	// シェーダーをセット
 	m_Shader.SetGPU();

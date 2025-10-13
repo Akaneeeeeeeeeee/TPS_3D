@@ -33,43 +33,72 @@ enum class Tag {
 class GameObject {
 public:
 	GameObject() = delete;
-	GameObject(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
+	GameObject(EngineContext& context,
+		const uint64_t id,
+		const std::string& name = "",
+		const Tag& tag = Tag::None,
+		const Transform& transform = Transform::One())
+		: m_Context(context),
+		m_ID(id),
+		m_Name(name),
+		m_Tag(tag),
+		m_Transform(transform)
+	{
+	}
 
+	GameObject(EngineContext& context,
+		const uint64_t id,
+		const std::string& name = "",
+		const Tag& tag = Tag::None,
+		const Vector3& pos = Vector3::Zero,
+		const Quaternion& rot = Quaternion::Identity,
+		const Vector3& scale = Vector3::One)
+		: GameObject(context, id, name, tag, Transform(pos, rot, scale))
+	{
+	}
 	virtual ~GameObject();		//! デストラクタ
 
 	virtual void Init(void);
-	virtual void Update(uint64_t deltatime);
-	virtual void Draw(uint64_t deltatime);
+	virtual void Update(const uint64_t deltatime);
+	virtual void Draw(uint64_t deltatime) const;
 	virtual void Uninit(void);
 
 	//////////////////////////////////////////
 	//			コンポーネントの取り外し			//
 	//////////////////////////////////////////
 	template<typename T, typename ...Args>
-	T* AddComponent(const std::string& name, Args... args)
+	T* AddComponent(const std::string& name, Args&&... args)
 	{
 		// 継承チェック
-		static_assert(std::is_base_of<Component, T>::value, "TはIComponentを継承していません");
-		// 同じ名前のコンポーネントが存在する場合は追加しない
+		static_assert(std::is_base_of<IComponent, T>::value, "TはIComponentを継承していません");
+
+		// 同名のコンポーネントが存在するなら追加しない
 		if (m_Components.find(name) != m_Components.end()) { return nullptr; }
 
-		// コンポーネントを追加
-		m_Components[name] = this->CreateComponent<T>(args...);
-		// オーナーオブジェクトを設定
-		m_Components[name]->SetGameObject(*this);
-		// コンポーネントを返す
-		return static_cast<T*>(m_Components[name].get());
+		// ユニークポインタ生成
+		auto component = this->CreateComponent<T>(std::forward<Args>(args)...);
+
+		// 所有者と初期化
+		component->SetOwner(*this);
+
+		T* ptr = component.get();
+		m_Components[name] = std::move(component);
+		return ptr;
 	}
 
-	// コンポーネント取得(単一想定)
+	// 型指定でのコンポーネント取得
 	template <typename T>
 	T* GetComponent(void)
 	{
 		// コンポーネント探索
-		auto it = std::find_if(m_Components.begin(), m_Components.end(),
-			[](const std::unique_ptr<IComponent>& comp) { 
-				return dynamic_cast<T*>(comp.get()) != nullptr;
-			});
+		for (auto& [name, comp] : m_Components) 
+		{
+			if (auto ptr = dynamic_cast<T*>(comp.get()))
+			{
+				return ptr;
+			}
+		}
+		return nullptr;
 	}
 
 	template <typename T>
@@ -92,26 +121,24 @@ public:
 		return true;
 	}
 
+	virtual IComponent* GetComponent(const std::string& name) const;
+
 	//////////////////////////////////////////////
 	//			姿勢情報のゲッター/セッター			//
 	//////////////////////////////////////////////
 	virtual Transform GetTransform(void) const { return m_Transform; }
-	virtual const Transform& GetTransformRef(void) const { return m_Transform; }
 	virtual void SetTransform(const Transform& transform) { m_Transform = transform; }
-	virtual Vector3 GetPosition(void) const;
-	virtual const Vector3& GetPositionRef(void) const { return m_Transform.GetPositionRef(); }
-	virtual void SetPosition(const Vector3& position);
-	virtual Quaternion GetRotation(void) const;
-	virtual const Quaternion& GetRotationRef(void) const { return m_Transform.GetRotationRef(); }
-	virtual void SetRotation(const Quaternion& rotation);
-	virtual Vector3 GetScale(void) const;
-	virtual const Vector3& GetScaleRef(void) const { return m_Transform.GetScaleRef(); }
-	virtual void SetScale(const Vector3& scale);
+	virtual Vector3 GetPosition(void) const { return m_Transform.GetPosition(); }
+	virtual void SetPosition(const Vector3& position) { m_Transform.SetPosition(position); }
+	virtual Quaternion GetRotation(void) const { return m_Transform.GetRotation(); }
+	virtual void SetRotation(const Quaternion& rotation) { m_Transform.SetRotation(rotation); }
+	virtual Vector3 GetScale(void) const { return m_Transform.GetScale(); }
+	virtual void SetScale(const Vector3& scale) { m_Transform.SetScale(scale); }
 
 	// Transform関連は直接委譲
-	virtual Matrix4x4 GetWorldMatrix() const { return m_Transform.GetWorldMatrix(); }
+	virtual Matrix4x4 GetWorldMatrix(void) const { return m_Transform.GetWorldMatrix(); }
 
-	virtual Tag& GetTag(void) { return m_Tag; }
+	virtual Tag GetTag(void) const { return m_Tag; }
 	virtual void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
 	virtual uint64_t GetID(void) const { return m_ID; }
 	virtual std::string GetName(void) const { return m_Name; }

@@ -1,7 +1,7 @@
 #include "ICollider.h"
 #include "system/Framework/EngineContext/EngineContext.h"
 
-ICollider::ICollider()
+ICollider::ICollider() : IComponent()
 {
 }
 

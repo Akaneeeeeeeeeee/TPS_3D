@@ -26,7 +26,7 @@ void Billboard::Update(uint64_t deltatime)
 
 }
 
-void Billboard::Draw(uint64_t deltatime)
+void Billboard::Draw(const uint64_t deltatime) const
 {
 	// カメラの座標からビルボードの座標へのベクトルを計算
 	// ビルボードの位置

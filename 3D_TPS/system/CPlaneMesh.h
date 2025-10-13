@@ -22,10 +22,10 @@ public:
 	void CreateIndexCCW();						// 反時計回りにインデックスを生成		
 
 	// 幅
-	float GetWidth();
+	float GetWidth() const;
 	void SetWidth(float width);
 	// 高さ
-	float GetHeight();
+	float GetHeight() const;
 	void SetHeight(float height);
 	int GetDivX();
 	int GetDivY();

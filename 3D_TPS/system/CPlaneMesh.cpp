@@ -181,7 +181,7 @@ void CPlaneMesh::CreateIndexCCW() {
 }
 
 // ïù
-float CPlaneMesh::GetWidth() {
+float CPlaneMesh::GetWidth() const {
 	return m_width;
 }
 void CPlaneMesh::SetWidth(float width) {
@@ -189,7 +189,7 @@ void CPlaneMesh::SetWidth(float width) {
 }
 
 // çÇÇ≥
-float CPlaneMesh::GetHeight() {
+float CPlaneMesh::GetHeight() const{
 	return m_height;
 }
 void CPlaneMesh::SetHeight(float height) {

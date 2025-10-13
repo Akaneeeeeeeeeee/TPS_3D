@@ -8,18 +8,17 @@
 /// <summary>
 /// メッシュ描画用のレンダラー
 /// </summary>
-template <typename T>
 class MeshRenderer final : public IRenderer
 {
 public:
-	MeshRenderer(GameObject* owner) : IRenderer(owner) {};
+	MeshRenderer() : IRenderer() {};
 	~MeshRenderer() {
 		m_VSName = nullptr;
 		m_PSName = nullptr;
 	};
 
-	void SetVertexBuffer(const CVertexBuffer<T>& vb) { m_VertexBuffer = vb; }
-	void SetIndexBuffer(const CIndexBuffer& ib) { m_IndexBuffer = ib; }
+	/*void SetVertexBuffer(const CVertexBuffer<VERTEX_3D>& vb) { m_VertexBuffer = vb; }
+	void SetIndexBuffer(const CIndexBuffer& ib) { m_IndexBuffer = ib; }*/
 
 	void SetShaders(const char* vsName, const char* psName)
 	{
@@ -27,29 +26,29 @@ public:
 		m_PSName = psName;
 	}
 
-	bool GetRenderInfo(RenderInfo& outInfo) override
-	{
-		// 所有者がいない/シェーダー名が設定されていない場合は描画しない
-		if (!m_pOwner || !m_VSName || !m_PSName) { return false; }
+	//bool GetRenderInfo(RenderInfo& outInfo) override
+	//{
+	//	// 所有者がいない/シェーダー名が設定されていない場合は描画しない
+	//	if (!m_pOwner || !m_VSName || !m_PSName) { return false; }
 
-		// ワールド行列を取得
-		Matrix4x4* mtx = &m_pOwner->GetWorldMatrix();
+	//	// ワールド行列を取得
+	//	Matrix4x4* mtx = &m_pOwner->GetWorldMatrix();
 
-		// 描画必要情報をセット
-		outInfo.vertexBuffer = m_VertexBuffer.GetBuffer();
-		outInfo.indexBuffer = m_IndexBuffer.GetBuffer();
-		outInfo.stride = m_VertexBuffer.GetStride();
-		outInfo.indexCount = m_IndexBuffer.GetIndexCount();
-		outInfo.indexFormat = m_IndexBuffer.GetIndexFormat();
-		outInfo.world = mtx;
-		outInfo.VSName = m_VSName;
-		outInfo.psName = m_PSName;
+	//	// 描画必要情報をセット
+	//	outInfo.vertexBuffer = m_VertexBuffer.GetBuffer();
+	//	outInfo.indexBuffer = m_IndexBuffer.GetBuffer();
+	//	outInfo.stride = m_VertexBuffer.GetStride();
+	//	outInfo.indexCount = m_IndexBuffer.GetIndexCount();
+	//	outInfo.indexFormat = m_IndexBuffer.GetIndexFormat();
+	//	outInfo.world = mtx;
+	//	outInfo.VSName = m_VSName;
+	//	outInfo.psName = m_PSName;
 
-		return true;
-	}
+	//	return true;
+	//}
 
 private:
-	CVertexBuffer<T>	m_VertexBuffer;		// 頂点バッファ
+	CVertexBuffer<VERTEX_3D>	m_VertexBuffer;		// 頂点バッファ
 	CIndexBuffer		m_IndexBuffer;		// インデックスバッファ
 
 	const char* m_VSName = nullptr;

@@ -1,18 +1,36 @@
 ﻿#include "GameObject.h"
 
-GameObject::GameObject(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
-	:m_Context(context), m_ID(id), m_Name(name), m_Tag(tag),
-	m_Transform(
-		Vector3::Zero, Quaternion::Identity, Vector3::One)
-{
-
-}
+//GameObject::GameObject(EngineContext& context, const uint64_t id,
+//	const std::string& name, const Tag& tag,
+//	const Transform& transform)
+//	:m_Context(context), m_ID(id), m_Name(name), m_Tag(tag),
+//	m_Transform(transform)
+//{
+//
+//}
 
 /**
  * @brief デストラクタ
 */
 GameObject::~GameObject() {
 
+}
+
+/*
+* @brief	コンポーネント取得
+* @detail	名前でコンポーネントを取得する
+* @param	name	コンポーネント名
+*/
+IComponent* GameObject::GetComponent(const std::string& name) const
+{
+	// コンポーネント探索
+	auto it = m_Components.find(name);
+	// 見つかったらポインタを返す
+	if (it != m_Components.end())
+	{
+		return it->second.get();
+	}
+	return nullptr;
 }
 
 void GameObject::Init(void)
@@ -34,7 +52,7 @@ void GameObject::Update(uint64_t deltatime)
 /// →毎フレームコンポーネントを捜索するのは非効率的なのでフラグを持たせるべきかも
 /// </summary>
 /// <param name=""></param>
-void GameObject::Draw(uint64_t deltatime)
+void GameObject::Draw(uint64_t deltatime) const
 {
 	// レンダラー系コンポーネントを保持していれば描画する
 	/*for (auto& component : m_Components) 
@@ -55,32 +73,3 @@ void GameObject::Uninit(void)
 	m_Components.clear();*/
 }
 
-// Positionゲッター
-Vector3 GameObject::GetPosition(void) const {
-	return m_Transform.GetPosition();
-}
-
-// Positionセッター
-void GameObject::SetPosition(const Vector3& _pos) {
-	this->m_Transform.SetPosition(_pos);
-}
-
-// Rotationゲッター
-Quaternion GameObject::GetRotation(void) const {
-	return m_Transform.GetRotation();
-}
-
-// Rotationセッター
-void GameObject::SetRotation(const Quaternion& _rot) {
-	this->m_Transform.SetRotation(_rot);
-}
-
-// Scaleゲッター
-Vector3 GameObject::GetScale(void) const {
-	return m_Transform.GetScale();
-}
-
-// Scaleセッター
-void GameObject::SetScale(const Vector3& _scale) {
-	this->m_Transform.SetScale(_scale);
-}

@@ -3,8 +3,10 @@
 #include "commontypes.h"
 
 
-Terrain::Terrain(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
-    : GameObject(context, id, name, tag)
+Terrain::Terrain(EngineContext& context, const uint64_t id, 
+    const std::string& name, const Tag& tag, 
+    const Transform& transform)
+    : GameObject(context, id, name, tag, transform)
 {
 }
 
@@ -51,7 +53,7 @@ void Terrain::Update(uint64_t deltatime)
 
 }
 
-void Terrain::Draw(uint64_t deltatime)
+void Terrain::Draw(const uint64_t deltatime) const
 {
 	// SRTî•ñì¬
 	Matrix4x4 r = Matrix4x4::CreateFromQuaternion(m_Transform.GetRotation());

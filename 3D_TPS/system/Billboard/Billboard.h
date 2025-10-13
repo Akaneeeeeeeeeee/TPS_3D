@@ -7,8 +7,10 @@
 class Billboard : public GameObject
 {
 public:
-	Billboard(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
-		: GameObject(context, id, name, tag),
+	Billboard(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None, 
+		const Transform& transform = Transform::One())
+		: GameObject(context, id, name, tag, transform),
 		m_Sprite(), m_pCamera()
 	{
 	}
@@ -25,7 +27,7 @@ public:
 
 	void Update(uint64_t deltatime) override;
 
-	void Draw(uint64_t deltatime) override;
+	void Draw(const uint64_t deltatime) const override;
 	
 
 private:

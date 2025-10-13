@@ -27,5 +27,5 @@ public:
 
 	bool Load(const std::u8string& filename);		// 20250711
 
-	void SetGPU();
+	void SetGPU() const;
 };

@@ -6,13 +6,15 @@ struct EngineContext;
 class Rock final : public GameObject
 {
 public:
-	Rock();
-	Rock(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None);
+	//Rock();
+	Rock(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None, 
+		const Transform& transform = Transform::One());
 	~Rock();
 
 	void Init(void) override;
-	void Update(uint64_t) override;
-	void Draw(uint64_t) override;
+	void Update(const uint64_t) override;
+	void Draw(const uint64_t) const override;
 	void Uninit(void) override;
 
 private:

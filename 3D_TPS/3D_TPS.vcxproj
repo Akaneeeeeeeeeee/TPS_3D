@@ -161,8 +161,12 @@
     <ClInclude Include="system\CDirectInput.h" />
     <ClInclude Include="system\CIndexBuffer.h" />
     <ClInclude Include="system\CVertexBuffer.h" />
-    <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h" />
-    <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h" />
+    <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\MyIndexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -254,7 +258,7 @@
     <ClInclude Include="system\noncopyable.h" />
     <ClInclude Include="system\renderer.h" />
     <ClInclude Include="system\Rock\Rock.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\SceneClassFactory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -298,8 +302,12 @@
     <ClCompile Include="system\Framework\Application\Application.cpp" />
     <ClCompile Include="system\Framework\Application\Entry\main.cpp" />
     <ClCompile Include="system\Framework\AssetManager\AssetManager.cpp" />
-    <ClCompile Include="system\Framework\ColliderManager\ColliderManager.cpp" />
-    <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp" />
+    <ClCompile Include="system\Framework\ColliderManager\ColliderManager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -352,7 +360,7 @@
     <ClCompile Include="system\LineDrawer.cpp" />
     <ClCompile Include="system\renderer.cpp" />
     <ClCompile Include="system\Rock\Rock.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Skydome\Skydome.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />

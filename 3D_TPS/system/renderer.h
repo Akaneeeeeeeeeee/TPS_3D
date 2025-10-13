@@ -47,20 +47,28 @@ struct BONE
 };
 
 /**
- * @struct VERTEX_3D
+ * @struct VERTEX_ANIMATION
  * @brief ３次元頂点データを格納する構造体
  */
 struct VERTEX_3D
 {
-    Vector3 Position;            ///< 頂点の座標
-    Vector3 Normal;              ///< 法線ベクトル
-    Color Diffuse;               ///< 拡散反射色
-    Vector2 TexCoord;            ///< テクスチャ座標
-    int BoneIndex[4];            ///< ボーンインデックス（最大4つ） 20231225
-    float BoneWeight[4];         ///< 各ボーンのウェイト値 20231225
-    std::string BoneName[4];     ///< 各ボーンの名前 20231226
-    int bonecnt = 0;             ///< 影響を与えるボーン数 20231226
+    Vector3 Position;            // 頂点の座標
+    Vector3 Normal;              // 法線ベクトル
+    Color Diffuse;               // 拡散反射色
+    Vector2 TexCoord;            // テクスチャ座標
+    int BoneIndex[4];            // ボーンインデックス（最大4つ） 20231225
+    float BoneWeight[4];         // 各ボーンのウェイト値 20231225
+    std::string BoneName[4];     // 各ボーンの名前 20231226
+    int bonecnt = 0;             // 影響を与えるボーン数 20231226
 };
+
+struct VERTEX
+{
+    Vector3 Position;    // 頂点の座標
+    Vector3 Normal;      // 法線ベクトル
+    Color Diffuse;       // 拡散反射色
+    Vector2 TexCoord;    // テクスチャ座標
+};;
 
 /**
  * @struct MATERIAL

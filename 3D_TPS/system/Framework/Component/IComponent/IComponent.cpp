@@ -1,7 +1,7 @@
 ﻿#include "IComponent.h"
 #include "system/Framework/GameObject/GameObject.h"
 
-IComponent::IComponent(GameObject* owner) :m_pOwner(owner)
+IComponent::IComponent() : m_pOwner(nullptr)
 {
 }
 

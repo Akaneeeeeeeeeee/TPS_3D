@@ -13,12 +13,14 @@ class Player final : public Character
 {
 public:
 	Player() = default;
-	Player(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::Player);
+	Player(EngineContext& context, const uint64_t id,
+		const std::string& name = "", const Tag& tag = Tag::Player,
+		const Transform& transform = Transform::One());
 	~Player();
 
 	void Init(void) override;
 	void Update(uint64_t deltatime) override;
-	void Draw(uint64_t deltatime) override;
+	void Draw(const uint64_t deltatime) const override;
 	void Uninit(void) override;
 
 	void SetCamera(FreeCamera* cam) { m_pCamera = cam; }

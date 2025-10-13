@@ -1,8 +1,10 @@
 #include "Player.h"
 #include "system/CDirectInput.h"
 
-Player::Player(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
-	: Character(context, id, name, tag)
+Player::Player(EngineContext& context, const uint64_t id, 
+	const std::string& name, const Tag& tag,
+	const Transform& transform)
+	: Character(context, id, name, tag, transform)
 {
 }
 
@@ -120,19 +122,25 @@ void Player::Update(uint64_t deltatime)
 
 	// カメラ位置更新
 	// TPSなのでカメラはプレイヤーから一定距離離れる
-	m_pCamera->SetRadius(800.0f);
-	m_pCamera->SetAzimuth(azimuth);
-	m_pCamera->SetElevation(elevation);
-	pos.y += 100.0f;	// 注視点を少し上にずらす
-	m_pCamera->SetLookat(pos);
-	m_pCamera->CalcCameraPositionTranslate(pos);
+	if(m_pCamera)
+	{
+		m_pCamera->SetRadius(800.0f);
+		m_pCamera->SetAzimuth(azimuth);
+		m_pCamera->SetElevation(elevation);
+		pos.y += 100.0f;	// 注視点を少し上にずらす
+		m_pCamera->SetLookat(pos);
+		m_pCamera->CalcCameraPositionTranslate(pos);
+	}
 
     m_pAnimationObject->Update(m_AnimationSpeed);
 }
 
-void Player::Draw(uint64_t deltatime)
+void Player::Draw(const uint64_t deltatime) const
 {
-	this->m_pCamera->Draw();
+	if(m_pCamera)
+	{
+		this->m_pCamera->Draw();
+	}
 	// シェーダーをセット
 	m_Shader.SetGPU();
 

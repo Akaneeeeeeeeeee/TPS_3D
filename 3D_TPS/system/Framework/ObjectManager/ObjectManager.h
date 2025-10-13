@@ -20,15 +20,15 @@ public:
 	 * 
 	 * ID設定、タグ設定、名前設定を行ってコンテナに追加
 	*/
-	template <typename T>
-	T* Instantiate(const std::string& _Name, const Tag& _Tag = Tag::None)
+	template <typename T, typename ...Args>
+	T* Instantiate(const std::string& _Name, const Tag _Tag = Tag::None, Args&&... args)
 	{
 		// SnowfrakeIDを付与
 		uint64_t id = this->m_IDGenerator.next_id();
 		// コンパイル時チェック
 		static_assert(std::is_base_of_v<GameObject, T>, "このオブジェクトはObjectを継承していません");
 		// オブジェクト生成
-		auto obj = std::make_unique<T>(*m_Context, id, _Name, _Tag);
+		auto obj = std::make_unique<T>(*m_Context, id, _Name, _Tag, std::forward<Args>(args)...);
 		// オブジェクトの生ポインタを取得
 		GameObject* rawPtr = obj.get();
 		// オブジェクトを初期化
@@ -47,7 +47,7 @@ public:
 
 	// IDからオブジェクトを取得
 	template <typename T = GameObject>
-	T* GetObjectByID(uint64_t id) const
+	T* GetObjectByID(const uint64_t id) const
 	{
 		// オブジェクトを探索
 		auto it = m_ObjectsByID.find(id);
@@ -65,7 +65,7 @@ public:
 
 	// 指定タグのオブジェクトを取得
 	template <typename T = GameObject>
-	std::vector<T*> GetObjectsByTag(const Tag& tag) 
+	std::vector<T*> GetObjectsByTag(const Tag tag) 
 	{
 		std::vector<T*> result;
 
@@ -94,7 +94,7 @@ public:
 	}
 
 	// オブジェクト削除
-	void DeleteObject(Tag _ObjTag);
+	void DeleteObject(const Tag _ObjTag);
 
 	/**
 	 * @brief タグ変更関数
@@ -103,7 +103,7 @@ public:
 	 * @param _newTag 
 	 * @return 
 	*/
-	bool ChangeTag(uint64_t _id, const Tag& _newTag);
+	bool ChangeTag(const uint64_t _id, const Tag _newTag);
 
 	//void Init(ComponentFactory* _factory);
 	//void Init(ShaderManager* shaderMgr);
@@ -115,7 +115,6 @@ public:
 	//! DI
 	//void SetComponentFactory(ComponentFactory* _factory) { m_pComponentFactory = _factory; }
 	//void SetRenderManager(RenderManager* _renderManager) { m_pRenderManager = _renderManager; }
-	void SetShaderManager(ShaderManager* _shaderManager);
 	//void SetAssetManager(AssetManager* _assetManager) { m_pAssetManager = _assetManager; }
 
 private:

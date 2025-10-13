@@ -20,7 +20,7 @@ public:
 	virtual void Detach(EngineContext& context) override;
 
 protected:
-	IRenderer(GameObject* owner) : IComponent(owner) {};	//!< コンストラクタ（RenderManagerのポインタはnullptrで初期化）
+	IRenderer() : IComponent() {};	//!< コンストラクタ（RenderManagerのポインタはnullptrで初期化）
 
 	RenderManager* m_pRenderManager = nullptr;	//!< レンダーマネージャーへのポインタ(描画系のみが依存する)
 };

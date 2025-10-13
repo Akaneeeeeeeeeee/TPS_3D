@@ -24,15 +24,17 @@ class Character : public GameObject
 {
 public:
 	Character() = delete;
-	Character(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
-		: GameObject(context, id, name, tag)
+	Character(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None,
+		const Transform& transform = Transform::One())
+		: GameObject(context, id, name, tag, transform)
 	{
 	};
 	virtual ~Character() {};
 
 	virtual void Init(void);
 	virtual void Update(uint64_t deltatime);
-	virtual void Draw(uint64_t deltatime);
+	virtual void Draw(const uint64_t deltatime) const override;
 	virtual void Uninit(void);
 
 	virtual void SetAnimationData(CAnimationData* pAnimationData) { m_pAnimationData = pAnimationData; }

@@ -1,8 +1,6 @@
 ﻿#include "ObjectManager.h"
 //#include "../../Framework/Component/Collider/2D/BoxCollider2D/BoxCollider2D.h"
 //#include "../../Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
-#include "system/renderer.h"
-#include "system/Framework/ShaderManager/ShaderManager.h"
 
 /**
  * @brief オブジェクト削除関数
@@ -21,7 +19,7 @@ void ObjectManager::DeleteObject(Tag _ObjName) {
 /// <param name="_id">オブジェクトID</param>
 /// <param name="_newTag">変えたいタグ</param>
 /// </summary>
-bool ObjectManager::ChangeTag(uint64_t _id, const Tag& _newTag)
+bool ObjectManager::ChangeTag(const uint64_t _id, const Tag _newTag)
 {
 	auto it = m_ObjectsByID.find(_id);
 	if (it == m_ObjectsByID.end()) { return false; }
@@ -110,7 +108,3 @@ void ObjectManager::Uninit(void) {
 	//m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
 }
 
-void ObjectManager::SetShaderManager(ShaderManager* _shaderManager)
-{ 
-	//m_pShaderManager = _shaderManager;
-}

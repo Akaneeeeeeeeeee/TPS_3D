@@ -25,7 +25,7 @@ private:
 	GraphicsDevice m_GraphicsDevice;		// グラフィックスデバイス
 	ShaderManager m_ShaderManager;			// シェーダーマネージャー
 	AssetManager m_AssetManager;			// アセットマネージャー
-	RenderManager m_RenderManager;			// レンダーマネージャー
+	//RenderManager m_RenderManager;			// レンダーマネージャー
 	std::unique_ptr<EngineContext> m_pContext; // エンジンコンテキスト(Init後に生成したいためunique_ptr)
 	
 	ObjectManager m_ObjectManager;			// オブジェクト管理クラス

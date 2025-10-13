@@ -14,7 +14,7 @@ void Character::Update(uint64_t deltatime)
 	m_pAnimationObject->Update(m_AnimationSpeed);
 }
 
-void Character::Draw(uint64_t deltatime)
+void Character::Draw(const uint64_t deltatime) const
 {
 	// キャラクターの描画処理
 	// 例: モデルの描画、エフェクトの適用など

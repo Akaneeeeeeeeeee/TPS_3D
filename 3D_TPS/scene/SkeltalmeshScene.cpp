@@ -71,13 +71,13 @@ void SkeltalmeshScene::debugFreeCamera()
 	ImGui::SliderFloat3("lookat ", &lookat.x, -100, 100);
 
 	// カメラの位置を極座標からデカルト座標に変換
-	m_camera.SetRadius(radius);
-	m_camera.SetElevation(elevation);
-	m_camera.SetAzimuth(azimuth);
-	m_camera.SetLookat(lookat);
+	//m_camera.SetRadius(radius);
+	//m_camera.SetElevation(elevation);
+	//m_camera.SetAzimuth(azimuth);
+	//m_camera.SetLookat(lookat);
 
-	// カメラの位置を極座標から求める
-	m_camera.CalcCameraPosition();
+	//// カメラの位置を極座標から求める
+	//m_camera.CalcCameraPosition();
 
 	ImGui::End();
 }

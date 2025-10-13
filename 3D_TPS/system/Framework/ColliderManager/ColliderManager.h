@@ -2,11 +2,11 @@
 #include "system/Framework/Component/Collider/3D/ICollider.h"
 #include <vector>
 
-static class ColliderManager
+class ColliderManager
 {
 public:
-	ColliderManager();
-	~ColliderManager();
+	/*ColliderManager();
+	~ColliderManager();*/
 
 	static void Register(ICollider* collider);
 	static void UnRegister(ICollider* collider);
@@ -15,10 +15,10 @@ private:
 	static std::vector<ICollider*> m_pColliders;
 };
 
-ColliderManager::ColliderManager()
-{
-}
-
-ColliderManager::~ColliderManager()
-{
-}
+//ColliderManager::ColliderManager()
+//{
+//}
+//
+//ColliderManager::~ColliderManager()
+//{
+//}

@@ -1,7 +1,9 @@
 #include "Skydome.h"
 
-Skydome::Skydome(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
-	: GameObject(context, id, name, tag)
+Skydome::Skydome(EngineContext& context, const uint64_t id, 
+	const std::string& name, const Tag& tag,
+	const Transform& transform)
+	: GameObject(context, id, name, tag, transform)
 {
 }
 
@@ -34,12 +36,12 @@ void Skydome::Update(uint64_t deltatime)
 	// 特に更新処理はなし
 }
 
-void Skydome::Draw(uint64_t deltatime)
+void Skydome::Draw(const uint64_t deltatime) const
 {
 	// SRT情報作成
-	const Quaternion& rot = m_Transform.GetRotationRef();
-	const Vector3& pos = m_Transform.GetPositionRef();
-	const Vector3& scale = m_Transform.GetScaleRef();
+	Quaternion rot = m_Transform.GetRotation();
+	Vector3 pos = m_Transform.GetPosition();
+	Vector3 scale = m_Transform.GetScale();
 
 	// ワールド行列計算
 	Matrix4x4 r = Matrix4x4::CreateFromQuaternion(rot);
