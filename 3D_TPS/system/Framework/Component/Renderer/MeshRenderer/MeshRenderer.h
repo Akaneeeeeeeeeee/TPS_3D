@@ -22,7 +22,7 @@ public:
 	MeshRenderer() : IRenderer() {};
 	~MeshRenderer() = default;
 
-	void Init()
+	void Init(void) override;
 
 	/*void SetVertexBuffer(const CVertexBuffer<VERTEX_3D>& vb) { m_VertexBuffer = vb; }
 	void SetIndexBuffer(const CIndexBuffer& ib) { m_IndexBuffer = ib; }*/
