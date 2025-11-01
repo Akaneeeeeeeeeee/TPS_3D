@@ -1,4 +1,8 @@
 #include "AssetManager.h"
+#include "system/CAnimationData.h"
+#include "system/CAnimationMesh.h"
+#include "system/CStaticMesh.h"
+
 
 AssetManager::AssetManager()
 {

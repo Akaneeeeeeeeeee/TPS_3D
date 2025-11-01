@@ -10,6 +10,7 @@
 
 #include "SkeltalmeshScene.h"
 #include "system/Framework/GameObject/Character/Character.h"
+#include "system/Cube/Cube.h"
 
 //struct Load3DInfo{
 //	std::string filename;
@@ -235,7 +236,7 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void SkeltalmeshScene::Draw(uint64_t deltatime)
+void SkeltalmeshScene::Draw(void)
 {
 	//m_camera.Draw();
 
@@ -287,7 +288,7 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 
 	m_pTerrain->Draw(deltatime);
 	m_pSkydome->Draw(deltatime);*/
-	m_pObjectManager->Draw(deltatime);
+	m_pObjectManager->Draw();
 	//m_pCharacter->Draw(deltatime);
 
 	/*for(size_t i = 0; i < m_pEnemies.size(); i++)
@@ -345,6 +346,10 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 	auto billboard = m_pObjectManager->Instantiate<Billboard>("billboard", Tag::Item);
 	billboard->Init(300, 300, "assets/texture/emblem.png", &m_camera);
 	billboard->SetPosition(Vector3(0, 150, 3000));
+
+	// Cube生成
+	/*auto cube = m_pObjectManager->Instantiate<Cube>("cube", Tag::Object);
+	cube->Init();*/
 
 	// メッシュデータの読み込み
 	//auto rock = m_pObjectManager->CreateObject<CStaticMesh>("rock", Tag::Object);

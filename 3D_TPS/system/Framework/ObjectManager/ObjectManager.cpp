@@ -69,7 +69,7 @@ void ObjectManager::Init(EngineContext* context)
 	m_ObjectsByTag.clear();
 }
 
-void ObjectManager::Update(uint64_t deltatime)
+void ObjectManager::Update(const uint64_t deltatime)
 {
 	// 範囲for文
 	for (auto& obj : m_pObjects)
@@ -84,11 +84,11 @@ void ObjectManager::Update(uint64_t deltatime)
  * カメラがある場合は、そのオブジェクトの大きさ以内にいるものだけを描画する
  * カメラがない場合はそのまま描画
 */
-void ObjectManager::Draw(uint64_t deltatime)
+void ObjectManager::Draw(void) const
 {
 	for(auto& obj : m_pObjects)
 	{
-		obj->Draw(deltatime);
+		obj->Draw();
 	}
 }
 

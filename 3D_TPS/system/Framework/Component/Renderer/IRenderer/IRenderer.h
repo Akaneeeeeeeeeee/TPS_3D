@@ -4,7 +4,7 @@
 
 class RenderManager;	// 前方宣言
 class ShaderManager;	// 前方宣言
-struct RenderInfo;	// 前方宣言
+struct RenderInfo;		// 前方宣言
 
 /**
  * @brief レンダラー系コンポーネントを識別するためのインターフェースクラス
@@ -12,7 +12,7 @@ struct RenderInfo;	// 前方宣言
 class IRenderer : public IComponent
 {
 public:
-	virtual ~IRenderer() {};
+	virtual ~IRenderer() = default;
 
 	virtual bool GetRenderInfo(RenderInfo& outInfo) = 0;	//!< 描画に必要な情報を取得する純粋仮想関数
 

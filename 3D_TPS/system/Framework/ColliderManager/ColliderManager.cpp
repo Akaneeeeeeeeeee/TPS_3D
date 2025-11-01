@@ -16,8 +16,7 @@ void ColliderManager::Register(ICollider* collider)
 void ColliderManager::UnRegister(ICollider* collider)
 {
 	// ‘¶İ‚µ‚Ä‚¢‚ê‚Î“o˜^‰ğœ
-	auto it = std::find(m_pColliders.begin(), m_pColliders.end(), collider);
-	if(it != m_pColliders.end())
+	if(auto it = std::find(m_pColliders.begin(), m_pColliders.end(), collider); it != m_pColliders.end())
 	{
 		m_pColliders.erase(it);
 	}

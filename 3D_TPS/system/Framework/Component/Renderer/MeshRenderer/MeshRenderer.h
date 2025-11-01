@@ -4,27 +4,28 @@
 #include "system/CIndexBuffer.h"
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/Graphics/RenderInfo.h"
+#include "system/CMaterial.h"
 
-/// <summary>
-/// メッシュ描画用のレンダラー
-/// </summary>
+/*
+* @brief	メッシュ描画コンポーネント
+* @detail	メッシュを描画するためのコンポーネント
+* @remark	頂点バッファ、インデックスバッファ、シェーダー名を保持する
+* @remark	メッシュデータをポインタで持ち、そのデータを元に頂点バッファ、インデックスバッファを生成、描画を行う
+* @auther	赤根和樹
+* @date		2025/10/16
+* 
+* todo: マテリアル、テクスチャ、シェーダーをRenderInfoに入れてRendereManagerから描画、で行けそう
+*/
 class MeshRenderer final : public IRenderer
 {
 public:
 	MeshRenderer() : IRenderer() {};
-	~MeshRenderer() {
-		m_VSName = nullptr;
-		m_PSName = nullptr;
-	};
+	~MeshRenderer() = default;
+
+	void Init()
 
 	/*void SetVertexBuffer(const CVertexBuffer<VERTEX_3D>& vb) { m_VertexBuffer = vb; }
 	void SetIndexBuffer(const CIndexBuffer& ib) { m_IndexBuffer = ib; }*/
-
-	void SetShaders(const char* vsName, const char* psName)
-	{
-		m_VSName = vsName;
-		m_PSName = psName;
-	}
 
 	//bool GetRenderInfo(RenderInfo& outInfo) override
 	//{
@@ -48,9 +49,7 @@ public:
 	//}
 
 private:
-	CVertexBuffer<VERTEX_3D>	m_VertexBuffer;		// 頂点バッファ
-	CIndexBuffer		m_IndexBuffer;		// インデックスバッファ
-
-	const char* m_VSName = nullptr;
-	const char* m_PSName = nullptr;
+	CVertexBuffer<VERTEX_3D>	m_VertexBuffer;	// 頂点バッファ
+	CIndexBuffer				m_IndexBuffer;	// インデックスバッファ
+	std::unique_ptr<CMaterial> m_pMaterial;		// マテリアル
 };

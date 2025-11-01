@@ -2,13 +2,16 @@
 #include "system/Framework/GameObject/Character/Character.h"
 #include "system/camera.h"
 
-/// <summary>
-/// ゲーム内のプレイヤーキャラクターを表すクラスです。
-/// Character クラスを継承し、初期化、更新、描画、終了処理のメソッドをオーバーライドします。
-/// 
-/// TODO:シーン終了時にカメラの座標が原点付近になるバグを修正
-/// 
-/// </summary>
+
+/*
+* @brief	プレイヤークラス
+* @detail	ゲーム内のプレイヤーキャラクターを表すクラス
+* @remark	Characterクラスを継承し、初期化、更新、描画、終了処理のメソッドをオーバーライドする
+* @auther	赤根和樹
+* @date		2025/10/11
+* 
+* todo : 入力はコマンドパターンでやりたいよねー
+*/
 class Player final : public Character
 {
 public:
@@ -19,8 +22,8 @@ public:
 	~Player();
 
 	void Init(void) override;
-	void Update(uint64_t deltatime) override;
-	void Draw(const uint64_t deltatime) const override;
+	void Update(const uint64_t deltatime) override;
+	void Draw(void) const override;
 	void Uninit(void) override;
 
 	void SetCamera(FreeCamera* cam) { m_pCamera = cam; }

@@ -46,8 +46,8 @@ public:
 
 	void Init(ObjectManager* _pObjectMgr);		//! 初期化
 	//void Init(SceneClassFactory* _factory, ObjectManager* _pObjectMgr);		//! 初期化
-	void Update(uint64_t deltatime);			//! 更新
-	void Draw(uint64_t deltatime);				//! 描画
+	void Update(const uint64_t deltatime);			//! 更新
+	void Draw(void);					//! 描画
 	void Uninit(void);							//! 終了
 
 	void SetCurrentScene(const std::string& name, std::unique_ptr<SceneTransition> transition = nullptr);

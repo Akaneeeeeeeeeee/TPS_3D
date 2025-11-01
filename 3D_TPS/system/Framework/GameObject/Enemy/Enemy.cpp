@@ -56,10 +56,10 @@ void Enemy::Init(void)
 	m_TargetPos = m_EndPos;
 }
 
-void Enemy::Update(uint64_t deltatime)
+void Enemy::Update(const uint64_t deltatime)
 {
 	// 巡回ポイントが設定されていなければ処理しない
-	if (m_PatrolPoints.empty()) { return; }
+	//if (m_PatrolPoints.empty()) { return; }
 
 	// アニメーション比較用変数	this->m_Transform.SetPosition(Vector3(500.0f, 0.0f, 500.0f));
 
@@ -115,7 +115,7 @@ void Enemy::Update(uint64_t deltatime)
 	m_pAnimationObject->Update(m_AnimationSpeed);
 }
 
-void Enemy::Draw(const uint64_t deltatime) const
+void Enemy::Draw(void) const
 {
 	// シェーダーをセット
 	m_Shader.SetGPU();

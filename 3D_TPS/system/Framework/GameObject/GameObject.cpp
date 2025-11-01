@@ -9,13 +9,6 @@
 //
 //}
 
-/**
- * @brief デストラクタ
-*/
-GameObject::~GameObject() {
-
-}
-
 /*
 * @brief	コンポーネント取得
 * @detail	名前でコンポーネントを取得する
@@ -39,7 +32,7 @@ void GameObject::Init(void)
 	//m_Components.clear();
 }
 
-void GameObject::Update(uint64_t deltatime)
+void GameObject::Update(const uint64_t deltatime)
 {
 	// コンポーネントの更新
 	/*for(auto& component : m_Components) {
@@ -52,7 +45,7 @@ void GameObject::Update(uint64_t deltatime)
 /// →毎フレームコンポーネントを捜索するのは非効率的なのでフラグを持たせるべきかも
 /// </summary>
 /// <param name=""></param>
-void GameObject::Draw(uint64_t deltatime) const
+void GameObject::Draw(void) const
 {
 	// レンダラー系コンポーネントを保持していれば描画する
 	/*for (auto& component : m_Components) 

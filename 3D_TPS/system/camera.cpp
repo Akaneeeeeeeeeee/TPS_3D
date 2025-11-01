@@ -19,7 +19,7 @@ void Camera::Update()
 
 }
 
-void Camera::Draw()
+void Camera::Draw(void)
 {
 	// ƒrƒ…[•ÏŠ·Œã—ñì¬
 	Vector3 up = Vector3(0.0f, 1.0f, 0.0f);

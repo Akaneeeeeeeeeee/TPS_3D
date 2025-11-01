@@ -21,8 +21,8 @@ public:
 		: Position(_pos), Rotation(_rot), Scale(_scale) {};
 	~Transform() = default;
 
-	static const Transform One(void) { return Transform(Vector3::Zero, Quaternion::Identity, Vector3::One); }
-	static const Transform Zero(void) { return Transform(Vector3::Zero, Quaternion::Identity, Vector3::Zero); }
+	inline static const Transform One(void) { return Transform(Vector3::Zero, Quaternion::Identity, Vector3::One); }
+	inline static const Transform Zero(void) { return Transform(Vector3::Zero, Quaternion::Identity, Vector3::Zero); }
 
 	// 行列変換
 	Matrix4x4 GetLocalMatrix(void) const;

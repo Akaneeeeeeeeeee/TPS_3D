@@ -33,10 +33,10 @@ enum class Tag {
 class GameObject {
 public:
 	GameObject() = delete;
-	GameObject(EngineContext& context,
+	explicit GameObject(EngineContext& context,
 		const uint64_t id,
 		const std::string& name = "",
-		const Tag& tag = Tag::None,
+		const Tag tag = Tag::None,
 		const Transform& transform = Transform::One())
 		: m_Context(context),
 		m_ID(id),
@@ -46,80 +46,35 @@ public:
 	{
 	}
 
-	GameObject(EngineContext& context,
+	explicit GameObject(EngineContext& context,
 		const uint64_t id,
 		const std::string& name = "",
-		const Tag& tag = Tag::None,
+		const Tag tag = Tag::None,
 		const Vector3& pos = Vector3::Zero,
 		const Quaternion& rot = Quaternion::Identity,
 		const Vector3& scale = Vector3::One)
 		: GameObject(context, id, name, tag, Transform(pos, rot, scale))
 	{
 	}
-	virtual ~GameObject();		//! デストラクタ
+	virtual ~GameObject() = default;		//! デストラクタ
 
 	virtual void Init(void);
 	virtual void Update(const uint64_t deltatime);
-	virtual void Draw(uint64_t deltatime) const;
+	virtual void Draw(void) const;
 	virtual void Uninit(void);
 
 	//////////////////////////////////////////
 	//			コンポーネントの取り外し			//
 	//////////////////////////////////////////
 	template<typename T, typename ...Args>
-	T* AddComponent(const std::string& name, Args&&... args)
-	{
-		// 継承チェック
-		static_assert(std::is_base_of<IComponent, T>::value, "TはIComponentを継承していません");
-
-		// 同名のコンポーネントが存在するなら追加しない
-		if (m_Components.find(name) != m_Components.end()) { return nullptr; }
-
-		// ユニークポインタ生成
-		auto component = this->CreateComponent<T>(std::forward<Args>(args)...);
-
-		// 所有者と初期化
-		component->SetOwner(*this);
-
-		T* ptr = component.get();
-		m_Components[name] = std::move(component);
-		return ptr;
-	}
+	T* AddComponent(const std::string& name, Args&&... args);
 
 	// 型指定でのコンポーネント取得
 	template <typename T>
-	T* GetComponent(void)
-	{
-		// コンポーネント探索
-		for (auto& [name, comp] : m_Components) 
-		{
-			if (auto ptr = dynamic_cast<T*>(comp.get()))
-			{
-				return ptr;
-			}
-		}
-		return nullptr;
-	}
+	T* GetComponent(void);
 
 	template <typename T>
-	bool RemoveComponent(T* component)
-	{
-		if (!component) { return false; }
-
-		// コンポーネント探索
-		auto it = std::find_if(m_Components.begin(), m_Components.end(),
-			[&](const std::unique_ptr<IComponent>& p) { return p.get() == component; });
-		if (it == m_Components.end()) { return false; }
-
-		// 取り外し→終了処理
-		(*it)->Uninit();
-		(*it)->Detach(m_Context);
-		// インデックスからも外す
-		auto& vec = m_Components[typeid(T)];
-		vec.erase(std::remove(vec.begin(), vec.end(), component), vec.end());
-		m_Components.erase(it);
-		return true;
-	}
+	bool RemoveComponent(T* component);
 
 	virtual IComponent* GetComponent(const std::string& name) const;
 
@@ -146,12 +101,7 @@ public:
 private:
 	// コンポーネントの生成
 	template<typename T, typename ...Args>
-	std::unique_ptr<T> CreateComponent(Args... arg)
-	{
-		static_assert(std::is_base_of<IComponent, T>::value, "TはComponentを継承していません");
-		std::unique_ptr<T> component = std::make_unique<T>(arg...);
-		return std::move(component);
-	}
+	std::unique_ptr<T> CreateComponent(Args... arg);
 
 protected:
 	// SRT情報（姿勢情報）
@@ -183,3 +133,66 @@ protected:
 	//! コンポーネントのマップ(コンポーネントが多数になる場合はunordered_mapとの併用も検討)
 	std::unordered_map<std::string, std::unique_ptr<IComponent>> m_Components;
 };
+
+
+template<typename T, typename ...Args>
+inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
+{
+	// 継承チェック
+	static_assert(std::is_base_of<IComponent, T>::value, "TはIComponentを継承していません");
+
+	// 同名のコンポーネントが存在するなら追加しない
+	if (m_Components.find(name) != m_Components.end()) { return nullptr; }
+
+	// ユニークポインタ生成
+	auto component = this->CreateComponent<T>(std::forward<Args>(args)...);
+
+	// 所有者と初期化
+	component->SetOwner(*this);
+
+	T* ptr = component.get();
+	m_Components[name] = std::move(component);
+	return ptr;
+}
+
+template <typename T>
+inline bool GameObject::RemoveComponent(T* component)
+{
+	if (!component) { return false; }
+
+	// コンポーネント探索
+	auto it = std::find_if(m_Components.begin(), m_Components.end(),
+		[&](const std::unique_ptr<IComponent>& p) { return p.get() == component; });
+	if (it == m_Components.end()) { return false; }
+
+	// 取り外し→終了処理
+	(*it)->Uninit();
+	(*it)->Detach(m_Context);
+	// インデックスからも外す
+	auto& vec = m_Components[typeid(T)];
+	vec.erase(std::remove(vec.begin(), vec.end(), component), vec.end());
+	m_Components.erase(it);
+	return true;
+}
+
+template <typename T>
+inline T* GameObject::GetComponent(void)
+{
+	// コンポーネント探索
+	for (auto& [name, comp] : m_Components)
+	{
+		if (auto ptr = dynamic_cast<T*>(comp.get()))
+		{
+			return ptr;
+		}
+	}
+	return nullptr;
+}
+
+template<typename T, typename ...Args>
+inline std::unique_ptr<T> GameObject::CreateComponent(Args... arg)
+{
+	static_assert(std::is_base_of<IComponent, T>::value, "TはComponentを継承していません");
+	std::unique_ptr<T> component = std::make_unique<T>(arg...);
+	return std::move(component);
+}

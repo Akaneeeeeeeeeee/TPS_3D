@@ -33,8 +33,8 @@ public:
 	virtual ~Character() {};
 
 	virtual void Init(void);
-	virtual void Update(uint64_t deltatime);
-	virtual void Draw(const uint64_t deltatime) const override;
+	virtual void Update(const uint64_t deltatime) override;
+	virtual void Draw(void) const override;
 	virtual void Uninit(void);
 
 	virtual void SetAnimationData(CAnimationData* pAnimationData) { m_pAnimationData = pAnimationData; }

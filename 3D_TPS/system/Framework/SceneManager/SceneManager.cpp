@@ -27,7 +27,7 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 /**
  * @brief 更新
 */
-void SceneManager::Update(uint64_t deltatime)
+void SceneManager::Update(const uint64_t deltatime)
 {
 	// 現在シーンの更新
 	//m_pScenes[m_CurrentSceneName]->Update(deltatime);
@@ -67,7 +67,7 @@ void SceneManager::Update(uint64_t deltatime)
 	
 }
 
-void SceneManager::Draw(uint64_t deltatime)
+void SceneManager::Draw(void)
 {
 	//! 現在シーンによってそのシーンを描画
 	//m_pScenes[m_CurrentSceneName]->Draw(deltatime);
@@ -75,7 +75,7 @@ void SceneManager::Draw(uint64_t deltatime)
 	// 現在シーンが設定されていれば描画
 	if (!m_CurrentSceneName.empty())
 	{
-		m_pScenes[m_CurrentSceneName]->Draw(deltatime);
+		m_pScenes[m_CurrentSceneName]->Draw();
 	}
 
 	// シーン遷移中であれば遷移演出を描画

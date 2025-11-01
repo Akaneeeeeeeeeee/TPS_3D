@@ -14,7 +14,7 @@ public:
 
 	void Init(void) override;
 	void Update(const uint64_t) override;
-	void Draw(const uint64_t) const override;
+	void Draw(void) const override;
 	void Uninit(void) override;
 
 private:

@@ -10,8 +10,8 @@ public:
 	~Enemy();
 
 	void Init(void) override;
-	void Update(uint64_t deltatime) override;
-	void Draw(const uint64_t deltatime) const override;
+	void Update(const uint64_t deltatime) override;
+	void Draw(void) const override;
 	void Uninit(void) override;
 
 	bool CanSeePlayer(const Vector3& playerPos) const;

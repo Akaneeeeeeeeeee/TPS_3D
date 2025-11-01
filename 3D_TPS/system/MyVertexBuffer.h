@@ -9,7 +9,7 @@
 using Microsoft::WRL::ComPtr;
 
 template <typename T>
-class CVertexBuffer : NonCopyable{
+class CVertexBuffer final : public NonCopyable{
 
 	ComPtr<ID3D11Buffer> m_VertexBuffer;
 	UINT m_Stride = sizeof(T);

@@ -35,7 +35,7 @@ void Application::Run(void)
 
 		// 更新・描画
 		m_Game.Update(deltatime);
-		m_Game.Draw(deltatime);
+		m_Game.Draw();
 		// 規定時間までWAIT
 		fpsrate.Tick();
 	}

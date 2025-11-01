@@ -189,7 +189,7 @@ void TitleScene::Update(uint64_t deltatime)
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void TitleScene::Draw(uint64_t deltatime)
+void TitleScene::Draw(void)
 {
 
 	// 描画時に使用する行列にまとめる

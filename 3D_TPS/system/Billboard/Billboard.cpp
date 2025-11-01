@@ -12,7 +12,7 @@ void Billboard::Init(int width, int height, const std::string& texfilename, Free
 	m_pCamera = cam;
 }
 
-void Billboard::Update(uint64_t deltatime)
+void Billboard::Update(const uint64_t deltatime)
 {
 	// カメラ方向に向ける
 	if (!m_pCamera) return;
@@ -26,7 +26,7 @@ void Billboard::Update(uint64_t deltatime)
 
 }
 
-void Billboard::Draw(const uint64_t deltatime) const
+void Billboard::Draw(void) const
 {
 	// カメラの座標からビルボードの座標へのベクトルを計算
 	// ビルボードの位置

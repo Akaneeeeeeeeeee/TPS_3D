@@ -78,7 +78,6 @@ private:
 };
 
 
-
 // 構造体の定義
 // 頂点データを表す構造体
 struct Vertex
@@ -104,46 +103,6 @@ struct ConstBuffer
 	DirectX::XMMATRIX matrixWorld;
 };
 
-
-//// ブレンドステート
-//enum EBlendState {
-//	BS_NONE = 0,							// 半透明合成無し	
-//	BS_ALPHABLEND,							// 半透明合成
-//	BS_ADDITIVE,							// 加算合成
-//	BS_SUBTRACTION,							// 減算合成
-//	MAX_BLENDSTATE
-//};
-//
-//// 平行光源
-//struct LIGHT {
-//	BOOL Enable;							// 光を使うかのフラグ
-//	BOOL Dunny[3];							// アラインメント調整用配列
-//	DirectX::SimpleMath::Vector4 Direction;	// 平行光源の方向
-//	DirectX::SimpleMath::Color Diffuse;		// 平行光源の強さと色
-//	DirectX::SimpleMath::Color Ambient;		// 環境光の強さと色
-//};
-//
-//// サブセット
-//struct SUBSET {
-//	std::string		MtrlName;			// マテリアル名
-//	unsigned int	IndexNum = 0;		// インデックス数
-//	unsigned int	VertexNum = 0;		// 頂点数
-//	unsigned int	IndexBase = 0;		// 開始インデックス数
-//	unsigned int	VertexBase = 0;		// 頂点ベース
-//	unsigned int	MaterialIdx = 0;	// マテリアル番号
-//};
-//
-//// マテリアル
-//struct MATERIAL {
-//	DirectX::SimpleMath::Color Ambient;		// 環境反射
-//	DirectX::SimpleMath::Color Diffuse;		// 拡散反射
-//	DirectX::SimpleMath::Color Specular;	// 鏡面反射
-//	DirectX::SimpleMath::Color Emission;	// 発光
-//	float Shiness;			// 光沢の滑らかさ
-//	BOOL TextureEnable;		// テクスチャ使用確認フラグ
-//	BOOL Dummy[2];			// アラインメント調整
-//
-//};
 
 // Direct3D解放の簡略化マクロ
 #define SAFE_RELEASE(p) { if( NULL != p ) { p->Release(); p = NULL; } }

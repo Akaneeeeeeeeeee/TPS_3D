@@ -19,5 +19,5 @@ struct RenderInfo {
 	IShader* vs = nullptr;							// 頂点シェーダー
 	IShader* ps = nullptr;							// ピクセルシェーダー
 
-	// 将来: RenderPhase phase / Material* material / BoneCB 等を追加
+	// todo: RenderPhase phase / Material* material / BoneCB 等を追加
 };

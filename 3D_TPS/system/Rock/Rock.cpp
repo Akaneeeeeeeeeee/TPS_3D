@@ -22,7 +22,7 @@ void Rock::Update(const uint64_t deltatime)
 
 }
 
-void Rock::Draw(const uint64_t deltatime) const
+void Rock::Draw(void) const
 {
 
 }

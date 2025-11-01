@@ -4,7 +4,7 @@
 void IRenderer::Attach(EngineContext& context)
 {
 	// RenderManagerに登録
-	if (m_pRenderManager == nullptr)
+	if (!m_pRenderManager)
 	{
 		m_pRenderManager = &context.renderManager;
 		m_pRenderManager->Register(this);
@@ -14,7 +14,7 @@ void IRenderer::Attach(EngineContext& context)
 void IRenderer::Detach(EngineContext& context)
 {
 	// RenderManagerから解除
-	if (m_pRenderManager != nullptr)
+	if (!m_pRenderManager)
 	{
 		context.renderManager.Unregister(this);
 		m_pRenderManager = nullptr;

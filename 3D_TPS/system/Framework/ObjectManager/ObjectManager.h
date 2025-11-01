@@ -10,9 +10,9 @@
 class ObjectManager
 {
 public:
-	ObjectManager()
+	explicit ObjectManager()
 		: m_Context(nullptr), m_IDGenerator(0) {};
-	~ObjectManager() {};
+	~ObjectManager() = default;
 
 	/**
 	 * @brief オブジェクト個別追加関数
@@ -20,96 +20,34 @@ public:
 	 * 
 	 * ID設定、タグ設定、名前設定を行ってコンテナに追加
 	*/
-	template <typename T, typename ...Args>
-	T* Instantiate(const std::string& _Name, const Tag _Tag = Tag::None, Args&&... args)
-	{
-		// SnowfrakeIDを付与
-		uint64_t id = this->m_IDGenerator.next_id();
-		// コンパイル時チェック
-		static_assert(std::is_base_of_v<GameObject, T>, "このオブジェクトはObjectを継承していません");
-		// オブジェクト生成
-		auto obj = std::make_unique<T>(*m_Context, id, _Name, _Tag, std::forward<Args>(args)...);
-		// オブジェクトの生ポインタを取得
-		GameObject* rawPtr = obj.get();
-		// オブジェクトを初期化
-		//obj->Init();
-		// コンテナに追加
-		m_pObjects.push_back(std::move(obj));
-		// タグごとにオブジェクトを管理するためのmapに追加
-		m_ObjectsByTag[_Tag].push_back(rawPtr);
-		// IDごとにオブジェクトを管理するためのmapに追加
-		m_ObjectsByID[id] = rawPtr;
-		// 名前ごとにオブジェクトを管理するためのmapに追加
-		m_ObjectsByName[_Name] = rawPtr;
-
-		return static_cast<T*>(rawPtr);
-	}
+	template <typename T, typename ...Args, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	T* Instantiate(const std::string& _Name, const Tag _Tag = Tag::None, Args&&... args);
 
 	// IDからオブジェクトを取得
-	template <typename T = GameObject>
-	T* GetObjectByID(const uint64_t id) const
-	{
-		// オブジェクトを探索
-		auto it = m_ObjectsByID.find(id);
-		if (it == m_ObjectsByID.end()) { return nullptr; }
-
-		// 型を確認しキャスト
-		if constexpr (std::is_same_v<T, GameObject>)
-		{
-			return static_cast<T*>(it->second);		// 型変換不要ならstatic_cast
-		}
-		else {
-			return dynamic_cast<T*>(it->second);	// 安全にキャスト
-		}
-	}
+	template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	T* GetObjectByID(const uint64_t id) const;
 
 	// 指定タグのオブジェクトを取得
-	template <typename T = GameObject>
-	std::vector<T*> GetObjectsByTag(const Tag tag) 
-	{
-		std::vector<T*> result;
-
-		auto it = m_ObjectsByTag.find(tag);
-		if (it == m_ObjectsByTag.end()) { return result; }
-
-		// メモリを再確保せずにサイズを設定
-		result.reserve(it->second.size());
-
-		for (auto* obj : it->second) {
-			if (auto casted = dynamic_cast<T*>(obj)) {
-				result.push_back(casted);
-			}
-		}
-		return result;
-	}
+	template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	std::vector<T*> GetObjectsByTag(const Tag tag) const;
 
 	// 名前からオブジェクトを取得
-	template <typename T = GameObject>
-	T* GetObjectByName(const std::string& name) const 
-	{
-		auto it = m_ObjectsByName.find(name);
-		if (it == m_ObjectsByName.end()) { return nullptr; }
-
-		return dynamic_cast<T*>(it->second);
-	}
+	template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	T* GetObjectByName(const std::string& name) const;
 
 	// オブジェクト削除
 	void DeleteObject(const Tag _ObjTag);
 
 	/**
 	 * @brief タグ変更関数
-	 * @param _tag 
-	 * @param _name 
-	 * @param _newTag 
-	 * @return 
 	*/
 	bool ChangeTag(const uint64_t _id, const Tag _newTag);
 
 	//void Init(ComponentFactory* _factory);
 	//void Init(ShaderManager* shaderMgr);
 	void Init(EngineContext* context);
-	void Update(uint64_t deltatime);
-	void Draw(uint64_t deltatime);
+	void Update(const uint64_t deltatime);
+	void Draw(void) const;
 	void Uninit(void);
 
 	//! DI
@@ -133,3 +71,76 @@ private:
 	std::unordered_map<std::string, GameObject*> m_ObjectsByName;		//! 名前ごとにオブジェクトを管理するためのmap
 };
 
+
+
+template <typename T, typename ...Args, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+inline T* ObjectManager::Instantiate(const std::string& _Name, const Tag _Tag, Args&&... args)
+{
+	// SnowfrakeIDを付与
+	uint64_t id = this->m_IDGenerator.next_id();
+	// コンパイル時チェック
+	static_assert(std::is_base_of_v<GameObject, T>, "このオブジェクトはObjectを継承していません");
+	// オブジェクト生成
+	auto obj = std::make_unique<T>(*m_Context, id, _Name, _Tag, std::forward<Args>(args)...);
+	// オブジェクトの生ポインタを取得
+	GameObject* rawPtr = obj.get();
+	// オブジェクトを初期化
+	//obj->Init();
+	// コンテナに追加
+	m_pObjects.push_back(std::move(obj));
+	// タグごとにオブジェクトを管理するためのmapに追加
+	m_ObjectsByTag[_Tag].push_back(rawPtr);
+	// IDごとにオブジェクトを管理するためのmapに追加
+	m_ObjectsByID[id] = rawPtr;
+	// 名前ごとにオブジェクトを管理するためのmapに追加
+	m_ObjectsByName[_Name] = rawPtr;
+
+	return static_cast<T*>(rawPtr);
+}
+
+
+template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+inline T* ObjectManager::GetObjectByName(const std::string& name) const
+{
+	auto it = m_ObjectsByName.find(name);
+	if (it == m_ObjectsByName.end()) { return nullptr; }
+
+	return dynamic_cast<T*>(it->second);
+}
+
+template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+inline T* ObjectManager::GetObjectByID(const uint64_t id) const
+{
+	// オブジェクトを探索
+	auto it = m_ObjectsByID.find(id);
+	if (it == m_ObjectsByID.end()) { return nullptr; }
+
+	// 型を確認しキャスト
+	if constexpr (std::is_same_v<T, GameObject>)
+	{
+		return static_cast<T*>(it->second);		// 型変換不要ならstatic_cast
+	}
+	else {
+		return dynamic_cast<T*>(it->second);	// 安全にキャスト
+	}
+}
+
+// 指定タグのオブジェクトを取得
+template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+inline std::vector<T*> ObjectManager::GetObjectsByTag(const Tag tag) const
+{
+	std::vector<T*> result;
+
+	auto it = m_ObjectsByTag.find(tag);
+	if (it == m_ObjectsByTag.end()) { return result; }
+
+	// メモリを再確保せずにサイズを設定
+	result.reserve(it->second.size());
+
+	for (auto* obj : it->second) {
+		if (auto casted = dynamic_cast<T*>(obj)) {
+			result.push_back(casted);
+		}
+	}
+	return result;
+}

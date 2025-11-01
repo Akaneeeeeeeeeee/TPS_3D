@@ -50,7 +50,7 @@ public:
 	 *
 	 * タイトルロゴや背景などのスプライト描画を行う。
 	 */
-	void Draw(uint64_t deltatime) override;
+	void Draw(void) override;
 
 	/**
 	 * @brief シーンの初期化処理

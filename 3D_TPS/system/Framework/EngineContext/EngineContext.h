@@ -4,6 +4,13 @@
 #include "system/Framework/Graphics/RenderManager.h"
 #include "system/Framework/ColliderManager/ColliderManager.h"
 
+/*
+* @brief	エンジンコンテキスト
+* @detail	各種マネージャークラスの参照を保持する構造体
+* @remark	各種マネージャークラスの参照を保持し、コンポーネントやシステムに依存性を注入するために使用
+* @auther	赤根和樹
+* @date		2025/10/02
+*/
 struct EngineContext
 {
 	RenderManager& renderManager;

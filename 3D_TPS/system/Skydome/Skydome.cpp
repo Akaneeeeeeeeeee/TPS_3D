@@ -31,12 +31,12 @@ void Skydome::Init(void)
 	m_MeshRenderer.Init(this->m_SphereMesh);
 }
 
-void Skydome::Update(uint64_t deltatime)
+void Skydome::Update(const uint64_t deltatime)
 {
 	// “Á‚ÉXVˆ—‚Í‚È‚µ
 }
 
-void Skydome::Draw(const uint64_t deltatime) const
+void Skydome::Draw(void) const
 {
 	// SRTî•ñì¬
 	Quaternion rot = m_Transform.GetRotation();

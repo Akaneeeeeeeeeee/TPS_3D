@@ -124,6 +124,12 @@
     <Filter Include="ソース ファイル\MyFramework\Component\Collider">
       <UniqueIdentifier>{ee20d9c5-75db-446d-9df9-ff91f3ca24ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\Box">
+      <UniqueIdentifier>{d6e3466c-258a-454a-b98e-469acfffab37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Material">
+      <UniqueIdentifier>{ce3fa4c7-ebb0-4f49-ae38-4d1df9d565d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -393,6 +399,18 @@
     <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClInclude>
+    <ClInclude Include="system\Cube\Cube.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Box</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Material\MyMaterial.h">
+      <Filter>ソース ファイル\MyFramework\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\ColliderManager\collision.h">
+      <Filter>ソース ファイル\MyFramework\ColliderManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\CPlane.h">
+      <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -592,6 +610,18 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Cube\Cube.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Box</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Material\MyMaterial.cpp">
+      <Filter>ソース ファイル\MyFramework\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
+      <Filter>ソース ファイル\MyFramework\ColliderManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\CPlane.cpp">
+      <Filter>ソース ファイル\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

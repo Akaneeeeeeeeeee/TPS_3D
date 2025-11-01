@@ -1,8 +1,10 @@
 #pragma once
 #include "system/Framework/Application/Entry/main.h"
-#include "system/CAnimationData.h"
-#include "system/CAnimationMesh.h"
+#include <filesystem>
 
+class CAnimationData;
+class CAnimationMesh;
+class CStaticMesh;
 
 class AssetManager
 {

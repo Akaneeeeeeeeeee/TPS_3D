@@ -36,7 +36,7 @@ void Player::Init(void)
 	this->m_AnimationSpeed = 1.0f;
 }
 
-void Player::Update(uint64_t deltatime)
+void Player::Update(const uint64_t deltatime)
 {
 	// “ü—Íˆ—
 	CDirectInput& input = CDirectInput::GetInstance();
@@ -135,7 +135,7 @@ void Player::Update(uint64_t deltatime)
     m_pAnimationObject->Update(m_AnimationSpeed);
 }
 
-void Player::Draw(const uint64_t deltatime) const
+void Player::Draw(void) const
 {
 	if(m_pCamera)
 	{

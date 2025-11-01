@@ -71,7 +71,7 @@ void Game::Init(void)
  * @brief ゲームのループ処理
  * 主なゲーム処理はここに書く
 */
-void Game::Update(uint64_t deltatime)
+void Game::Update(const uint64_t deltatime)
 {
 	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
 	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
@@ -92,14 +92,14 @@ void Game::Update(uint64_t deltatime)
 	}
 }
 
-void Game::Draw(uint64_t deltatime)
+void Game::Draw()
 {
 	// レンダリング前処理
 	Renderer::Begin();
 	//m_RenderManager.StartRender();
 
 	// シーンマネージャの描画
-	m_SceneManager.Draw(deltatime);
+	m_SceneManager.Draw();
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
 
