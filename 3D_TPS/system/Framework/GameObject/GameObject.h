@@ -37,14 +37,7 @@ public:
 		const uint64_t id,
 		const std::string& name = "",
 		const Tag tag = Tag::None,
-		const Transform& transform = Transform::One())
-		: m_Context(context),
-		m_ID(id),
-		m_Name(name),
-		m_Tag(tag),
-		m_Transform(transform)
-	{
-	}
+		const Transform& transform = Transform::One());
 
 	explicit GameObject(EngineContext& context,
 		const uint64_t id,
@@ -52,10 +45,8 @@ public:
 		const Tag tag = Tag::None,
 		const Vector3& pos = Vector3::Zero,
 		const Quaternion& rot = Quaternion::Identity,
-		const Vector3& scale = Vector3::One)
-		: GameObject(context, id, name, tag, Transform(pos, rot, scale))
-	{
-	}
+		const Vector3& scale = Vector3::One);
+
 	virtual ~GameObject() = default;		//! デストラクタ
 
 	virtual void Init(void);
