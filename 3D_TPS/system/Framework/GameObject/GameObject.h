@@ -37,14 +37,7 @@ public:
 		const uint64_t id,
 		const std::string& name = "",
 		const Tag tag = Tag::None,
-		const Transform& transform = Transform::One())
-		: m_Context(context),
-		m_ID(id),
-		m_Name(name),
-		m_Tag(tag),
-		m_Transform(transform)
-	{
-	}
+		const Transform& transform = Transform::One());
 
 	explicit GameObject(EngineContext& context,
 		const uint64_t id,
@@ -52,10 +45,8 @@ public:
 		const Tag tag = Tag::None,
 		const Vector3& pos = Vector3::Zero,
 		const Quaternion& rot = Quaternion::Identity,
-		const Vector3& scale = Vector3::One)
-		: GameObject(context, id, name, tag, Transform(pos, rot, scale))
-	{
-	}
+		const Vector3& scale = Vector3::One);
+
 	virtual ~GameObject() = default;		//! デストラクタ
 
 	virtual void Init(void);
@@ -67,13 +58,16 @@ public:
 	//			コンポーネントの取り外し			//
 	//////////////////////////////////////////
 	template<typename T, typename ...Args>
+		requires std::derived_from<T, IComponent>
 	T* AddComponent(const std::string& name, Args&&... args);
 
 	// 型指定でのコンポーネント取得
 	template <typename T>
+		requires std::derived_from<T, IComponent>
 	T* GetComponent(void);
 
 	template <typename T>
+		requires std::derived_from<T, IComponent>
 	bool RemoveComponent(T* component);
 
 	virtual IComponent* GetComponent(const std::string& name) const;
@@ -101,6 +95,7 @@ public:
 private:
 	// コンポーネントの生成
 	template<typename T, typename ...Args>
+		requires std::derived_from<T, IComponent>
 	std::unique_ptr<T> CreateComponent(Args... arg);
 
 protected:
@@ -136,11 +131,9 @@ protected:
 
 
 template<typename T, typename ...Args>
+	requires std::derived_from<T, IComponent>
 inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
 {
-	// 継承チェック
-	static_assert(std::is_base_of<IComponent, T>::value, "TはIComponentを継承していません");
-
 	// 同名のコンポーネントが存在するなら追加しない
 	if (m_Components.find(name) != m_Components.end()) { return nullptr; }
 
@@ -156,6 +149,7 @@ inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
 }
 
 template <typename T>
+	requires std::derived_from<T, IComponent>
 inline bool GameObject::RemoveComponent(T* component)
 {
 	if (!component) { return false; }
@@ -176,6 +170,7 @@ inline bool GameObject::RemoveComponent(T* component)
 }
 
 template <typename T>
+	requires std::derived_from<T, IComponent>
 inline T* GameObject::GetComponent(void)
 {
 	// コンポーネント探索
@@ -190,9 +185,9 @@ inline T* GameObject::GetComponent(void)
 }
 
 template<typename T, typename ...Args>
+	requires std::derived_from<T, IComponent>
 inline std::unique_ptr<T> GameObject::CreateComponent(Args... arg)
 {
-	static_assert(std::is_base_of<IComponent, T>::value, "TはComponentを継承していません");
 	std::unique_ptr<T> component = std::make_unique<T>(arg...);
 	return std::move(component);
 }

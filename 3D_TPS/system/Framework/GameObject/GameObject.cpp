@@ -1,13 +1,28 @@
 ﻿#include "GameObject.h"
 
-//GameObject::GameObject(EngineContext& context, const uint64_t id,
-//	const std::string& name, const Tag& tag,
-//	const Transform& transform)
-//	:m_Context(context), m_ID(id), m_Name(name), m_Tag(tag),
-//	m_Transform(transform)
-//{
-//
-//}
+explicit GameObject::GameObject(EngineContext& context,
+	const uint64_t id,
+	const std::string& name,
+	const Tag tag,
+	const Transform& transform)
+	:m_Context(context),
+	m_ID(id), m_Name(name), m_Tag(tag),
+	m_Transform(transform)
+{
+
+}
+
+explicit GameObject::GameObject(EngineContext& context,
+	const uint64_t id,
+	const std::string& name,
+	const Tag tag,
+	const Vector3& pos,
+	const Quaternion& rot,
+	const Vector3& scale)
+	: GameObject(context, id, name, tag, Transform(pos, rot, scale))
+{
+
+}
 
 /*
 * @brief	コンポーネント取得
