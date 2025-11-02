@@ -6,7 +6,13 @@ void Billboard::Init(void)
 	// 特になし。必要なら初期化処理
 }
 
-void Billboard::Update(uint64_t deltatime)
+void Billboard::Init(int width, int height, const std::string& texfilename, FreeCamera* cam)
+{
+	m_Sprite.Init(width, height, texfilename);
+	m_pCamera = cam;
+}
+
+void Billboard::Update(const uint64_t deltatime)
 {
 	// カメラ方向に向ける
 	if (!m_pCamera) return;
@@ -20,7 +26,7 @@ void Billboard::Update(uint64_t deltatime)
 
 }
 
-void Billboard::Draw(uint64_t deltatime)
+void Billboard::Draw(void) const
 {
 	// カメラの座標からビルボードの座標へのベクトルを計算
 	// ビルボードの位置

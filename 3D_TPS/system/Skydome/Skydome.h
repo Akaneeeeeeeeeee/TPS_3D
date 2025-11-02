@@ -4,24 +4,26 @@
 #include "system/CShader.h"
 #include "system/CMaterial.h"
 #include "system/camera.h"
-#include "system/transform.h"
+#include "system/Framework/GameObject/GameObject.h"
 
-class Skydome
+class Skydome : public GameObject
 {
 public:
-	Skydome();
+	Skydome(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None,
+		const Transform& transform = Transform::One());
 	~Skydome();
 
-	void Init(void);
-	void Draw(void);
+	void Init(void) override;
+	void Update(const uint64_t deltatime) override;
+	void Draw(void) const override;
+	void Uninit(void) override;
 
 	void SetTexture(const std::filesystem::path& filepath);
 
 	void InvertNormal(void);
-	void InvertNormalAndIndices(void);
 
 private:
-	SRT m_Transform;
 	CSphereMesh m_SphereMesh;
 	CMeshRenderer m_MeshRenderer;
 

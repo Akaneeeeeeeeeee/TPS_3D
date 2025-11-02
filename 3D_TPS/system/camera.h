@@ -19,7 +19,7 @@ public:
 	void Init();
 	void Dispose();
 	void Update();
-	void Draw();
+	void Draw(void);
 	Vector3 GetPosition() const { return m_position; }
 	void SetPosition(const Vector3& position) { m_position = position; }
 	Vector3 GetLookat() const { return m_lookat; }
@@ -70,7 +70,7 @@ public:
 		m_up = polarup.ToCartesian();
 	}
 
-	void Draw() {
+	void Draw(void) {
 		// ƒrƒ…[•ÏŠ·Œã—ñì¬
 		m_viewmtx =
 			DirectX::XMMatrixLookAtLH(

@@ -1,9 +1,17 @@
 ﻿#include "Game.h"
 #include "system/Framework/Window/Window.h"
-#include	"system/renderer.h"
-#include    "system/DebugUI.h"
-#include    "system/CDirectInput.h"
-#include	"fpscontrol.h"
+#include "system/renderer.h"
+#include "system/DebugUI.h"
+#include "system/CDirectInput.h"
+#include "fpscontrol.h"
+
+Game::Game()
+{
+}
+
+Game::~Game()
+{
+}
 
 /**
  * @brief
@@ -22,7 +30,7 @@ void Game::Init(void)
 	//m_ObjectManager.Init(&m_ComponentFactory);
 	
 	
-	// レンダラの初期化    
+	// レンダラの初期化
 	Renderer::Init();
 
 	// DirectInputの初期化
@@ -30,25 +38,32 @@ void Game::Init(void)
 		Window::GetInstance().GetHandleWindow(),
 		Window::GetInstance().GetWidth(),
 		Window::GetInstance().GetHeight());
+	
+	// シェーダー管理クラスの初期化
+	//m_ShaderManager.Init();
+	ShaderManager::GetInstance().Init();
 
-	// デバッグUIの初期化
+	// アセット管理クラスの初期化
+	AssetManager::GetInstance().Init();
+	//m_GraphicsDevice.Init();
+	// レンダーマネージャの初期化
+	/*m_RenderManager.Init(&m_GraphicsDevice);
+	m_pContext = std::make_unique<EngineContext>(
+		m_RenderManager,
+		ShaderManager::GetInstance(),
+		AssetManager::GetInstance());*/
+
+	// オブジェクトマネージャの初期化
+	m_ObjectManager.Init(m_pContext.get());
+
+	// シーンマネージャの初期化
+	m_SceneManager.Init(&m_ObjectManager);
+	
+	// デバッグ時のみ、デバッグUIの初期化
 #ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
 #endif // _DEBUG
 	
-	// シェーダー管理クラスの初期化
-	//m_ShaderManager.Init();
-	//ShaderManager::GetInstance().Init();
-
-	// アセット管理クラスの初期化
-	AssetManager::GetInstance().Init();
-
-	// オブジェクトマネージャの初期化
-	//m_ObjectManager.Init(&m_ShaderManager);
-	m_ObjectManager.Init();
-
-	// シーンマネージャの初期化
-	m_SceneManager.Init(&m_ObjectManager);
 }
 
 
@@ -56,7 +71,7 @@ void Game::Init(void)
  * @brief ゲームのループ処理
  * 主なゲーム処理はここに書く
 */
-void Game::Update(uint64_t deltatime)
+void Game::Update(const uint64_t deltatime)
 {
 	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
 	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
@@ -77,13 +92,16 @@ void Game::Update(uint64_t deltatime)
 	}
 }
 
-void Game::Draw(uint64_t deltatime)
+void Game::Draw()
 {
 	// レンダリング前処理
 	Renderer::Begin();
+	//m_RenderManager.StartRender();
 
 	// シーンマネージャの描画
-	m_SceneManager.Draw(deltatime);
+	m_SceneManager.Draw();
+	/*m_RenderManager.CollectRenderInfo();
+	m_RenderManager.RenderAll();*/
 
 	// デバッグUIの描画
 #ifdef _DEBUG
@@ -91,6 +109,7 @@ void Game::Draw(uint64_t deltatime)
 #endif // _DEBUG
 
 	// レンダリング後処理
+	//m_RenderManager.EndRender();
 	Renderer::End();
 }
 
@@ -105,6 +124,7 @@ void Game::Uninit(void)
 	m_SceneManager.Uninit();
 
 	// レンダラの終了処理
+	//m_RenderManager.Uninit();
 	Renderer::Uninit();
 }
 

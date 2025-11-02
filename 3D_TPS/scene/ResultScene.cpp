@@ -15,10 +15,14 @@
 /**
  * @brief コンストラクタ
  */
-ResultScene::ResultScene()
+ResultScene::ResultScene() : IScene()
 {
 	m_NextSceneName = "TitleScene";
 }
+//ResultScene::ResultScene(ObjectManager& _Mgr) : IScene(_Mgr)
+//{
+//	m_NextSceneName = "TitleScene";
+//}
 
 /**
  * @brief クリアシーンの更新処理
@@ -39,7 +43,7 @@ void ResultScene::Update(uint64_t deltatime)
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void ResultScene::Draw(uint64_t deltatime)
+void ResultScene::Draw(void)
 {
 
 	// 描画時に使用する行列にまとめる
@@ -60,11 +64,8 @@ void ResultScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void ResultScene::Init(ObjectManager* _pObjectMgr)
+void ResultScene::Init(ObjectManager* _Mgr)
 {
-	// オブジェクト管理クラスのポインタをセット
-	this->m_pObjectManager = _pObjectMgr;
-
 	// カメラ(3D)の初期化
 	m_camera.Init();
 

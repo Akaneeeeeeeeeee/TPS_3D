@@ -44,10 +44,30 @@ Matrix4x4 Transform::GetLocalMatrix(void) const
 // ワールド行列取得
 Matrix4x4 Transform::GetWorldMatrix(void) const
 {
-	// 親がいる場合は親のワールド行列を掛ける
-    if (m_pParent) {
-        return GetLocalMatrix() * m_pParent->GetWorldMatrix();
+    // 情報更新があれば再計算
+    if (m_IsDirty)
+    {
+        // 親がいる場合は親のワールド行列を掛ける
+        if (m_pParent)
+        {
+            m_WorldMatrix = GetLocalMatrix() * m_pParent->GetWorldMatrix();
+        }
+        else
+        {
+            m_WorldMatrix = GetLocalMatrix();
+        }
+
+        m_IsDirty = false;
     }
-	// 親がいない場合はローカル行列を返す
-    return GetLocalMatrix();
+    return m_WorldMatrix;
+}
+
+void Transform::SetDirty(void)
+{
+    m_IsDirty = true;
+    // 子供も更新
+    for (auto child : m_pChildren)
+    {
+        child->SetDirty();
+    }
 }

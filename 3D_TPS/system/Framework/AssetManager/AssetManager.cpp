@@ -1,4 +1,8 @@
 #include "AssetManager.h"
+#include "system/CAnimationData.h"
+#include "system/CAnimationMesh.h"
+#include "system/CStaticMesh.h"
+
 
 AssetManager::AssetManager()
 {
@@ -16,6 +20,7 @@ void AssetManager::Init(void)
 	this->LoadAnimationMesh("Akai", "assets/model/akai/akai.fbx", "assets/model/akai/");
 	this->LoadAnimationData("Akai_Run", "assets/model/akai/Akai_Run.fbx");
 	this->LoadAnimationData("Akai_Idle", "assets/model/akai/Akai_Idle.fbx");
+	this->LoadStaticMesh("Rock", "assets/model/Rock-Set/Rock_2/Rock_2.fbx", "assets/model/Rock-Set/Rock_2/Textures");
 }
 
 void AssetManager::Uninit(void)
@@ -23,6 +28,7 @@ void AssetManager::Uninit(void)
 	// アセットの解放
 	m_AnimationDataList.clear();
 	m_AnimationMeshList.clear();
+	m_StaticMeshList.clear();
 }
 
 
@@ -49,4 +55,18 @@ void AssetManager::LoadAnimationMesh(
 CAnimationMesh* AssetManager::GetAnimationMesh(const std::string& name) const
 {
 	return m_AnimationMeshList.at(name).get();
+}
+
+void AssetManager::LoadStaticMesh(
+	const std::string& name,
+	const std::filesystem::path& filepath,
+	const std::filesystem::path& texturepath)
+{
+	m_StaticMeshList[name] = std::make_unique<CStaticMesh>();
+	m_StaticMeshList[name]->Load(filepath.string(), texturepath.string());
+}
+
+CStaticMesh* AssetManager::GetStaticMesh(const std::string& name) const
+{
+	return m_StaticMeshList.at(name).get();
 }

@@ -100,8 +100,8 @@ public:
 
 	}
 
-	void SetGPU() {
-
+	void SetGPU() const
+	{
 		ID3D11DeviceContext* devcontext;
 		devcontext = Renderer::GetDeviceContext();
 

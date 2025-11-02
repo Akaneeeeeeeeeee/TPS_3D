@@ -62,9 +62,14 @@ public:
 	 */
 	CSprite(int width, int height, std::string texfilename,
 		std::array<Vector2, 4> uv = { Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1) });
+
+	CSprite() {};
 	
 	/// @brief デストラクタ
 	virtual ~CSprite() {}
+
+	void Init(int width, int height, std::string texfilename,
+		std::array<Vector2, 4> uv = { Vector2(0,0), Vector2(1,0), Vector2(0,1), Vector2(1,1) });
 
 	/**
 	 * @brief スプライトを描画
@@ -73,21 +78,21 @@ public:
 	 * @param rotation 回転（ラジアン、X, Y, Z）
 	 * @param pos ワールド座標位置
 	 */
-	void Draw(Vector3 scale, Vector3 rotation, Vector3 pos);
+	void Draw(Vector3 scale, Vector3 rotation, Vector3 pos) const;
 
 	/**
 	 * @brief スプライトを描画
 	 *
 	 * @param Matrix4x4 行列
 	 */
-	void Draw(Matrix4x4 mtx);
+	void Draw(Matrix4x4 mtx) const;
 
 	/**
 	 * @brief ビルボード用の描画関数
 	 *
 	 * @param Matrix4x4 行列
 	 */
-	void Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj);
+	void Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj) const;
 
 
 	/// @brief リソースの解放（明示的に呼び出すことを推奨）

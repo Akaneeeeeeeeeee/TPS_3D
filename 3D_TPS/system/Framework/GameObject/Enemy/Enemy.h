@@ -6,12 +6,12 @@ class Enemy : public Character
 {
 public:
 	Enemy() = default;
-	Enemy(uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy);
+	Enemy(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy);
 	~Enemy();
 
 	void Init(void) override;
-	void Update(uint64_t deltatime) override;
-	void Draw(uint64_t deltatime) override;
+	void Update(const uint64_t deltatime) override;
+	void Draw(void) const override;
 	void Uninit(void) override;
 
 	bool CanSeePlayer(const Vector3& playerPos) const;
@@ -26,6 +26,7 @@ private:
 	Vector3 m_StartPos{};
 	Vector3 m_EndPos{};
 	Vector3 m_TargetPos{};
+	std::vector<Vector3> m_PatrolPoints;	// 巡回ポイント
 	bool m_GoingToEnd = true; // true: Start→End, false: End→Start
 	bool IsFound = false;		// プレイヤーを発見したかどうか
 };

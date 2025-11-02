@@ -10,7 +10,7 @@ using Microsoft::WRL::ComPtr;
 class CShader : NonCopyable{
 public:
 	void Create(std::string vs, std::string ps, std::string gs = "");
-	void SetGPU();
+	void SetGPU() const;
 private:
 	ComPtr<ID3D11VertexShader> m_pVertexShader;		// 頂点シェーダー
 	ComPtr<ID3D11PixelShader>  m_pPixelShader;		// ピクセルシェーダー

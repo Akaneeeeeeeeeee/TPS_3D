@@ -1,8 +1,6 @@
 ﻿#include "ObjectManager.h"
 //#include "../../Framework/Component/Collider/2D/BoxCollider2D/BoxCollider2D.h"
 //#include "../../Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
-#include "system/renderer.h"
-#include "system/Framework/ShaderManager/ShaderManager.h"
 
 /**
  * @brief オブジェクト削除関数
@@ -21,7 +19,7 @@ void ObjectManager::DeleteObject(Tag _ObjName) {
 /// <param name="_id">オブジェクトID</param>
 /// <param name="_newTag">変えたいタグ</param>
 /// </summary>
-bool ObjectManager::ChangeTag(uint64_t _id, const Tag& _newTag)
+bool ObjectManager::ChangeTag(const uint64_t _id, const Tag _newTag)
 {
 	auto it = m_ObjectsByID.find(_id);
 	if (it == m_ObjectsByID.end()) { return false; }
@@ -60,11 +58,18 @@ bool ObjectManager::ChangeTag(uint64_t _id, const Tag& _newTag)
 //	m_ObjectsByTag.clear();
 //}
 
-void ObjectManager::Init(void)
+void ObjectManager::Init(EngineContext* context)
 {
+	// エンジンコンテキストのポインタをセット
+	m_Context = context;
+	// オブジェクト管理用コンテナの初期化
+	m_pObjects.clear();
+	m_ObjectsByID.clear();
+	m_ObjectsByName.clear();
+	m_ObjectsByTag.clear();
 }
 
-void ObjectManager::Update(uint64_t deltatime)
+void ObjectManager::Update(const uint64_t deltatime)
 {
 	// 範囲for文
 	for (auto& obj : m_pObjects)
@@ -79,11 +84,11 @@ void ObjectManager::Update(uint64_t deltatime)
  * カメラがある場合は、そのオブジェクトの大きさ以内にいるものだけを描画する
  * カメラがない場合はそのまま描画
 */
-void ObjectManager::Draw(uint64_t deltatime)
+void ObjectManager::Draw(void) const
 {
 	for(auto& obj : m_pObjects)
 	{
-		obj->Draw(deltatime);
+		obj->Draw();
 	}
 }
 
@@ -103,7 +108,3 @@ void ObjectManager::Uninit(void) {
 	//m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
 }
 
-void ObjectManager::SetShaderManager(ShaderManager* _shaderManager)
-{ 
-	//m_pShaderManager = _shaderManager;
-}

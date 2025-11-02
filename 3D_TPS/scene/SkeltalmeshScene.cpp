@@ -10,6 +10,7 @@
 
 #include "SkeltalmeshScene.h"
 #include "system/Framework/GameObject/Character/Character.h"
+#include "system/Cube/Cube.h"
 
 //struct Load3DInfo{
 //	std::string filename;
@@ -71,13 +72,13 @@ void SkeltalmeshScene::debugFreeCamera()
 	ImGui::SliderFloat3("lookat ", &lookat.x, -100, 100);
 
 	// カメラの位置を極座標からデカルト座標に変換
-	m_camera.SetRadius(radius);
-	m_camera.SetElevation(elevation);
-	m_camera.SetAzimuth(azimuth);
-	m_camera.SetLookat(lookat);
+	//m_camera.SetRadius(radius);
+	//m_camera.SetElevation(elevation);
+	//m_camera.SetAzimuth(azimuth);
+	//m_camera.SetLookat(lookat);
 
-	// カメラの位置を極座標から求める
-	m_camera.CalcCameraPosition();
+	//// カメラの位置を極座標から求める
+	//m_camera.CalcCameraPosition();
 
 	ImGui::End();
 }
@@ -162,10 +163,14 @@ void SkeltalmeshScene::debugSRT()
 /**
  * @brief コンストラクタ
  */
-SkeltalmeshScene::SkeltalmeshScene()
+SkeltalmeshScene::SkeltalmeshScene() : IScene()
 {
 	m_NextSceneName = "ResultScene";
 }
+//SkeltalmeshScene::SkeltalmeshScene(ObjectManager& _Mgr) : IScene(_Mgr)
+//{
+//	m_NextSceneName = "ResultScene";
+//}
 
 /**
  * @brief クリアシーンの更新処理
@@ -174,8 +179,7 @@ SkeltalmeshScene::SkeltalmeshScene()
  */
 void SkeltalmeshScene::Update(uint64_t deltatime)
 {
-	//m_pObjectManager->Update(deltatime);
-
+	// 入力確認
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
 	{
 		this->ChangeScene = true;
@@ -192,20 +196,24 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
 	// 描画時に使用する行列にまとめる
 	m_mtxWorld = mtxscale * mtxrotx * mtxroty * mtxrotz * mtxtrans;
 
-	m_pCharacter->Update(deltatime);
-	m_pBillboard->Update(deltatime);
+	m_pObjectManager->Update(deltatime);
+
+	//m_pCharacter->Update(deltatime);
+	//m_pBillboard->Update(deltatime);
 
 	// 敵の更新
-	for(size_t i = 0; i < m_pEnemies.size(); i++)
-	{
-		m_pEnemies[i]->Update(deltatime);
-	}
+	//for(size_t i = 0; i < m_pEnemies.size(); i++)
+	//{
+	//	m_pEnemies[i]->Update(deltatime);
+	//}
 
 	// 敵がプレイヤーを発見したかのチェック
-	for(size_t i = 0; i < m_pEnemies.size(); i++)
+	std::vector<Enemy*> enemies = m_pObjectManager->GetObjectsByTag<Enemy>(Tag::Enemy);
+	auto player = m_pObjectManager->GetObjectByName<Player>("player");
+	for(size_t i = 0; i < enemies.size(); i++)
 	{
 		// 見つかったらクリア状態に変更し、シーン遷移フラグを立てる
-		if(m_pEnemies[i]->CanSeePlayer(m_pCharacter->GetPosition()))
+		if(enemies[i]->CanSeePlayer(player->GetPosition()))
 		{
 			this->ChangeScene = true;
 			this->IsClear = false;
@@ -213,8 +221,8 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
 	}
 
 	// ビルボードとキャラが触れればクリア
-	auto charaPos = m_pCharacter->GetPosition();
-	auto billPos = m_pBillboard->GetPosition();
+	auto charaPos = player->GetPosition();
+	auto billPos = m_pObjectManager->GetObjectByName<Billboard>("billboard")->GetPosition();
 	// ビルボードの中心から一定範囲内にいればクリア
 	if((charaPos - billPos).Length() < 300.0f)
 	{
@@ -228,7 +236,7 @@ void SkeltalmeshScene::Update(uint64_t deltatime)
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void SkeltalmeshScene::Draw(uint64_t deltatime)
+void SkeltalmeshScene::Draw(void)
 {
 	//m_camera.Draw();
 
@@ -276,17 +284,17 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 	//ShaderManager::GetInstance().GetShader("vertexLightingOneSkinVS")->WriteCBuffer(2, &transposedProj);
 
 	m_shader.SetGPU();
-	m_pBillboard->Draw(deltatime);
+	/*m_pBillboard->Draw(deltatime);
 
-	m_pTerrain->Draw();
-	m_pSkydome->Draw();
-	//m_pObjectManager->Draw(deltatime);
-	m_pCharacter->Draw(deltatime);
+	m_pTerrain->Draw(deltatime);
+	m_pSkydome->Draw(deltatime);*/
+	m_pObjectManager->Draw();
+	//m_pCharacter->Draw(deltatime);
 
-	for(size_t i = 0; i < m_pEnemies.size(); i++)
+	/*for(size_t i = 0; i < m_pEnemies.size(); i++)
 	{
 		m_pEnemies[i]->Draw(deltatime);
-	}
+	}*/
 
 	// 目標方向の姿勢を作る
 	AimOrientation aimorien(dir);
@@ -298,10 +306,10 @@ void SkeltalmeshScene::Draw(uint64_t deltatime)
 /**
  * @brief シーンの初期化処理
  */
-void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
+void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 {
 	// オブジェクトマネージャーのセット
-	//this->m_pObjectManager = _pObjectMgr;
+	this->m_pObjectManager = _Mgr;
 
 	// カメラ(3D)の初期化
 	m_camera.Init();
@@ -312,31 +320,39 @@ void SkeltalmeshScene::Init(ObjectManager* _pObjectMgr)
 	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
 
 	// プレイヤー生成
-	m_pCharacter = std::make_unique<Player>();
-	m_pCharacter->Init();
-	m_pCharacter->SetCamera(&m_camera);
+	auto player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
+	player->Init();
+	player->SetCamera(&m_camera);
 
 	// 敵生成
 	for (size_t i = 0; i < m_pEnemies.size(); i++)
 	{
-		m_pEnemies[i] = std::make_unique<Enemy>();
-		m_pEnemies[i]->Init();
+		auto enemy = m_pObjectManager->Instantiate<Enemy>("enemy" + std::to_string(i), Tag::Enemy);
+		enemy->Init();
 	}
 
 	//m_pObjectManager->CreateObject<Character>("testcharacter");
 
 	// メッシュを生成
-	m_pTerrain = std::make_unique<Terrain>();
-	m_pTerrain->Init(50, 50, 5000, 5000);
-	m_pTerrain->SetImage("assets/texture/Hole1.png");
-	m_pSkydome = std::make_unique<Skydome>();
-	m_pSkydome->Init();
-	m_pSkydome->SetTexture("assets/texture/haikei.jpg");
+	auto terrain = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+	terrain->Init(50, 50, 5000, 5000);
+	terrain->SetImage("assets/texture/Hole1.png");
+	// スカイドーム生成
+	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Skydome);
+	skydome->Init();
+	skydome->SetTexture("assets/texture/haikei.jpg");
 
 	// ビルボード生成
-	m_pBillboard = std::make_unique<Billboard>(300, 300, "assets/texture/emblem.png", &m_camera);
-	m_pBillboard->Init();
-	m_pBillboard->SetPosition(Vector3(0, 150, 3000));
+	auto billboard = m_pObjectManager->Instantiate<Billboard>("billboard", Tag::Item);
+	billboard->Init(300, 300, "assets/texture/emblem.png", &m_camera);
+	billboard->SetPosition(Vector3(0, 150, 3000));
+
+	// Cube生成
+	/*auto cube = m_pObjectManager->Instantiate<Cube>("cube", Tag::Object);
+	cube->Init();*/
+
+	// メッシュデータの読み込み
+	//auto rock = m_pObjectManager->CreateObject<CStaticMesh>("rock", Tag::Object);
 
 	// 地形生成
 	//m_pplanemesh = std::make_unique<CPlaneMesh>();

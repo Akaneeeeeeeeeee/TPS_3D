@@ -28,6 +28,7 @@ public:
 	 * カメラや画像スプライト、遷移演出の初期化を行う。
 	 */
 	explicit TitleScene();
+	//explicit TitleScene(ObjectManager& _Mgr);
 
 	/**
 	 * @brief 毎フレームの更新処理
@@ -35,7 +36,7 @@ public:
 	 *
 	 * 入力処理、アニメーション、遷移タイミングなどの制御を行う。
 	 */
-	void Update(uint64_t deltatime) override;
+	void Update(const uint64_t deltatime) override;
 
 	/**
 	 * @brief 毎フレームの描画処理
@@ -43,14 +44,15 @@ public:
 	 *
 	 * タイトルロゴや背景などのスプライト描画を行う。
 	 */
-	void Draw(uint64_t deltatime) override;
+	void Draw(void) override;
 
 	/**
 	 * @brief シーンの初期化処理
 	 *
 	 * スプライトの生成、カメラ設定、音声再生など、表示に必要な準備を行う。
 	 */
-	void Init(ObjectManager* _pObjectMgr) override;
+	void Init(ObjectManager* _Mgr) override;
+	//void Init(void) override;
 
 	/**
 	 * @brief シーンの終了処理

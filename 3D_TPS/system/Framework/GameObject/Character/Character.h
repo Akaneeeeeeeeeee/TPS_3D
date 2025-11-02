@@ -3,7 +3,6 @@
 #include "system/CAnimationMesh.h"
 #include "system/CAnimationObject.h"
 #include "system/CShader.h"
-//#include "system/"
 #include "system/Framework/GameObject/GameObject.h"
 
 /// <summary>
@@ -24,16 +23,18 @@ enum class AnimationState {
 class Character : public GameObject
 {
 public:
-	Character() {};
-	Character(uint64_t id, const std::string& name = "", const Tag& tag = Tag::None)
-		: GameObject(id, name, tag)
+	Character() = delete;
+	Character(EngineContext& context, const uint64_t id, 
+		const std::string& name = "", const Tag& tag = Tag::None,
+		const Transform& transform = Transform::One())
+		: GameObject(context, id, name, tag, transform)
 	{
 	};
 	virtual ~Character() {};
 
 	virtual void Init(void);
-	virtual void Update(uint64_t deltatime);
-	virtual void Draw(uint64_t deltatime);
+	virtual void Update(const uint64_t deltatime) override;
+	virtual void Draw(void) const override;
 	virtual void Uninit(void);
 
 	virtual void SetAnimationData(CAnimationData* pAnimationData) { m_pAnimationData = pAnimationData; }

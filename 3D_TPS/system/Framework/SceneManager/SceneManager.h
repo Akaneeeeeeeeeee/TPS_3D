@@ -25,11 +25,6 @@ struct Load3DInfo {
 class SceneManager : public NonCopyable
 {
 public:
-	/**
-	 * @brief コンストラクタ
-	 * @param _D3d11 d3dの参照
-	 * タイトルシーンはゲーム開始すぐに必要なのでコンストラクタで生成する
-	*/
 	SceneManager()
 	{
 		// シーン保持しているコンテナを空にする
@@ -45,14 +40,14 @@ public:
 		static_assert(std::is_base_of_v<IScene, T>, "T must be derived from IScene");
 		if (m_pScenes.find(name) == m_pScenes.end()) {
 			m_pScenes[name] = std::make_unique<T>();
-			m_pScenes[name]->Init(m_pObjectManager);
+			//m_pScenes[name]->Init(m_pObjectManager);
 		}
 	}
 
 	void Init(ObjectManager* _pObjectMgr);		//! 初期化
 	//void Init(SceneClassFactory* _factory, ObjectManager* _pObjectMgr);		//! 初期化
-	void Update(uint64_t deltatime);			//! 更新
-	void Draw(uint64_t deltatime);				//! 描画
+	void Update(const uint64_t deltatime);			//! 更新
+	void Draw(void);					//! 描画
 	void Uninit(void);							//! 終了
 
 	void SetCurrentScene(const std::string& name, std::unique_ptr<SceneTransition> transition = nullptr);
@@ -74,7 +69,7 @@ private:
 	bool IsQuit = false;			//! ゲーム終了フラグ
 
 	// 非同期シーンロード用
-	std::future<void> m_LoadingTask;
-	std::atomic<bool> m_LoadingDone{ false };
+	//std::future<void> m_LoadingTask;
+	//std::atomic<bool> m_LoadingDone{ false };
 };
 

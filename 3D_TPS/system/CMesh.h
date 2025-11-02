@@ -2,9 +2,12 @@
 #include	<vector>
 #include	"renderer.h"
 
-/// <summary>
-/// 3Dのデータをもつ頂点の集まりとして定義
-/// </summary>
+/*
+* @brief	メッシュデータを扱うクラス
+* @detail	頂点データ、インデックスデータをの実データ(CPU側)を保持する
+* @auther	赤根和樹
+* @date		2025/10/16
+*/
 class CMesh {
 protected:
 	std::vector<VERTEX_3D>	m_vertices;		// 頂点座標群

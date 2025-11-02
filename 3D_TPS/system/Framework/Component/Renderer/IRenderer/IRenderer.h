@@ -1,8 +1,10 @@
 ﻿#pragma once
-#include "../../IComponent/IComponent.h"
-#include "system/Framework/Graphics/RenderManager.h"
-#include "system/Framework/ShaderManager/ShaderManager.h"
-#include <array>
+#include "system/Framework/Component/IComponent/IComponent.h"
+#include <d3d11.h>
+
+class RenderManager;	// 前方宣言
+class ShaderManager;	// 前方宣言
+struct RenderInfo;		// 前方宣言
 
 /**
  * @brief レンダラー系コンポーネントを識別するためのインターフェースクラス
@@ -10,21 +12,17 @@
 class IRenderer : public IComponent
 {
 public:
-	virtual ~IRenderer() {};
+	virtual ~IRenderer() = default;
 
-	virtual void Render(void) = 0;
+	virtual bool GetRenderInfo(RenderInfo& outInfo) = 0;	//!< 描画に必要な情報を取得する純粋仮想関数
 
-	virtual const std::string& GetShaderName(ShaderStage stage) const {
-		return m_ShaderNames[static_cast<size_t>(stage)];
-	}
+	virtual void Attach(EngineContext& context) override;
+	virtual void Detach(EngineContext& context) override;
 
 protected:
 	IRenderer() : IComponent() {};	//!< コンストラクタ（RenderManagerのポインタはnullptrで初期化）
-	IRenderer(RenderManager* renderMgrr) : IComponent() {};
 
-	RenderManager* m_pRenderManager = nullptr;	//!< レンダーマネージャーへのポインタ
-
-	std::array<std::string, static_cast<size_t>(ShaderStage::Stage_MAX)> m_ShaderNames;
+	RenderManager* m_pRenderManager = nullptr;	//!< レンダーマネージャーへのポインタ(描画系のみが依存する)
 };
 
 

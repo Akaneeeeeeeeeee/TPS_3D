@@ -1,6 +1,7 @@
 #pragma once
 #include "system/Framework/SceneManager/SceneManager.h"
 #include "SceneTransition.h"
+#include "system/BoxDrawer.h"
 
 /**
  * @brief フェード演出によるシーン遷移を行うクラス
@@ -27,7 +28,9 @@ public:
     * @param mode フェードモード（デフォルトは FadeInOut）
     */
     explicit FadeTransition(SceneManager* _pMgr, float durationMs, Mode mode = Mode::FadeInOut)
-        : m_pSceneManager(_pMgr), m_duration(durationMs), m_mode(mode) {
+        : m_pSceneManager(_pMgr), m_duration(durationMs), m_mode(mode)
+    {
+        BoxDrawerInit();
     }
 
     /**

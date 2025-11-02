@@ -33,7 +33,8 @@ public:
 		assert(sts == true);
 	}
 
-	void SetGPU() {
+	void SetGPU() const
+	{
 		// デバイスコンテキスト取得
 		ID3D11DeviceContext* devicecontext = nullptr;
 		devicecontext = Renderer::GetDeviceContext();
@@ -43,7 +44,6 @@ public:
 
 	}
 
-	// インデックスバッファを書き換える
 	void Modify(const std::vector<unsigned int>& indices)
 	{
 		D3D11_MAPPED_SUBRESOURCE msr;

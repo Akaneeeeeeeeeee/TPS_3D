@@ -1,15 +1,44 @@
 ﻿#include "GameObject.h"
-//#include "Src/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
 
-GameObject::GameObject() {
+explicit GameObject::GameObject(EngineContext& context,
+	const uint64_t id,
+	const std::string& name,
+	const Tag tag,
+	const Transform& transform)
+	:m_Context(context),
+	m_ID(id), m_Name(name), m_Tag(tag),
+	m_Transform(transform)
+{
 
 }
 
-/**
- * @brief デストラクタ
-*/
-GameObject::~GameObject() {
+explicit GameObject::GameObject(EngineContext& context,
+	const uint64_t id,
+	const std::string& name,
+	const Tag tag,
+	const Vector3& pos,
+	const Quaternion& rot,
+	const Vector3& scale)
+	: GameObject(context, id, name, tag, Transform(pos, rot, scale))
+{
 
+}
+
+/*
+* @brief	コンポーネント取得
+* @detail	名前でコンポーネントを取得する
+* @param	name	コンポーネント名
+*/
+IComponent* GameObject::GetComponent(const std::string& name) const
+{
+	// コンポーネント探索
+	auto it = m_Components.find(name);
+	// 見つかったらポインタを返す
+	if (it != m_Components.end())
+	{
+		return it->second.get();
+	}
+	return nullptr;
 }
 
 void GameObject::Init(void)
@@ -18,7 +47,7 @@ void GameObject::Init(void)
 	//m_Components.clear();
 }
 
-void GameObject::Update(uint64_t deltatime)
+void GameObject::Update(const uint64_t deltatime)
 {
 	// コンポーネントの更新
 	/*for(auto& component : m_Components) {
@@ -31,7 +60,7 @@ void GameObject::Update(uint64_t deltatime)
 /// →毎フレームコンポーネントを捜索するのは非効率的なのでフラグを持たせるべきかも
 /// </summary>
 /// <param name=""></param>
-void GameObject::Draw(uint64_t deltatime)
+void GameObject::Draw(void) const
 {
 	// レンダラー系コンポーネントを保持していれば描画する
 	/*for (auto& component : m_Components) 
@@ -52,32 +81,3 @@ void GameObject::Uninit(void)
 	m_Components.clear();*/
 }
 
-// Positionゲッター
-const Vector3& GameObject::GetPosition(void) const {
-	return m_Transform.GetPosition();
-}
-
-// Positionセッター
-void GameObject::SetPosition(const Vector3& _pos) {
-	this->m_Transform.SetPosition(_pos);
-}
-
-// Rotationゲッター
-const Quaternion& GameObject::GetRotation(void) const {
-	return m_Transform.GetRotation();
-}
-
-// Rotationセッター
-void GameObject::SetRotation(const Quaternion& _rot) {
-	this->m_Transform.SetRotation(_rot);
-}
-
-// Scaleゲッター
-const Vector3& GameObject::GetScale(void) const {
-	return m_Transform.GetScale();
-}
-
-// Scaleセッター
-void GameObject::SetScale(const Vector3& _scale) {
-	this->m_Transform.SetScale(_scale);
-}

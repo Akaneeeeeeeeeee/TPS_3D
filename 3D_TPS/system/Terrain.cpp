@@ -3,11 +3,18 @@
 #include "commontypes.h"
 
 
-Terrain::Terrain()
+Terrain::Terrain(EngineContext& context, const uint64_t id, 
+    const std::string& name, const Tag& tag, 
+    const Transform& transform)
+    : GameObject(context, id, name, tag, transform)
 {
 }
 
 Terrain::~Terrain()
+{
+}
+
+void Terrain::Init(void)
 {
 }
 
@@ -41,29 +48,27 @@ void Terrain::Init(int divx, int divy,
 	m_Material->Create(mtrl);
 }
 
-void Terrain::Draw(void)
+void Terrain::Update(const uint64_t deltatime)
+{
+
+}
+
+void Terrain::Draw(void) const
 {
 	// SRT情報作成
-	Matrix4x4 r = Matrix4x4::CreateFromYawPitchRoll(
-		m_transform.rot.y,
-		m_transform.rot.x,
-		m_transform.rot.z);
+	Matrix4x4 r = Matrix4x4::CreateFromQuaternion(m_Transform.GetRotation());
 
-	Matrix4x4 t = Matrix4x4::CreateTranslation(
-		m_transform.pos.x,
-		m_transform.pos.y,
-		m_transform.pos.z);
+	const Vector3& pos = m_Transform.GetPosition();
+	Matrix4x4 t = Matrix4x4::CreateTranslation(pos.x, pos.y, pos.z);
 
-	Matrix4x4 s = Matrix4x4::CreateScale(
-		m_transform.scale.x,
-		m_transform.scale.y,
-		m_transform.scale.z);
+	const Vector3& scale = m_Transform.GetScale();
+	Matrix4x4 s = Matrix4x4::CreateScale(scale.x, scale.y, scale.z);
 
 	Matrix4x4 worldmtx;		// WorldMatrix：世界の中の自分の情報を持った行列
 	worldmtx = s * r * t;
 	Renderer::SetWorldMatrix(&worldmtx); // GPUにセット
 
-	// 描画の処理D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIPでよさそう
+	// 描画の処理D3D11_PRIMITIVE_TOPOLOGY_TRIANGLEST RIPでよさそう
 	m_MeshRenderer.BeforeDraw(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	m_Shader.SetGPU();
@@ -78,6 +83,11 @@ void Terrain::Draw(void)
 		4 * this->m_plane.GetWidth() * this->m_plane.GetHeight(),		// 描画するインデックス数（四角形なので４）
 		0,
 		0);
+}
+
+void Terrain::Uninit(void)
+{
+    
 }
 
 //void Terrain::SetImage(const std::filesystem::path& _filepath)
@@ -280,22 +290,18 @@ void Terrain::SetImage(const std::filesystem::path& _filepath)
     m_MeshRenderer.Modify(m_Vertices);
 
     // ワールド変換
-    m_transform.pos.y = -20.0f;
-    m_transform.scale.x = 20.0f;
-    m_transform.scale.z = 20.0f;
+	Vector3 pos = m_Transform.GetPosition();
+	Vector3 scale = m_Transform.GetScale();
+    pos.y = -20.0f;
+    scale.x = 20.0f;
+    scale.z = 20.0f;
+	const Quaternion& rot = m_Transform.GetRotation();
 
-    Matrix4x4 r = Matrix4x4::CreateFromYawPitchRoll(
-        m_transform.rot.y,
-        m_transform.rot.x,
-        m_transform.rot.z);
-    Matrix4x4 t = Matrix4x4::CreateTranslation(
-        m_transform.pos.x,
-        m_transform.pos.y,
-        m_transform.pos.z);
-    Matrix4x4 s = Matrix4x4::CreateScale(
-        m_transform.scale.x,
-        m_transform.scale.y,
-        m_transform.scale.z);
+    Matrix4x4 r = Matrix4x4::CreateFromQuaternion(rot);
+
+    Matrix4x4 t = Matrix4x4::CreateTranslation(pos);
+
+    Matrix4x4 s = Matrix4x4::CreateScale(scale);
     // ワールド行列
     Matrix4x4 worldmtx = s * r * t;
 

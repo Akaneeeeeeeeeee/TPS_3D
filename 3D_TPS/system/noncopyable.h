@@ -1,12 +1,11 @@
 #pragma once
 
-/**
- * @class NonCopyable
- * @brief コピーを禁止するためのクラスです。
- *
- * このクラスは、派生クラスのコピーと代入を防ぐために設計されています。
- * コピーコンストラクタとコピー代入演算子を削除しています。
- */
+/*
+* @brief	NonCopyableクラス
+* @detail	コピーコンストラクタ、コピー代入演算子を削除したクラス
+* @remark	継承することでコピー禁止にできる
+* @auther	赤根和樹
+*/
 class NonCopyable {
 public:
     /**
