@@ -1,6 +1,6 @@
 ﻿#include "GameObject.h"
 
-explicit GameObject::GameObject(EngineContext& context,
+GameObject::GameObject(EngineContext& context,
 	const uint64_t id,
 	const std::string& name,
 	const Tag tag,
@@ -12,7 +12,7 @@ explicit GameObject::GameObject(EngineContext& context,
 
 }
 
-explicit GameObject::GameObject(EngineContext& context,
+GameObject::GameObject(EngineContext& context,
 	const uint64_t id,
 	const std::string& name,
 	const Tag tag,

@@ -57,7 +57,7 @@ void SceneManager::Update(const uint64_t deltatime)
 	{
 		// シーン遷移処理実行
 		this->SetCurrentScene(m_pScenes[m_CurrentSceneName]->GetNextSceneName(), 
-			std::make_unique<FadeTransition>(this, 5000.0f, FadeTransition::Mode::FadeInOut));
+			std::make_unique<FadeTransition>(this, 2500.0f, FadeTransition::Mode::FadeInOut));
 	}
 	// 通常更新
 	else if (!m_CurrentSceneName.empty())
