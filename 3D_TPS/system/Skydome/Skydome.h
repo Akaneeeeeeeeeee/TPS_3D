@@ -5,6 +5,7 @@
 #include "system/CMaterial.h"
 #include "system/camera.h"
 #include "system/Framework/GameObject/GameObject.h"
+#include "system/CMeshRenderer.h"
 
 class Skydome : public GameObject
 {
