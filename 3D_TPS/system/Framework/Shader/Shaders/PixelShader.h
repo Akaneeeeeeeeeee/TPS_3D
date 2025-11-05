@@ -8,7 +8,7 @@ public:
 	PixelShader(const std::string& _name);
 	~PixelShader();
 
-	void Bind(void) override;
+	void Bind(const RenderInfo& info) override;
 	void Unbind(void) override;
 	HRESULT Create(void* pData, UINT size) override;
 

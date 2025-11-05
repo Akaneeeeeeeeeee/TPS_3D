@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <stdint.h>
 
 class GameObject;	// 前方宣言
 struct EngineContext;	// 前方宣言(管理システム)
@@ -15,7 +16,7 @@ public:
 	virtual ~IComponent();	// デストラクタ
 
 	virtual void Init(void) = 0;		// 初期化
-	virtual void Update(void) = 0;		// 更新
+	virtual void Update(const uint64_t deltatime) = 0;		// 更新
 	virtual void Uninit(void) = 0;		// 終了
 
 	virtual void SetIsValid(bool flg) { IsValid = flg; }

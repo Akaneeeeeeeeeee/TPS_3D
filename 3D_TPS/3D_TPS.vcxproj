@@ -112,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system;$(ProjectDir)system\Framework</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -162,7 +162,9 @@
     <ClInclude Include="system\CDirectInput.h" />
     <ClInclude Include="system\CIndexBuffer.h" />
     <ClInclude Include="system\CPlane.h" />
-    <ClInclude Include="system\Cube\Cube.h" />
+    <ClInclude Include="system\Cube\Cube.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\CVertexBuffer.h" />
     <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -170,10 +172,15 @@
     <ClInclude Include="system\Framework\ColliderManager\collision.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Animator\Animator.h" />
     <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRenderer.h" />
+    <ClInclude Include="system\Framework\GameObject\Player\testPlayer.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\Framework\Scene\TestScene.h" />
+    <ClInclude Include="system\Framework\Shader\ShaderReflection.h" />
     <ClInclude Include="system\MyIndexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -304,7 +311,9 @@
     <ClCompile Include="system\CStaticMesh.cpp" />
     <ClCompile Include="system\CStaticMeshRenderer.cpp" />
     <ClCompile Include="system\CTexture.cpp" />
-    <ClCompile Include="system\Cube\Cube.cpp" />
+    <ClCompile Include="system\Cube\Cube.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\CylinderDrawer.cpp" />
     <ClCompile Include="system\DebugUI.cpp" />
     <ClCompile Include="system\dx11helper.cpp" />
@@ -317,6 +326,7 @@
     <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Animator\Animator.cpp" />
     <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -329,11 +339,13 @@
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRenderer.cpp" />
     <ClCompile Include="system\Framework\Component\Transform\Transform.cpp" />
     <ClCompile Include="system\Framework\GameObject\Character\Character.cpp" />
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
+    <ClCompile Include="system\Framework\GameObject\Player\testPlayer.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -350,6 +362,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\SceneManager\Transition\FadeTransition.cpp" />
     <ClCompile Include="system\Framework\Scene\IScene.cpp" />
+    <ClCompile Include="system\Framework\Scene\TestScene.cpp" />
     <ClCompile Include="system\Framework\ShaderManager\ShaderManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

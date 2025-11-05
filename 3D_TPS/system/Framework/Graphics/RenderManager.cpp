@@ -66,15 +66,9 @@ void RenderManager::CollectRenderInfo(void)
 	for (auto& component : m_RenderComponents)
 	{
 		// コンポーネントが存在し、有効な場合のみ描画情報を取得
-		if (component && component->GetIsValid())
-		{
-			RenderInfo info;
-			// 取得できた場合は描画情報リストに追加
-			if (component->GetRenderInfo(info))
-			{
-				m_RenderInfos.push_back(info); // 描画情報をリストに追加
-			}
-		}
+		if (!component || !component->GetIsValid()) { continue; }
+
+		component->EnumerateRenderInfos(m_RenderInfos);
 	}
 }
 
@@ -90,10 +84,10 @@ void RenderManager::Render(const RenderInfo& info)
 	// ワールド変換行列をシェーダーに渡す（将来: 定数バッファにまとめて渡す）
 	// 将来: シェーダーマネージャーからシェーダーを取得してセットする
 	if (info.vs) {
-		info.vs->Bind();
+		info.vs->Bind(info);
 	}
 	if (info.ps) {
-		info.ps->Bind();
+		info.ps->Bind(info);
 	}
 	// 描画コール
 	context->DrawIndexed(info.indexCount, 0, 0);
@@ -104,6 +98,7 @@ void RenderManager::Render(const RenderInfo& info)
 	if (info.ps) {
 		info.ps->Unbind();
 	}
+
 }
 
 /// <summary>

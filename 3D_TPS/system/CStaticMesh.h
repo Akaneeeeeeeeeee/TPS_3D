@@ -30,6 +30,19 @@ public:
 		return std::move(m_diffusetextures);
 	}
 
+	std::vector<ID3D11ShaderResourceView*> GetDiffuseTextureResources() {
+		std::vector<ID3D11ShaderResourceView*> resources;
+		for (const auto& tex : m_diffusetextures) {
+			if (tex) {
+				resources.push_back(tex->GetResource());
+			}
+			else {
+				resources.push_back(nullptr);
+			}
+		}
+		return resources;
+	}
+
 private:
 
 	std::vector<MATERIAL> m_materials;					// ƒ}ƒeƒŠƒAƒ‹î•ñ

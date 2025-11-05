@@ -8,7 +8,7 @@ public:
 	VertexShader(const std::string& _name);
 	~VertexShader();
 
-	void Bind(void) override;
+	void Bind(const RenderInfo& info) override;
 	void Unbind(void) override;
 	HRESULT Create(void* pData, UINT size) override;
 

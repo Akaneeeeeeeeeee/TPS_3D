@@ -3,7 +3,7 @@
 #include "system/Framework/SceneManager/SceneManager.h"
 #include "system/Framework/EngineContext/EngineContext.h"
 #include "system/Framework/Graphics/GraphicsDevice.h"
-
+#include "system/Framework/ColliderManager/ColliderManager.h"
 
 /**
  * @brief ゲームクラス
@@ -25,7 +25,8 @@ private:
 	GraphicsDevice m_GraphicsDevice;		// グラフィックスデバイス
 	ShaderManager m_ShaderManager;			// シェーダーマネージャー
 	AssetManager m_AssetManager;			// アセットマネージャー
-	//RenderManager m_RenderManager;			// レンダーマネージャー
+	RenderManager m_RenderManager;			// レンダーマネージャー
+	ColliderManager m_ColliderManager;		// 当たり判定マネージャー
 	std::unique_ptr<EngineContext> m_pContext; // エンジンコンテキスト(Init後に生成したいためunique_ptr)
 	
 	ObjectManager m_ObjectManager;			// オブジェクト管理クラス

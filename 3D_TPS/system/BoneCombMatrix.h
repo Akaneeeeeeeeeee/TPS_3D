@@ -7,7 +7,7 @@
 #include	"renderer.h"
 #include	"NonCopyable.h"
 
-struct BoneCombMatrix : NonCopyable 
+struct BoneCombMatrix 
 {
 	CBBoneCombMatrix	 ConstantBufferMemory{};					// 行列群
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ConstantBuffer{};			// 定数バッファ

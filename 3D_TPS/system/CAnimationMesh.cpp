@@ -1,6 +1,7 @@
 #include	<iostream>
 #include	"CAnimationMesh.h"
 #include	"utility.h"
+#include	"Component/Renderer/MeshRenderer/SkinnedMeshRenderer.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -219,4 +220,21 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray,int& CurrentFrame)
 	{
 		bonecombarray.ConstantBufferMemory.BoneCombMtx[bone.second.idx] = bone.second.Matrix.Transpose();	// 20240714 DX化
 	}
+}
+
+
+SkinnedMeshRenderData CAnimationMesh::GenerateRenderData(void)
+{
+	SkinnedMeshRenderData renderdata{};
+	// 頂点データコピー
+	renderdata.vertices = GetVertices();
+	// インデックスデータコピー
+	renderdata.indices = GetIndices();
+	// マテリアルデータコピー
+	renderdata.materials = GetMaterials();
+	// サブセットデータコピー
+	renderdata.subsets = GetSubsets();
+	// ディフューズテクスチャ名コピー
+	renderdata.textures = GetDiffuseTextureResources();
+	return renderdata;
 }

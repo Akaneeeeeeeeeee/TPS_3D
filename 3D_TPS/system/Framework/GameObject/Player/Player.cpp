@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "system/CDirectInput.h"
+#include "Component/Renderer/MeshRenderer/SkinnedMeshRenderer.h"
 
 Player::Player(EngineContext& context, const uint64_t id, 
 	const std::string& name, const Tag& tag,
@@ -14,22 +15,27 @@ Player::~Player()
 
 void Player::Init(void)
 {
+	auto animationmesh = AssetManager::GetInstance().GetAnimationMesh("Akai")->GenerateRenderData();
+
+	auto rendercomp = AddComponent<SkinnedMeshRenderer>("AnimationMesh", animationmesh);
+	rendercomp->Init();
+
 	// アニメーションオブジェクトを生成
-	this->m_pAnimationObject = std::make_unique<CAnimationObject>();
-	this->m_pAnimationObject->Init();
+	//this->m_pAnimationObject = std::make_unique<CAnimationObject>();
+	//this->m_pAnimationObject->Init();
 
 	// メッシュを取得
-	this->m_pAnimationMesh = AssetManager::GetInstance().GetAnimationMesh("Akai");
-	// シェーダーの初期化
-	this->m_Shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
-	// アニメーションデータ取得
-	this->m_pAnimationData = AssetManager::GetInstance().GetAnimationData("Akai_Idle");
-	// 現在のアニメーションをセット
-	aiAnimation* animation = m_pAnimationData->GetAnimation("Akai_Idle", 0);
-	this->m_pCurrentAnimation = animation;
-	m_pAnimationMesh->SetCurentAnimation(animation);
-	// アニメーションメッシュをセット
-	this->m_pAnimationObject->SetAnimationMesh(m_pAnimationMesh);
+	//this->m_pAnimationMesh = AssetManager::GetInstance().GetAnimationMesh("Akai");
+	//// シェーダーの初期化
+	//this->m_Shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	//// アニメーションデータ取得
+	//this->m_pAnimationData = AssetManager::GetInstance().GetAnimationData("Akai_Idle");
+	//// 現在のアニメーションをセット
+	//aiAnimation* animation = m_pAnimationData->GetAnimation("Akai_Idle", 0);
+	//this->m_pCurrentAnimation = animation;
+	//m_pAnimationMesh->SetCurentAnimation(animation);
+	//// アニメーションメッシュをセット
+	//this->m_pAnimationObject->SetAnimationMesh(m_pAnimationMesh);
 
 	// ステータスを設定
 	this->m_MoveSpeed = 10.0f;

@@ -44,7 +44,7 @@ void Cube::Draw(void) const
 	mtrl.Specular = Color(0, 0, 0, 0);
 	mtrl.Shiness = 0;
 	mtrl.TextureEnable = FALSE;
-	m_Material.WriteCBuffer(3, &mtrl);	// スロット3に書き込む（テスト）
+	//m_Material.WriteCBuffer(3, &mtrl);	// スロット3に書き込む（テスト）
 	//
 	//// unlittextureps/vsを使用
 	//m_Material.Bind();	// ここでおかしくなる→

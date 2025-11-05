@@ -3,6 +3,7 @@
 #include "scene/SkeltalmeshScene.h"
 #include "scene/TitleScene.h"
 #include "scene/ResultScene.h"
+#include "scene/TestScene.h"
 #include "system/Framework/SceneManager/Transition/FadeTransition.h"
 
 /**
@@ -16,9 +17,11 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 	this->AddScene<TitleScene>("TitleScene");
 	this->AddScene<SkeltalmeshScene>("SkeltalmeshScene");
 	this->AddScene<ResultScene>("ResultScene");
+	this->AddScene<TestScene>("TestScene");
 	//! タイトルシーンを生成してコンテナに追加
+	this->m_CurrentSceneName = "TestScene";
 	//this->m_CurrentSceneName = "SkeltalmeshScene";
-	this->m_CurrentSceneName = "TitleScene";
+	//this->m_CurrentSceneName = "TitleScene";
 	// 現在のシーンを初期化
 	m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
 	this->SetCurrentScene(m_CurrentSceneName);
@@ -62,9 +65,9 @@ void SceneManager::Update(const uint64_t deltatime)
 	// 通常更新
 	else if (!m_CurrentSceneName.empty())
 	{
-		m_pScenes[m_CurrentSceneName]->Update(deltatime);
+		//m_pScenes[m_CurrentSceneName]->Update(deltatime);
 	}
-	
+
 }
 
 void SceneManager::Draw(void)

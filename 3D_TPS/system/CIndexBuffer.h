@@ -57,4 +57,6 @@ public:
 			Renderer::GetDeviceContext()->Unmap(m_IndexBuffer.Get(), 0);
 		}
 	}
+
+	ID3D11Buffer* Get() const { return m_IndexBuffer.Get(); }
 };

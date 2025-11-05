@@ -9,12 +9,11 @@
 using Microsoft::WRL::ComPtr;
 
 template <typename T>
-class CVertexBuffer final : public NonCopyable{
+class MyVertexBuffer final : public NonCopyable{
 
 	ComPtr<ID3D11Buffer> m_VertexBuffer;
 	UINT m_Stride = sizeof(T);
 	UINT m_VertexCount = 0;
-	DXGI_FORMAT m_Format = DXGI_FORMAT_R32_UINT;
 
 public:
 	void Create(const std::vector<T>& vertices) {
@@ -25,7 +24,6 @@ public:
 		assert(device);
 		// 頂点数取得
 		m_VertexCount = static_cast<UINT>(vertices.size());
-		m_Format = DXGI_FORMAT_R32_UINT;
 
 		// 頂点バッファ作成
 		bool sts = CreateVertexBufferWrite(
@@ -83,10 +81,5 @@ public:
 	UINT GetVertexCount(void)
 	{
 		return m_VertexCount;
-	}
-
-	DXGI_FORMAT GetFormat(void)
-	{
-		return m_Format;
 	}
 };

@@ -20,6 +20,7 @@ public:
 private:
 	CBoxMesh m_BoxMesh;
 	MyMaterial m_Material;
+	//MyMaterial m_Material;
 	CMeshRenderer m_MeshRenderer;
 };
 

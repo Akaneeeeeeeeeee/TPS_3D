@@ -9,9 +9,10 @@
 
 using Microsoft::WRL::ComPtr;
 
-class CIndexBuffer : NonCopyable {
+class MyIndexBuffer : NonCopyable {
 
 	ComPtr<ID3D11Buffer> m_IndexBuffer;
+	DXGI_FORMAT m_IndexFormat = DXGI_FORMAT_R32_UINT;
 
 public:
 	void Create(const std::vector<unsigned int>& indices) {
@@ -20,6 +21,7 @@ public:
 		ID3D11Device* device = nullptr;
 
 		device = Renderer::GetDevice();
+		m_IndexFormat = DXGI_FORMAT_R32_UINT;
 
 		assert(device);
 
@@ -39,7 +41,7 @@ public:
 		devicecontext = Renderer::GetDeviceContext();
 
 		// インデックスバッファをセット
-		devicecontext->IASetIndexBuffer(m_IndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		devicecontext->IASetIndexBuffer(m_IndexBuffer.Get(), m_IndexFormat, 0);
 
 	}
 
@@ -72,6 +74,6 @@ public:
 
 	DXGI_FORMAT GetIndexFormat(void)
 	{
-
+		return m_IndexFormat;
 	}
 };

@@ -50,9 +50,9 @@ void GameObject::Init(void)
 void GameObject::Update(const uint64_t deltatime)
 {
 	// コンポーネントの更新
-	/*for(auto& component : m_Components) {
-		component.second->Update();
-	}*/
+	for(auto& component : m_Components) {
+		component.second->Update(deltatime);
+	}
 }
 
 /// <summary>
@@ -75,9 +75,10 @@ void GameObject::Draw(void) const
 void GameObject::Uninit(void)
 {
 	// コンポーネントの終了処理
-	/*for (auto& component : m_Components) {
+	for (auto& component : m_Components) {
 		component.second->Uninit();
+		component.second->Detach(m_Context);
 	}
-	m_Components.clear();*/
+	m_Components.clear();
 }
 

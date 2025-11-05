@@ -21,6 +21,10 @@ public:
 	bool Load(const std::string& filename);
 	bool LoadFromFemory(const unsigned char* data,int len);
 
+	const std::string& GetName() const {
+		return m_texname;
+	}
+
 	ID3D11ShaderResourceView* GetResource() const {
 		return m_srv.Get();
 	}

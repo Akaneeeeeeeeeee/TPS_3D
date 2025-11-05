@@ -112,23 +112,31 @@ HRESULT VertexShader::Create(void* pData, UINT size)
 	return hr;
 }
 
-void VertexShader::Bind(void)
+void VertexShader::Bind(const RenderInfo& info)
 {
 	ID3D11DeviceContext* pContext = Renderer::GetDeviceContext();
 	pContext->VSSetShader(m_pVertexShader.Get(), NULL, 0);
 	pContext->IASetInputLayout(m_pInputLayout.Get());
-	for (int i = 0; i < m_pCBuffers.size(); ++i)
-	{
-		//pContext->VSSetConstantBuffers(i, 1, &m_pCBuffers[i]);
-		auto* buf = m_pCBuffers[i].Get();
-		pContext->VSSetConstantBuffers(i, 1, &buf);
-	}
-	for (int i = 0; i < m_pSRVs.size(); ++i)
-	{
-		auto* srv = m_pSRVs[i].Get();
-		pContext->VSSetShaderResources(i, 1, &srv);
-		//pContext->VSSetShaderResources(i, 1, &m_pSRVs[i]);
-	}
+
+	// cBuffers をループしてセット
+	//for (const auto& cb : info.cBuffers)
+	//{
+	//	for (const auto& refCb : m_ShaderReflection.cbuffers)
+	//	{
+	//		if (cb.name == refCb.name)
+	//			pContext->VSSetConstantBuffers(refCb.slot, 1, &cb.buffer);
+	//	}
+	//}
+
+	//// SRV バインド (VSで使う場合)
+	//for (const auto& srv : info.srvs)
+	//{
+	//	for (const auto& refSrv : m_ShaderReflection.srvs)
+	//	{
+	//		if (srv.name == refSrv.name)
+	//			pContext->VSSetShaderResources(refSrv.slot, 1, &srv.view);
+	//	}
+	//}
 }
 
 void VertexShader::Unbind(void)

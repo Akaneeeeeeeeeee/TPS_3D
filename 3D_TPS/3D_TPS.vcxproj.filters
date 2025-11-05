@@ -94,12 +94,6 @@
     <Filter Include="ソース ファイル\MyFramework\Component\IComponent">
       <UniqueIdentifier>{74b4ad61-0dc9-41ad-ac53-0b41c803476c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Component\IRenderer">
-      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Component\MeshRenderer">
-      <UniqueIdentifier>{79e534d6-6e10-4f75-a981-4e229bdbdc7c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\RenderManager">
       <UniqueIdentifier>{b029af05-7bfa-4a8d-8cf5-2a7a6d3c3e5e}</UniqueIdentifier>
     </Filter>
@@ -129,6 +123,12 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\Material">
       <UniqueIdentifier>{ce3fa4c7-ebb0-4f49-ae38-4d1df9d565d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Renderer">
+      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Animator">
+      <UniqueIdentifier>{3a196fa9-1ac4-49cf-9979-6bab86dec7f0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -361,16 +361,13 @@
       <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\IRenderer\IRenderer.h">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderManager.h">
       <Filter>ソース ファイル\MyFramework\RenderManager</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\GraphicsDevice.h">
       <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.h">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
       <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
@@ -410,6 +407,24 @@
     </ClInclude>
     <ClInclude Include="system\CPlane.h">
       <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Shader\ShaderReflection.h">
+      <Filter>ソース ファイル\MyFramework\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Animator\Animator.h">
+      <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Scene\TestScene.h">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Player\testPlayer.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -591,16 +606,13 @@
       <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\IRenderer\IRenderer.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Graphics\RenderManager.cpp">
       <Filter>ソース ファイル\MyFramework\RenderManager</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Rock\Rock.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\Rock</Filter>
@@ -622,6 +634,21 @@
     </ClCompile>
     <ClCompile Include="system\CPlane.cpp">
       <Filter>ソース ファイル\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Animator\Animator.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Scene\TestScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Player\testPlayer.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

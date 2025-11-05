@@ -13,7 +13,7 @@ public:
 	virtual ~ICollider();
 
 	virtual void Init(void) override = 0;
-	virtual void Update(void) override = 0;
+	virtual void Update(const uint64_t deltatime) override = 0;
 	virtual void Uninit(void) override = 0;
 
 protected:

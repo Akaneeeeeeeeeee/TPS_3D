@@ -1,10 +1,25 @@
 #pragma once
 #include "system/Framework/Component/Renderer/IRenderer/IRenderer.h"
-#include "system/CVertexBuffer.h"
-#include "system/CIndexBuffer.h"
+#include "system/MyVertexBuffer.h"
+#include "system/MyIndexBuffer.h"
+//#include "system/CVertexBuffer.h"
+//#include "system/CIndexBuffer.h"
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/Graphics/RenderInfo.h"
-#include "system/CMaterial.h"
+#include "Material/MyMaterial.h"
+//#include "system/CMaterial.h"
+
+
+struct MeshRenderData {
+	std::vector<VERTEX_3D> vertices;
+	std::vector<uint32_t> indices;
+	std::vector<MATERIAL> m_materials;					// マテリアル情報
+	std::vector<std::string> m_diffusetexturenames;		// ディフューズテクスチャ名
+	std::vector<SUBSET> m_subsets;						// サブセット情報
+
+	std::vector<std::unique_ptr<CTexture>>	m_diffusetextures;	// ディフューズテクスチャ群
+};
+
 
 /*
 * @brief	メッシュ描画コンポーネント
@@ -23,33 +38,21 @@ public:
 	~MeshRenderer() = default;
 
 	void Init(void) override;
+	void Update(const uint64_t deltatime) override;
+	void Uninit(void) override;
 
-	/*void SetVertexBuffer(const CVertexBuffer<VERTEX_3D>& vb) { m_VertexBuffer = vb; }
-	void SetIndexBuffer(const CIndexBuffer& ib) { m_IndexBuffer = ib; }*/
-
-	//bool GetRenderInfo(RenderInfo& outInfo) override
-	//{
-	//	// 所有者がいない/シェーダー名が設定されていない場合は描画しない
-	//	if (!m_pOwner || !m_VSName || !m_PSName) { return false; }
-
-	//	// ワールド行列を取得
-	//	Matrix4x4* mtx = &m_pOwner->GetWorldMatrix();
-
-	//	// 描画必要情報をセット
-	//	outInfo.vertexBuffer = m_VertexBuffer.GetBuffer();
-	//	outInfo.indexBuffer = m_IndexBuffer.GetBuffer();
-	//	outInfo.stride = m_VertexBuffer.GetStride();
-	//	outInfo.indexCount = m_IndexBuffer.GetIndexCount();
-	//	outInfo.indexFormat = m_IndexBuffer.GetIndexFormat();
-	//	outInfo.world = mtx;
-	//	outInfo.VSName = m_VSName;
-	//	outInfo.psName = m_PSName;
-
-	//	return true;
-	//}
+	bool GetRenderInfo(RenderInfo& outInfo) override;
+	void EnumerateRenderInfos(std::vector<RenderInfo>& infos) override;
 
 private:
-	CVertexBuffer<VERTEX_3D>	m_VertexBuffer;	// 頂点バッファ
-	CIndexBuffer				m_IndexBuffer;	// インデックスバッファ
-	std::unique_ptr<CMaterial> m_pMaterial;		// マテリアル
+	MyVertexBuffer<VERTEX_3D>	m_VertexBuffer;	// 頂点バッファ
+	MyIndexBuffer				m_IndexBuffer;	// インデックスバッファ
+	
+	std::vector<SUBSET> m_Subsets;
+	std::vector<ID3D11ShaderResourceView*> m_Textures;
+	std::vector<std::unique_ptr<MyMaterial>> m_Materials;
+
+	ComPtr<ID3D11Buffer> m_pWorldBuffer;		// ワールド行列バッファ
+
+	MeshRenderData m_MeshData;
 };

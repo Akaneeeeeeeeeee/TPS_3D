@@ -141,7 +141,8 @@ inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
 	auto component = this->CreateComponent<T>(std::forward<Args>(args)...);
 
 	// 所有者と初期化
-	component->SetOwner(*this);
+	component->Attach(m_Context);
+	component->SetOwner(this);
 
 	T* ptr = component.get();
 	m_Components[name] = std::move(component);

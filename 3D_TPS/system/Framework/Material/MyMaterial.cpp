@@ -1,93 +1,109 @@
 #include "MyMaterial.h"
 #include "system/Framework/ShaderManager/ShaderManager.h"
 
-
-MyMaterial::MyMaterial(const std::string& name, const std::array<IShader*, 2> shaders)
-	: m_Name(name), m_pShaders(shaders), m_BaseColor(1.0f, 1.0f, 1.0f, 1.0f)
-{
-	MATERIAL mtrl;
-	// マテリアル生成
-	mtrl.Ambient = Color(0, 0, 0, 0);
-	mtrl.Diffuse = m_BaseColor;
-	mtrl.Emission = Color(0, 0, 0, 0);
-	mtrl.Specular = Color(0, 0, 0, 0);
-	mtrl.Shiness = 0;
-	mtrl.TextureEnable = FALSE;
+namespace {
+	constexpr UINT MATERIAL_SLOT = 3; // マテリアル用定数バッファのスロット(固定)
 }
-MyMaterial::MyMaterial(const std::string& name)
-	: m_Name(name), m_pShaders(nullptr), m_BaseColor(1.0f, 1.0f, 1.0f, 1.0f)
+
+MyMaterial::MyMaterial(const std::string& vsName, const std::string& psName, const std::string& name)
+	: m_Name(name)
 {
-	MATERIAL mtrl;
-	// マテリアル生成
-	mtrl.Ambient = Color(0, 0, 0, 0);
-	mtrl.Diffuse = m_BaseColor;
-	mtrl.Emission = Color(0, 0, 0, 0);
-	mtrl.Specular = Color(0, 0, 0, 0);
-	mtrl.Shiness = 0;
-	mtrl.TextureEnable = FALSE;
-	m_pShaders[0] = ShaderManager::GetInstance().GetShader("unlitTextureVS");
-	m_pShaders[1] = ShaderManager::GetInstance().GetShader("unlitTexturePS");
+	m_pShaders[ShaderStage::Vertex] = ShaderManager::GetInstance().GetShader(vsName);
+	m_pShaders[ShaderStage::Pixel] = ShaderManager::GetInstance().GetShader(psName);
+
+	const auto vsReflection = m_pShaders[ShaderStage::Vertex]->GetShaderReflection();
+	const auto psReflection = m_pShaders[ShaderStage::Pixel]->GetShaderReflection();
+	CreateCBuffers(vsReflection, psReflection);
+
+	// なければ生成
+	if (!m_ConstantBuffers.contains("MATERIAL"))
+	{
+		CBufferEntry entry;
+		entry.slot = MATERIAL_SLOT;
+		entry.size = sizeof(MATERIAL);
+		entry.cpuData.resize(entry.size);
+
+		// 初期値コピー
+		memcpy(entry.cpuData.data(), &m_MaterialData, sizeof(MATERIAL));
+
+		D3D11_BUFFER_DESC desc{};
+		desc.ByteWidth = entry.size;
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = 0;
+		Renderer::GetDevice()->CreateBuffer(&desc, nullptr, &entry.buffer);
+
+		m_ConstantBuffers["MATERIAL"] = entry;
+	}
 }
 
 MyMaterial::~MyMaterial()
 {
 }
 
-void MyMaterial::SetTexture(const std::string& name, CTexture* texture)
+
+
+
+void MyMaterial::FillRenderInfo(RenderInfo& info) const
 {
-	m_Textures[name] = texture;
-	// シェーダーにテクスチャをセット
-	for (auto shader : m_pShaders)
+	// VS / PS セット
+	info.vs = m_pShaders[ShaderStage::Vertex];
+	info.ps = m_pShaders[ShaderStage::Pixel];
+
+	// CBuffer（名前 → GPU バッファ）
+	for (auto& [name, cb] : m_ConstantBuffers)
 	{
-		if (shader)
+		info.cBuffers.emplace_back(
+			CBufferBinding{ cb.slot, name, cb.buffer.Get(), cb.cpuData.data(), cb.size }
+		);
+	}
+
+	// SRV
+	for (auto& [name, srv] : m_Textures)
+	{
+		for (auto& ref : m_pShaders[ShaderStage::Pixel]->GetShaderReflection().srvs)
 		{
-			shader->SetTexture(0, texture); // スロット0にセット（必要に応じてスロットを変更）
-			//// 例えば、"albedo"という名前のテクスチャをセットする場合
-			//if (name.find("albedo"))
-			//{
-			//	shader->SetTexture(0, texture); // スロット0にセット
-			//}
-			//else if (name == "normal")
-			//{
-			//	shader->SetTexture(1, texture); // スロット1にセット
-			//}
-			// 他のテクスチャも同様に追加可能
+			if (ref.name == name)
+			{
+				info.srvs.emplace_back(
+					SRVBinding{ ref.slot, name, srv }
+				);
+			}
 		}
 	}
 }
 
-void MyMaterial::WriteCBuffer(const UINT slot, const void* pData) const
-{
-	// 各シェーダーの定数バッファにデータを書き込む
-	for (auto shader : m_pShaders)
-	{
-		if (shader)
-		{
-			shader->WriteCBuffer(slot, pData);
-		}
-	}
-}
 
-void MyMaterial::Bind(void) const
+void MyMaterial::CreateCBuffers(const ShaderReflection& vsRef, const ShaderReflection& psRef)
 {
-	// シェーダーのバインド
-	for (auto shader : m_pShaders)
-	{
-		if (shader)
+	// 合体して扱う
+	auto collectCB = [&](const ShaderReflection& ref)
 		{
-			shader->Bind();
-		}
-	}
-}
+			for (const auto& cb : ref.cbuffers)
+			{
+				if (m_ConstantBuffers.contains(cb.name))
+					continue;
 
-void MyMaterial::Unbind(void) const
-{
-	// シェーダーのアンバインド
-	for (auto shader : m_pShaders)
-	{
-		if (shader)
-		{
-			shader->Unbind();
-		}
-	}
+				// CBuffer 生成
+				CBufferEntry entry;
+				entry.slot = cb.slot;
+				entry.size = cb.size;
+
+				entry.cpuData.resize(cb.size);
+
+				// DirectX のバッファ作成
+				D3D11_BUFFER_DESC desc = {};
+				desc.Usage = D3D11_USAGE_DYNAMIC;
+				desc.ByteWidth = cb.size;
+				desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+				desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+				Renderer::GetDevice()->CreateBuffer(&desc, nullptr, &entry.buffer);
+
+				m_ConstantBuffers[cb.name] = entry;
+			}
+		};
+
+	collectCB(vsRef);
+	collectCB(psRef);
 }

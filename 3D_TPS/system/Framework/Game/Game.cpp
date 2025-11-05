@@ -23,7 +23,7 @@ void Game::Init(void)
 	//Sound::GetInstance().Init();
 	//m_GraphicsDevice.Init();
 	//m_SceneManager.SetSceneFactory(&m_SceneFactory);
-	//m_RenderManager.Init(&m_GraphicsDevice, &m_ShaderManager);
+	m_RenderManager.Init(&m_GraphicsDevice);
 	//RenderManager::GetInstance().Init(&m_GraphicsDevice, &m_ShaderManager);
 	//m_ComponentFactory.Init(&m_ShaderManager);
 	//m_ComponentFactory.Init(&m_RenderManager, &m_ShaderManager);
@@ -45,13 +45,14 @@ void Game::Init(void)
 
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
-	//m_GraphicsDevice.Init();
+	m_GraphicsDevice.Init();
 	// レンダーマネージャの初期化
-	/*m_RenderManager.Init(&m_GraphicsDevice);
+	m_RenderManager.Init(&m_GraphicsDevice);
 	m_pContext = std::make_unique<EngineContext>(
 		m_RenderManager,
 		ShaderManager::GetInstance(),
-		AssetManager::GetInstance());*/
+		AssetManager::GetInstance(),
+		m_ColliderManager);
 
 	// オブジェクトマネージャの初期化
 	m_ObjectManager.Init(m_pContext.get());
@@ -100,8 +101,8 @@ void Game::Draw()
 
 	// シーンマネージャの描画
 	m_SceneManager.Draw();
-	/*m_RenderManager.CollectRenderInfo();
-	m_RenderManager.RenderAll();*/
+	m_RenderManager.CollectRenderInfo();
+	m_RenderManager.RenderAll();
 
 	// デバッグUIの描画
 #ifdef _DEBUG
@@ -124,7 +125,8 @@ void Game::Uninit(void)
 	m_SceneManager.Uninit();
 
 	// レンダラの終了処理
-	//m_RenderManager.Uninit();
+	m_RenderManager.Uninit();
+	m_GraphicsDevice.Uninit();
 	Renderer::Uninit();
 }
 

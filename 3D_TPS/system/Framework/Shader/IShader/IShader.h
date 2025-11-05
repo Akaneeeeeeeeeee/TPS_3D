@@ -5,14 +5,15 @@
 #include <filesystem>
 #include <d3dcompiler.h>
 #pragma comment(lib, "d3dcompiler.lib")
-
+#include "Graphics/RenderInfo.h"
+#include "Shader/ShaderReflection.h"
 
 using namespace Microsoft::WRL;
 
 class CTexture; // 前方宣言
 
 //! 各シェーダーの識別用
-enum class ShaderStage {
+enum ShaderStage {
 	Vertex,
 	Pixel,
 	Geometry,
@@ -23,6 +24,7 @@ enum class ShaderStage {
 	Stage_MAX
 };
 
+
 class IShader
 {
 public:
@@ -31,11 +33,12 @@ public:
 	// シェーダーファイルを読み込んだ後、シェーダーの種類別に処理を行う
 	HRESULT Analyze_to_Adjust(void* pData, UINT size);
 
-	virtual void Bind() = 0;	// 各シェーダーの割り当て用純粋仮想関数
+	virtual void Bind(const RenderInfo& info) = 0;	// 各シェーダーの割り当て用純粋仮想関数
 	virtual void Unbind() = 0;	// 各シェーダーの割り当て解除用純粋仮想関数
-	virtual void WriteCBuffer(UINT _Slot, const void* _pData);
-	virtual void SetTexture(UINT slot, CTexture* tex);
+	//virtual void WriteCBuffer(UINT _Slot, const void* _pData);
+	//virtual void SetTexture(UINT slot, CTexture* tex);
 
+	const ShaderReflection& GetShaderReflection() const { return m_ShaderReflection; } // シェーダーリフレクション情報を取得
 
 	//virtual void SetSRV(UINT _Slot, ID3D11ShaderResourceView* _pSRV) = 0;	// シェーダーリソースビューをセット
 
@@ -48,7 +51,7 @@ protected:
 	IShader(ShaderStage _Kind, const std::string& _Name);
 	ShaderStage m_Kind;		// シェーダーの種類（頂点、ピクセル、ジオメトリなど）
 	std::string m_Name;		// シェーダーの名前（ファイル名など）
-	std::vector<ComPtr<ID3D11Buffer>> m_pCBuffers;			// 定数バッファの配列
-	std::vector<ComPtr<ID3D11ShaderResourceView>> m_pSRVs;	// シェーダーリソースビューの配列
+
+	ShaderReflection m_ShaderReflection; // シェーダーリフレクション情報
 };
 
