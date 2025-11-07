@@ -95,6 +95,7 @@ public:
 	virtual bool IsActive(void) const { return m_IsActive; }
 	virtual void SetActive(const bool isActive) { m_IsActive = isActive; }
 	virtual bool IsDestroy(void) const { return m_IsDestroy; }
+	virtual void Destroy(void) { m_IsDestroy = true; }
 	virtual void SetDestroy(const bool isDestroy) { m_IsDestroy = isDestroy; }
 
 private:

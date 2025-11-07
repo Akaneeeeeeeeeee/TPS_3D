@@ -3,7 +3,6 @@
 #include	"system/meshmanager.h"
 
 #include	"scene/WalkThroughScene.h"
-#include	"system/"
 
 void obstacle::Init() 
 {
