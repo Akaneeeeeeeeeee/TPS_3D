@@ -14,6 +14,48 @@ void ObjectManager::DeleteObject(Tag _ObjName) {
 	}
 }
 
+void ObjectManager::DeleteObject(const uint64_t _id) {
+	auto it = m_ObjectsByID.find(_id);
+	if (it == m_ObjectsByID.end()) { return; }
+	GameObject* obj = it->second;
+	Tag objTag = obj->GetTag();
+	// タグリストから削除
+	auto& tagList = m_ObjectsByTag[objTag];
+	tagList.erase(std::remove(tagList.begin(), tagList.end(), obj), tagList.end());
+	// 名前リストから削除
+	auto nameIt = m_ObjectsByName.find(obj->GetName());
+	if (nameIt != m_ObjectsByName.end()) {
+		m_ObjectsByName.erase(nameIt);
+	}
+	// IDリストから削除
+	m_ObjectsByID.erase(it);
+	// オブジェクトコンテナから削除
+	m_pObjects.erase(std::remove_if(m_pObjects.begin(), m_pObjects.end(),
+		[_id](const std::unique_ptr<GameObject>& o) { return o->GetID() == _id; }),
+		m_pObjects.end());
+}
+
+void ObjectManager::DeleteObject(const std::string& _name) {
+	auto it = m_ObjectsByName.find(_name);
+	if (it == m_ObjectsByName.end()) { return; }
+	GameObject* obj = it->second;
+	Tag objTag = obj->GetTag();
+	// タグリストから削除
+	auto& tagList = m_ObjectsByTag[objTag];
+	tagList.erase(std::remove(tagList.begin(), tagList.end(), obj), tagList.end());
+	// IDリストから削除
+	auto idIt = m_ObjectsByID.find(obj->GetID());
+	if (idIt != m_ObjectsByID.end()) {
+		m_ObjectsByID.erase(idIt);
+	}
+	// 名前リストから削除
+	m_ObjectsByName.erase(it);
+	// オブジェクトコンテナから削除
+	m_pObjects.erase(std::remove_if(m_pObjects.begin(), m_pObjects.end(),
+		[_name](const std::unique_ptr<GameObject>& o) { return o->GetName() == _name; }),
+		m_pObjects.end());
+}
+
 /// <summary>
 /// タグ変更関数
 /// <param name="_id">オブジェクトID</param>

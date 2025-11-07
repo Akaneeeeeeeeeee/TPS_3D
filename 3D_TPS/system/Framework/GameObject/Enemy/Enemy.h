@@ -1,12 +1,17 @@
 #pragma once
 #include "system/Framework/GameObject/Character/Character.h"
 
+// 前方宣言
+class Player;
+
 
 class Enemy : public Character
 {
 public:
 	Enemy() = default;
-	Enemy(EngineContext& context, uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy);
+	Enemy(EngineContext& context, const uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy, 
+		Player* player = nullptr,
+		const Transform& transform = Transform::One());
 	~Enemy();
 
 	void Init(void) override;
@@ -29,5 +34,7 @@ private:
 	std::vector<Vector3> m_PatrolPoints;	// 巡回ポイント
 	bool m_GoingToEnd = true; // true: Start→End, false: End→Start
 	bool IsFound = false;		// プレイヤーを発見したかどうか
+
+	Player* m_pPlayer = nullptr;	// プレイヤーへのポインタ
 };
 

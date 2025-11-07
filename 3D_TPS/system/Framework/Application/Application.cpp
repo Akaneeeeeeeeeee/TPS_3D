@@ -19,14 +19,14 @@ void Application::Init(void)
 */
 void Application::Run(void)
 {
+	// フレームの待ち時間を計算する
+	static FPS fpsrate(80);
+
 	//! 終了(WM_QUIT)メッセージがない間はループし続ける
 	//! →二重ループに見えるが、MessageLoop()はメッセージがWM_QUIT以外の場合trueを返すので大丈夫(それ以外のメッセージはウィンドウプロシージャに送っておしまい)
 	while (Window::GetInstance().MessageLoop())
 	{
 		uint64_t deltatime = 0;
-
-		// フレームの待ち時間を計算する
-		static FPS fpsrate(80);
 
 		// 前回実行されてからの経過時間を計算する
 		deltatime = fpsrate.CalcDelta();

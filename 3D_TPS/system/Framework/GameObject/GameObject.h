@@ -76,6 +76,7 @@ public:
 	//			姿勢情報のゲッター/セッター			//
 	//////////////////////////////////////////////
 	virtual Transform GetTransform(void) const { return m_Transform; }
+	virtual Transform& TransformRef(void) { return m_Transform; }
 	virtual void SetTransform(const Transform& transform) { m_Transform = transform; }
 	virtual Vector3 GetPosition(void) const { return m_Transform.GetPosition(); }
 	virtual void SetPosition(const Vector3& position) { m_Transform.SetPosition(position); }
@@ -91,6 +92,10 @@ public:
 	virtual void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
 	virtual uint64_t GetID(void) const { return m_ID; }
 	virtual std::string GetName(void) const { return m_Name; }
+	virtual bool IsActive(void) const { return m_IsActive; }
+	virtual void SetActive(const bool isActive) { m_IsActive = isActive; }
+	virtual bool IsDestroy(void) const { return m_IsDestroy; }
+	virtual void SetDestroy(const bool isDestroy) { m_IsDestroy = isDestroy; }
 
 private:
 	// コンポーネントの生成

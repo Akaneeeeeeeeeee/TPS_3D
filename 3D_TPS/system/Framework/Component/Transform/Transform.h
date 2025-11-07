@@ -28,17 +28,20 @@ public:
 	Matrix4x4 GetLocalMatrix(void) const;
 	Matrix4x4 GetWorldMatrix(void) const;
 
-	//-----------------------------------------
-	//				ゲッターセッター
-	//-----------------------------------------
-	Vector3 GetPosition(void) const { m_IsDirty = true; return Position; }
-	void SetPosition(const Vector3& pos) { Position = pos; }
+	//-------------------------------------------------------------
+	//				ゲッターセッター(ImGui用に参照渡しを用意)
+	//-------------------------------------------------------------
+	Vector3 GetPosition(void) const { return Position; }
+	Vector3& PositionRef(void) { m_IsDirty = true; return Position; }
+	void SetPosition(const Vector3& pos) { m_IsDirty = true; Position = pos; }
 
-	Quaternion GetRotation(void) const { m_IsDirty = true; return Rotation; }
-	void SetRotation(const Quaternion& rot) { Rotation = rot; }
+	Quaternion GetRotation(void) const { return Rotation; }
+	Quaternion& RotationRef(void) { m_IsDirty = true; return Rotation; }
+	void SetRotation(const Quaternion& rot) { m_IsDirty = true; Rotation = rot; }
 
-	Vector3 GetScale(void) const { m_IsDirty = true; return Scale; }
-	void SetScale(const Vector3& scale) { Scale = scale; }
+	Vector3 GetScale(void) const { return Scale; }
+	Vector3& ScaleRef(void) { m_IsDirty = true; return Scale; }
+	void SetScale(const Vector3& scale) { m_IsDirty = true; Scale = scale; }
 
 	void SetParent(Transform* _parent);
 
@@ -54,6 +57,6 @@ private:
 	Transform* m_pParent = nullptr;			// 親オブジェクトのポインタ
 	std::vector<Transform*> m_pChildren;	// 子オブジェクトのコンテナ
 
-	mutable bool m_IsDirty = true;			// 行列が最新かどうかのフラグ
+	mutable bool m_IsDirty = true;			// 行列が更新されたかどうかのフラグ
 	mutable Matrix4x4 m_WorldMatrix;		// 行列キャッシュ
 };

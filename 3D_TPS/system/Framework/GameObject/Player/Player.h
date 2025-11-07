@@ -21,6 +21,18 @@ public:
 		const Transform& transform = Transform::One());
 	~Player();
 
+	enum State {
+		Idle,	// 通常状態
+		Walk,	// 徒歩移動
+		Run,	// ダッシュ移動
+		Jump,	// ジャンプ
+
+		STATE_MAX,
+
+		Aiming,	// エイム(できれば)
+		Attack	// 攻撃(できれば)
+	};;
+
 	void Init(void) override;
 	void Update(const uint64_t deltatime) override;
 	void Draw(void) const override;

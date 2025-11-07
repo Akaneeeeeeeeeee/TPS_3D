@@ -112,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -144,6 +144,7 @@
     <ClInclude Include="fpscontrol.h" />
     <ClInclude Include="scene\ResultScene.h" />
     <ClInclude Include="scene\SkeltalmeshScene.h" />
+    <ClInclude Include="scene\TestScene.h" />
     <ClInclude Include="scene\TitleScene.h" />
     <ClInclude Include="system\AimOrientation.h" />
     <ClInclude Include="system\AssimpPerse.h" />
@@ -174,6 +175,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\GameObject\obstacle.h" />
+    <ClInclude Include="system\GameObject\Rock.h" />
+    <ClInclude Include="system\GameObject\Skydome.h" />
+    <ClInclude Include="system\GameObject\Terrain.h" />
     <ClInclude Include="system\MyIndexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -264,24 +269,20 @@
     <ClInclude Include="system\LineDrawer.h" />
     <ClInclude Include="system\noncopyable.h" />
     <ClInclude Include="system\renderer.h" />
-    <ClInclude Include="system\Rock\Rock.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="system\SceneClassFactory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="system\Skydome\Skydome.h" />
     <ClInclude Include="system\SphereDrawer.h" />
     <ClInclude Include="system\stb_image.h" />
-    <ClInclude Include="system\Terrain.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="system\stb_perlin.h" />
     <ClInclude Include="system\transform.h" />
+    <ClInclude Include="system\TriangleDrawer.h" />
     <ClInclude Include="system\utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene\ResultScene.cpp" />
     <ClCompile Include="scene\SkeltalmeshScene.cpp" />
+    <ClCompile Include="scene\TestScene.cpp" />
     <ClCompile Include="scene\TitleScene.cpp" />
     <ClCompile Include="system\AssimpPerse.cpp" />
     <ClCompile Include="system\Billboard\Billboard.cpp" />
@@ -363,6 +364,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Window\Window.cpp" />
+    <ClCompile Include="system\GameObject\obstacle.cpp" />
+    <ClCompile Include="system\GameObject\Rock.cpp" />
+    <ClCompile Include="system\GameObject\Skydome.cpp" />
+    <ClCompile Include="system\GameObject\Terrain.cpp" />
     <ClCompile Include="system\imgui\imgui.cpp" />
     <ClCompile Include="system\imgui\imgui_demo.cpp" />
     <ClCompile Include="system\imgui\imgui_draw.cpp" />
@@ -372,15 +377,10 @@
     <ClCompile Include="system\imgui\imgui_widgets.cpp" />
     <ClCompile Include="system\LineDrawer.cpp" />
     <ClCompile Include="system\renderer.cpp" />
-    <ClCompile Include="system\Rock\Rock.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="system\Skydome\Skydome.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />
     <ClCompile Include="system\stb.cpp" />
-    <ClCompile Include="system\Terrain.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="system\stbperlin.cpp" />
+    <ClCompile Include="system\TriangleDrawer.cpp" />
     <ClCompile Include="system\utility.cpp" />
   </ItemGroup>
   <ItemGroup>
