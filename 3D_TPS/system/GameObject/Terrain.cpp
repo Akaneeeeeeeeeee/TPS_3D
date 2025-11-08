@@ -125,7 +125,7 @@ void Terrain::Init() {
 	MakePlaneEquatation();
 }
 
-void Terrain::Update(const uint64_t dt) {
+void Terrain::Update(const float dt) {
 
 }
 

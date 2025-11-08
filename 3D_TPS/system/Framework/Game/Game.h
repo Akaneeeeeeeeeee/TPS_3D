@@ -17,7 +17,7 @@ public:
 	~Game();
 
 	void Init(void);
-	void Update(const uint64_t deltatime);
+	void Update(const float deltatime);
 	void Draw(void);
 	void Uninit(void);
 

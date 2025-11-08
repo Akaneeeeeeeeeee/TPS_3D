@@ -40,7 +40,11 @@ public:
 	 * @brief 毎フレームの更新処理
 	 * @param deltatime 前フレームからの経過時間（マイクロ秒）
 	 */
-	void Update(uint64_t deltatime) override;
+	void Update(const float deltatime) override;
+
+	void LightUpdate(float deltatime);
+	Color GetSunColor(float worldtime);
+	Color LerpColor(const Color& a, const Color& b, float t);
 
 	/**
 	 * @brief 毎フレームの描画処理

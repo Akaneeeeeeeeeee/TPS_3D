@@ -21,7 +21,7 @@ public:
 		m_ownerscene(currentscene) {
 	}
 
-	void Update(const uint64_t delta) override;
+	void Update(const float delta) override;
 	void Draw(void) const override;
 	void Init(void) override;
 	void Uninit(void) override;

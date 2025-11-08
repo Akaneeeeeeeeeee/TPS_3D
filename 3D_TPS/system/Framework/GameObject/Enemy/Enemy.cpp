@@ -59,7 +59,7 @@ void Enemy::Init(void)
 	m_TargetPos = m_EndPos;
 }
 
-void Enemy::Update(const uint64_t deltatime)
+void Enemy::Update(const float deltatime)
 {
 	if (m_pPlayer->IsDestroy()) { m_pPlayer = nullptr; }
 	// „‰ñƒ|ƒCƒ“ƒg‚ªÝ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢

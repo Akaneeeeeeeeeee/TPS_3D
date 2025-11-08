@@ -17,7 +17,7 @@ void Rock::Init(void)
 	//AddComponent<MeshRenderer>("");
 }
 
-void Rock::Update(const uint64_t deltatime)
+void Rock::Update(const float deltatime)
 {
 
 }

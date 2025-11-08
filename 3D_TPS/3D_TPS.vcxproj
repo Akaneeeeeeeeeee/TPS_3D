@@ -175,6 +175,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\Framework\Time\Time.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
     <ClInclude Include="system\GameObject\Skydome.h" />

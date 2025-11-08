@@ -111,7 +111,7 @@ void ObjectManager::Init(EngineContext* context)
 	m_ObjectsByTag.clear();
 }
 
-void ObjectManager::Update(const uint64_t deltatime)
+void ObjectManager::Update(const float deltatime)
 {
 	// 範囲for文
 	for (auto& obj : m_pObjects)

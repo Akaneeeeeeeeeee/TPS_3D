@@ -11,7 +11,7 @@ void obstacle::Init()
 	m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
 }
 
-void obstacle::Update(const uint64_t dt) {
+void obstacle::Update(const float dt) {
 
 
 }

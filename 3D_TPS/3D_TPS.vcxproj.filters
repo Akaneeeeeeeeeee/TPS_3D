@@ -127,6 +127,9 @@
     <Filter Include="ソース ファイル\MyFramework\Manager\ColliderManager">
       <UniqueIdentifier>{371a09ce-76e2-4fdb-929f-eb6ba1928b2a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Manager\Time">
+      <UniqueIdentifier>{53b5c3cc-aef5-4912-8067-e70d2f70fa4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -419,6 +422,9 @@
     </ClInclude>
     <ClInclude Include="scene\TestScene.h">
       <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Time\Time.h">
+      <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

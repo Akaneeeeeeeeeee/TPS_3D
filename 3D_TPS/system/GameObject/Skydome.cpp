@@ -31,7 +31,7 @@ void Skydome::Init(void)
 	m_MeshRenderer.Init(this->m_SphereMesh);
 }
 
-void Skydome::Update(const uint64_t deltatime)
+void Skydome::Update(const float deltatime)
 {
 	// “Á‚ÉXVˆ—‚Í‚È‚µ
 }

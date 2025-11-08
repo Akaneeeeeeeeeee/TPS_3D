@@ -177,7 +177,7 @@ SkeltalmeshScene::SkeltalmeshScene() : IScene()
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void SkeltalmeshScene::Update(uint64_t deltatime)
+void SkeltalmeshScene::Update(const float deltatime)
 {
 	// 入力確認
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))

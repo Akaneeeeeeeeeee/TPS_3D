@@ -1,4 +1,4 @@
-#include <string>
+ï»¿#include <string>
 #include <array>
 
 #include "TestScene.h"
@@ -14,449 +14,584 @@
 #include "system/RandomEngine.h"
 
 namespace {
+    // worldTimeï¼ˆ0..24ï¼‰ / dayLengthSecondsï¼ˆç¾å®Ÿä½•ç§’ã§1æ—¥å›ã™ã‹ï¼‰/ timeScaleï¼ˆã‚²ãƒ¼ãƒ å†…å…¨ä½“å€ç‡ï¼‰
+    static float g_worldTime = 12.0f;          // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã¯æ­£åˆ
+    static float g_dayLengthSeconds = 60.0f;   // ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼šç¾å®Ÿ60ç§’ã§1æ—¥ã¾ã‚ã™ï¼ˆèª¿æ•´ã—ã‚„ã™ã„å€¤ï¼‰
+    static float g_timeScale = 1.0f;           // 1.0 = æ™®é€šé€Ÿåº¦ã€0 = åœæ­¢ã€0.2 = ã‚¹ãƒ­ãƒ¼
+    static bool  g_manualOverride = false;     // ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ã§æ–¹å‘/è‰²ã‚’æŒ‡å®šã™ã‚‹ã‹
+    static Vector4 g_manualDirection = Vector4(0, 1, 0, 0);
+    static Color   g_manualColor = Color(1, 1, 1, 1);
 }
 
-// Œ»İˆÊ’u‚ÌƒtƒB[ƒ‹ƒh‚Ì‚‚³•\¦
+// --- ä»¥ä¸‹ã¯å…ƒã®é–¢æ•°ç¾¤ã€‚ã»ã¨ã‚“ã©ãã®ã¾ã¾ã€‚ --- 
+
+// ç¾åœ¨ä½ç½®ã®ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®é«˜ã•è¡¨ç¤º
 void TestScene::debugFieldHeight() {
 
-	ImGui::Begin("debug Field Height");
+    ImGui::Begin("debug Field Height");
 
-	Transform& srt = m_player->TransformRef();
+    Transform& srt = m_player->TransformRef();
 
-	ImGui::SliderFloat3("player pos ", &srt.PositionRef().x, -100, 100);
+    ImGui::SliderFloat3("player pos ", &srt.PositionRef().x, -100, 100);
 
-	int sqno = m_field->GetSquareNo(srt.GetPosition());
-	ImGui::SliderInt("square no ", &sqno, -100, 100);
+    int sqno = m_field->GetSquareNo(srt.GetPosition());
+    ImGui::SliderInt("square no ", &sqno, -100, 100);
 
-	std::array<Terrain::Face, 2> retfaces;
-	if (sqno != -1) {
-		m_field->GetFace(srt.GetPosition(), retfaces);
-	}
-	ImGui::SliderInt3("Face index1 ", &retfaces[0].idx[0], -100, 100);
-	ImGui::SliderInt3("Face index2 ", &retfaces[1].idx[0], -100, 100);
+    std::array<Terrain::Face, 2> retfaces;
+    if (sqno != -1) {
+        m_field->GetFace(srt.GetPosition(), retfaces);
+    }
+    ImGui::SliderInt3("Face index1 ", &retfaces[0].idx[0], -100, 100);
+    ImGui::SliderInt3("Face index2 ", &retfaces[1].idx[0], -100, 100);
 
-	std::array<Vector3, 3> vertices1;
-	std::array<Vector3, 3> vertices2;
+    std::array<Vector3, 3> vertices1;
+    std::array<Vector3, 3> vertices2;
 
-	if (sqno != -1) {
-		m_field->GetFaceVertex(sqno * 2, vertices1);
-		m_field->GetFaceVertex(sqno * 2 + 1, vertices2);
-	}
+    if (sqno != -1) {
+        m_field->GetFaceVertex(sqno * 2, vertices1);
+        m_field->GetFaceVertex(sqno * 2 + 1, vertices2);
+    }
 
-	ImGui::Separator();
-	ImGui::SliderFloat3("Face1 Vertex1 ", &vertices1[0].x, -500, 500);
-	ImGui::SliderFloat3("Face1 Vertex2 ", &vertices1[1].x, -500, 500);
-	ImGui::SliderFloat3("Face1 Vertex3 ", &vertices1[2].x, -500, 500);
+    ImGui::Separator();
+    ImGui::SliderFloat3("Face1 Vertex1 ", &vertices1[0].x, -500, 500);
+    ImGui::SliderFloat3("Face1 Vertex2 ", &vertices1[1].x, -500, 500);
+    ImGui::SliderFloat3("Face1 Vertex3 ", &vertices1[2].x, -500, 500);
 
-	ImGui::Separator();
-	ImGui::SliderFloat3("Face2 Vertex1 ", &vertices2[0].x, -500, 500);
-	ImGui::SliderFloat3("Face2 Vertex2 ", &vertices2[1].x, -500, 500);
-	ImGui::SliderFloat3("Face2 Vertex3 ", &vertices2[2].x, -500, 500);
+    ImGui::Separator();
+    ImGui::SliderFloat3("Face2 Vertex1 ", &vertices2[0].x, -500, 500);
+    ImGui::SliderFloat3("Face2 Vertex2 ", &vertices2[1].x, -500, 500);
+    ImGui::SliderFloat3("Face2 Vertex3 ", &vertices2[2].x, -500, 500);
 
-	ImGui::End();
+    ImGui::End();
 }
 
-// •½sŒõŒ¹‚Ì•ûŒüƒZƒbƒg
+// å¹³è¡Œå…‰æºã®æ–¹å‘ã‚»ãƒƒãƒˆï¼ˆãƒ‡ãƒãƒƒã‚° + æ™‚åˆ»/è‰²æ“ä½œUIã‚’ã“ã“ã«çµ±åˆï¼‰
 void TestScene::debugDirectionalLight()
 {
-	static Vector4 direction = Vector4(0.0f, 0.0f, 1.0f, 0.0f); // Z²+•ûŒü‚ÉŒõ‚ğ“–‚Ä‚é	
+    ImGui::Begin("debug Directional Light");
 
-	ImGui::Begin("debug Directional Light");
+    // World time controls
+    ImGui::Text("World Time (hours): %.3f", g_worldTime);
+    if (ImGui::SliderFloat("WorldTime", &g_worldTime, 0.0f, 24.0f)) {
+        // clamp
+        if (g_worldTime < 0.0f) g_worldTime = 0.0f;
+        if (g_worldTime >= 24.0f) g_worldTime = fmodf(g_worldTime, 24.0f);
+    }
 
-	ImGui::SliderFloat3("direction ", &direction.x, -1, 1);
-	direction.Normalize();										// ³‹K‰»
+    // day length and timescale
+    ImGui::SliderFloat("Day length (sec)", &g_dayLengthSeconds, 1.0f, 3600.0f); // 1ç§’ï½1æ™‚é–“
+    ImGui::SliderFloat("TimeScale (global)", &g_timeScale, 0.0f, 5.0f);
 
-	LIGHT light{};
-	light.Enable = true;
-	light.Direction = direction;
+    // manual override switch
+    ImGui::Checkbox("Manual override (direction/color)", &g_manualOverride);
+    if (g_manualOverride) {
+        ImGui::SliderFloat3("Manual Direction", &g_manualDirection.x, -1.0f, 1.0f);
+        Vector3 tmpDir(g_manualDirection.x, g_manualDirection.y, g_manualDirection.z);
+        if (tmpDir.Length() < 1e-6f) tmpDir = Vector3(0, 1, 0);
+        tmpDir.Normalize();
+        g_manualDirection = Vector4(tmpDir.x, tmpDir.y, tmpDir.z, 0.0f);
 
-	light.Direction.Normalize();
-	light.Ambient = Color(0.2f, 0.2f, 0.2f, 1.0f);
-	light.Diffuse = Color(1.0f, 1.0f, 1.0f, 1.0f);
+        float col[4] = { g_manualColor.R(), g_manualColor.G(), g_manualColor.B(), g_manualColor.A()};
+        if (ImGui::ColorEdit4("Manual Color", col)) {
+            g_manualColor = Color(col[0], col[1], col[2], col[3]);
+        }
+    }
 
-	Vector4 Direction = Vector4(direction.x, direction.y, direction.z, 0.0f);
-	Renderer::SetLight(light);
+    // show computed values (for debug)
+    // Compute current sun direction & color for display (without setting renderer yet)
+    // Use same logic as LightUpdate but without consuming dt.
+    // angle from current worldTime:
+    float angle = (g_worldTime / 24.0f) * DirectX::XM_2PI;
+    Vector4 computedDir(0.0f, sinf(angle), cosf(angle), 0.0f);
+    computedDir.Normalize();
+    Color computedColor = GetSunColor(g_worldTime);
+    float intensity = std::max(0.0f, computedDir.y);
 
-	ImGui::End();
+    ImGui::Text("Computed Direction: %.3f, %.3f, %.3f", computedDir.x, computedDir.y, computedDir.z);
+    ImGui::Text("Computed Color:  r:%.3f g:%.3f b:%.3f  intensity: %.3f",
+        computedColor.R(), computedColor.G(), computedColor.B(), intensity);
+
+    ImGui::End();
 }
 
-// ƒfƒoƒbƒOƒtƒŠ[ƒJƒƒ‰
+// ãƒ‡ãƒãƒƒã‚°ãƒ•ãƒªãƒ¼ã‚«ãƒ¡ãƒ©
 void TestScene::debugFreeCamera()
 {
-	ImGui::Begin("debug Free camera");
+    ImGui::Begin("debug Free camera");
 
-	static float radius = 800.0f;
-	static Vector3 pos = Vector3(0, 0, radius);
-	static Vector3 lookat = Vector3(0, 0, 0);
-	static float elevation = -90.0f * PI / 180.0f;
-	static float azimuth = PI / 2.0f;
+    static float radius = 800.0f;
+    static Vector3 pos = Vector3(0, 0, radius);
+    static Vector3 lookat = Vector3(0, 0, 0);
+    static float elevation = -90.0f * PI / 180.0f;
+    static float azimuth = PI / 2.0f;
 
-	static Vector3 spherecenter = Vector3(0, 0, 0);
+    static Vector3 spherecenter = Vector3(0, 0, 0);
 
-	ImGui::SliderFloat("Radius", &radius, 1, 1500);
-	ImGui::SliderFloat("Elevation", &elevation, -PI, PI);
-	ImGui::SliderFloat("Azimuth", &azimuth, -PI, PI);
+    ImGui::SliderFloat("Radius", &radius, 1, 1500);
+    ImGui::SliderFloat("Elevation", &elevation, -PI, PI);
+    ImGui::SliderFloat("Azimuth", &azimuth, -PI, PI);
 
-	ImGui::SliderFloat3("lookat ", &lookat.x, -100, 100);
+    ImGui::SliderFloat3("lookat ", &lookat.x, -100, 100);
 
-	// ƒJƒƒ‰‚ÌˆÊ’u‚ğ‹ÉÀ•W‚©‚çƒfƒJƒ‹ƒgÀ•W‚É•ÏŠ·
-	m_camera.SetRadius(radius);
-	m_camera.SetElevation(elevation);
-	m_camera.SetAzimuth(azimuth);
-	m_camera.SetLookat(lookat);
+    // ã‚«ãƒ¡ãƒ©ã®ä½ç½®ã‚’æ¥µåº§æ¨™ã‹ã‚‰ãƒ‡ã‚«ãƒ«ãƒˆåº§æ¨™ã«å¤‰æ›
+    m_camera.SetRadius(radius);
+    m_camera.SetElevation(elevation);
+    m_camera.SetAzimuth(azimuth);
+    m_camera.SetLookat(lookat);
 
-	// ƒJƒƒ‰‚ÌˆÊ’u‚ğ‹ÉÀ•W‚©‚ç‹‚ß‚é
-	m_camera.CalcCameraPosition();
+    // ã‚«ãƒ¡ãƒ©ã®ä½ç½®ã‚’æ¥µåº§æ¨™ã‹ã‚‰æ±‚ã‚ã‚‹
+    m_camera.CalcCameraPosition();
 
-	ImGui::End();
+    ImGui::End();
 }
 
-// ƒtƒB[ƒ‹ƒhÄì¬
+// ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰å†ä½œæˆ
 void TestScene::debugFieldRemake() {
 
-	ImGui::Begin("debug Field Remake");
+    ImGui::Begin("debug Field Remake");
 
-	static int dividex = 50;
-	static int dividez = 50;
+    static int dividex = 50;
+    static int dividez = 50;
 
-	static float width = 2500.0f;
-	static float depth = 2500.0f;
+    static float width = 2500.0f;
+    static float depth = 2500.0f;
 
-	ImGui::SliderFloat("width", &width, 10, 1000);
-	ImGui::SliderFloat("depth", &depth, 10, 1000);
-	ImGui::SliderInt("devide x", &dividex, 1, 50);
-	ImGui::SliderInt("devide z", &dividez, 1, 50);
+    ImGui::SliderFloat("width", &width, 10, 1000);
+    ImGui::SliderFloat("depth", &depth, 10, 1000);
+    ImGui::SliderInt("devide x", &dividex, 1, 200);
+    ImGui::SliderInt("devide z", &dividez, 1, 200);
 
-	if (ImGui::Button("recreate  field")) {
+    if (ImGui::Button("recreate  field")) {
 
-		// ƒtƒB[ƒ‹ƒh‰Šú‰»
-		m_pObjectManager->DeleteObject("field");
-		m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
-		m_field->setdepth(depth);
-		m_field->setwidth(width);
-		m_field->setdividex(dividex);
-		m_field->setdividez(dividez);
+        // ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰åˆæœŸåŒ–
+        m_pObjectManager->DeleteObject("field");
+        m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+        m_field->setdepth(depth);
+        m_field->setwidth(width);
+        m_field->setdividex(dividex);
+        m_field->setdividez(dividez);
 
-		m_field->Init();
-	}
+        m_field->Init();
+    }
 
-	ImGui::End();
+    ImGui::End();
 
 }
 
-// ƒtƒB[ƒ‹ƒh‚É“Ê‰š‚É‚·‚é
+// ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«å‡¸å‡¹ã«ã™ã‚‹
 void TestScene::debugFieldUnduration() {
 
-	ImGui::Begin("debug Field Remake with unduration");
+    ImGui::Begin("debug Field Remake with unduration");
 
-	static float minheight = 0.0f;
-	static float maxheight = 100.0f;
+    static float minheight = 0.0f;
+    static float maxheight = 100.0f;
 
-	ImGui::SliderFloat("low height", &minheight, 0.0f, 10.0f);
-	ImGui::SliderFloat("max hight", &maxheight, 0.0f, 100.0f);
+    ImGui::SliderFloat("low height", &minheight, 0.0f, 10.0f);
+    ImGui::SliderFloat("max hight", &maxheight, 0.0f, 100.0f);
 
-	static float perlinscale = 0.5f;     // ƒmƒCƒY‚Ì×‚©‚³i‚¨D‚İ‚Å 0.02`0.2 ‚­‚ç‚¢j
-	static float perlinoffsetX = 10.0f;   // ƒV[ƒh‘ã‚í‚è‚ÌƒIƒtƒZƒbƒgi”CˆÓj
-	static float perlinoffsetZ = 10.0f;
+    static float perlinscale = 0.5f;     // ãƒã‚¤ã‚ºã®ç´°ã‹ã•ï¼ˆãŠå¥½ã¿ã§ 0.02ï½0.2 ãã‚‰ã„ï¼‰
+    static float perlinoffsetX = 10.0f;   // ã‚·ãƒ¼ãƒ‰ä»£ã‚ã‚Šã®ã‚ªãƒ•ã‚»ãƒƒãƒˆï¼ˆä»»æ„ï¼‰
+    static float perlinoffsetZ = 10.0f;
 
-	ImGui::SliderFloat("perlin scale", &perlinscale, 0.0f, 5.0f);
-	ImGui::SliderFloat("perlin offset x", &perlinoffsetX, 10.0f, 800.0f);
-	ImGui::SliderFloat("perlin offset z", &perlinoffsetZ, 10.0f, 800.0f);
+    ImGui::SliderFloat("perlin scale", &perlinscale, 0.0f, 5.0f);
+    ImGui::SliderFloat("perlin offset x", &perlinoffsetX, 10.0f, 800.0f);
+    ImGui::SliderFloat("perlin offset z", &perlinoffsetZ, 10.0f, 800.0f);
 
-	if (ImGui::Button("remake field with random")) {
-		m_field->makeundulationwithrandom(minheight, minheight + maxheight);
-	}
-	if (ImGui::Button("remake field with perlin")) {
+    if (ImGui::Button("remake field with random")) {
+        m_field->makeundulationwithrandom(minheight, minheight + maxheight);
+    }
+    if (ImGui::Button("remake field with perlin")) {
 
-		m_field->makeundulationwithperlin(minheight, minheight + maxheight,
-			perlinscale, perlinoffsetX, perlinoffsetZ);
-	}
+        m_field->makeundulationwithperlin(minheight, minheight + maxheight,
+            perlinscale, perlinoffsetX, perlinoffsetZ);
+    }
 
-	ImGui::End();
+    ImGui::End();
 
 }
 
 /**
- * @brief ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+ * @brief ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
  */
 TestScene::TestScene()
 {
 }
 
 /**
- * @brief ƒV[ƒ“‚ÌXVˆ—
+ * @brief ã‚·ãƒ¼ãƒ³ã®æ›´æ–°å‡¦ç†
  *
- * @param deltatime ‘OƒtƒŒ[ƒ€‚©‚ç‚ÌŒo‰ßŠÔiƒ~ƒŠ•bj
+ * @param deltatime å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰ã®çµŒéæ™‚é–“ï¼ˆç§’, Time::Deltatime()ï¼‰
  */
-void TestScene::Update(uint64_t deltatime)
+void TestScene::Update(const float deltatime)
 {
+    // deltatime ã¯ç§’ï¼ˆTime::Instance().Deltatime()ã‹ã‚‰æ¸¡ã•ã‚Œã‚‹ï¼‰
+    LightUpdate(deltatime);
 
-	// ƒvƒŒƒCƒ„[XV
-	m_player->Update(deltatime);
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ›´æ–°
+    m_player->Update(deltatime);
 
-	// Œ»İˆÊ’uæ“¾
-	Vector3 pos = m_player->GetTransform().GetPosition();
+    // ç¾åœ¨ä½ç½®å–å¾—
+    Vector3 pos = m_player->GetTransform().GetPosition();
 
-	// ’nŒ`‚É‡‚í‚¹‚Ä‚‚³C³
-	float height = m_field->GetHeight(pos);
-	pos.y = height;
+    // åœ°å½¢ã«åˆã‚ã›ã¦é«˜ã•ä¿®æ­£
+    float height = m_field->GetHeight(pos);
+    pos.y = height;
 
-	// C³‚µ‚½ˆÊ’u‚ğ”½‰f
-	m_player->SetPosition(pos);
+    // ä¿®æ­£ã—ãŸä½ç½®ã‚’åæ˜ 
+    m_player->SetPosition(pos);
 
-	// “G
-	for (auto& enemy : m_enemies) {
-		enemy->Update(deltatime);
+    // æ•µ
+    for (auto& enemy : m_enemies) {
+        enemy->Update(deltatime);
 
-		Vector3 pos = enemy->GetPosition();
-		float height = m_field->GetHeight2(pos);
-		pos.y = height;
+        Vector3 pos = enemy->GetPosition();
+        float height = m_field->GetHeight2(pos);
+        pos.y = height;
 
-		enemy->SetPosition(pos);
-	}
+        enemy->SetPosition(pos);
+    }
 
-	// áŠQ•¨
-	for (auto& obs : m_obstacles) {
+    // éšœå®³ç‰©
+    for (auto& obs : m_obstacles) {
 
-		Vector3 pos = obs->GetTransform().GetPosition();
-		float height = m_field->GetHeight2(pos);
-		pos.y = height;
+        Vector3 pos = obs->GetTransform().GetPosition();
+        float height = m_field->GetHeight2(pos);
+        pos.y = height;
 
-		obs->SetPosition(pos);
-	}
+        obs->SetPosition(pos);
+    }
+}
+
+// ---------- è‰²è£œé–“ ----------
+Color TestScene::LerpColor(const Color& a, const Color& b, float t)
+{
+    return a + (b - a) * t;
+}
+
+// ---------- æ™‚é–“å¸¯ã«å¿œã˜ãŸå¤ªé™½è‰² ----------
+Color TestScene::GetSunColor(float t)   // tï¼šworldTime(0ã€œ24)
+{
+    // å¤œ
+    const Color nightColor = Color(0.05f, 0.07f, 0.2f);
+
+    // æœç„¼ã‘
+    const Color morningColor = Color(1.0f, 0.4f, 0.2f);
+
+    // æ˜¼
+    const Color noonColor = Color(1.0f, 1.0f, 1.0f);
+
+    // å¤•ç„¼ã‘
+    const Color sunsetColor = Color(1.0f, 0.5f, 0.2f);
+
+    // å¤œ â†’ æœï¼ˆ0ã€œ4ï¼‰
+    if (t < 4.0f) {
+        return nightColor;
+    }
+    // æœç„¼ã‘ï¼ˆ4ã€œ7ï¼‰
+    else if (t < 7.0f) {
+        float k = (t - 4.0f) / 3.0f;
+        return LerpColor(nightColor, morningColor, k);
+    }
+    // æœç„¼ã‘ â†’ æ˜¼ï¼ˆ7ã€œ16ï¼‰
+    else if (t < 16.0f) {
+        float k = (t - 7.0f) / 9.0f;
+        return LerpColor(morningColor, noonColor, k);
+    }
+    // æ˜¼ â†’ å¤•ç„¼ã‘ï¼ˆ16ã€œ19ï¼‰
+    else if (t < 19.0f) {
+        float k = (t - 16.0f) / 3.0f;
+        return LerpColor(noonColor, sunsetColor, k);
+    }
+    // å¤•ç„¼ã‘ â†’ å¤œï¼ˆ19ã€œ24ï¼‰
+    else {
+        float k = (t - 19.0f) / 5.0f;
+        return LerpColor(sunsetColor, nightColor, k);
+    }
+}
+
+void TestScene::LightUpdate(float dt)
+{
+    // dt ã¯ç§’å˜ä½ï¼ˆæ—¢ã« global Time::DeltaTime ãŒé©ç”¨æ¸ˆã¿ï¼‰
+    // g_dayLengthSeconds ãŒ 0 ä»¥ä¸‹ã®å ´åˆã¯ 1 ã«è£œæ­£
+    if (g_dayLengthSeconds <= 0.0f) g_dayLengthSeconds = 1.0f;
+
+    // UI ã‹ã‚‰æ“ä½œå¯èƒ½ãªãƒ­ãƒ¼ã‚«ãƒ«æ™‚é–“ã‚¹ã‚±ãƒ¼ãƒ«ã‚’é©ç”¨
+    float scaledDt = dt * g_timeScale;
+
+    // ä¸–ç•Œæ™‚é–“ã‚’æ›´æ–°ï¼ˆ1 æ—¥ãŒ g_dayLengthSeconds ç§’ã§ 24 æ™‚é–“é€²ã‚€ï¼‰
+    g_worldTime += (scaledDt / g_dayLengthSeconds) * 24.0f;
+
+    // ä¸–ç•Œæ™‚é–“ã‚’ 0ã€œ24 ã«æ­£è¦åŒ–
+    if (g_worldTime >= 24.0f) g_worldTime = fmodf(g_worldTime, 24.0f);
+    if (g_worldTime < 0.0f) g_worldTime += 24.0f;
+
+    // ä¸–ç•Œæ™‚é–“ â†’ å¤ªé™½è§’åº¦ï¼ˆ0ã€œ24 æ™‚é–“ â†’ 0ã€œ2Ï€ï¼‰
+    float sunAngle = ((g_worldTime / 24.0f) * DirectX::XM_2PI) - DirectX::XM_PIDIV2; // Ï€/2 ãšã‚‰ã™
+
+    // å¤ªé™½ã®æ–¹å‘ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¨ˆç®—
+    Vector4 sunDir;
+    if (g_manualOverride)
+    {
+        // ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰æ™‚ã¯æŒ‡å®šã®æ–¹å‘ã‚’ä½¿ç”¨ï¼ˆæ­£è¦åŒ–æ¸ˆã¿ï¼‰
+        sunDir = g_manualDirection;
+    }
+    else
+    {
+        sunDir.x = 0.0f;
+        sunDir.y = sinf(sunAngle);  // é«˜ã•
+        sunDir.z = cosf(sunAngle);  // å‰å¾Œæ–¹å‘
+        sunDir.w = 0.0f;
+        sunDir.Normalize();
+    }
+
+    // å¤ªé™½ã®è‰²ã‚’å–å¾—
+    Color sunColor = g_manualOverride ? g_manualColor : GetSunColor(g_worldTime);
+
+    // å¤ªé™½ã®é«˜ã•ã«å¿œã˜ã¦å…‰ã®å¼·åº¦ã‚’èª¿æ•´ï¼ˆy ãŒè² ãªã‚‰å¤œã¨ã—ã¦ 0 ã«ï¼‰
+    //float intensity = std::max(0.0f, sunDir.y);
+    // å¤ªé™½é«˜åº¦è£œæ­£
+    float heightFactor = std::clamp(sunDir.y, 0.0f, 1.0f);
+    float intensity = pow(heightFactor, 0.5f);   // éç·šå½¢è£œæ­£
+
+    // ãƒ©ã‚¤ãƒˆæ§‹é€ ä½“ã«è¨­å®š
+    //LIGHT light{};
+    //light.Enable = true;
+    //light.Direction = sunDir;
+    //light.Diffuse = sunColor * intensity;
+    // æ˜¼ã¯ã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆã‚‚å¢—åŠ 
+    //light.Ambient = Color(0.2f, 0.2f, 0.2f) * (0.5f + intensity * 0.5f);
+    // sunDir.y ãŒä½ã„ã¨ãã‚‚å¤œã‚’çœŸã£æš—ã«ã›ãšã€ç’°å¢ƒè‰²ã‚’è¿½åŠ 
+    /*Color ambient = LerpColor(Color(0.05f, 0.07f, 0.2f), sunColor, intensity * 0.5f);
+    light.Ambient = ambient;*/
+
+    // --- ç°¡æ˜“GIï¼ˆç’°å¢ƒå…‰ï¼‰ ---
+   // ã‚¹ã‚«ã‚¤ã‹ã‚‰ã®å…‰
+    Color skyColor = Color(0.3f, 0.4f, 0.5f) * (0.5f + 0.5f * intensity);
+
+    // åœ°é¢åå°„å…‰ï¼ˆåœ°é¢ãŒæ˜ã‚‹ã„è‰²ãªã‚‰ã‚ˆã‚Šæ˜ã‚‹ããªã‚‹ï¼‰
+    Color groundColor = Color(0.1f, 0.1f, 0.05f) * (1.0f - intensity);
+
+    // åˆæˆï¼ˆå¤ªé™½ï¼‹ã‚¹ã‚«ã‚¤ï¼‹åœ°é¢ï¼‰
+    Color totalDiffuse = sunColor * intensity + skyColor + groundColor;
+
+    // ãƒ©ã‚¤ãƒˆæ§‹é€ ä½“ã«è¨­å®š
+    LIGHT light{};
+    light.Enable = true;
+    light.Direction = sunDir;
+    light.Diffuse = totalDiffuse;
+
+    // ã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆã‚‚GIã£ã½ãå¢—åŠ 
+    light.Ambient = Color(0.2f, 0.2f, 0.2f) * (0.5f + 0.5f * intensity) + groundColor * 0.2f;
+
+    Renderer::SetLight(light);
+
+    // ãƒ¬ãƒ³ãƒ€ãƒ©ãƒ¼ã«ãƒ©ã‚¤ãƒˆã‚’ã‚»ãƒƒãƒˆ
+    //Renderer::SetLight(light);
 }
 
 /**
- * @brief •`‰æˆ—
+ * @brief æç”»å‡¦ç†
  *
- * @param deltatime ‘OƒtƒŒ[ƒ€‚©‚ç‚ÌŒo‰ßŠÔiƒ~ƒŠ•bj
+ * @param deltatime å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰ã®çµŒéæ™‚é–“ï¼ˆãƒŸãƒªç§’ï¼‰
  */
 void TestScene::Draw(void)
 {
-	m_camera.Draw();
+    m_camera.Draw();
 
-	// 3²ƒJƒ‰[
-	Color axiscol[3] = {
-		Color(1, 0, 0, 1),
-		Color(0, 1, 0, 1),
-		Color(0, 1, 1, 1)
-	};
+    // 3è»¸ã‚«ãƒ©ãƒ¼
+    Color axiscol[3] = {
+        Color(1, 0, 0, 1),
+        Color(0, 1, 0, 1),
+        Color(0, 1, 1, 1)
+    };
 
-	// ƒ[ƒ‹ƒh²‚ğ•`‰æ
-	SetLineWidth(1.0f);					// ‘¾‚³‚ğİ’è
-	for (int axisno = 0; axisno < 3; axisno++)
-	{
-		Matrix4x4 rotmtx = Matrix4x4::Identity;
-		m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
-	}
+    // ãƒ¯ãƒ¼ãƒ«ãƒ‰è»¸ã‚’æç”»
+    SetLineWidth(1.0f);                    // å¤ªã•ã‚’è¨­å®š
+    for (int axisno = 0; axisno < 3; axisno++)
+    {
+        Matrix4x4 rotmtx = Matrix4x4::Identity;
+        m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
+    }
 
-	// ƒtƒB[ƒ‹ƒh
-//	Renderer::SetFillMode(D3D11_FILL_WIREFRAME);
-	//m_field->Draw();
-	//	Renderer::SetFillMode(D3D11_FILL_SOLID);
+    Vector3 sp;
+    sp = m_player->GetTransform().GetPosition();
+    sp.y -= 500.0f;
 
-	// ƒvƒŒƒCƒ„
-	//m_player->Draw();
+    SetLineWidth(3.0f);
+    LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
 
-	// •½sŒõŒ¹‚Ì•ûŒü‚ğ¦‚·–îˆó‚ğ•`‰æ 
-//	LIGHT l = Renderer::GetLight();
-//	Vector3 dir = Vector3(-l.Direction.x, -l.Direction.y, -l.Direction.z);
+    int sqno = m_field->GetSquareNo(m_player->GetTransform().GetPosition());
 
-//	AimOrientation aimorien(dir);
-//	aimorien.VisualizeDirection(
-//		Vector3(0, 100, 0), 20, 1, Color(1, 1, 0, 1), 2, Color(1, 0, 0, 1)
-//	);
+    std::array<Terrain::Face, 2> retfaces;
+    std::array<Vector3, 3> vertices1;
+    std::array<Vector3, 3> vertices2;
 
-	Vector3 sp;
-	sp = m_player->GetTransform().GetPosition();
-	sp.y -= 500.0f;
+    if (sqno != -1) {
+        Vector3 pos = m_player->GetTransform().GetPosition();
 
-	SetLineWidth(3.0f);
-	LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
+        m_field->GetFace(pos, retfaces);
+        m_field->GetFaceVertex(sqno * 2, vertices1);
+        m_field->GetFaceVertex(sqno * 2 + 1, vertices2);
 
-	int sqno = m_field->GetSquareNo(m_player->GetTransform().GetPosition());
+        TriangleDrawerDraw(vertices1, Color(1, 0, 0, 1));
+        TriangleDrawerDraw(vertices2, Color(1, 1, 0, 1));
+    }
 
-	std::array<Terrain::Face, 2> retfaces;
-	std::array<Vector3, 3> vertices1;
-	std::array<Vector3, 3> vertices2;
-
-	if (sqno != -1) {
-		Vector3 pos = m_player->GetTransform().GetPosition();
-
-		m_field->GetFace(pos, retfaces);
-		m_field->GetFaceVertex(sqno * 2, vertices1);
-		m_field->GetFaceVertex(sqno * 2 + 1, vertices2);
-
-		TriangleDrawerDraw(vertices1, Color(1, 0, 0, 1));
-		TriangleDrawerDraw(vertices2, Color(1, 1, 0, 1));
-	}
-
-	m_pObjectManager->Draw();
-
-	// “G
-	//for (auto& enemy : m_enemies) {
-	//	enemy->Draw();
-	//}
-
-	//// áŠQ•¨
-	//for (auto& obs : m_obstacles) {
-	//	obs->Draw();
-	//}
+    m_pObjectManager->Draw();
 }
 
 /**
- * @brief ƒV[ƒ“‚Ì‰Šú‰»ˆ—
+ * @brief ã‚·ãƒ¼ãƒ³ã®åˆæœŸåŒ–å‡¦ç†
  */
 void TestScene::Init(ObjectManager* mgr)
 {
-	m_pObjectManager = mgr;
-	// ƒJƒƒ‰(3D)‚Ì‰Šú‰»
-	m_camera.Init();
+    m_pObjectManager = mgr;
+    // ã‚«ãƒ¡ãƒ©(3D)ã®åˆæœŸåŒ–
+    m_camera.Init();
 
-	// ƒ[ƒJƒ‹²•\¦—pü•ª‚Ì‰Šú‰»
-	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
-	m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
-	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
+    // ãƒ­ãƒ¼ã‚«ãƒ«è»¸è¡¨ç¤ºç”¨ç·šåˆ†ã®åˆæœŸåŒ–
+    m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
+    m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
+    m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
 
-	m_playersegment[0] = std::make_unique<Segment>(Vector3(0, -100, 0), Vector3(0, 100, 0));
+    m_playersegment[0] = std::make_unique<Segment>(Vector3(0, -100, 0), Vector3(0, 100, 0));
 
-	// ŒõŒ¹ŒvZ‚È‚µƒVƒF[ƒ_[
-	std::unique_ptr<CShader> shader = std::make_unique<CShader>();
-	shader->Create("shader/vertexLightingVS.hlsl", "shader/vertexLightingPS.hlsl");
-	MeshManager::RegisterShader<CShader>("unlightshader", std::move(shader));
+    // å…‰æºè¨ˆç®—ãªã—ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼
+    std::unique_ptr<CShader> shader = std::make_unique<CShader>();
+    shader->Create("shader/vertexLightingVS.hlsl", "shader/vertexLightingPS.hlsl");
+    MeshManager::RegisterShader<CShader>("unlightshader", std::move(shader));
 
-	// ƒƒbƒVƒ…ƒf[ƒ^“Ç‚İ‚İi“G—pj
-	{
-		std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
-		smesh->Load("assets/model/car001.x", "assets/model/");
+    // ãƒ¡ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿ï¼ˆæ•µç”¨ï¼‰
+    {
+        std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
+        smesh->Load("assets/model/car001.x", "assets/model/");
 
-		std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
-		srenderer->Init(*smesh);
+        std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
+        srenderer->Init(*smesh);
 
-		MeshManager::RegisterMesh<CStaticMesh>("car001.x", std::move(smesh));
-		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("car001.x", std::move(srenderer));
-	}
+        MeshManager::RegisterMesh<CStaticMesh>("car001.x", std::move(smesh));
+        MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("car001.x", std::move(srenderer));
+    }
 
-	// ƒƒbƒVƒ…ƒf[ƒ^“Ç‚İ‚İiáŠQ•¨—pj
-	{
-		std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
-		smesh->Load("assets/model/obj/box.obj", "assets/model/obj/");
+    // ãƒ¡ãƒƒã‚·ãƒ¥ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿ï¼ˆéšœå®³ç‰©ç”¨ï¼‰
+    {
+        std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
+        smesh->Load("assets/model/obj/box.obj", "assets/model/obj/");
 
-		std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
-		srenderer->Init(*smesh);
+        std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
+        srenderer->Init(*smesh);
 
-		MeshManager::RegisterMesh<CStaticMesh>("obstaclebox", std::move(smesh));
-		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclebox", std::move(srenderer));
-	}
+        MeshManager::RegisterMesh<CStaticMesh>("obstaclebox", std::move(smesh));
+        MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclebox", std::move(srenderer));
+    }
 
+    // ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰åˆæœŸåŒ–
+    m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+    m_field->Init();
 
-	// ƒtƒB[ƒ‹ƒh‰Šú‰»
-	m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
-	m_field->Init();
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤
+    m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
+    m_player->Init();
+    m_player->SetCamera(&m_camera);
 
-	// ƒvƒŒƒCƒ„
-	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->Init();
-	m_player->SetCamera(&m_camera);
+    // ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ 
+    auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
+    skydome->Init();
+    skydome->SetTexture("assets/texture/haikei.jpg");
 
-	// ƒXƒJƒCƒh[ƒ€
-	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
-	skydome->Init();
-	skydome->SetTexture("assets/texture/haikei.jpg");
+    // æ•µç¾¤åˆæœŸåŒ–
+    {
+        auto& rng = RandomEngine::tls();
+        rng.uniformReal(-500, 500);
 
-	// “GŒQ‰Šú‰»
-	{
-		auto& rng = RandomEngine::tls();
-		rng.uniformReal(-500, 500);
+        for (int cnt = 0; cnt < ENEMYMAX; cnt++) {
+            auto player = m_pObjectManager->GetObjectByName<Player>("player");
 
-		for (int cnt = 0; cnt < ENEMYMAX; cnt++) {
-			auto player = m_pObjectManager->GetObjectByName<Player>("player");
+            m_enemies[cnt] = m_pObjectManager->Instantiate<Enemy>("Enemy" + std::to_string(cnt), Tag::Enemy, player);
+            m_enemies[cnt]->Init();
 
-			m_enemies[cnt] = m_pObjectManager->Instantiate<Enemy>("Enemy" + std::to_string(cnt), Tag::Enemy, player);
-			m_enemies[cnt]->Init();
+            Transform tf = m_enemies[cnt]->GetTransform();
 
-			Transform tf = m_enemies[cnt]->GetTransform();
+            tf.SetScale(Vector3(1, 1, 1));
+            tf.SetRotation(Quaternion::Identity);
 
-			tf.SetScale(Vector3(1, 1, 1));
-			tf.SetRotation(Quaternion::Identity);
+            Vector3 pos(
+                static_cast<float>(rng.uniformReal(-500.0f, 500.0f)),
+                0,
+                static_cast<float>(rng.uniformReal(-500.0f, 500.0f))
+            );
 
-			Vector3 pos(
-				static_cast<float>(rng.uniformReal(-500.0f, 500.0f)),
-				0,
-				static_cast<float>(rng.uniformReal(-500.0f, 500.0f))
-			);
+            float height = m_field->GetHeight2(pos);
+            pos.y = height;
+            tf.SetPosition(pos);
 
-			float height = m_field->GetHeight2(pos);
-			pos.y = height;
-			tf.SetPosition(pos);
+            m_enemies[cnt]->SetTransform(tf);
+        }
+    }
 
-			m_enemies[cnt]->SetTransform(tf);
-		}
-	}
+    // éšœå®³ç‰©ç¾¤åˆæœŸåŒ–
+    {
+        auto& rng = RandomEngine::tls();
+        rng.uniformReal(-500, 500);
 
-	// áŠQ•¨ŒQ‰Šú‰»
-	{
-		auto& rng = RandomEngine::tls();
-		rng.uniformReal(-500, 500);
+        for (int cnt = 0; cnt < OBSTACLEMAX; cnt++) {
 
-		for (int cnt = 0; cnt < OBSTACLEMAX; cnt++) {
+            m_obstacles[cnt] = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(cnt), Tag::Object, this);
+            m_obstacles[cnt]->Init();
 
-			m_obstacles[cnt] = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(cnt), Tag::Object, this);
-			m_obstacles[cnt]->Init();
+            Transform tf = m_obstacles[cnt]->GetTransform();
 
-			Transform tf = m_obstacles[cnt]->GetTransform();
+            tf.SetScale(Vector3(
+                static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
+                static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
+                static_cast<float>(rng.uniformReal(10.0f, 30.0f))
+            ));
 
-			tf.SetScale(Vector3(
-				static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
-				static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
-				static_cast<float>(rng.uniformReal(10.0f, 30.0f))
-			));
+            float yrot = static_cast<float>(rng.uniformReal(-PI, PI));
+            tf.SetRotation(Quaternion::CreateFromYawPitchRoll(yrot, 0, 0));
 
-			float yrot = static_cast<float>(rng.uniformReal(-PI, PI));
-			tf.SetRotation(Quaternion::CreateFromYawPitchRoll(yrot, 0, 0));
+            Vector3 pos(
+                static_cast<float>(rng.uniformReal(-500.0f, 500.0f)),
+                0,
+                static_cast<float>(rng.uniformReal(-500.0f, 500.0f))
+            );
+            pos.y = m_field->GetHeight2(pos);
 
-			Vector3 pos(
-				static_cast<float>(rng.uniformReal(-500.0f, 500.0f)),
-				0,
-				static_cast<float>(rng.uniformReal(-500.0f, 500.0f))
-			);
-			pos.y = m_field->GetHeight2(pos);
+            tf.SetPosition(pos);
 
-			tf.SetPosition(pos);
+            m_obstacles[cnt]->SetTransform(tf);
+        }
+    }
 
-			m_obstacles[cnt]->SetTransform(tf);
-		}
-	}
+    // ãƒ‡ãƒãƒƒã‚° Directional light
+    DebugUI::RedistDebugFunction([this]() {
+        debugDirectionalLight();
+        });
 
-	// ƒfƒoƒbƒO Directional light
-	DebugUI::RedistDebugFunction([this]() {
-		debugDirectionalLight();
-		});
+    // ãƒ‡ãƒãƒƒã‚° Free Camera
+    DebugUI::RedistDebugFunction([this]() {
+        debugFreeCamera();
+        });
 
-	// ƒfƒoƒbƒO Free Camera
-	DebugUI::RedistDebugFunction([this]() {
-		debugFreeCamera();
-		});
+    // remake field
+    DebugUI::RedistDebugFunction([this]() {
+        debugFieldRemake();
+        });
 
-	// remake field
-	DebugUI::RedistDebugFunction([this]() {
-		debugFieldRemake();
-		});
+    // remake undulation
+    DebugUI::RedistDebugFunction([this]() {
+        debugFieldUnduration();
+        });
 
-	// remake undulation
-	DebugUI::RedistDebugFunction([this]() {
-		debugFieldUnduration();
-		});
+    DebugUI::RedistDebugFunction([this]() {
+        debugFieldHeight();
+        });
 
-	DebugUI::RedistDebugFunction([this]() {
-		debugFieldHeight();
-		});
-
-	TriangleDrawerInit();
+    TriangleDrawerInit();
 }
 
 /**
- * @brief ƒV[ƒ“‚ÌI—¹ˆ—
+ * @brief ã‚·ãƒ¼ãƒ³ã®çµ‚äº†å‡¦ç†
  */
 void TestScene::Uninit()
 {

@@ -50,7 +50,7 @@ public:
 	virtual ~GameObject() = default;		//! デストラクタ
 
 	virtual void Init(void);
-	virtual void Update(const uint64_t deltatime);
+	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
 

@@ -30,7 +30,7 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 /**
  * @brief 更新
 */
-void SceneManager::Update(const uint64_t deltatime)
+void SceneManager::Update(const float deltatime)
 {
 	// 現在シーンの更新
 	//m_pScenes[m_CurrentSceneName]->Update(deltatime);

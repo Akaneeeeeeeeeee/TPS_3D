@@ -14,7 +14,7 @@ public:
 
 	virtual void Init(ObjectManager* mgr) = 0;
 	//virtual void Init(void) = 0;
-	virtual void Update(const uint64_t deltatime) = 0;
+	virtual void Update(const float deltatime) = 0;
 	virtual void Draw(void) = 0;
 	virtual void Uninit(void) = 0;
 

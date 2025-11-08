@@ -34,7 +34,7 @@ public:
 	};;
 
 	void Init(void) override;
-	void Update(const uint64_t deltatime) override;
+	void Update(const float deltatime) override;
 	void Draw(void) const override;
 	void Uninit(void) override;
 

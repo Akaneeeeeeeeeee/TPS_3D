@@ -175,7 +175,7 @@ TitleScene::TitleScene() : IScene()
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void TitleScene::Update(uint64_t deltatime)
+void TitleScene::Update(const float deltatime)
 {
 	// キーボードの状態を取得
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
