@@ -61,7 +61,7 @@ void Enemy::Init(void)
 
 void Enemy::Update(const float deltatime)
 {
-	if (m_pPlayer->IsDestroy()) { m_pPlayer = nullptr; }
+	if (m_pPlayer && m_pPlayer->IsDestroy()) { m_pPlayer = nullptr; }
 	// „‰ñƒ|ƒCƒ“ƒg‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
 	//if (m_PatrolPoints.empty()) { return; }
 
