@@ -25,7 +25,7 @@ public:
 	void Init(void) override;
 	void Init(int width, int height, const std::string& texfilename, FreeCamera* cam);
 
-	void Update(const uint64_t deltatime) override;
+	void Update(const float deltatime) override;
 
 	void Draw(void) const override;
 	

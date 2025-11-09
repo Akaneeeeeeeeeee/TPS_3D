@@ -71,7 +71,7 @@ void Game::Init(void)
  * @brief ゲームのループ処理
  * 主なゲーム処理はここに書く
 */
-void Game::Update(const uint64_t deltatime)
+void Game::Update(const float deltatime)
 {
 	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
 	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得

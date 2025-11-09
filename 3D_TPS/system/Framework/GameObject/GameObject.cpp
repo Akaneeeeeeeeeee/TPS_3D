@@ -47,7 +47,7 @@ void GameObject::Init(void)
 	//m_Components.clear();
 }
 
-void GameObject::Update(const uint64_t deltatime)
+void GameObject::Update(const float deltatime)
 {
 	// コンポーネントの更新
 	/*for(auto& component : m_Components) {

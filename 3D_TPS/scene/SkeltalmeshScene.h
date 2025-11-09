@@ -11,8 +11,8 @@
 #include "system/CAnimationData.h"
 #include "system/CAnimationObject.h"
 #include "system/CPlaneMesh.h"
-#include "system/Terrain.h"
-#include "system/Skydome/Skydome.h"
+#include "GameObject/Terrain.h"
+#include "GameObject/Skydome.h"
 #include "system/Framework/GameObject/Player/Player.h"
 #include "system/Framework/GameObject/Enemy/Enemy.h"
 #include "system/Billboard/Billboard.h"
@@ -42,7 +42,7 @@ public:
 	 *
 	 * 入力処理、アニメーション、遷移タイミングなどの制御を行う。
 	 */
-	void Update(uint64_t deltatime) override;
+	void Update(const float deltatime) override;
 
 	/**
 	 * @brief 毎フレームの描画処理

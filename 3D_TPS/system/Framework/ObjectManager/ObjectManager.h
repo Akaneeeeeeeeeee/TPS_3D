@@ -20,23 +20,29 @@ public:
 	 * 
 	 * ID設定、タグ設定、名前設定を行ってコンテナに追加
 	*/
-	template <typename T, typename ...Args, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	template <typename T, typename ...Args>
+		requires std::derived_from<T, GameObject>
 	T* Instantiate(const std::string& _Name, const Tag _Tag = Tag::None, Args&&... args);
 
 	// IDからオブジェクトを取得
-	template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	template <typename T>
+		requires std::derived_from<T, GameObject>
 	T* GetObjectByID(const uint64_t id) const;
 
 	// 指定タグのオブジェクトを取得
-	template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	template <typename T>
+		requires std::derived_from<T, GameObject>
 	std::vector<T*> GetObjectsByTag(const Tag tag) const;
 
 	// 名前からオブジェクトを取得
-	template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type* = nullptr>
+	template <typename T>
+		requires std::derived_from<T, GameObject>
 	T* GetObjectByName(const std::string& name) const;
 
 	// オブジェクト削除
 	void DeleteObject(const Tag _ObjTag);
+	void DeleteObject(const uint64_t _id);
+	void DeleteObject(const std::string& _name);
 
 	/**
 	 * @brief タグ変更関数
@@ -46,7 +52,7 @@ public:
 	//void Init(ComponentFactory* _factory);
 	//void Init(ShaderManager* shaderMgr);
 	void Init(EngineContext* context);
-	void Update(const uint64_t deltatime);
+	void Update(const float deltatime);
 	void Draw(void) const;
 	void Uninit(void);
 
@@ -73,7 +79,8 @@ private:
 
 
 
-template <typename T, typename ...Args, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+template <typename T, typename ...Args>
+	requires std::derived_from<T, GameObject>
 inline T* ObjectManager::Instantiate(const std::string& _Name, const Tag _Tag, Args&&... args)
 {
 	// SnowfrakeIDを付与
@@ -99,7 +106,8 @@ inline T* ObjectManager::Instantiate(const std::string& _Name, const Tag _Tag, A
 }
 
 
-template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+template <typename T>
+	requires std::derived_from<T, GameObject>
 inline T* ObjectManager::GetObjectByName(const std::string& name) const
 {
 	auto it = m_ObjectsByName.find(name);
@@ -108,7 +116,8 @@ inline T* ObjectManager::GetObjectByName(const std::string& name) const
 	return dynamic_cast<T*>(it->second);
 }
 
-template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+template <typename T>
+	requires std::derived_from<T, GameObject>
 inline T* ObjectManager::GetObjectByID(const uint64_t id) const
 {
 	// オブジェクトを探索
@@ -126,7 +135,8 @@ inline T* ObjectManager::GetObjectByID(const uint64_t id) const
 }
 
 // 指定タグのオブジェクトを取得
-template <typename T, typename std::enable_if<std::is_base_of<GameObject, T>::value>::type*>
+template <typename T>
+	requires std::derived_from<T, GameObject>
 inline std::vector<T*> ObjectManager::GetObjectsByTag(const Tag tag) const
 {
 	std::vector<T*> result;

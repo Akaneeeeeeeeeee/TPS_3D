@@ -33,7 +33,7 @@ public:
 	virtual ~Character() {};
 
 	virtual void Init(void);
-	virtual void Update(const uint64_t deltatime) override;
+	virtual void Update(const float deltatime) override;
 	virtual void Draw(void) const override;
 	virtual void Uninit(void);
 

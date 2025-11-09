@@ -2,9 +2,12 @@
 #include <random>
 #include <iostream>
 #include "system/Framework/AssetManager/AssetManager.h"
+#include "Framework/GameObject/Player/Player.h"
 
-Enemy::Enemy(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag)
-	: Character(context, id, name, tag)
+Enemy::Enemy(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag,
+	Player* player,
+	const Transform& transform)
+	: Character(context, id, name, tag, transform), m_pPlayer(player)
 {
 }
 
@@ -56,8 +59,9 @@ void Enemy::Init(void)
 	m_TargetPos = m_EndPos;
 }
 
-void Enemy::Update(const uint64_t deltatime)
+void Enemy::Update(const float deltatime)
 {
+	if (m_pPlayer && m_pPlayer->IsDestroy()) { m_pPlayer = nullptr; }
 	// „‰ñƒ|ƒCƒ“ƒg‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
 	//if (m_PatrolPoints.empty()) { return; }
 

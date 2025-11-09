@@ -25,7 +25,7 @@ void Cube::Init(void)
 	
 }
 
-void Cube::Update(const uint64_t deltatime)
+void Cube::Update(const float deltatime)
 {
 }
 

@@ -7,7 +7,7 @@ void Character::Init(void)
 	// 例: モデルの読み込み、アニメーションの設定など
 }
 
-void Character::Update(const uint64_t deltatime)
+void Character::Update(const float deltatime)
 {
 	// キャラクターの更新処理
 	// 例: 入力に基づく移動、アニメーションの更新など

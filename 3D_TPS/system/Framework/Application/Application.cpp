@@ -1,6 +1,7 @@
 ﻿#include "Entry/main.h"
 #include "Application.h"
 #include "fpscontrol.h"
+#include "Framework/Time/Time.h"
 
 /**
  * @brief アプリ全体としての初期化処理
@@ -19,25 +20,20 @@ void Application::Init(void)
 */
 void Application::Run(void)
 {
+	// フレームの待ち時間を計算する
+	static FPS fpsrate(80);
+
 	//! 終了(WM_QUIT)メッセージがない間はループし続ける
 	//! →二重ループに見えるが、MessageLoop()はメッセージがWM_QUIT以外の場合trueを返すので大丈夫(それ以外のメッセージはウィンドウプロシージャに送っておしまい)
 	while (Window::GetInstance().MessageLoop())
 	{
-		uint64_t deltatime = 0;
-
-		// フレームの待ち時間を計算する
-		static FPS fpsrate(80);
-
-		// 前回実行されてからの経過時間を計算する
-		deltatime = fpsrate.CalcDelta();
-
-		//std::cout << deltatime << std::endl;
-
-		// 更新・描画
-		m_Game.Update(deltatime);
-		m_Game.Draw();
-		// 規定時間までWAIT
+		// FPS制御
 		fpsrate.Tick();
+		// ★ Tick で確定したマイクロ秒を Time に渡す
+		Time::GetInstance().Update(fpsrate.GetDeltaTime());
+
+		m_Game.Update(Time::GetInstance().Deltatime());
+		m_Game.Draw();
 	}
 	//! 終了処理
 	Uninit();
