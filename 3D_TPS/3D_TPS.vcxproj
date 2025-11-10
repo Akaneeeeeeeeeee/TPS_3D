@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(ProjectDir)External\Jolt\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Debug;$(ProjectDir)External\Jolt\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(ProjectDir)External\Jolt\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Release;$(ProjectDir)External\Jolt\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system;$(ProjectDir)External/Jolt/Source</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
