@@ -4,6 +4,7 @@
 #include "system/stb_perlin.h"
 #include "system/RandomEngine.h"
 #include "Framework/ColliderManager/collision.h"
+#include "Framework/Component/Physic/TerrainCollider.h"
 
 
 Terrain::Terrain(EngineContext& context, const uint64_t id, 
@@ -123,10 +124,31 @@ void Terrain::Init() {
 
 	// 平面の方程式を生成（全面）
 	MakePlaneEquatation();
+
+
+	// --- 物理コライダー追加 ---
+	std::vector<float> heights;
+	heights.reserve((m_divX + 1) * (m_divZ + 1));
+
+	for (int z = 0; z <= m_divZ; ++z)
+	{
+		for (int x = 0; x <= m_divX; ++x)
+		{
+			int index = z * (m_divX + 1) + x;
+			heights.push_back(m_vertices[index].Position.y);
+		}
+	}
+
+	float stepX = m_width / m_divX;
+	float stepZ = m_depth / m_divZ;
+
+	auto terraincollider = AddComponent<TerrainCollider>("TerrainCollider");
+	terraincollider->SetMesh(m_vertices, m_indices);
+	terraincollider->Init();
 }
 
 void Terrain::Update(const float dt) {
-
+	GameObject::Update(dt);
 }
 
 void Terrain::Draw(void) const
@@ -157,6 +179,8 @@ void Terrain::Draw(void) const
 }
 
 void Terrain::Uninit(void) {
+	//RemoveComponent(GetComponent("Rigidbody"));
+	RemoveComponent(GetComponent("TerrainCollider"));
 
 }
 
@@ -192,6 +216,32 @@ void Terrain::makeundulationwithrandom(float min, float max)
 
 	// 平面の方程式を生成（全面）
 	MakePlaneEquatation();
+
+
+	// --- コライダー再生成 ---
+	auto collider = GetComponent<TerrainCollider>();
+	if (collider)
+	{
+		/*std::vector<VERTEX_3D> positions;
+		positions.reserve(m_vertices.size());
+		for (auto& v : m_vertices)
+			positions.emplace_back(v.Position.x, v.Position.y, v.Position.z);
+
+		std::vector<uint32_t> triangles;
+		triangles.reserve(m_indices.size() / 3);
+		for (size_t i = 0; i < m_indices.size(); i += 3)
+		{
+			triangles.emplace_back(
+				static_cast<uint32_t>(m_indices[i + 0]),
+				static_cast<uint32_t>(m_indices[i + 1]),
+				static_cast<uint32_t>(m_indices[i + 2])
+			);
+		}*/
+
+		collider->Uninit(); // 旧ボディ削除
+		collider->SetMesh(m_vertices, m_indices);
+		collider->Init();   // 新ボディ生成
+	}
 }
 
 void Terrain::makeundulationwithperlin(
@@ -246,6 +296,32 @@ void Terrain::makeundulationwithperlin(
 
 	// 平面の方程式を生成（全面）
 	MakePlaneEquatation();
+
+	// --- コライダー再生成 ---
+	auto collider = GetComponent<TerrainCollider>();
+	if (collider)
+	{
+		/*std::vector<VERTEX_3D> positions;
+		positions.reserve(m_vertices.size());
+		for (auto& v : m_vertices)
+			positions.emplace_back(v.Position.x, v.Position.y, v.Position.z);
+
+		std::vector<uint32_t> triangles;
+		triangles.reserve(m_indices.size() / 3);
+		for (size_t i = 0; i < m_indices.size(); i += 3)
+		{
+			triangles.emplace_back(
+				static_cast<uint32_t>(m_indices[i + 0]),
+				static_cast<uint32_t>(m_indices[i + 1]),
+				static_cast<uint32_t>(m_indices[i + 2]),
+				0
+			);
+		}*/
+
+		collider->Uninit(); // 旧ボディ削除
+		collider->SetMesh(m_vertices, m_indices);
+		collider->Init();   // 新ボディ生成
+	}
 }
 
 // 現在位置の高さ情報を取得する（全面検索）

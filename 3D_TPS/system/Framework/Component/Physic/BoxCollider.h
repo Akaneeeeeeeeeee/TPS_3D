@@ -8,26 +8,37 @@
 #include "Framework/PhysicsSystem/Physics.h"
 #include "commontypes.h"
 
+// 前方宣言
 class PhysicsManager;
 
+/*
+* @brief	ボックスコライダーコンポーネント
+* @detail	ボックス形状のコライダーを提供するコンポーネント
+* @remark	物理演算を行うためには Rigidbody コンポーネントと組み合わせて使用する必要がある
+* @auther	赤根 和樹
+* @date     2025/11/11
+*/
 class BoxCollider : public PhysicsComponent
 {
 public:
-    BoxCollider(const DirectX::XMFLOAT3& halfExtent);
+    BoxCollider();
     ~BoxCollider() noexcept override = default;
 
     void CreateBody(JPH::BodyInterface& bi) override;
 
-    void Init() override;
+    void Init(void) override;
     void Update(const float deltaTime) override;
-    void Uninit() override;
+    void Uninit(void) override;
 
 protected:
     void Attach(EngineContext& context) override;
     void Detach(EngineContext& context) override;
 
+public:
+    JPH::RefConst<JPH::Shape> GetShape() { return JPH::RefConst<JPH::Shape>(m_Shape); }
+
 private:
-    DirectX::XMFLOAT3 m_HalfExtent;
+    DirectX::XMFLOAT3 m_HalfSize;
 
     JPH::Ref<JPH::BoxShape> m_Shape = nullptr;
 };

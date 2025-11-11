@@ -1,13 +1,10 @@
 #pragma once
 #include "system/Framework/Component/IComponent/IComponent.h"
+#include "Framework/PhysicsSystem/Physics.h"    // Jolt
+#include "renderer.h"
 
-// Jolt
-#include <Jolt/Jolt.h>
-#include <Jolt/Core/Reference.h>
-#include <Jolt/Physics/Body/BodyID.h>
-#include <Jolt/Physics/Body/BodyInterface.h>
-
-class PhysicsManager; // ‘O•ûéŒ¾
+// ‘O•ûéŒ¾
+class PhysicsManager; 
 
 class PhysicsComponent : public IComponent
 {
@@ -23,6 +20,8 @@ public:
 
 	virtual void Attach(EngineContext& context) override;
     virtual void Detach(EngineContext& context) override;
+
+    virtual void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) {};
 
 protected:
     PhysicsComponent() = default;

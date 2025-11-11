@@ -441,6 +441,18 @@
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClInclude>
+    <ClInclude Include="scene\CollisionTestScene.h">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\StaticMeshCollider.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -669,6 +681,18 @@
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\Rigidbody.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\CollisionTestScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\TerrainCollider.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\StaticMeshCollider.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>

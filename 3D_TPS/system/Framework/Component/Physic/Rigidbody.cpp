@@ -5,6 +5,7 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include "Framework/Component/Physic/BoxCollider.h"
 
 using namespace JPH;
 
@@ -61,42 +62,39 @@ void Rigidbody::Uninit()
 
 void Rigidbody::Attach(EngineContext& context)
 {
-    context.joltPhysicsManager.Register(this);
+    PhysicsComponent::Attach(context);
 }
 
 void Rigidbody::Detach(EngineContext& context)
 {
-    context.joltPhysicsManager.UnRegister(this);
+    PhysicsComponent::Detach(context);
 }
 
 
+// Rigidbody
 void Rigidbody::CreateBody(JPH::BodyInterface& bi)
 {
-    /*using namespace JPH;
+    auto collider = m_pOwner->GetComponent<BoxCollider>();
+    if (!collider) return;
 
-    Vector3 scale = m_pOwner->GetScale();
-    RefConst<Shape> shape = new BoxShape(Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
-
-    EMotionType motion = EMotionType::Dynamic;
-    switch (m_BodyType)
-    {
-    case Type::Static: motion = EMotionType::Static; break;
-    case Type::Kinematic: motion = EMotionType::Kinematic; break;
-    case Type::Dynamic: motion = EMotionType::Dynamic; break;
-    }
+    JPH::RefConst<JPH::Shape> shape = collider->GetShape();
+    if (!shape) return;
 
     BodyCreationSettings settings(
         shape,
         Vec3(m_pOwner->GetPosition().x, m_pOwner->GetPosition().y, m_pOwner->GetPosition().z),
         Quat::sIdentity(),
-        motion,
+        EMotionType::Dynamic,
         Layers::MOVING
     );
-
     settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
     settings.mMassPropertiesOverride.mMass = m_Mass;
 
     Body* body = bi.CreateBody(settings);
-    m_BodyID = body->GetID();
-    bi.AddBody(m_BodyID, EActivation::Activate);*/
+    if (body)
+    {
+        m_BodyID = body->GetID();
+        bi.AddBody(m_BodyID, EActivation::Activate);
+        bi.ActivateBody(m_BodyID);
+    }
 }

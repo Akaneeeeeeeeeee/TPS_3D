@@ -25,6 +25,17 @@ public:
         return mObjectToBroadPhase[layer];
     }
 
+    // 仮想クラスにさせないために仮定義
+    const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
+    {
+        /*switch (inLayer)
+        {
+        case 0: return "NON_MOVING";
+        default: return "Unknown";
+        }*/
+		return "Layer";
+    }
+
 private:
     JPH::BroadPhaseLayer mObjectToBroadPhase[1];
 };

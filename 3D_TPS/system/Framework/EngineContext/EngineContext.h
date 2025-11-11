@@ -21,6 +21,9 @@ struct EngineContext
 	//ColliderManager& colliderManager;
 	PhysicsManager& joltPhysicsManager;
 	
+	void Update(const float deltaTime) {
+		joltPhysicsManager.Update(deltaTime);
+	}
 
 	/*EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, ColliderManager& cm, PhysicsManager& pm)
 		: renderManager(rm), shaderManager(sm), assetManager(am), colliderManager(cm), joltPhysicsManager(pm) {

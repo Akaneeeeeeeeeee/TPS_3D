@@ -2,16 +2,19 @@
 #include "Framework/PhysicsSystem/PhysicsManager.h"
 #include "Framework/GameObject/GameObject.h"
 #include "Framework/PhysicsSystem/PhysicsLayer.h"
+#include "Framework/Component/Physic/Rigidbody.h"
+#include <Jolt/Physics/EActivation.h>
 
-BoxCollider::BoxCollider(const DirectX::XMFLOAT3& halfExtent)
-	: m_HalfExtent(halfExtent), PhysicsComponent()
+BoxCollider::BoxCollider(void)
+	: m_HalfSize(Vector3::Zero), PhysicsComponent()
 {
 }
 
 void BoxCollider::Attach(EngineContext& context)
 {
     PhysicsComponent::Attach(context);
-    m_Shape = new JPH::BoxShape(JPH::Vec3(m_HalfExtent.x, m_HalfExtent.y, m_HalfExtent.z));
+    Vector3 scale = m_pOwner->GetScale();
+    m_Shape = new JPH::BoxShape(JPH::Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
 }
 
 void BoxCollider::Init()
@@ -23,10 +26,12 @@ void BoxCollider::Init()
 
 void BoxCollider::Update(const float deltaTime)
 {
-    // Rigidbody ‚ª–³‚¢’P‘Ì Collider ‚Ìê‡‚Í Transform “¯Šú
-    if (!m_Physics) { return; }
-    auto& bi = m_Physics->GetBodyInterface();
+    if (!m_Physics) return;
 
+    // Rigidbody ‚ª•t‚¢‚Ä‚¢‚éê‡‚Í•¨—‚ª§Œä‚·‚é‚Ì‚Å“¯Šú‚µ‚È‚¢
+    if (m_pOwner->GetComponent<Rigidbody>()) { return; }
+
+    auto& bi = m_Physics->GetBodyInterface();
     if (bi.IsAdded(m_BodyID))
     {
         Vector3 pos = m_pOwner->GetPosition();
@@ -63,5 +68,12 @@ void BoxCollider::CreateBody(JPH::BodyInterface& bi)
         Layers::NON_MOVING
     );
 
-    m_BodyID = bi.CreateAndAddBody(settings, JPH::EActivation::Activate);
+    JPH::Body* body = bi.CreateBody(settings);
+    if (!body)
+    {
+        OutputDebugStringA("Failed to create body!\n");
+        return;
+    }
+    m_BodyID = body->GetID();
+    bi.AddBody(m_BodyID, JPH::EActivation::Activate);
 }

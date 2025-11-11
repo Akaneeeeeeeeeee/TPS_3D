@@ -2,7 +2,15 @@
 #include "Framework/Component/Physic/PhysicsComponent.h"
 #include "system/commontypes.h"
 
-class Rigidbody : public PhysicsComponent
+
+/*
+* @brief	Rigidbodyコンポーネント
+* @detail	物理演算機能を提供するコンポーネント
+* @remark	必要であれば各コライダーに情報を提供する
+* @auther	赤根 和樹
+* @date     2025/11/11
+*/
+class Rigidbody final : public PhysicsComponent
 {
 public:
     Rigidbody(const float mass);

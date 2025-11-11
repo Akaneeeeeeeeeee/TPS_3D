@@ -45,13 +45,17 @@ void Game::Init(void)
 
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
-	//m_GraphicsDevice.Init();
+	m_GraphicsDevice.Init();
 	// レンダーマネージャの初期化
-	/*m_RenderManager.Init(&m_GraphicsDevice);
+	m_RenderManager.Init(&m_GraphicsDevice);
+	// 物理マネージャの初期化
+	m_PhysicsManager.Init();
+
 	m_pContext = std::make_unique<EngineContext>(
 		m_RenderManager,
 		ShaderManager::GetInstance(),
-		AssetManager::GetInstance());*/
+		AssetManager::GetInstance(),
+		m_PhysicsManager);
 
 	// オブジェクトマネージャの初期化
 	m_ObjectManager.Init(m_pContext.get());
@@ -73,6 +77,8 @@ void Game::Init(void)
 */
 void Game::Update(const float deltatime)
 {
+	m_pContext->Update(deltatime);
+
 	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
 	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
 

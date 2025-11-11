@@ -21,8 +21,8 @@ public:
 	virtual void SetIsValid(bool flg) { IsValid = flg; }
 	virtual bool GetIsValid(void) { return IsValid; }
 
-	void SetOwner(GameObject* _obj);		// オブジェクトのアタッチ(参照渡し)
-	GameObject* GetOwner(void);				// アタッチ先のオブジェクトの取得
+	virtual void SetOwner(GameObject* _obj);		// オブジェクトのアタッチ(参照渡し)
+	virtual GameObject* GetOwner(void);				// アタッチ先のオブジェクトの取得
 	//void RemoveOwner(void);			// アタッチされているオブジェクトからの取り外し
 
 	virtual void Attach(EngineContext& context) = 0;	// アタッチされたときの処理(各派生コンポーネントでどの管理システムに登録するかを実装)
