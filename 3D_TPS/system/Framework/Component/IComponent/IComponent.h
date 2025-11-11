@@ -15,7 +15,7 @@ public:
 	virtual ~IComponent();	// デストラクタ
 
 	virtual void Init(void) = 0;		// 初期化
-	virtual void Update(void) = 0;		// 更新
+	virtual void Update(const float deltatime) = 0;		// 更新
 	virtual void Uninit(void) = 0;		// 終了
 
 	virtual void SetIsValid(bool flg) { IsValid = flg; }

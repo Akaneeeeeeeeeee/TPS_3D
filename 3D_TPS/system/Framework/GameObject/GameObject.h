@@ -53,6 +53,7 @@ public:
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
+	virtual EngineContext& GetContext(void) { return m_Context; }
 
 	//////////////////////////////////////////
 	//			コンポーネントの取り外し			//

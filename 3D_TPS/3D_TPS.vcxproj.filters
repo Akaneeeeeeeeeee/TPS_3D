@@ -130,6 +130,9 @@
     <Filter Include="ソース ファイル\MyFramework\Manager\Time">
       <UniqueIdentifier>{53b5c3cc-aef5-4912-8067-e70d2f70fa4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Manager\PhysicsManager">
+      <UniqueIdentifier>{10705ddd-e02a-4110-bc26-ce7416a1ae3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -384,12 +387,6 @@
     <ClInclude Include="system\CVertexBuffer.h">
       <Filter>ソース ファイル\system\SampleFramework</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h">
-      <Filter>ソース ファイル\MyFramework\Manager\ColliderManager</Filter>
-    </ClInclude>
-    <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h">
-      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="system\Cube\Cube.h">
       <Filter>ソース ファイル\MyFramework\GameObject\Box</Filter>
     </ClInclude>
@@ -425,6 +422,24 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Time\Time.h">
       <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\PhysicsComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\Rigidbody.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\PhysicsSystem\Physics.h">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -611,12 +626,6 @@
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\ColliderManager\ColliderManager.cpp">
-      <Filter>ソース ファイル\MyFramework\Manager\ColliderManager</Filter>
-    </ClCompile>
-    <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
-    </ClCompile>
     <ClCompile Include="system\Cube\Cube.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\Box</Filter>
     </ClCompile>
@@ -649,6 +658,18 @@
     </ClCompile>
     <ClCompile Include="scene\TestScene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\BoxCollider.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\PhysicsComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\Rigidbody.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
