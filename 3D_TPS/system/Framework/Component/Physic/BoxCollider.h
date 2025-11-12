@@ -30,6 +30,10 @@ public:
     void Update(const float deltaTime) override;
     void Uninit(void) override;
 
+    // Œ`ó‚ğæ“¾
+    JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
+    bool IsCollider() const noexcept override { return true; }
+
 protected:
     void Attach(EngineContext& context) override;
     void Detach(EngineContext& context) override;

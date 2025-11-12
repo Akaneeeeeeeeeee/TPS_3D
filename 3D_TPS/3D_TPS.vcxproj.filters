@@ -133,6 +133,9 @@
     <Filter Include="ソース ファイル\MyFramework\Manager\PhysicsManager">
       <UniqueIdentifier>{10705ddd-e02a-4110-bc26-ce7416a1ae3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\system\Debug">
+      <UniqueIdentifier>{75e19e57-d5c4-4604-bcf0-fb1eebf37b9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -205,9 +208,6 @@
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
     <ClInclude Include="system\CylinderDrawer.h">
-      <Filter>ソース ファイル\system</Filter>
-    </ClInclude>
-    <ClInclude Include="system\DebugUI.h">
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
     <ClInclude Include="system\dx11helper.h">
@@ -453,6 +453,9 @@
     <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClInclude>
+    <ClInclude Include="system\DebugUI.h">
+      <Filter>ソース ファイル\system\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -498,9 +501,6 @@
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
     <ClCompile Include="system\CylinderDrawer.cpp">
-      <Filter>ソース ファイル\system</Filter>
-    </ClCompile>
-    <ClCompile Include="system\DebugUI.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
     <ClCompile Include="system\dx11helper.cpp">
@@ -694,6 +694,9 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\DebugUI.cpp">
+      <Filter>ソース ファイル\system\Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

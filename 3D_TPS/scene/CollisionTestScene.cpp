@@ -14,6 +14,7 @@
 #include "system/RandomEngine.h"
 #include "Framework/Component/Physic/Rigidbody.h"
 #include "Framework/Component/Physic/BoxCollider.h"
+#include "Framework/Component/Physic/CapsuleCollider.h"
 #include "commontypes.h"
 
 namespace {
@@ -517,6 +518,8 @@ void CollisionTestScene::Init(ObjectManager* mgr)
             fallingBox->SetTransform(tf);
 
             // Rigidbody ‚ð Dynamic ‚É
+            //auto fallingcapsule = fallingBox->AddComponent<CapsuleCollider>("fallingboxcollider");
+            //fallingcapsule->Init();
             fallingBox->AddComponent<BoxCollider>("fallingboxcollider")->Init();
             auto rb = fallingBox->AddComponent<Rigidbody>("Rigidbody", 1.0f);
             rb->SetBodyType(Rigidbody::Type::Dynamic);

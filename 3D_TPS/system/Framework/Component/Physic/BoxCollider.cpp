@@ -13,15 +13,24 @@ BoxCollider::BoxCollider(void)
 void BoxCollider::Attach(EngineContext& context)
 {
     PhysicsComponent::Attach(context);
-    Vector3 scale = m_pOwner->GetScale();
-    m_Shape = new JPH::BoxShape(JPH::Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
 }
 
 void BoxCollider::Init()
 {
     if (!m_Physics) { return; }
-    auto& bi = m_Physics->GetBodyInterface();
-    CreateBody(bi);
+
+    Vector3 scale = m_pOwner->GetScale();
+    m_Shape = new JPH::BoxShape(JPH::Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
+
+    // Rigidbody が付いているなら Body は作らない（Rigidbody がまとめて作る）
+    if (m_pOwner->GetComponent<Rigidbody>() == nullptr) {
+        auto& bi = m_Physics->GetBodyInterface();
+        CreateBody(bi);
+    }
+    else {
+        // 念のため無効 ID にして、Update で触らないようにしておく
+        m_BodyID = JPH::BodyID();
+    }
 }
 
 void BoxCollider::Update(const float deltaTime)
@@ -61,19 +70,22 @@ void BoxCollider::CreateBody(JPH::BodyInterface& bi)
         m_pOwner->GetRotation().z, m_pOwner->GetRotation().w);
 
     JPH::BodyCreationSettings settings(
-        m_Shape,
-        JPH::RVec3(m_pOwner->GetPosition().x, m_pOwner->GetPosition().y, m_pOwner->GetPosition().z),
-        q,
-        JPH::EMotionType::Kinematic,
-        Layers::NON_MOVING
+        m_Shape,                                // その Body が持つ「衝突形状」(AABB/慣性計算のベース)
+        JPH::RVec3(                             // Body の初期ワールド位置（重心位置）
+            m_pOwner->GetPosition().x, 
+            m_pOwner->GetPosition().y, 
+            m_pOwner->GetPosition().z),
+        q,                                      // Body の初期ワールド回転
+        JPH::EMotionType::Kinematic,            // Static / Kinematic / Dynamic
+        Layers::NON_MOVING                      // 衝突レイヤ（フィルタリング用）
     );
 
-    JPH::Body* body = bi.CreateBody(settings);
-    if (!body)
-    {
-        OutputDebugStringA("Failed to create body!\n");
-        return;
+    // 生成チェック
+    if (JPH::Body* body = bi.CreateBody(settings)) {
+        m_BodyID = body->GetID();
+        bi.AddBody(m_BodyID, JPH::EActivation::Activate);
     }
-    m_BodyID = body->GetID();
-    bi.AddBody(m_BodyID, JPH::EActivation::Activate);
+    else {
+        OutputDebugStringA("Failed to create body!\n");
+    }
 }

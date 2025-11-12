@@ -6,6 +6,13 @@
 // 前方宣言
 class PhysicsManager; 
 
+/*
+* @brief	物理コンポーネント基底クラス
+* @detail	物理演算機能を提供するコンポーネントの基底クラス
+* @remark	Rigidbodyや各種コライダーコンポーネントはこのクラスを継承して実装する
+* @auther	赤根 和樹
+* @date     2025/11/11
+*/
 class PhysicsComponent : public IComponent
 {
 public:
@@ -14,6 +21,11 @@ public:
     virtual void Init(void) override = 0;
     virtual void Update(const float deltatime) override = 0;
     virtual void Uninit(void) override;
+
+	// 当たり判定系かどうかの判定
+    virtual bool IsCollider() const noexcept { return false; }
+    virtual JPH::RefConst<JPH::Shape> GetShape() const { return nullptr; }
+    virtual JPH::RMat44 GetLocalPose() const { return JPH::RMat44::sIdentity(); } // 必要ならローカルオフセット
 
     virtual void CreateBody(JPH::BodyInterface& bi) = 0;
     virtual void DestroyBody(JPH::BodyInterface& bi);   

@@ -92,6 +92,7 @@ void GameObject::Uninit(void)
 {
 	// コンポーネントの終了処理
 	for (auto& component : m_Components) {
+		component.second->Detach(m_Context);
 		component.second->Uninit();
 	}
 	m_Components.clear();

@@ -6,6 +6,12 @@
 
 class PhysicsComponent; // 前方宣言
 
+/*
+* @brief    物理演算マネージャー
+* @detail   Jolt Physicsの物理演算システムを管理するクラス
+* @remark   PhysicsComponentの派生クラス(Rigidbody,Collider系)が登録されている
+* @remark   物理オブジェクトを管理し、物理演算の初期化と更新を行う
+*/
 class PhysicsManager
 {
 public:

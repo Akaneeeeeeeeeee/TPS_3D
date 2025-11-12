@@ -5,6 +5,8 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 #include "Framework/Component/Physic/BoxCollider.h"
 
 using namespace JPH;
@@ -74,27 +76,91 @@ void Rigidbody::Detach(EngineContext& context)
 // Rigidbody
 void Rigidbody::CreateBody(JPH::BodyInterface& bi)
 {
-    auto collider = m_pOwner->GetComponent<BoxCollider>();
-    if (!collider) return;
+    using namespace JPH;
 
-    JPH::RefConst<JPH::Shape> shape = collider->GetShape();
-    if (!shape) return;
+    // 1) コライダー収集（自分とコライダー以外は無視）
+    std::vector<PhysicsComponent*> pcs;
+    m_pOwner->GetComponents(pcs);
 
-    BodyCreationSettings settings(
-        shape,
-        Vec3(m_pOwner->GetPosition().x, m_pOwner->GetPosition().y, m_pOwner->GetPosition().z),
-        Quat::sIdentity(),
-        EMotionType::Dynamic,
-        Layers::MOVING
-    );
-    settings.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
-    settings.mMassPropertiesOverride.mMass = m_Mass;
+    struct Part { RefConst<Shape> shape; RMat44 pose; };
+    std::vector<Part> parts;
+    parts.reserve(pcs.size());
 
-    Body* body = bi.CreateBody(settings);
-    if (body)
+    for (auto* pc : pcs)
     {
-        m_BodyID = body->GetID();
-        bi.AddBody(m_BodyID, EActivation::Activate);
+        if (pc == this) continue;
+        if (!pc->IsCollider()) continue;
+
+        if (auto s = pc->GetShape())
+        {
+            parts.push_back(Part{ s, pc->GetLocalPose() }); // local pose は Owner ローカル基準
+        }
+    }
+
+    if (parts.empty()) { OutputDebugStringA("No colliders.\n"); return; }
+
+    // 2) 最終 Shape を決定（単品 or コンパウンド）
+    RefConst<Shape> final_shape;
+    if (parts.size() == 1)
+    {
+        final_shape = parts[0].shape;
+    }
+    else
+    {
+        // パフォ重視：StaticCompound（子の追加削除は再構築で対応）
+        StaticCompoundShapeSettings comp;
+        for (auto& p : parts)
+            comp.AddShape(p.pose.GetTranslation(), p.pose.GetQuaternion(), p.shape);
+
+        final_shape = comp.Create().Get();
+    }
+
+    // 3) Body を新規作成 or 形状差し替え
+    if (m_BodyID.IsInvalid())
+    {
+        BodyCreationSettings set(
+            final_shape,
+            RVec3(m_pOwner->GetPosition().x, m_pOwner->GetPosition().y, m_pOwner->GetPosition().z),
+            Quat(m_pOwner->GetRotation().x, m_pOwner->GetRotation().y,
+                m_pOwner->GetRotation().z, m_pOwner->GetRotation().w),
+            ToJPHMotionType(m_BodyType),    // Static / Kinematic / Dynamic 変換関数
+            Layers::MOVING                  // レイヤーは適宜
+        );
+
+        if (m_BodyType == Type::Dynamic)
+        {
+            set.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
+            set.mMassPropertiesOverride.mMass = m_Mass; // ← 質量
+        }
+
+        if (Body* body = bi.CreateBody(set))
+        {
+            m_BodyID = body->GetID();
+            bi.AddBody(m_BodyID, EActivation::Activate);
+        }
+    }
+    else
+    {
+        // 既存ボディ：形状を差し替えて活性化
+        bi.SetShape(m_BodyID, final_shape, /*inUpdateMassProperties=*/true, EActivation::Activate);
+
+        // Dynamic のとき、質量を指定値に合わせ直す（任意だが実務では安定）
+        if (m_BodyType == Type::Dynamic)
+        {
+            auto mp = final_shape->GetMassProperties();
+            mp.ScaleToMass(m_Mass);
+
+            JPH::BodyLockWrite lock(m_Physics->GetSystem().GetBodyLockInterface(), m_BodyID);
+            if (lock.Succeeded())
+            {
+                lock.GetBody().GetMotionProperties()
+                    ->SetMassProperties(JPH::EAllowedDOFs::All, mp);
+            }
+        }
+
         bi.ActivateBody(m_BodyID);
     }
+
+    // 4) 参照保持（寿命管理）
+    mCompoundShape = final_shape;
 }

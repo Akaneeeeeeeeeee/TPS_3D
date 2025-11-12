@@ -1,5 +1,7 @@
 #include "Player.h"
 #include "system/CDirectInput.h"
+#include "Framework/Component/Physic/CapsuleCollider.h"
+#include "Framework/Component/Physic/Rigidbody.h"
 
 Player::Player(EngineContext& context, const uint64_t id, 
 	const std::string& name, const Tag& tag,
@@ -34,6 +36,13 @@ void Player::Init(void)
 	// ステータスを設定
 	this->m_MoveSpeed = 10.0f;
 	this->m_AnimationSpeed = 1.0f;
+
+	auto capsule = AddComponent<CapsuleCollider>(m_Name + "_CapsuleCollider");
+	capsule->SetSize(50.0f, 20.0f);
+	capsule->Init();
+	auto rb = AddComponent<Rigidbody>(m_Name + "_Rigidbody", 1.0f);
+	rb->Init();
+
 }
 
 void Player::Update(const float deltatime)
@@ -153,4 +162,5 @@ void Player::Draw(void) const
 
 void Player::Uninit(void)
 {
+	GameObject::Uninit();
 }

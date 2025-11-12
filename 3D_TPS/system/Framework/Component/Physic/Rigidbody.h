@@ -22,6 +22,18 @@ public:
         Kinematic
     };
 
+    // Jolt の MotionType 変換関数を追加
+    JPH::EMotionType ToJPHMotionType(Rigidbody::Type type)
+    {
+        switch (type)
+        {
+        case Rigidbody::Static:   return JPH::EMotionType::Static;
+        case Rigidbody::Dynamic:  return JPH::EMotionType::Dynamic;
+        case Rigidbody::Kinematic:return JPH::EMotionType::Kinematic;
+        default:                  return JPH::EMotionType::Static;
+        }
+    }
+
     void CreateBody(JPH::BodyInterface& bi) override;
 
     void Attach(EngineContext& context) override;
@@ -36,5 +48,5 @@ public:
 private:
 	Type m_BodyType = Dynamic;
     float m_Mass = 1.0f;
-    Vector3 m_Size = Vector3(1.0f, 1.0f, 1.0f);
+    JPH::RefConst<JPH::Shape> mCompoundShape; // 最終Shapeの参照（単体でもCompoundでも）
 };

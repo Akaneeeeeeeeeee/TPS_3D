@@ -70,6 +70,11 @@ public:
 		requires std::derived_from<T, IComponent>
 	T* GetComponent(const std::string& name);
 
+	// GameObject に全部取り出すヘルパ
+	template <typename T>
+		requires std::derived_from<T, IComponent>
+	void GetComponents(std::vector<T*>& components);
+
 	template <typename T>
 		requires std::derived_from<T, IComponent>
 	bool RemoveComponent(T* component);
@@ -206,6 +211,21 @@ inline T* GameObject::GetComponent(const std::string& _name)
 		}
 	}
 	return nullptr;
+}
+
+// GameObject に全部取り出すヘルパ
+template <typename T>
+	requires std::derived_from<T, IComponent>
+inline void GameObject::GetComponents(std::vector<T*>& outcomponents)
+{
+	outcomponents.clear();
+	for (auto& [name, comp] : m_Components)
+	{
+		if (auto p = static_cast<T*>(comp.get())) // 同一ヒエラルキーなのでOK
+		{
+			outcomponents.push_back(p);
+		}
+	}
 }
 
 template<typename T, typename ...Args>

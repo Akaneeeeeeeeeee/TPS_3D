@@ -3,7 +3,7 @@
 #include "Framework/Component/Physic/PhysicsComponent.h"
 
 namespace {
-	constexpr float GRAVITY_SCALE = -30.0f;     // 重力加速度
+	constexpr float GRAVITY_SCALE = -750.0f;     // 重力加速度
 }
 
 void PhysicsManager::Init()
