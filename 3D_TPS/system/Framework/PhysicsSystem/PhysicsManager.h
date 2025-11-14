@@ -28,7 +28,7 @@ public:
     void DebugDraw();
 
     void Register(PhysicsComponent* rb);
-        void UnRegister(PhysicsComponent* rb);
+    void UnRegister(PhysicsComponent* rb);
 
     JPH::PhysicsSystem& GetSystem() { return m_System; }
     JPH::BodyInterface& GetBodyInterface() { return m_System.GetBodyInterface(); }

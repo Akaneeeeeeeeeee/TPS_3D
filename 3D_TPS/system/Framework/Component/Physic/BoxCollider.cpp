@@ -25,7 +25,7 @@ void BoxCollider::Init()
     // Rigidbody が付いているなら Body は作らない（Rigidbody がまとめて作る）
     if (m_pOwner->GetComponent<Rigidbody>() == nullptr) {
         auto& bi = m_Physics->GetBodyInterface();
-        CreateBody(bi);
+        //CreateBody(bi);
     }
     else {
         // 念のため無効 ID にして、Update で触らないようにしておく

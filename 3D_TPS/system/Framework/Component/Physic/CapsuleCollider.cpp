@@ -8,7 +8,7 @@ void CapsuleCollider::Init(void)
 	m_Shape = new JPH::CapsuleShape(m_HalfHeight, m_Radius);
 	//m_Shape = new JPH::CapsuleShape(m_HalfHeight, m_Radius);
 
-	CreateBody(m_Physics->GetBodyInterface());
+	//CreateBody(m_Physics->GetBodyInterface());
 }
 
 void CapsuleCollider::Uninit(void)

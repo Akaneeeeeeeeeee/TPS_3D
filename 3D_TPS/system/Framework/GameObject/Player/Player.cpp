@@ -38,9 +38,10 @@ void Player::Init(void)
 	this->m_AnimationSpeed = 1.0f;
 
 	auto capsule = AddComponent<CapsuleCollider>(m_Name + "_CapsuleCollider");
-	capsule->SetSize(50.0f, 20.0f);
+	capsule->SetSize(100.0f, 40.0f);
 	capsule->Init();
 	auto rb = AddComponent<Rigidbody>(m_Name + "_Rigidbody", 1.0f);
+	rb->SetBodyType(Rigidbody::Type::Kinematic);
 	rb->Init();
 
 }
