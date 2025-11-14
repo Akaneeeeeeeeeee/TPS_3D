@@ -5,6 +5,7 @@
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <memory>
 #include <vector>
+#include "JoltDebugRendererDX11.h"
 
 class PhysicsComponent; // 前方宣言
 #ifdef JPH_DEBUG_RENDERER
