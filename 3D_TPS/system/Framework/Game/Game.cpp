@@ -104,8 +104,11 @@ void Game::Draw()
 	Renderer::Begin();
 	//m_RenderManager.StartRender();
 
-	// シーンマネージャの描画
-	m_SceneManager.Draw();
+        // シーンマネージャの描画
+        m_SceneManager.Draw();
+
+        // 物理デバッグ描画
+        m_PhysicsManager.DebugDraw();
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
 
