@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(ProjectDir)External\Jolt\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Debug;$(ProjectDir)External\Jolt\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)assimp\5.2.5\include;$(ProjectDir)directxtk\include;$(ProjectDir)External\Jolt\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)assimp\5.2.5\lib;$(ProjectDir)directxtk\lib\x64\Release;$(ProjectDir)External\Jolt\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -108,16 +108,20 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;JPH_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED=1
+;JPH_PROFILE_ENABLED=1;JPH_DEBUG_RENDERER=1
+;JPH_OBJECT_STREAM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system;$(ProjectDir)External\Jolt\Include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Jolt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)External\Jolt\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ObjectFileOutput>$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>
@@ -129,7 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;JPH_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
@@ -138,10 +142,12 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>jolt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="fpscontrol.h" />
+    <ClInclude Include="scene\CollisionTestScene.h" />
     <ClInclude Include="scene\ResultScene.h" />
     <ClInclude Include="scene\SkeltalmeshScene.h" />
     <ClInclude Include="scene\TestScene.h" />
@@ -165,16 +171,28 @@
     <ClInclude Include="system\CPlane.h" />
     <ClInclude Include="system\Cube\Cube.h" />
     <ClInclude Include="system\CVertexBuffer.h" />
-    <ClInclude Include="system\Framework\ColliderManager\ColliderManager.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="system\Framework\ColliderManager\collision.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="system\Framework\Component\Collider\3D\ICollider.h">
+    <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h" />
+    <ClInclude Include="system\Framework\Component\Physic\StaticMeshCollider.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\PhysicsComponent.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\Rigidbody.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
@@ -281,6 +299,7 @@
     <ClInclude Include="system\utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="scene\CollisionTestScene.cpp" />
     <ClCompile Include="scene\ResultScene.cpp" />
     <ClCompile Include="scene\SkeltalmeshScene.cpp" />
     <ClCompile Include="scene\TestScene.cpp" />
@@ -313,18 +332,26 @@
     <ClCompile Include="system\Framework\Application\Application.cpp" />
     <ClCompile Include="system\Framework\Application\Entry\main.cpp" />
     <ClCompile Include="system\Framework\AssetManager\AssetManager.cpp" />
-    <ClCompile Include="system\Framework\ColliderManager\ColliderManager.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="system\Framework\Component\Collider\3D\ICollider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\BoxCollider.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp" />
+    <ClCompile Include="system\Framework\Component\Physic\StaticMeshCollider.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\PhysicsComponent.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\Rigidbody.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\TerrainCollider.cpp" />
     <ClCompile Include="system\Framework\Component\Renderer\IRenderer\IRenderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -347,6 +374,8 @@
     <ClCompile Include="system\Framework\ObjectManager\ObjectManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />
+    <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp" />
     <ClCompile Include="system\Framework\SceneManager\SceneManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

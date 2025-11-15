@@ -5,6 +5,7 @@
 #include "scene/ResultScene.h"
 #include "scene/TestScene.h"
 #include "system/Framework/SceneManager/Transition/FadeTransition.h"
+#include "scene/CollisionTestScene.h"
 
 /**
  * @brief シーン配列初期化
@@ -18,9 +19,10 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 	this->AddScene<SkeltalmeshScene>("SkeltalmeshScene");
 	this->AddScene<ResultScene>("ResultScene");
 	this->AddScene<TestScene>("TestScene");
+	this->AddScene<CollisionTestScene>("CollisionTestScene");
 	//! タイトルシーンを生成してコンテナに追加
 	//this->m_CurrentSceneName = "SkeltalmeshScene";
-	this->m_CurrentSceneName = "TestScene";
+	this->m_CurrentSceneName = "CollisionTestScene";
 	//this->m_CurrentSceneName = "TitleScene";
 	// 現在のシーンを初期化
 	m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);

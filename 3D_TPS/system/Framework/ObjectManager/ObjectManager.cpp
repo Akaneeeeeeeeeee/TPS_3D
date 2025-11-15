@@ -116,7 +116,10 @@ void ObjectManager::Update(const float deltatime)
 	// 範囲for文
 	for (auto& obj : m_pObjects)
 	{
-		obj->Update(deltatime);
+		if(!obj->IsDestroy())
+		{
+			obj->Update(deltatime);
+		}
 	}
 }
 

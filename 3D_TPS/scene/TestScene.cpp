@@ -23,8 +23,6 @@ namespace {
     static Color   g_manualColor = Color(1, 1, 1, 1);
 }
 
-// --- 以下は元の関数群。ほとんどそのまま。 --- 
-
 // 現在位置のフィールドの高さ表示
 void TestScene::debugFieldHeight() {
 
@@ -219,7 +217,6 @@ TestScene::TestScene()
 
 /**
  * @brief シーンの更新処理
- *
  * @param deltatime 前フレームからの経過時間（秒, Time::Deltatime()）
  */
 void TestScene::Update(const float deltatime)
@@ -228,38 +225,39 @@ void TestScene::Update(const float deltatime)
     LightUpdate(deltatime);
 
     // プレイヤー更新
-    m_player->Update(deltatime);
+    //m_player->Update(deltatime);
 
-    // 現在位置取得
-    Vector3 pos = m_player->GetTransform().GetPosition();
+    //// 現在位置取得
+    //Vector3 pos = m_player->GetTransform().GetPosition();
 
-    // 地形に合わせて高さ修正
-    float height = m_field->GetHeight(pos);
-    pos.y = height;
+    //// 地形に合わせて高さ修正
+    //float height = m_field->GetHeight(pos);
+    //pos.y = height;
 
-    // 修正した位置を反映
-    m_player->SetPosition(pos);
+    //// 修正した位置を反映
+    //m_player->SetPosition(pos);
 
-    // 敵
-    for (auto& enemy : m_enemies) {
-        enemy->Update(deltatime);
+    //// 敵
+    //for (auto& enemy : m_enemies) {
+    //    enemy->Update(deltatime);
 
-        Vector3 pos = enemy->GetPosition();
-        float height = m_field->GetHeight2(pos);
-        pos.y = height;
+    //    Vector3 pos = enemy->GetPosition();
+    //    float height = m_field->GetHeight2(pos);
+    //    pos.y = height;
 
-        enemy->SetPosition(pos);
-    }
+    //    enemy->SetPosition(pos);
+    //}
 
-    // 障害物
-    for (auto& obs : m_obstacles) {
+    //// 障害物
+    //for (auto& obs : m_obstacles) {
 
-        Vector3 pos = obs->GetTransform().GetPosition();
-        float height = m_field->GetHeight2(pos);
-        pos.y = height;
+    //    Vector3 pos = obs->GetTransform().GetPosition();
+    //    float height = m_field->GetHeight2(pos);
+    //    pos.y = height;
 
-        obs->SetPosition(pos);
-    }
+    //    obs->SetPosition(pos);
+    //}
+	m_pObjectManager->Update(deltatime);
 }
 
 // ---------- 色補間 ----------

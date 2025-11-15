@@ -1,5 +1,14 @@
 #include "Player.h"
 #include "system/CDirectInput.h"
+#include "Framework/Component/Physic/CapsuleCollider.h"
+#include "Framework/Component/Physic/Rigidbody.h"
+#include "Framework/Time/Time.h"
+
+namespace {
+	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f;
+	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f;
+	constexpr Vector3 PLAYER_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
+}
 
 Player::Player(EngineContext& context, const uint64_t id, 
 	const std::string& name, const Tag& tag,
@@ -34,6 +43,15 @@ void Player::Init(void)
 	// ステータスを設定
 	this->m_MoveSpeed = 10.0f;
 	this->m_AnimationSpeed = 1.0f;
+
+	auto capsule = AddComponent<CapsuleCollider>(m_Name + "_CapsuleCollider");
+	capsule->SetSize(PLAYER_CAPSULE_HALFHEIGHT, PLAYER_CAPSULE_RADIUS);
+	capsule->SetOffset(PLAYER_COLLIDER_OFFSET);
+	capsule->Init();
+	auto rb = AddComponent<Rigidbody>(m_Name + "_Rigidbody", 1.0f);
+	rb->SetBodyType(Rigidbody::Type::Kinematic);
+	rb->Init();
+
 }
 
 void Player::Update(const float deltatime)
@@ -48,6 +66,9 @@ void Player::Update(const float deltatime)
     if (input.CheckKeyBuffer(DIK_S)) { move.z -= 1.0f; }
     if (input.CheckKeyBuffer(DIK_A)) { move.x -= 1.0f; }
     if (input.CheckKeyBuffer(DIK_D)) { move.x += 1.0f; }
+	/*if (input.CheckKeyBuffer(DIK_SPACE)) { 
+		Time::GetInstance().SetTimeScale(0.5f); 
+	}*/
 
 	aiAnimation* animdata;
 
@@ -133,6 +154,7 @@ void Player::Update(const float deltatime)
 	}
 
     m_pAnimationObject->Update(m_AnimationSpeed);
+	GameObject::Update(deltatime);
 }
 
 void Player::Draw(void) const
@@ -153,4 +175,5 @@ void Player::Draw(void) const
 
 void Player::Uninit(void)
 {
+	GameObject::Uninit();
 }
