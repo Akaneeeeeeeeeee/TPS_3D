@@ -64,8 +64,16 @@ void Renderer::Init()
     swapChainDesc.SampleDesc.Quality = 0;
     swapChainDesc.Windowed = TRUE;
 
+
+    UINT createFlags = 0;
+#ifdef _DEBUG
+    createFlags |= D3D11_CREATE_DEVICE_DEBUG;  // デバッグレイヤーON
+#endif
+
+    createFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
     hr = D3D11CreateDeviceAndSwapChain(
-        nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+        nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlags,
         nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc,
         m_SwapChain.GetAddressOf(),
         m_Device.GetAddressOf(),

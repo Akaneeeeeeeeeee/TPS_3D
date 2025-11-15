@@ -426,6 +426,9 @@
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClInclude>
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClInclude>
@@ -659,9 +662,6 @@
     <ClCompile Include="system\GameObject\Skydome.cpp">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="system\GameObject\Terrain.cpp">
-      <Filter>ソース ファイル\system\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="system\TriangleDrawer.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
@@ -672,6 +672,9 @@
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\BoxCollider.cpp">
@@ -697,6 +700,9 @@
     </ClCompile>
     <ClCompile Include="system\DebugUI.cpp">
       <Filter>ソース ファイル\system\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="system\GameObject\Terrain.cpp">
+      <Filter>ソース ファイル\system\GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

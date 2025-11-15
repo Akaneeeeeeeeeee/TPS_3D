@@ -9,34 +9,56 @@
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
 
+void StaticMeshCollider::Attach(EngineContext& context)
+{
+    PhysicsComponent::Attach(context);
+}
+
 void StaticMeshCollider::Init()
 {
-    if (!m_Physics) { return; }
+    if (!m_Physics) return;
 
-    auto& bi = m_Physics->GetBodyInterface();
-    CreateBody(bi);
+    // SetMesh が呼ばれていない場合は作れない
+    if (m_Positions.empty() || m_Triangles.empty())
+        return;
+
+    CreateBody(m_Physics->GetBodyInterface());
 }
 
 void StaticMeshCollider::SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices)
 {
-    m_Positions.clear();
-    m_Triangles.clear();
+    // 既存の地形を削除（再生成対応）
+    if (m_Physics && !m_BodyID.IsInvalid())
+    {
+        auto& bi = m_Physics->GetBodyInterface();
+        if (bi.IsAdded(m_BodyID)) bi.RemoveBody(m_BodyID);
+        m_BodyID = JPH::BodyID();
+    }
 
+    // 位置リスト作成
+    m_Positions.clear();
     m_Positions.reserve(vertices.size());
-    for (const auto& v : vertices)
+
+    for (auto& v : vertices)
         m_Positions.emplace_back(JPH::Float3(v.Position.x, v.Position.y, v.Position.z));
 
-    // 3つずつで三角形
-    const size_t tri_count = indices.size() / 3;
-    m_Triangles.reserve(tri_count);
-    for (size_t i = 0; i < tri_count; ++i) {
+    // 三角形リスト作成
+    m_Triangles.clear();
+    size_t triCount = indices.size() / 3;
+    m_Triangles.reserve(triCount);
+
+    for (size_t i = 0; i < triCount; ++i)
+    {
         JPH::IndexedTriangle t;
-        t.mIdx[0] = (uint32_t)indices[i * 3 + 0];
-        t.mIdx[1] = (uint32_t)indices[i * 3 + 1];
-        t.mIdx[2] = (uint32_t)indices[i * 3 + 2];
+        t.mIdx[0] = indices[i * 3 + 0];
+        t.mIdx[1] = indices[i * 3 + 1];
+        t.mIdx[2] = indices[i * 3 + 2];
         t.mMaterialIndex = 0;
+
         m_Triangles.emplace_back(t);
     }
+
+    // SetMesh の後で Init() が呼ばれていれば Body 作成も可能
 }
 
 void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)

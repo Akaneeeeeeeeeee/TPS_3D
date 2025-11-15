@@ -179,7 +179,7 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h" />
     <ClInclude Include="system\Framework\Component\Physic\StaticMeshCollider.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\PhysicsComponent.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -190,6 +190,7 @@
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
@@ -342,7 +343,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\StaticMeshCollider.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\PhysicsComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -374,6 +375,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />
+    <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp" />
     <ClCompile Include="system\Framework\SceneManager\SceneManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

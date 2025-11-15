@@ -13,8 +13,8 @@ class Time : public Singleton<Time>
 {
     friend class Singleton<Time>;
 public:
-    Time();
-    ~Time();
+    Time() = default;
+	~Time() = default;
 
     void Update(const uint64_t deltaMicroSec)
     {
@@ -46,11 +46,3 @@ private:
     float m_TotalTime = 0.0f;
     float m_UnscaledTotalTime = 0.0f;
 };
-
-Time::Time()
-{
-}
-
-Time::~Time()
-{
-}
