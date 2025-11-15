@@ -25,7 +25,9 @@ public:
 	// 当たり判定系かどうかの判定
     virtual bool IsCollider() const noexcept { return false; }
     virtual JPH::RefConst<JPH::Shape> GetShape() const { return nullptr; }
-    virtual JPH::RMat44 GetLocalPose() const { return JPH::RMat44::sIdentity(); } // 必要ならローカルオフセット
+    virtual JPH::RMat44 GetLocalPose() const { return JPH::RMat44::sTranslation(JPH::Vec3(m_Offset.x, m_Offset.y, m_Offset.z)); }
+	virtual void SetOffset(const Vector3& offset) { m_Offset = offset; }
+	virtual Vector3 GetOffset(void) const { return m_Offset; }
 
     virtual void CreateBody(JPH::BodyInterface& bi) = 0;
     virtual void DestroyBody(JPH::BodyInterface& bi);   
@@ -39,4 +41,5 @@ protected:
     PhysicsComponent() = default;
     JPH::BodyID m_BodyID;
     PhysicsManager* m_Physics = nullptr;
+	Vector3 m_Offset = Vector3::Zero;
 };

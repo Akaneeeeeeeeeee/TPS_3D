@@ -179,7 +179,7 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h" />
     <ClInclude Include="system\Framework\Component\Physic\StaticMeshCollider.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\PhysicsComponent.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -343,7 +343,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\StaticMeshCollider.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\PhysicsComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

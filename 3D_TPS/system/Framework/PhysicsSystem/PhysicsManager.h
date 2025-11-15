@@ -25,7 +25,8 @@ public:
     void Init(void);
     void Update(const float deltaTime);
 
-    void DebugDraw();
+    void DebugDraw(void);
+    //void DebugDraw(const DirectX::XMMATRIX& vp);
 
     void Register(PhysicsComponent* rb);
     void UnRegister(PhysicsComponent* rb);

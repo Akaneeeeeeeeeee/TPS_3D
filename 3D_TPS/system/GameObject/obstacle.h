@@ -25,6 +25,7 @@ public:
 	void Draw(void) const override;
 	void Init(void) override;
 	void Uninit(void) override;
+	void DebugImGui(void);
 
 private:
 	CStaticMesh*			m_mesh{};

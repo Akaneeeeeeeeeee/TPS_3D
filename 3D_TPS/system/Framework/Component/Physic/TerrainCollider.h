@@ -8,7 +8,7 @@ struct VERTEX_3D;
 /*
 * @brief	Terrainコライダーコンポーネント
 * @detail	地形のコライダーを提供するコンポーネント
-* @remark	物理演算を行うためには Rigidbody コンポーネントと組み合わせて使用する必要がある
+* @remark	地形は一つしかないため、Rigidbodyは使用せず、このコライダー内でBodyを生成する。
 * @auther	赤根 和樹
 * @date     2025/11/11
 */

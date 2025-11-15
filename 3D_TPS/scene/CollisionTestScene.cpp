@@ -8,6 +8,7 @@
 #include "system/ConeDrawer.h"
 #include "system/LineDrawer.h"
 #include "GameObject/Skydome.h"
+#include "GameObject/Rock.h"
 
 #include "system/TriangleDrawer.h"
 #include "system/meshmanager.h"
@@ -467,6 +468,12 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
         MeshManager::RegisterMesh<CStaticMesh>("obstaclebox", std::move(smesh));
         MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclebox", std::move(srenderer));
+
+        // 岩用
+		CStaticMesh* rockmesh = AssetManager::GetInstance().GetStaticMesh("Rock");
+        std::unique_ptr<CStaticMeshRenderer> rockrenderer = std::make_unique<CStaticMeshRenderer>();
+		rockrenderer->Init(*rockmesh);
+		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclerock", std::move(rockrenderer));
     }
 
     // フィールド初期化
@@ -483,32 +490,34 @@ void CollisionTestScene::Init(ObjectManager* mgr)
     skydome->Init();
     skydome->SetTexture("assets/texture/haikei.jpg");
 
+    // 岩
+	auto rock = m_pObjectManager->Instantiate<Rock>("obstacleRock1", Tag::Object);
+    rock->Init();
+
 
     // --- 衝突テスト用障害物 ---
     {
         // 大きい床（Static）
         {
-            auto ground = m_pObjectManager->Instantiate<obstacle>("GroundBox", Tag::Object, this);
-            ground->Init();
+            auto ground = m_pObjectManager->Instantiate<Terrain>("Terrain", Tag::Object);
 
             Transform tf = ground->GetTransform();
             tf.SetScale(Vector3(500.0f, 1.0f, 500.0f));   // 横長・薄い床
             tf.SetPosition(Vector3(0.0f, -50.0f, 0.0f));   // 少し下げて床位置へ
-            tf.SetRotation(Quaternion::Identity);
 
             ground->SetTransform(tf);
+            ground->Init();
 
             // Rigidbody を Static に
-			ground->AddComponent<BoxCollider>("boxcollider")->Init();
+			/*ground->AddComponent<BoxCollider>("boxcollider")->Init();
             auto rb = ground->AddComponent<Rigidbody>("Rigidbody", 1.0f);
             rb->SetBodyType(Rigidbody::Type::Static);
-            rb->Init();
+            rb->Init();*/
         }
 
         // 小さい落下ボックス（Dynamic）
         {
             auto fallingBox = m_pObjectManager->Instantiate<obstacle>("FallingBox", Tag::Object, this);
-            fallingBox->Init();
 
             Transform tf = fallingBox->GetTransform();
             tf.SetScale(Vector3(20.0f, 20.0f, 20.0f));    // 小さめ
@@ -516,14 +525,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
             tf.SetRotation(Quaternion::Identity);
 
             fallingBox->SetTransform(tf);
-
-            // Rigidbody を Dynamic に
-            //auto fallingcapsule = fallingBox->AddComponent<CapsuleCollider>("fallingboxcollider");
-            //fallingcapsule->Init();
-            fallingBox->AddComponent<BoxCollider>("fallingboxcollider")->Init();
-            auto rb = fallingBox->AddComponent<Rigidbody>("Rigidbody", 1.0f);
-            rb->SetBodyType(Rigidbody::Type::Dynamic);
-            rb->Init();
+            fallingBox->Init();
         }
     }
 

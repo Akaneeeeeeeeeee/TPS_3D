@@ -12,20 +12,29 @@
 class StaticMeshCollider : public PhysicsComponent
 {
 public:
+public:
     StaticMeshCollider() = default;
-	~StaticMeshCollider() noexcept override = default;
+    ~StaticMeshCollider() noexcept override = default;
 
-	void Init(void) override;
-	void Update(const float deltaTime) override;
-	void Uninit(void) override;
-
-	void Detach(EngineContext& context) override;
-
-    void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) override;
     void CreateBody(JPH::BodyInterface& bi) override;
 
+    void Init(void) override;
+    void Update(const float deltaTime) override {}
+    void Uninit(void) override;
+
+    // 形状を取得
+    JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
+    bool IsCollider() const noexcept override { return true; }
+
+    // メッシュデータ を渡してもらう
+    void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) override;
+
+protected:
+    void Attach(EngineContext& context) override;
+    void Detach(EngineContext& context) override;
+
 private:
-    std::vector<JPH::Float3> m_Positions;
-    std::vector<JPH::IndexedTriangle> m_Triangles;
-    JPH::RefConst<JPH::Shape> m_Shape;
+    std::vector<JPH::Float3>            m_Positions;
+    std::vector<JPH::IndexedTriangle>   m_Triangles;
+    JPH::RefConst<JPH::Shape>           m_Shape = nullptr;
 };

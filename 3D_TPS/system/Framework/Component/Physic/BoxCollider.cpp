@@ -20,7 +20,8 @@ void BoxCollider::Init()
     if (!m_Physics) { return; }
 
     Vector3 scale = m_pOwner->GetScale();
-    m_Shape = new JPH::BoxShape(JPH::Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
+    m_Shape = new JPH::BoxShape(JPH::Vec3(scale.x, scale.y, scale.z));
+    //m_Shape = new JPH::BoxShape(JPH::Vec3(scale.x * 0.5f, scale.y * 0.5f, scale.z * 0.5f));
 
     // Rigidbody ‚ª•t‚¢‚Ä‚¢‚é‚È‚ç Body ‚Íì‚ç‚È‚¢iRigidbody ‚ª‚Ü‚Æ‚ß‚Äì‚éj
     if (m_pOwner->GetComponent<Rigidbody>() == nullptr) {
