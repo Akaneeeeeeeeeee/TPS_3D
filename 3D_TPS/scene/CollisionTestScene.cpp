@@ -482,7 +482,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
     // プレイヤ
     m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
+	//m_player->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
     m_player->Init();
     m_player->SetCamera(&m_camera);
 
@@ -517,50 +517,50 @@ void CollisionTestScene::Init(ObjectManager* mgr)
             rb->Init();*/
         }
 
-        //auto& rng = RandomEngine::tls();
-        //rng.uniformReal(-500, 500);
+        auto& rng = RandomEngine::tls();
+        rng.uniformReal(-500, 500);
 
-        //for (int cnt = 0; cnt < OBSTACLEMAX; cnt++)
-        //{
-        //    // Instantiate
-        //    auto obstacleObj =
-        //        m_pObjectManager->Instantiate<obstacle>(
-        //            "Obstacle" + std::to_string(cnt),
-        //            Tag::Object,
-        //            this
-        //        );
+        for (int cnt = 0; cnt < OBSTACLEMAX; cnt++)
+        {
+            // Instantiate
+            auto obstacleObj =
+                m_pObjectManager->Instantiate<obstacle>(
+                    "Obstacle" + std::to_string(cnt),
+                    Tag::Object,
+                    this
+                );
 
-        //    // Transform を取得
-        //    Transform tf = obstacleObj->GetTransform();
+            // Transform を取得
+            Transform tf = obstacleObj->GetTransform();
 
-        //    // ★ ランダムスケール
-        //    tf.SetScale(Vector3(
-        //        static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
-        //        static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
-        //        static_cast<float>(rng.uniformReal(10.0f, 30.0f))
-        //    ));
+            // ★ ランダムスケール
+            tf.SetScale(Vector3(
+                static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
+                static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
+                static_cast<float>(rng.uniformReal(10.0f, 30.0f))
+            ));
 
-        //    // ★ ランダム Y 回転
-        //    float yrot = static_cast<float>(rng.uniformReal(-PI, PI));
-        //    tf.SetRotation(Quaternion::CreateFromYawPitchRoll(yrot, 0.0f, 0.0f));
+            // ★ ランダム Y 回転
+            float yrot = static_cast<float>(rng.uniformReal(-PI, PI));
+            tf.SetRotation(Quaternion::CreateFromYawPitchRoll(yrot, 0.0f, 0.0f));
 
-        //    // ★ ランダム位置（地形の高さに合わせる）
-        //    Vector3 pos;
-        //    pos.x = static_cast<float>(rng.uniformReal(-500.0f, 500.0f));
-        //    pos.z = static_cast<float>(rng.uniformReal(-500.0f, 500.0f));
-        //    pos.y = m_field->GetHeight2(pos);
+            // ★ ランダム位置（地形の高さに合わせる）
+            Vector3 pos;
+            pos.x = static_cast<float>(rng.uniformReal(-500.0f, 500.0f));
+            pos.z = static_cast<float>(rng.uniformReal(-500.0f, 500.0f));
+            pos.y = m_field->GetHeight2(pos);
 
-        //    tf.SetPosition(pos);
+            tf.SetPosition(pos);
 
-        //    // 反映
-        //    obstacleObj->SetTransform(tf);
+            // 反映
+            obstacleObj->SetTransform(tf);
 
-        //    // Init() 実行（FallingBox と同じ順）
-        //    obstacleObj->Init();
+            // Init() 実行（FallingBox と同じ順）
+            obstacleObj->Init();
 
-        //    // 配列に保持したいなら
-        //    m_obstacles[cnt] = obstacleObj;
-        //}
+            // 配列に保持したいなら
+            m_obstacles[cnt] = obstacleObj;
+        }
 
         //{
         //    auto fallingBox = m_pObjectManager->Instantiate<obstacle>("FallingBox", Tag::Object, this);

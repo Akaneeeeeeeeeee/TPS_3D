@@ -34,6 +34,12 @@ public:
     JPH::PhysicsSystem& GetSystem() { return m_System; }
     JPH::BodyInterface& GetBodyInterface() { return m_System.GetBodyInterface(); }
 
+    // Jolt Physics‚ÌTempAllocator‚ğ•Ô‚·ƒƒ\ƒbƒh‚ğ’Ç‰Á
+    JPH::TempAllocator* GetTempAllocator()
+    {
+        return m_TempAllocator.get();
+    }
+
 private:
     JPH::PhysicsSystem m_System;
     std::unique_ptr<JPH::TempAllocatorImpl> m_TempAllocator;

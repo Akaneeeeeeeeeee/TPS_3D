@@ -136,6 +136,9 @@
     <Filter Include="ソース ファイル\system\Debug">
       <UniqueIdentifier>{75e19e57-d5c4-4604-bcf0-fb1eebf37b9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\EnemyAI">
+      <UniqueIdentifier>{e7a909e5-cc1b-4d08-af15-ae67b3943a7f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -459,6 +462,12 @@
     <ClInclude Include="system\DebugUI.h">
       <Filter>ソース ファイル\system\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\CharacterVirtualComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\AI\EnemyAIComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -703,6 +712,12 @@
     </ClCompile>
     <ClCompile Include="system\GameObject\Terrain.cpp">
       <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\CharacterVirtualComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\AI\EnemyAIComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

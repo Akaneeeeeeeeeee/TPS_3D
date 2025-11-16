@@ -33,6 +33,7 @@ public:
     // Œ`ó‚ğæ“¾
     JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
     bool IsCollider() const noexcept override { return true; }
+	void SetHalfSize(const DirectX::XMFLOAT3& halfSize) { m_HalfSize = halfSize; }
 
 protected:
     void Attach(EngineContext& context) override;
