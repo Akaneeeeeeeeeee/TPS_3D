@@ -23,10 +23,11 @@ void obstacle::Init()
 	boxcollider->SetOffset(Vector3(0.0f, GetScale().y, 0.0f));
 	boxcollider->Init();
 	auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);
-	rb->SetBodyType(Rigidbody::Type::Kinematic);
+	rb->SetBodyType(Rigidbody::Type::Static);
+	rb->SetObjectLayer(Layers::NON_MOVING);
 	rb->Init();
 
-	DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
+	//DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
 }
 
 void obstacle::Update(const float dt) {

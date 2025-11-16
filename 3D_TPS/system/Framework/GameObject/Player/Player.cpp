@@ -49,7 +49,8 @@ void Player::Init(void)
 	capsule->SetOffset(PLAYER_COLLIDER_OFFSET);
 	capsule->Init();
 	auto rb = AddComponent<Rigidbody>(m_Name + "_Rigidbody", 1.0f);
-	rb->SetBodyType(Rigidbody::Type::Kinematic);
+	rb->SetBodyType(Rigidbody::Type::Dynamic);
+	rb->SetObjectLayer(Layers::CHARACTER);
 	rb->Init();
 
 }

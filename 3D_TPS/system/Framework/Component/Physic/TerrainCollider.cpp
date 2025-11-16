@@ -92,7 +92,7 @@ void TerrainCollider::CreateBody(JPH::BodyInterface& bi)
         JPH::RVec3::sZero(),
         JPH::Quat::sIdentity(),
         JPH::EMotionType::Static,
-        Layers::NON_MOVING
+        Layers::TERRAIN
     );
 
     m_BodyID = bi.CreateAndAddBody(settings, JPH::EActivation::DontActivate);

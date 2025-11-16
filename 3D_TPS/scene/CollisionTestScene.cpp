@@ -482,6 +482,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
     // プレイヤ
     m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
+	m_player->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
     m_player->Init();
     m_player->SetCamera(&m_camera);
 
@@ -491,8 +492,8 @@ void CollisionTestScene::Init(ObjectManager* mgr)
     skydome->SetTexture("assets/texture/haikei.jpg");
 
     // 岩
-	auto rock = m_pObjectManager->Instantiate<Rock>("obstacleRock1", Tag::Object);
-    rock->Init();
+	/*auto rock = m_pObjectManager->Instantiate<Rock>("obstacleRock1", Tag::Object);
+    rock->Init();*/
 
 
     // --- 衝突テスト用障害物 ---
@@ -516,19 +517,62 @@ void CollisionTestScene::Init(ObjectManager* mgr)
             rb->Init();*/
         }
 
-        // 小さい落下ボックス（Dynamic）
-        {
-            auto fallingBox = m_pObjectManager->Instantiate<obstacle>("FallingBox", Tag::Object, this);
-            fallingBox->Init();
+        //auto& rng = RandomEngine::tls();
+        //rng.uniformReal(-500, 500);
 
-            Transform tf = fallingBox->GetTransform();
-            tf.SetScale(Vector3(20.0f, 20.0f, 20.0f));    // 小さめ
-            tf.SetPosition(Vector3(0.0f, 200.0f, 0.0f));  // 高所に配置
-            tf.SetRotation(Quaternion::Identity);
+        //for (int cnt = 0; cnt < OBSTACLEMAX; cnt++)
+        //{
+        //    // Instantiate
+        //    auto obstacleObj =
+        //        m_pObjectManager->Instantiate<obstacle>(
+        //            "Obstacle" + std::to_string(cnt),
+        //            Tag::Object,
+        //            this
+        //        );
 
-            fallingBox->SetTransform(tf);
-            fallingBox->Init();
-        }
+        //    // Transform を取得
+        //    Transform tf = obstacleObj->GetTransform();
+
+        //    // ★ ランダムスケール
+        //    tf.SetScale(Vector3(
+        //        static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
+        //        static_cast<float>(rng.uniformReal(10.0f, 30.0f)),
+        //        static_cast<float>(rng.uniformReal(10.0f, 30.0f))
+        //    ));
+
+        //    // ★ ランダム Y 回転
+        //    float yrot = static_cast<float>(rng.uniformReal(-PI, PI));
+        //    tf.SetRotation(Quaternion::CreateFromYawPitchRoll(yrot, 0.0f, 0.0f));
+
+        //    // ★ ランダム位置（地形の高さに合わせる）
+        //    Vector3 pos;
+        //    pos.x = static_cast<float>(rng.uniformReal(-500.0f, 500.0f));
+        //    pos.z = static_cast<float>(rng.uniformReal(-500.0f, 500.0f));
+        //    pos.y = m_field->GetHeight2(pos);
+
+        //    tf.SetPosition(pos);
+
+        //    // 反映
+        //    obstacleObj->SetTransform(tf);
+
+        //    // Init() 実行（FallingBox と同じ順）
+        //    obstacleObj->Init();
+
+        //    // 配列に保持したいなら
+        //    m_obstacles[cnt] = obstacleObj;
+        //}
+
+        //{
+        //    auto fallingBox = m_pObjectManager->Instantiate<obstacle>("FallingBox", Tag::Object, this);
+
+        //    Transform tf = fallingBox->GetTransform();
+        //    tf.SetScale(Vector3(20.0f, 20.0f, 20.0f));    // 小さめ
+        //    tf.SetPosition(Vector3(0.0f, 200.0f, 0.0f));  // 高所に配置
+        //    tf.SetRotation(Quaternion::Identity);
+
+        //    fallingBox->SetTransform(tf);
+        //    fallingBox->Init();
+        //}
     }
 
     // デバッグ Directional light

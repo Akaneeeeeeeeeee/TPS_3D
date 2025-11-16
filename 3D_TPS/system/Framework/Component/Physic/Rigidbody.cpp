@@ -246,7 +246,7 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
                 m_pOwner->GetRotation().z,
                 m_pOwner->GetRotation().w),
             ToJPHMotionType(m_BodyType),
-            Layers::MOVING
+			m_ObjectLayer				  // レイヤーは設定値を使う
         );
 
         if (m_BodyType == Type::Dynamic)
