@@ -1,7 +1,7 @@
 #pragma once
 #include "Framework/Component/Physic/PhysicsComponent.h"
 #include "system/commontypes.h"
-
+#include "system/Framework/PhysicsSystem/PhysicsLayer.h"
 
 /*
 * @brief	Rigidbodyコンポーネント
@@ -35,6 +35,7 @@ public:
     }
 
     void CreateBody(JPH::BodyInterface& bi) override;
+	void SetObjectLayer(JPH::ObjectLayer layer) { m_ObjectLayer = layer; }
 
     void Attach(EngineContext& context) override;
     void Detach(EngineContext& context) override;
@@ -49,4 +50,5 @@ private:
 	Type m_BodyType = Dynamic;
     float m_Mass = 1.0f;
     JPH::RefConst<JPH::Shape> mCompoundShape; // 最終Shapeの参照（単体でもCompoundでも）
+    JPH::ObjectLayer m_ObjectLayer = Layers::MOVING; // デフォルトは MOVING
 };

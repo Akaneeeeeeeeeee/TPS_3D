@@ -14,6 +14,13 @@ public:
 		const Transform& transform = Transform::One());
 	~Enemy();
 
+	enum State {
+		Idle,		// ‘Ò‹@ó‘Ô
+		Patrol,		// „‰ñó‘Ô
+		Chase,		// ’ÇÕó‘Ô
+		STATE_MAX,
+	};
+
 	void Init(void) override;
 	void Update(const float deltatime) override;
 	void Draw(void) const override;

@@ -174,10 +174,12 @@
     <ClInclude Include="system\Framework\ColliderManager\collision.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\AI\EnemyAIComponent.h" />
     <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h" />
+    <ClInclude Include="system\Framework\Component\Physic\CharacterVirtualComponent.h" />
     <ClInclude Include="system\Framework\Component\Physic\StaticMeshCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -335,6 +337,7 @@
     <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\AI\EnemyAIComponent.cpp" />
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -342,6 +345,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp" />
+    <ClCompile Include="system\Framework\Component\Physic\CharacterVirtualComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\StaticMeshCollider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

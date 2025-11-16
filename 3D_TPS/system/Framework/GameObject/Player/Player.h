@@ -2,6 +2,8 @@
 #include "system/Framework/GameObject/Character/Character.h"
 #include "system/camera.h"
 
+// 前方宣言
+class CharacterVirtualComponent;
 
 /*
 * @brief	プレイヤークラス
@@ -42,5 +44,6 @@ public:
 
 private:
 	FreeCamera* m_pCamera = nullptr;
+	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 };
 

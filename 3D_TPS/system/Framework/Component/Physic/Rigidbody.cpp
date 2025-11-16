@@ -246,13 +246,13 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
                 m_pOwner->GetRotation().z,
                 m_pOwner->GetRotation().w),
             ToJPHMotionType(m_BodyType),
-            Layers::MOVING
+			m_ObjectLayer				  // レイヤーは設定値を使う
         );
 
         if (m_BodyType == Type::Dynamic)
         {
             set.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
-            set.mMassPropertiesOverride.mMass = m_Mass;
+            set.mMassPropertiesOverride.mMass = m_Mass; // ← 質量
         }
 
         if (Body* body = bi.CreateBody(set))
@@ -266,6 +266,7 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
         // 既存ボディ：形状差し替え
         bi.SetShape(m_BodyID, final_shape, true, EActivation::Activate);
 
+        // Dynamic のとき、質量を指定値に合わせ直す（任意だが実務では安定）
         if (m_BodyType == Type::Dynamic)
         {
             auto mp = final_shape->GetMassProperties();

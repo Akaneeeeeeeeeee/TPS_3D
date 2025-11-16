@@ -8,7 +8,7 @@
 #endif
 
 namespace {
-        constexpr float GRAVITY_SCALE = -750.0f;     // 重力加速度スケール
+        constexpr float GRAVITY_SCALE = -750.0f;     // �d�͉����x�X�P�[��
 }
 
 PhysicsManager::~PhysicsManager()
@@ -67,11 +67,11 @@ void PhysicsManager::DebugDraw(void)
     m_System.DrawBodies(settings, m_DebugRenderer.get());
 
 
-    //// ---- ① バッチ開始（クリア & VP 行列設定） ----
+    //// ---- ① バッチE��始（クリア & VP 行�E設定！E----
     //m_DebugRenderer->Begin(vp);
 
-    //// ---- ② Jolt のデバッグ描画 ----
-    //m_DebugRenderer->NextFrame(); // Jolt の内部状態更新（これは必要）
+    //// ---- ② Jolt のチE��チE��描画 ----
+    //m_DebugRenderer->NextFrame(); // Jolt の冁E��状態更新�E�これ�E忁E��E��E
 
     //JPH::BodyManager::DrawSettings settings;
     //settings.mDrawShape = true;
@@ -79,10 +79,10 @@ void PhysicsManager::DebugDraw(void)
     //settings.mDrawBoundingBox = false;
     //settings.mDrawVelocity = false;
 
-    //// ここで Jolt が DrawLine を大量に呼ぶ（が描画はしない）
+    //// ここで Jolt ぁEDrawLine を大量に呼ぶ�E�が描画はしなぁE��E
     //m_System.DrawBodies(settings, m_DebugRenderer.get());
 
-    //// ---- ③ バッチ終了（FlushLines） ----
+    //// ---- ③ バッチ終亁E��ElushLines�E�E----
     //m_DebugRenderer->End();
 
 #endif // JPH_DEBUG_RENDERER

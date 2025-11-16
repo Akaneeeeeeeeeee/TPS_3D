@@ -13,10 +13,10 @@ class JoltDebugRendererDX11;
 #endif
 
 /*
-* @brief    ç‰©ç†ãƒãƒãƒ¼ã‚¸ãƒ£
-* @detail   Jolt Physicsã®ç®¡ç†ã‚¯ãƒ©ã‚¹
-* @remark   PhysicsComponentã®æ´¾ç”Ÿ(Rigidbody,Colliderãªã©)ãŒç™»éŒ²å¯¾è±¡
-* @remark   ã‚¨ãƒ³ã‚¸ãƒ³å…¨ä½“ã§å…±æœ‰ã™ã‚‹ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³çš„ãªæ‰±ã„ã‚’æƒ³å®š
+* @brief    •¨—‰‰Zƒ}ƒl[ƒWƒƒ[
+* @detail   Jolt Physics‚Ì•¨—‰‰ZƒVƒXƒeƒ€‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+* @remark   PhysicsComponent‚Ì”h¶ƒNƒ‰ƒX(Rigidbody,ColliderŒn)‚ª“o˜^‚³‚ê‚Ä‚¢‚é
+* @remark   •¨—ƒIƒuƒWƒFƒNƒg‚ğŠÇ—‚µA•¨—‰‰Z‚Ì‰Šú‰»‚ÆXV‚ğs‚¤
 */
 class PhysicsManager
 {
@@ -33,6 +33,12 @@ public:
 
     JPH::PhysicsSystem& GetSystem() { return m_System; }
     JPH::BodyInterface& GetBodyInterface() { return m_System.GetBodyInterface(); }
+
+    // Jolt Physics‚ÌTempAllocator‚ğ•Ô‚·ƒƒ\ƒbƒh‚ğ’Ç‰Á
+    JPH::TempAllocator* GetTempAllocator()
+    {
+        return m_TempAllocator.get();
+    }
 
 private:
     JPH::PhysicsSystem m_System;

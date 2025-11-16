@@ -5,11 +5,11 @@
 
 // レイヤー定義
 namespace Layers {
-    static constexpr JPH::ObjectLayer NON_MOVING = 0;   // Static
-    static constexpr JPH::ObjectLayer MOVING = 1;   // Dynamic
-    static constexpr JPH::ObjectLayer CHARACTER = 2;   // Dynamic
-    static constexpr JPH::ObjectLayer TRIGGER = 3;   // Dynamic(判定専用)
-    static constexpr JPH::ObjectLayer TERRAIN = 4;   // Static
+    static constexpr JPH::ObjectLayer NON_MOVING = 0;  // 静的障害物
+    static constexpr JPH::ObjectLayer MOVING = 1;  // 動く物体
+    static constexpr JPH::ObjectLayer CHARACTER = 2;  // プレイヤーなど
+    static constexpr JPH::ObjectLayer TRIGGER = 3;  // 当たり判定専用
+    static constexpr JPH::ObjectLayer TERRAIN = 4;  // 地形
     static constexpr JPH::ObjectLayer NUM_LAYERS = 5;
 }
 
@@ -19,13 +19,18 @@ namespace BroadPhaseLayers {
     static constexpr uint32_t NUM = 2;
 }
 
+// -------------------------
 // BroadPhaseLayerInterface
+// -------------------------
 class BPLayerInterface : public JPH::BroadPhaseLayerInterface
 {
 public:
     BPLayerInterface()
     {
-        mMap.fill(BroadPhaseLayers::DYNAMIC_BP);   // まず全部動的に
+        // デフォルトは全部 DYNAMIC_BP にしておいて、
+        // 静的なものだけ STATIC_BP にマップ
+        mMap.fill(BroadPhaseLayers::DYNAMIC_BP);
+
         mMap[Layers::NON_MOVING] = BroadPhaseLayers::STATIC_BP;
         mMap[Layers::TERRAIN] = BroadPhaseLayers::STATIC_BP;
 
@@ -42,13 +47,12 @@ public:
         return mMap[layer];
     }
 
-    // 仮想クラスにさせないために仮定義
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
     const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer layer) const override {
         switch (layer.GetValue()) {
-            case 0: return "STATIC_BP";
-            case 1: return "DYNAMIC_BP";
-            default: return "UNKNOWN_BP";
+        case 0: return "STATIC_BP";
+        case 1: return "DYNAMIC_BP";
+        default: return "UNKNOWN_BP";
         }
     }
 #endif
@@ -57,8 +61,9 @@ private:
     std::array<JPH::BroadPhaseLayer, Layers::NUM_LAYERS> mMap;
 };
 
+// -------------------------
 // ObjectVsBroadPhaseLayerFilter
-// ぶつける or ぶつけない を定義
+// -------------------------
 class ObjectVsBPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter
 {
 public:
@@ -67,54 +72,57 @@ public:
         switch (obj) {
         case Layers::NON_MOVING:
         case Layers::TERRAIN:
-            return bp == BroadPhaseLayers::DYNAMIC_BP; // 静的は動的とだけ
+            // 静的は「動的レイヤー」とだけ当てれば十分
+            return bp == BroadPhaseLayers::DYNAMIC_BP;
+
         default:
-            return true; // 動的側は両方と
+            // 動く側 / キャラ / トリガー → 全部と当てる（静的＋動的）
+            return true;
         }
     }
 };
 
+
 // ObjectLayerPairFilter
 class ObjectLayerPairFilter : public JPH::ObjectLayerPairFilter
 {
-public:
-    //bool ShouldCollide(JPH::ObjectLayer a, JPH::ObjectLayer b) const override
-    //{
-    //    // 対称にする
-    //    auto pair = [](JPH::ObjectLayer x, JPH::ObjectLayer y) { return (uint32_t(x) << 16) | y; };
-    //    uint32_t p = pair(std::min(a, b), std::max(a, b));
-
-    //    switch (p) {
-    //        // Static vs Static は不要
-    //        case (Layers::NON_MOVING << 16) | Layers::NON_MOVING: return false;
-    //        case (Layers::TERRAIN << 16) | Layers::NON_MOVING: return false;
-    //        case (Layers::TERRAIN << 16) | Layers::TERRAIN:    return false;
-
-    //        // Trigger は全部と当てたい（例）
-    //        case (Layers::TRIGGER << 16) | Layers::MOVING:     return true;
-    //        case (Layers::TRIGGER << 16) | Layers::CHARACTER:  return true;
-
-    //        // それ以外は基本 true
-    //        default: return true;
-    //    }
-    //}
     static constexpr uint32_t Key(JPH::ObjectLayer a, JPH::ObjectLayer b) {
         return (uint32_t(std::min(a, b)) << 16) | uint32_t(std::max(a, b));
     }
+
 public:
-    bool ShouldCollide(JPH::ObjectLayer a, JPH::ObjectLayer b) const override {
-        switch (Key(a, b)) {
-            // Static vs Static は不要
-            case Key(Layers::NON_MOVING, Layers::NON_MOVING): return false;
-            case Key(Layers::NON_MOVING, Layers::TERRAIN):    return false;
-            case Key(Layers::TERRAIN, Layers::TERRAIN):    return false;
+    bool ShouldCollide(JPH::ObjectLayer a, JPH::ObjectLayer b) const override
+    {
+        using namespace Layers;
 
-            // Trigger は全部と当てたい（例）
-            case Key(Layers::TRIGGER, Layers::MOVING):     return true;
-            case Key(Layers::TRIGGER, Layers::CHARACTER):  return true;
+        uint32_t k = Key(a, b);
 
-            // それ以外は基本 true
-            default: return true;
+        // --- 1) Static 同士は不要 ---
+        if (k == Key(NON_MOVING, NON_MOVING)
+            || k == Key(NON_MOVING, TERRAIN)
+            || k == Key(TERRAIN, TERRAIN))
+        {
+            return false;
         }
+
+        // --- 2) Trigger の扱い ---
+        // Trigger は「キャラ」と「動くもの」とだけ当てる（例）
+        if (k == Key(TRIGGER, MOVING)
+            || k == Key(TRIGGER, CHARACTER))
+        {
+            return true;
+        }
+
+        // --- 3) Character の扱い ---
+        // キャラ vs 地形 / 静的 / 動的 → 当てる
+        if (k == Key(CHARACTER, TERRAIN)
+            || k == Key(CHARACTER, NON_MOVING)
+            || k == Key(CHARACTER, MOVING))
+        {
+            return true;
+        }
+
+        // --- 4) それ以外は基本 true ---
+        return true;
     }
 };
