@@ -1,3 +1,4 @@
+<!-- I want to review in Japanese. -->
 ## 内容
 
 
@@ -15,3 +16,5 @@
 - [ ] 〇〇は期待通りに動作しますか？
 
 ## 特記事項
+
+<!-- I want to review in Japanese. -->
