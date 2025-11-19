@@ -468,6 +468,9 @@
     <ClInclude Include="system\Framework\Component\AI\EnemyAIComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
     </ClInclude>
+    <ClInclude Include="system\RandomEngine.h">
+      <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">

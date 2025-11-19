@@ -289,6 +289,7 @@
     <ClInclude Include="system\imgui\imstb_truetype.h" />
     <ClInclude Include="system\LineDrawer.h" />
     <ClInclude Include="system\noncopyable.h" />
+    <ClInclude Include="system\RandomEngine.h" />
     <ClInclude Include="system\renderer.h" />
     <ClInclude Include="system\SceneClassFactory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

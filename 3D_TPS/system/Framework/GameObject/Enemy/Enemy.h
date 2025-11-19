@@ -3,8 +3,16 @@
 
 // 前方宣言
 class Player;
+class CharacterVirtualComponent;
+class EnemyAIComponent;
 
-
+/*
+* @brief	敵クラス
+* @detail	ゲーム内の敵キャラクターを表すクラス
+* @remark	Characterクラスを継承。障害物を回避しながらの巡回とプレイヤー発見の基本的なAIを実装
+* @auther	赤根　和樹
+* @date		2025/11/16(コンポーネント化)
+*/
 class Enemy : public Character
 {
 public:
@@ -29,19 +37,22 @@ public:
 	bool CanSeePlayer(const Vector3& playerPos) const;
 
 private:
-	// 視野
+	State   m_State = State::Patrol;
+	Player* m_pPlayer = nullptr;
+
+	// 視野パラメータ（今まで通り）
 	float m_ViewAngle = 60.0f;
-	// 最大視野距離
 	float m_ViewDistance = 500.0f;
 
-	// 移動用変数
+	// 「前の実装で使っていた巡回用情報」はここでは使わず、
+	// コンポーネントに渡すための一時データとしてだけ使ってもOK
 	Vector3 m_StartPos{};
 	Vector3 m_EndPos{};
-	Vector3 m_TargetPos{};
-	std::vector<Vector3> m_PatrolPoints;	// 巡回ポイント
-	bool m_GoingToEnd = true; // true: Start→End, false: End→Start
-	bool IsFound = false;		// プレイヤーを発見したかどうか
 
-	Player* m_pPlayer = nullptr;	// プレイヤーへのポインタ
+	// 便利のためにコンポーネントへのポインタを握っておく（なくても動く）
+	CharacterVirtualComponent* m_CharComp = nullptr;
+	EnemyAIComponent* m_AIComp = nullptr;
+
+	bool IsFound = false;		// プレイヤーを発見したかどうか
 };
 

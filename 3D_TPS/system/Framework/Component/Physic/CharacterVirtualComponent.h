@@ -31,8 +31,10 @@ public:
    
     // --- 入力 API ---
     void SetMoveDir(const Vector3& dir) { m_MoveDir = dir; }
-    void RequestJump() { m_WantsJump = true; }
+    void RequestJump(void) { m_WantsJump = true; }
 	void SetOffset(const Vector3& offset) { m_Offset = offset; }
+
+	Vector3 GetLinearVelocity(void) const;
 
 	// カプセル形状
 	void SetCapsule(float halfHeight, float radius)
