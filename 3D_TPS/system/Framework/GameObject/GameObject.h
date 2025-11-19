@@ -49,8 +49,6 @@ public:
 
 	virtual ~GameObject() = default;		//! デストラクタ
 
-	virtual ~GameObject() = default;		//! デストラクタ
-
 	virtual void Init(void);
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;

@@ -253,21 +253,21 @@ void Player::Update(const float deltatime)
             if (elevation < -limit) elevation = -limit;
         }
 
-	// カメラ位置更新
-	// TPSなのでカメラはプレイヤーから一定距離離れる
-	if(m_pCamera)
-	{
-		m_pCamera->SetRadius(800.0f);
-		m_pCamera->SetAzimuth(azimuth);
-		m_pCamera->SetElevation(elevation);
-		pos.y += 100.0f;	// 注視点を少し上にずらす
-		m_pCamera->SetLookat(pos);
-		m_pCamera->CalcCameraPositionTranslate(pos);
-	}
+        // カメラ位置更新
+        // TPSなのでカメラはプレイヤーから一定距離離れる
+        if (m_pCamera)
+        {
+            m_pCamera->SetRadius(800.0f);
+            m_pCamera->SetAzimuth(azimuth);
+            m_pCamera->SetElevation(elevation);
+            pos.y += 100.0f;	// 注視点を少し上にずらす
+            m_pCamera->SetLookat(pos);
+            m_pCamera->CalcCameraPositionTranslate(pos);
+        }
 
-    m_pAnimationObject->Update(m_AnimationSpeed);
+        m_pAnimationObject->Update(m_AnimationSpeed);
+    }
 }
-
 
 void Player::Draw(void) const
 {
