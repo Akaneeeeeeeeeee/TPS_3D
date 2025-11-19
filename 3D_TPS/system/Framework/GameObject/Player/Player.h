@@ -2,6 +2,8 @@
 #include "system/Framework/GameObject/Character/Character.h"
 #include "system/camera.h"
 
+// 前方宣言
+class CharacterVirtualComponent;
 
 /*
 * @brief	プレイヤークラス
@@ -21,8 +23,20 @@ public:
 		const Transform& transform = Transform::One());
 	~Player();
 
+	enum State {
+		Idle,	// 通常状態
+		Walk,	// 徒歩移動
+		Run,	// ダッシュ移動
+		Jump,	// ジャンプ
+
+		STATE_MAX,
+
+		Aiming,	// エイム(できれば)
+		Attack	// 攻撃(できれば)
+	};;
+
 	void Init(void) override;
-	void Update(const uint64_t deltatime) override;
+	void Update(const float deltatime) override;
 	void Draw(void) const override;
 	void Uninit(void) override;
 
@@ -30,5 +44,6 @@ public:
 
 private:
 	FreeCamera* m_pCamera = nullptr;
+	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 };
 

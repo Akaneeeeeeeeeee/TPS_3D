@@ -28,8 +28,8 @@ void Game::Init(void)
 	//m_ComponentFactory.Init(&m_ShaderManager);
 	//m_ComponentFactory.Init(&m_RenderManager, &m_ShaderManager);
 	//m_ObjectManager.Init(&m_ComponentFactory);
-	
-	
+
+
 	// レンダラの初期化
 	Renderer::Init();
 
@@ -38,32 +38,36 @@ void Game::Init(void)
 		Window::GetInstance().GetHandleWindow(),
 		Window::GetInstance().GetWidth(),
 		Window::GetInstance().GetHeight());
-	
+
 	// シェーダー管理クラスの初期化
 	//m_ShaderManager.Init();
 	ShaderManager::GetInstance().Init();
 
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
-	//m_GraphicsDevice.Init();
+	m_GraphicsDevice.Init();
 	// レンダーマネージャの初期化
-	/*m_RenderManager.Init(&m_GraphicsDevice);
+	m_RenderManager.Init(&m_GraphicsDevice);
+	// 物理マネージャの初期化
+	m_PhysicsManager.Init();
+
 	m_pContext = std::make_unique<EngineContext>(
 		m_RenderManager,
 		ShaderManager::GetInstance(),
-		AssetManager::GetInstance());*/
+		AssetManager::GetInstance(),
+		m_PhysicsManager);
 
 	// オブジェクトマネージャの初期化
 	m_ObjectManager.Init(m_pContext.get());
 
 	// シーンマネージャの初期化
 	m_SceneManager.Init(&m_ObjectManager);
-	
+
 	// デバッグ時のみ、デバッグUIの初期化
 #ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
 #endif // _DEBUG
-	
+
 }
 
 
@@ -71,8 +75,10 @@ void Game::Init(void)
  * @brief ゲームのループ処理
  * 主なゲーム処理はここに書く
 */
-void Game::Update(const uint64_t deltatime)
+void Game::Update(const float deltatime)
 {
+	m_pContext->Update(deltatime);
+
 	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
 	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
 
@@ -100,6 +106,11 @@ void Game::Draw()
 
 	// シーンマネージャの描画
 	m_SceneManager.Draw();
+
+	// 物理デバッグ描画
+	//m_PhysicsManager.DebugDraw();
+	
+	
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
 

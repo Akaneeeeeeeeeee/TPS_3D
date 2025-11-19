@@ -1,6 +1,6 @@
 ﻿#include "GameObject.h"
 
-explicit GameObject::GameObject(EngineContext& context,
+GameObject::GameObject(EngineContext& context,
 	const uint64_t id,
 	const std::string& name,
 	const Tag tag,
@@ -12,7 +12,7 @@ explicit GameObject::GameObject(EngineContext& context,
 
 }
 
-explicit GameObject::GameObject(EngineContext& context,
+GameObject::GameObject(EngineContext& context,
 	const uint64_t id,
 	const std::string& name,
 	const Tag tag,
@@ -41,18 +41,34 @@ IComponent* GameObject::GetComponent(const std::string& name) const
 	return nullptr;
 }
 
+void GameObject::RemoveComponent(const std::string& name)
+{
+	// コンポーネント探索
+	auto it = m_Components.find(name);
+	// 見つかったら削除
+	if (it != m_Components.end())
+	{
+		it->second->Uninit();
+		m_Components.erase(it);
+	}
+}
+
 void GameObject::Init(void)
 {
 	// コンポーネントの初期化
 	//m_Components.clear();
 }
 
-void GameObject::Update(const uint64_t deltatime)
+void GameObject::Update(const float deltatime)
 {
 	// コンポーネントの更新
-	/*for(auto& component : m_Components) {
-		component.second->Update();
-	}*/
+	for(auto& component : m_Components)
+	{
+		if (component.second->GetIsValid())
+		{
+			component.second->Update(deltatime);
+		}
+	}
 }
 
 /// <summary>
@@ -75,9 +91,68 @@ void GameObject::Draw(void) const
 void GameObject::Uninit(void)
 {
 	// コンポーネントの終了処理
-	/*for (auto& component : m_Components) {
+	for (auto& component : m_Components) {
+		component.second->Detach(m_Context);
 		component.second->Uninit();
 	}
-	m_Components.clear();*/
+	m_Components.clear();
 }
 
+// Positionゲッター
+const Vector3& GameObject::GetPosition(void) const {
+	return m_Transform.GetPosition();
+}
+
+// Positionセッター
+void GameObject::SetPosition(const Vector3& _pos) {
+	this->m_Transform.SetPosition(_pos);
+}
+
+// Rotationゲッター
+const Quaternion& GameObject::GetRotation(void) const {
+	return m_Transform.GetRotation();
+}
+
+// Rotationセッター
+void GameObject::SetRotation(const Quaternion& _rot) {
+	this->m_Transform.SetRotation(_rot);
+}
+
+// Scaleゲッター
+const Vector3& GameObject::GetScale(void) const {
+	return m_Transform.GetScale();
+}
+
+// Scaleセッター
+void GameObject::SetScale(const Vector3& _scale) {
+	this->m_Transform.SetScale(_scale);
+}
+// Positionゲッター
+const Vector3& GameObject::GetPosition(void) const {
+	return m_Transform.GetPosition();
+}
+
+// Positionセッター
+void GameObject::SetPosition(const Vector3& _pos) {
+	this->m_Transform.SetPosition(_pos);
+}
+
+// Rotationゲッター
+const Quaternion& GameObject::GetRotation(void) const {
+	return m_Transform.GetRotation();
+}
+
+// Rotationセッター
+void GameObject::SetRotation(const Quaternion& _rot) {
+	this->m_Transform.SetRotation(_rot);
+}
+
+// Scaleゲッター
+const Vector3& GameObject::GetScale(void) const {
+	return m_Transform.GetScale();
+}
+
+// Scaleセッター
+void GameObject::SetScale(const Vector3& _scale) {
+	this->m_Transform.SetScale(_scale);
+}

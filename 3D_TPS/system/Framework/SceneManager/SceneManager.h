@@ -46,7 +46,7 @@ public:
 
 	void Init(ObjectManager* _pObjectMgr);		//! 初期化
 	//void Init(SceneClassFactory* _factory, ObjectManager* _pObjectMgr);		//! 初期化
-	void Update(const uint64_t deltatime);			//! 更新
+	void Update(const float deltatime);			//! 更新
 	void Draw(void);					//! 描画
 	void Uninit(void);							//! 終了
 

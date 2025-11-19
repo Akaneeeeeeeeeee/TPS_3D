@@ -2,7 +2,9 @@
 #include "system/Framework/ShaderManager/ShaderManager.h"
 #include "system/Framework/AssetManager/AssetManager.h"
 #include "system/Framework/Graphics/RenderManager.h"
-#include "system/Framework/ColliderManager/ColliderManager.h"
+//#include "system/Framework/ColliderManager/ColliderManager.h"
+#include "Framework/PhysicsSystem/PhysicsManager.h"
+
 
 /*
 * @brief	エンジンコンテキスト
@@ -16,9 +18,17 @@ struct EngineContext
 	RenderManager& renderManager;
 	ShaderManager& shaderManager;
 	AssetManager& assetManager;
-	ColliderManager& colliderManager;
+	//ColliderManager& colliderManager;
+	PhysicsManager& joltPhysicsManager;
+	
+	void Update(const float deltaTime) {
+		joltPhysicsManager.Update(deltaTime);
+	}
 
-	EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, ColliderManager& cm)
-		: renderManager(rm), shaderManager(sm), assetManager(am), colliderManager(cm) {
+	/*EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, ColliderManager& cm, PhysicsManager& pm)
+		: renderManager(rm), shaderManager(sm), assetManager(am), colliderManager(cm), joltPhysicsManager(pm) {
+	}*/
+	EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, PhysicsManager& pm)
+		: renderManager(rm), shaderManager(sm), assetManager(am), joltPhysicsManager(pm) {
 	}
 };

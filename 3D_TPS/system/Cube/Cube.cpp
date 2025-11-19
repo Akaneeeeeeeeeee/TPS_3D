@@ -2,6 +2,8 @@
 #include "system/BoxDrawer.h"
 #include "system/Framework/Component/Renderer/MeshRenderer/MeshRenderer.h"
 #include "system/renderer.h"
+#include "Framework/Component/Physic/BoxCollider.h"
+#include "Framework/Component/Physic/Rigidbody.h"
 
 Cube::Cube(EngineContext& context, const uint64_t id,
 	const std::string& name, const Tag& tag,
@@ -23,10 +25,12 @@ void Cube::Init(void)
 	// メッシュレンダラーの初期化
 	m_MeshRenderer.Init(m_BoxMesh);
 	
+
 }
 
-void Cube::Update(const uint64_t deltatime)
+void Cube::Update(const float deltatime)
 {
+	GameObject::Update(deltatime);
 }
 
 void Cube::Draw(void) const

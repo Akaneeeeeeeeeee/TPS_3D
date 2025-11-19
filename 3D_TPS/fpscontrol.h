@@ -71,6 +71,9 @@ public:
         m_delta_time = delta_us;
     }
 
+    uint64_t GetDeltaTime() const {
+        return m_delta_time;
+    }
     /*
         /// @brief 【旧実装】CalcDelta: 呼び出し時にm_last_timeを更新してdelta_timeを返す
         /// @return 経過時間（マイクロ秒）

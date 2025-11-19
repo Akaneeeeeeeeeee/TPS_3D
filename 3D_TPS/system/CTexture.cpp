@@ -74,7 +74,7 @@ bool CTexture::Load(const std::string& filename)
 
 		// u8•¶š•¶š—ñ‚É@2025/7/12 by suzuki.tomoki
 		std::u8string u8s(filename.begin(),filename.end());
-		sts =Load(u8s);
+		sts = Load(u8s);
 		if (sts == false) {
 			return false;
 		}

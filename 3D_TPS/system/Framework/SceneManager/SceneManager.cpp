@@ -3,7 +3,9 @@
 #include "scene/SkeltalmeshScene.h"
 #include "scene/TitleScene.h"
 #include "scene/ResultScene.h"
+#include "scene/TestScene.h"
 #include "system/Framework/SceneManager/Transition/FadeTransition.h"
+#include "scene/CollisionTestScene.h"
 
 /**
  * @brief シーン配列初期化
@@ -16,9 +18,12 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 	this->AddScene<TitleScene>("TitleScene");
 	this->AddScene<SkeltalmeshScene>("SkeltalmeshScene");
 	this->AddScene<ResultScene>("ResultScene");
+	this->AddScene<TestScene>("TestScene");
+	this->AddScene<CollisionTestScene>("CollisionTestScene");
 	//! タイトルシーンを生成してコンテナに追加
 	//this->m_CurrentSceneName = "SkeltalmeshScene";
-	this->m_CurrentSceneName = "TitleScene";
+	this->m_CurrentSceneName = "CollisionTestScene";
+	//this->m_CurrentSceneName = "TitleScene";
 	// 現在のシーンを初期化
 	m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
 	this->SetCurrentScene(m_CurrentSceneName);
@@ -27,7 +32,7 @@ void SceneManager::Init(ObjectManager* _pObjectMgr)
 /**
  * @brief 更新
 */
-void SceneManager::Update(const uint64_t deltatime)
+void SceneManager::Update(const float deltatime)
 {
 	// 現在シーンの更新
 	//m_pScenes[m_CurrentSceneName]->Update(deltatime);
@@ -57,7 +62,7 @@ void SceneManager::Update(const uint64_t deltatime)
 	{
 		// シーン遷移処理実行
 		this->SetCurrentScene(m_pScenes[m_CurrentSceneName]->GetNextSceneName(), 
-			std::make_unique<FadeTransition>(this, 5000.0f, FadeTransition::Mode::FadeInOut));
+			std::make_unique<FadeTransition>(this, 2500.0f, FadeTransition::Mode::FadeInOut));
 	}
 	// 通常更新
 	else if (!m_CurrentSceneName.empty())
@@ -146,7 +151,7 @@ void SceneManager::ChangeScene(const std::string& nextscenename)
 			m_pScenes[m_CurrentSceneName]->Uninit();
 			// 現在のシーン名を変更
 			m_CurrentSceneName = nextscenename;
-			m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
+			//m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
 		}
 
 		// ゲームをクリアしていた場合

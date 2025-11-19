@@ -17,16 +17,17 @@ public:
 	~Game();
 
 	void Init(void);
-	void Update(const uint64_t deltatime);
+	void Update(const float deltatime);
 	void Draw(void);
 	void Uninit(void);
 
 private:
-	GraphicsDevice m_GraphicsDevice;		// グラフィックスデバイス
-	ShaderManager m_ShaderManager;			// シェーダーマネージャー
-	AssetManager m_AssetManager;			// アセットマネージャー
-	//RenderManager m_RenderManager;			// レンダーマネージャー
-	std::unique_ptr<EngineContext> m_pContext; // エンジンコンテキスト(Init後に生成したいためunique_ptr)
+	GraphicsDevice m_GraphicsDevice;			// グラフィックスデバイス
+	ShaderManager m_ShaderManager;				// シェーダーマネージャー
+	AssetManager m_AssetManager;				// アセットマネージャー
+	RenderManager m_RenderManager;				// レンダーマネージャー
+	PhysicsManager m_PhysicsManager;			// 物理マネージャー
+	std::unique_ptr<EngineContext> m_pContext;	// エンジンコンテキスト(Init後に生成したいためunique_ptr)
 	
 	ObjectManager m_ObjectManager;			// オブジェクト管理クラス
 	SceneManager m_SceneManager;			// シーン管理クラス

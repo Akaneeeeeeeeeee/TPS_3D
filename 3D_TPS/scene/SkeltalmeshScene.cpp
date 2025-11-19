@@ -177,7 +177,7 @@ SkeltalmeshScene::SkeltalmeshScene() : IScene()
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void SkeltalmeshScene::Update(uint64_t deltatime)
+void SkeltalmeshScene::Update(const float deltatime)
 {
 	// 入力確認
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
@@ -335,8 +335,8 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 
 	// メッシュを生成
 	auto terrain = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
-	terrain->Init(50, 50, 5000, 5000);
-	terrain->SetImage("assets/texture/Hole1.png");
+	terrain->Init();
+	//terrain->SetImage("assets/texture/Hole1.png");
 	// スカイドーム生成
 	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Skydome);
 	skydome->Init();

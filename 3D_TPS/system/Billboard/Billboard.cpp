@@ -12,7 +12,7 @@ void Billboard::Init(int width, int height, const std::string& texfilename, Free
 	m_pCamera = cam;
 }
 
-void Billboard::Update(const uint64_t deltatime)
+void Billboard::Update(const float deltatime)
 {
 	// ƒJƒƒ‰•ûŒü‚ÉŒü‚¯‚é
 	if (!m_pCamera) return;
