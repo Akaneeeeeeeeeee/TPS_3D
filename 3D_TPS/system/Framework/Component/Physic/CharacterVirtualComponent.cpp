@@ -149,3 +149,10 @@ void CharacterVirtualComponent::Uninit()
     m_Character = nullptr;
 }
 
+Vector3 CharacterVirtualComponent::GetLinearVelocity(void) const
+{
+    if (!m_Character) { return Vector3::Zero; }
+
+    JPH::Vec3 velocity = m_Character->GetLinearVelocity();
+    return Vector3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
+}

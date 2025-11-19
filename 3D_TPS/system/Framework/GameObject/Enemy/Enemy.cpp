@@ -3,6 +3,15 @@
 #include <iostream>
 #include "system/Framework/AssetManager/AssetManager.h"
 #include "Framework/GameObject/Player/Player.h"
+#include "system/Framework/Component/AI/EnemyAIComponent.h"
+#include "system/Framework/Component/Physic/CharacterVirtualComponent.h"
+#include "system/RandomEngine.h"
+
+namespace {
+	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
+	constexpr float ENEMY_CAPSULE_RADIUS = 35.0f;
+	constexpr Vector3 ENEMY_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
+}
 
 Enemy::Enemy(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag,
 	Player* player,
@@ -26,6 +35,7 @@ void Enemy::Init(void)
 	this->m_pAnimationMesh = AssetManager::GetInstance().GetAnimationMesh("Akai");
 	// シェーダーの初期化
 	m_Shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+
 	// アニメーションデータ取得
 	this->m_pAnimationData = AssetManager::GetInstance().GetAnimationData("Akai_Idle");
 	// 現在のアニメーションをセット
@@ -35,89 +45,119 @@ void Enemy::Init(void)
 	// アニメーションメッシュをセット
 	this->m_pAnimationObject->SetAnimationMesh(m_pAnimationMesh);
 
-	// ランダム生成器
-	static std::random_device rd;
-	static std::mt19937 mt(rd());
+	// =========================
+	//  敵の初期位置をランダム決定
+	// =========================
+	auto& rng = RandomEngine::tls();           // スレッドローカル RNG
 
-	// マップ内のランダム開始位置範囲
 	float mapMinX = -2500.0f;
 	float mapMaxX = 2500.0f;
 	float mapMinZ = -2500.0f;
 	float mapMaxZ = 2500.0f;
-	std::uniform_real_distribution<float> distX(mapMinX, mapMaxX);
-	std::uniform_real_distribution<float> distZ(mapMinZ, mapMaxZ);
 
-	// 開始位置をランダムに設定
-	m_StartPos = Vector3(distX(mt), 0.0f, distZ(mt));
+	float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
+	float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
+
+	m_StartPos = Vector3(startX, 5.0f, startZ);
 	m_Transform.SetPosition(m_StartPos);
 
-	// 終点は開始位置から一定範囲内
-	float patrolRange = 1000.0f; // +-1000の範囲で終点を決める
-	std::uniform_real_distribution<float> offsetDist(-patrolRange, patrolRange);
-	m_EndPos = m_StartPos + Vector3(offsetDist(mt), 0.0f, offsetDist(mt));
+	// パトロール範囲
+	float patrolRange = 1000.0f;
 
-	m_TargetPos = m_EndPos;
+	// 1つ目の終点（今までの m_EndPos と同じイメージ）
+	float endOffsetX = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+	float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+	m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
+
+	// ==== ここからコンポーネントをアタッチする ====
+
+	m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
+	m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
+
+	// 1) 物理: CharacterVirtualComponent を付ける
+	{
+		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
+		// 敵用のカプセルサイズ（プレイヤーと同じでも OK）
+		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
+		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
+		m_CharComp->Init();
+	}
+
+	// 2) AI: EnemyAIComponent を付けて、巡回ルートなどを渡す
+	{
+		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
+
+		std::vector<Vector3> waypoints;
+		waypoints.reserve(4);
+
+		// スタート地点
+		waypoints.push_back(m_StartPos);
+
+		// エンド地点（上で作った m_EndPos）
+		waypoints.push_back(m_EndPos);
+
+		// 追加のランダムポイント
+		/*const int extraCount = 2;
+		for (int i = 0; i < extraCount; ++i)
+		{
+			float ox = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+			float oz = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+			Vector3 p = m_StartPos + Vector3(ox, 0.0f, oz);
+			waypoints.push_back(p);
+		}*/
+
+		// 必要ならメンバにもコピーしておくとデバッグしやすい
+
+		m_AIComp->SetWayPoints(waypoints);
+		m_AIComp->SetArriveRadius(50.0f);
+		m_AIComp->SetRayLength(300.0f);
+		m_AIComp->SetAvoidWeight(1.5f);
+		m_AIComp->SetEyeHeight(80.0f);
+
+		m_AIComp->Init();
+	}
 }
 
 void Enemy::Update(const float deltatime)
 {
 	if (m_pPlayer && m_pPlayer->IsDestroy()) { m_pPlayer = nullptr; }
-	// 巡回ポイントが設定されていなければ処理しない
-	//if (m_PatrolPoints.empty()) { return; }
 
-	// アニメーション比較用変数	this->m_Transform.SetPosition(Vector3(500.0f, 0.0f, 500.0f));
+	// コンポーネント更新（AI / CharacterVirtual）を呼ぶ
+	GameObject::Update(deltatime);
 
+	// ---- ここからはアニメーション状態だけ決める ----
 
-	
-	// 目標地点同士を往復する
-	Vector3 pos = m_Transform.GetPosition();
-	Vector3 dir = m_TargetPos - pos;
-	
-	aiAnimation* animdata;
-	// 移動ベクトルが0でなければ正規化して移動
-	if (dir.Length() > 5.0f) {
-		// 移動ベクトルを正規化
-		dir.Normalize();
-		pos += dir * m_MoveSpeed;
-		m_Transform.SetPosition(pos);
-
-		// 向きも更新
-		float targetYaw = std::atan2(-dir.x, -dir.z);
-		Quaternion q = Quaternion::CreateFromAxisAngle(Vector3(0, 1, 0), targetYaw);
-		m_Transform.SetRotation(q);
-
-		// 移動していれば移動アニメーションを再生
-		// アニメーションデータ取得
-		// アニメーションを Run に切り替え
-		animdata = AssetManager::GetInstance().GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-		if (m_pCurrentAnimation != animdata) {
-			m_pCurrentAnimation = animdata;
-			m_pAnimationMesh->SetCurentAnimation(m_pCurrentAnimation);
-		}
-	}
-	else {
-		// 目標到達 → 反転
-		if (m_GoingToEnd) {
-			m_TargetPos = m_StartPos;
-			m_GoingToEnd = false;
-		}
-		else {
-			m_TargetPos = m_EndPos;
-			m_GoingToEnd = true;
-		}
-
-		// 移動してない場合はアニメーションをアイドル状態に変更
-		// アニメーションを Idle に切り替え
-		animdata = AssetManager::GetInstance().GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-		if (m_pCurrentAnimation != animdata) {
-			m_pCurrentAnimation = animdata;
-			m_pAnimationMesh->SetCurentAnimation(m_pCurrentAnimation);
-		}
+	// 速度ベクトルから「歩きかアイドルか」を決める
+	Vector3 vel = Vector3::Zero;
+	if (m_CharComp)
+	{
+		vel = m_CharComp->GetLinearVelocity();
 	}
 
-	// アニメーションの更新
+	aiAnimation* animdata = nullptr;
+
+	if (vel.Length() > 0.1f)
+	{
+		// Run アニメーション
+		animdata = AssetManager::GetInstance()
+			.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+	}
+	else
+	{
+		// Idle アニメーション
+		animdata = AssetManager::GetInstance()
+			.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	}
+
+	if (animdata && m_pCurrentAnimation != animdata)
+	{
+		m_pCurrentAnimation = animdata;
+		m_pAnimationMesh->SetCurentAnimation(m_pCurrentAnimation);
+	}
+
 	m_pAnimationObject->Update(m_AnimationSpeed);
 }
+
 
 void Enemy::Draw(void) const
 {

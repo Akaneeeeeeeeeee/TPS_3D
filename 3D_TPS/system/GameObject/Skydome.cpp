@@ -14,7 +14,7 @@ Skydome::~Skydome()
 void Skydome::Init(void)
 {
     // 半径大きめの球体を作成 (例: 半径1000.0f)
-    m_SphereMesh.Init(5000.0f, Color(1.0f, 1.0f, 1.0f, 1.0f), 32, 16);
+    m_SphereMesh.Init(7500.0f, Color(1.0f, 1.0f, 1.0f, 1.0f), 320, 160);
 
     // マテリアル設定
 	// マテリアル情報取得

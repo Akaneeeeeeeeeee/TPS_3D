@@ -41,7 +41,7 @@ void Camera::Draw(void)
 	
 	float aspectRatio = static_cast<float>(Window::GetInstance().GetWidth()) / static_cast<float>(Window::GetInstance().GetHeight());	// アスペクト比	
 	float nearPlane = 1.0f;       // ニアクリップ
-	float farPlane = 1000.0f;      // ファークリップ
+	float farPlane = 100000.0f;      // ファークリップ
 
 	//プロジェクション行列の生成
 	m_projmtx =
