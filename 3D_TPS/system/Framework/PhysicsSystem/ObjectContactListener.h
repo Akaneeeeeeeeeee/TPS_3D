@@ -1,5 +1,35 @@
 #pragma once
-#include "Framework/PhysicsSystem/Physics.h"    // Jolt
+#include "Framework/PhysicsSystem/Physics.h"
+#include "system/commontypes.h"
+
+class PhysicsComponent;
+
+enum class ContactPhase
+{
+    Enter,
+    Stay,
+    Exit,
+};
+
+struct CollisionInfo
+{
+    PhysicsComponent* self = nullptr;   // ©g
+    PhysicsComponent* other = nullptr;  // Õ“Ë‘Šè
+
+    JPH::ObjectLayer selfLayer = 0;
+    JPH::ObjectLayer otherLayer = 0;
+
+    Vector3 position; // ÚG“_‚Ì¢ŠEÀ•W
+    Vector3 normal;   // ÚG–Ê‚Ì–@ü
+};
+
+struct PhysicsContactEvent
+{
+    ContactPhase phase;
+    CollisionInfo info;
+};
+
+
 
 class GameContactListener : public JPH::ContactListener
 {
