@@ -6,6 +6,7 @@
 #include "system/Framework/Component/AI/EnemyAIComponent.h"
 #include "system/Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "system/RandomEngine.h"
+#include "Framework/Component/AI/EnemyHearingComponent.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -80,7 +81,6 @@ void Enemy::Init(void)
 		// 敵用のカプセルサイズ（プレイヤーと同じでも OK）
 		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
 		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
-		m_CharComp->Init();
 	}
 
 	// 2) AI: EnemyAIComponent を付けて、巡回ルートなどを渡す
@@ -112,13 +112,14 @@ void Enemy::Init(void)
 		m_AIComp->SetAvoidWeight(1.5f);
 		m_AIComp->SetEyeHeight(80.0f);
 
-		m_AIComp->Init();
 	}
 
 	// サウンドコンポーネント追加
 	{
-		
+		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
+		hearingComp->SetEnemyAI(m_AIComp);
 	}
+	GameObject::Init();
 }
 
 void Enemy::Update(const float deltatime)

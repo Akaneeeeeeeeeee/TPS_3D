@@ -61,7 +61,6 @@ void Player::Init(void)
 	m_pCharaVirtualComp = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
 	m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALFHEIGHT, PLAYER_CAPSULE_RADIUS);
 	m_pCharaVirtualComp->SetOffset(PLAYER_COLLIDER_OFFSET);
-	m_pCharaVirtualComp->Init();
 
 }
 
@@ -187,7 +186,7 @@ void Player::Update(const float deltatime)
     {
         WorldSoundEvent ev{};
         ev.Position = GetPosition();
-        ev.Radius = 15.0f;
+        ev.Radius = 500.0f;
         ev.Loudness = 1.0f;
         ev.Type = SoundType::Footstep; // ‚Æ‚è‚ ‚¦‚¸‘«‰¹ˆµ‚¢
 
