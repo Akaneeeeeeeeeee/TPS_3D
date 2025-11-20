@@ -16,7 +16,7 @@ class CShader;
 class Rock final : public GameObject
 {
 public:
-	Rock(EngineContext& context, const uint64_t id, 
+	Rock(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::Object, 
 		const Transform& transform = Transform::One());
 	~Rock();

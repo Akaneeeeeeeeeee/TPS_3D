@@ -59,10 +59,10 @@ void BoxCollider::Uninit()
     }
 }
 
-void BoxCollider::Detach(EngineContext& context)
+void BoxCollider::Detach(void)
 {
 	m_Shape = nullptr;
-    PhysicsComponent::Detach(context);
+    PhysicsComponent::Detach();
 }
 
 

@@ -39,17 +39,19 @@ void Game::Init(void)
 		Window::GetInstance().GetWidth(),
 		Window::GetInstance().GetHeight());
 
-	// シェーダー管理クラスの初期化
-	//m_ShaderManager.Init();
-	ShaderManager::GetInstance().Init();
 
+	// 低レベルから初期化
+	m_GraphicsDevice.Init();
+	// シェーダー管理クラスの初期化
+	ShaderManager::GetInstance().Init();
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
-	m_GraphicsDevice.Init();
+
 	// レンダーマネージャの初期化
 	m_RenderManager.Init(&m_GraphicsDevice);
 	// 物理マネージャの初期化
 	m_PhysicsManager.Init();
+
 
 	m_pContext = std::make_unique<EngineContext>(
 		m_RenderManager,
@@ -57,8 +59,11 @@ void Game::Init(void)
 		AssetManager::GetInstance(),
 		m_PhysicsManager);
 
+	m_ComponentFactory.Init(m_pContext.get());
+	m_ObjectFactory.Init(&m_ComponentFactory);
+
 	// オブジェクトマネージャの初期化
-	m_ObjectManager.Init(m_pContext.get());
+	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーンマネージャの初期化
 	m_SceneManager.Init(&m_ObjectManager);

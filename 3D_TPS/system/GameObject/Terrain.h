@@ -13,7 +13,7 @@
 class Terrain : public GameObject
 {
 public:
-	Terrain(EngineContext& context, const uint64_t id, 
+	Terrain(ComponentFactory* factrory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::None, 
 		const Transform& transform = Transform::One());
 	~Terrain();

@@ -190,6 +190,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
+    <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
+    <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h" />

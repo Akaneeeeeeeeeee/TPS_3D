@@ -106,8 +106,8 @@ void StaticMeshCollider::Uninit()
     }
 }
 
-void StaticMeshCollider::Detach(EngineContext& context)
+void StaticMeshCollider::Detach(void)
 {
     m_Shape = nullptr;
-    PhysicsComponent::Detach(context);
+    PhysicsComponent::Detach();
 }

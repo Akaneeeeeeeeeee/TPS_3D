@@ -17,7 +17,7 @@ class Enemy : public Character
 {
 public:
 	Enemy() = default;
-	Enemy(EngineContext& context, const uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy, 
+	Enemy(ComponentFactory* factory, const uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy,
 		Player* player = nullptr,
 		const Transform& transform = Transform::One());
 	~Enemy();

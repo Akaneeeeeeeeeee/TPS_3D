@@ -10,7 +10,7 @@
 class Skydome : public GameObject
 {
 public:
-	Skydome(EngineContext& context, const uint64_t id, 
+	Skydome(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::None,
 		const Transform& transform = Transform::One());
 	~Skydome();

@@ -1,25 +1,25 @@
 ﻿#include "GameObject.h"
 
-GameObject::GameObject(EngineContext& context,
+GameObject::GameObject(ComponentFactory* factory,
 	const uint64_t id,
 	const std::string& name,
 	const Tag tag,
 	const Transform& transform)
-	:m_Context(context),
+	:m_pComponentFactory(factory),
 	m_ID(id), m_Name(name), m_Tag(tag),
 	m_Transform(transform)
 {
 
 }
 
-GameObject::GameObject(EngineContext& context,
+GameObject::GameObject(ComponentFactory* factory,
 	const uint64_t id,
 	const std::string& name,
 	const Tag tag,
 	const Vector3& pos,
 	const Quaternion& rot,
 	const Vector3& scale)
-	: GameObject(context, id, name, tag, Transform(pos, rot, scale))
+	: GameObject(factory, id, name, tag, Transform(pos, rot, scale))
 {
 
 }
@@ -92,7 +92,7 @@ void GameObject::Uninit(void)
 {
 	// コンポーネントの終了処理
 	for (auto& component : m_Components) {
-		component.second->Detach(m_Context);
+		component.second->Detach();
 		component.second->Uninit();
 	}
 	m_Components.clear();

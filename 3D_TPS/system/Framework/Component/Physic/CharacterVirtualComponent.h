@@ -27,7 +27,7 @@ public:
 	void Uninit(void) override;
 
 	void Attach(EngineContext& context) override;
-	void Detach(EngineContext& context) override;
+	void Detach(void) override;
    
     // --- “ü—Í API ---
     void SetMoveDir(const Vector3& dir) { m_MoveDir = dir; }

@@ -26,7 +26,7 @@ public:
 	//void RemoveOwner(void);			// アタッチされているオブジェクトからの取り外し
 
 	virtual void Attach(EngineContext& context) = 0;	// アタッチされたときの処理(各派生コンポーネントでどの管理システムに登録するかを実装)
-	virtual void Detach(EngineContext& context) = 0;	// デタッチされたときの処理(各派生コンポーネントでどの管理システムから解除するかを実装)
+	virtual void Detach(void) = 0;	// デタッチされたときの処理(各派生コンポーネントでどの管理システムから解除するかを実装)
 
 protected:
 	// インターフェースクラスなのでprotected

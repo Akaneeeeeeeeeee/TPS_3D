@@ -1,9 +1,9 @@
 #include "Skydome.h"
 
-Skydome::Skydome(EngineContext& context, const uint64_t id, 
+Skydome::Skydome(ComponentFactory* factory, const uint64_t id,
 	const std::string& name, const Tag& tag,
 	const Transform& transform)
-	: GameObject(context, id, name, tag, transform)
+	: GameObject(factory, id, name, tag, transform)
 {
 }
 
@@ -88,7 +88,7 @@ void Skydome::SetTexture(const std::filesystem::path& filepath)
 	m_Texture.Load(filepath.string());
 
 	// 法線逆転して頂点バッファ書き換え
-	this->InvertNormal();
+	//this->InvertNormal();
 }
 
 void Skydome::InvertNormal(void)

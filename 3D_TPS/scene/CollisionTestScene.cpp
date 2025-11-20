@@ -478,18 +478,15 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
 	// フィールド初期化
 	m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
-	m_field->Init();
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
 	//m_player->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
 	m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
-	m_player->Init();
 	m_player->SetCamera(&m_camera);
 
 	// スカイドーム
 	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
-	skydome->Init();
 	skydome->SetTexture("assets/texture/haikei.jpg");
 
 	// 岩
@@ -509,7 +506,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 			tf.SetRotation(Quaternion::Identity);
 
 			ground->SetTransform(tf);
-			ground->Init();
 
 			// Rigidbody を Static に
 			/*ground->AddComponent<BoxCollider>("boxcollider")->Init();
@@ -526,7 +522,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
 		obstacleObj->SetPosition(Vector3(0.0f, 50.0f, 0.0f));
 		obstacleObj->SetScale(Vector3(50.0f, 50.0f, 300.0f));
-		obstacleObj->Init();
 		m_obstacles[0] = obstacleObj;
 
 		//for (int cnt = 0; cnt < OBSTACLEMAX; cnt++)
@@ -575,7 +570,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		// Instantiate
 		auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
 		// 初期化
-		enemyObj->Init();
 		// 配列に保持
 		m_enemies[0] = enemyObj;
 		//for(int cnt = 0; cnt < ENEMYMAX; cnt++)

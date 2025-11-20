@@ -7,10 +7,10 @@
 #include "Framework/Component/Physic/TerrainCollider.h"
 
 
-Terrain::Terrain(EngineContext& context, const uint64_t id, 
+Terrain::Terrain(ComponentFactory* factory, const uint64_t id,
     const std::string& name, const Tag& tag, 
     const Transform& transform)
-    : GameObject(context, id, name, tag, transform)
+    : GameObject(factory, id, name, tag, transform)
 {
 }
 

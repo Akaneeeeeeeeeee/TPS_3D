@@ -20,7 +20,7 @@ public:
     void Uninit(void) override;
 
     void Attach(EngineContext& ctx) override;
-    void Detach(EngineContext& ctx) override;
+    void Detach(void) override;
 
     Vector3 ComputeAvoidDir(const Vector3& desired_dir);
 

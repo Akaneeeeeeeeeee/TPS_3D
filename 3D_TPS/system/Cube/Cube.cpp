@@ -5,10 +5,10 @@
 #include "Framework/Component/Physic/BoxCollider.h"
 #include "Framework/Component/Physic/Rigidbody.h"
 
-Cube::Cube(EngineContext& context, const uint64_t id,
+Cube::Cube(ComponentFactory* factory, const uint64_t id,
 	const std::string& name, const Tag& tag,
 	const Transform& transform)
-	: GameObject(context, id, name, tag, transform), m_Material("mymaterial")
+	: GameObject(factory, id, name, tag, transform), m_Material("mymaterial")
 {
 }
 

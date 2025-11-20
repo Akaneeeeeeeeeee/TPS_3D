@@ -29,8 +29,9 @@ private:
 	PhysicsManager m_PhysicsManager;			// 物理マネージャー
 	std::unique_ptr<EngineContext> m_pContext;	// エンジンコンテキスト(Init後に生成したいためunique_ptr)
 	
+	GameObjectFactory m_ObjectFactory;		// オブジェクトファクトリー
+	ComponentFactory m_ComponentFactory;	// コンポーネントファクトリー
 	ObjectManager m_ObjectManager;			// オブジェクト管理クラス
 	SceneManager m_SceneManager;			// シーン管理クラス
 	//SceneClassFactory m_SceneFactory;	// シーンファクトリー
-	//ComponentFactory m_ComponentFactory;	// コンポーネントファクトリー
 };

@@ -139,6 +139,9 @@
     <Filter Include="ソース ファイル\MyFramework\Component\EnemyAI">
       <UniqueIdentifier>{e7a909e5-cc1b-4d08-af15-ae67b3943a7f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Factory">
+      <UniqueIdentifier>{f4411230-f211-4c37-a421-9429202e836b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -470,6 +473,12 @@
     </ClInclude>
     <ClInclude Include="system\RandomEngine.h">
       <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Factory\GameObjectFactory.h">
+      <Filter>ソース ファイル\MyFramework\Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Factory\ComponentFactory.h">
+      <Filter>ソース ファイル\MyFramework\Factory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

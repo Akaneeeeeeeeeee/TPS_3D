@@ -24,16 +24,15 @@ public:
     void Update(const float deltaTime) override {}
     void Uninit(void) override;
 
+    void Attach(EngineContext& context) override;
+    void Detach(void) override;
+
 	// Œ`ó‚ğæ“¾
     JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
     bool IsCollider() const noexcept override { return true; }
 
     // Terrain ‚©‚ç“n‚µ‚Ä‚à‚ç‚¤
     void SetMesh(const std::vector<VERTEX_3D>& vertices,const std::vector<uint32_t>& indices) override;
-
-protected:
-    void Attach(EngineContext& context) override;
-    void Detach(EngineContext& context) override;
 
 private:
     std::vector<JPH::Float3>            m_Positions;

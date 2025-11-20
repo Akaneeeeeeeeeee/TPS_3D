@@ -6,10 +6,10 @@
 #include "system/CStaticMesh.h"
 #include "system/CStaticMeshRenderer.h"
 
-Rock::Rock(EngineContext& context, const uint64_t id, 
+Rock::Rock(ComponentFactory* factory, const uint64_t id,
 	const std::string& name, const Tag& tag,
 	const Transform& transform)
-	: GameObject(context, id, name, tag, transform)
+	: GameObject(factory, id, name, tag, transform)
 {
 }
 
