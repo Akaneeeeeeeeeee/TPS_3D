@@ -22,13 +22,6 @@ public:
 		const Transform& transform = Transform::One());
 	~Enemy();
 
-	enum State {
-		Idle,		// 待機状態
-		Patrol,		// 巡回状態
-		Chase,		// 追跡状態
-		STATE_MAX,
-	};
-
 	void Init(void) override;
 	void Update(const float deltatime) override;
 	void Draw(void) const override;
@@ -37,7 +30,6 @@ public:
 	bool CanSeePlayer(const Vector3& playerPos) const;
 
 private:
-	State   m_State = State::Patrol;
 	Player* m_pPlayer = nullptr;
 
 	// 視野パラメータ（今まで通り）

@@ -23,6 +23,20 @@ public:
     void Detach(void) override;
 
     Vector3 ComputeAvoidDir(const Vector3& desired_dir);
+    // ’®Šo“ü—Í
+    void OnHeardSound(const Vector3& pos)
+    {
+        m_LastHeardPosition = pos;
+        m_State = Investigate;
+    }
+
+    enum State {
+        Idle,		    // ‘Ò‹@ó‘Ô
+        Patrol,		    // „‰ñó‘Ô
+        Investigate,    // ’²¸ó‘Ô
+        Chase,		    // ’ÇÕó‘Ô
+        STATE_MAX,
+    };
 
     void SetWayPoints(const std::vector<Vector3>& waypoints) { m_WayPoints = waypoints; }
     void SetArriveRadius(float radius) { m_ArriveRadius = radius; }
@@ -33,6 +47,9 @@ public:
 private:
     PhysicsManager* m_Physics = nullptr;
     CharacterVirtualComponent* m_Char = nullptr;
+
+    State m_State = State::Patrol;
+    Vector3 m_LastHeardPosition = Vector3::Zero;
 
     std::vector<Vector3> m_WayPoints;
     int   m_CurrentIndex = 0;

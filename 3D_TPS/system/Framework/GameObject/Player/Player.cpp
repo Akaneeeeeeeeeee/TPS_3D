@@ -5,6 +5,8 @@
 #include "Framework/Component/Physic/Rigidbody.h"
 #include "Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "Framework/Time/Time.h"
+#include "system/Sound/WorldSoundEvent.h"
+#include "system/Framework/SoundManager/SoundManager.h" // í«â¡
 
 namespace {
 	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f;
@@ -178,6 +180,19 @@ void Player::Update(const float deltatime)
     if (input.CheckKeyBuffer(DIK_S)) { input_dir.z -= 1.0f; }
     if (input.CheckKeyBuffer(DIK_A)) { input_dir.x -= 1.0f; }
     if (input.CheckKeyBuffer(DIK_D)) { input_dir.x += 1.0f; }
+
+
+    // ó·: E ÉLÅ[Ç™âüÇ≥ÇÍÇΩèuä‘Ç…âπÇèoÇ∑
+    if (input.CheckKeyBuffer(DIK_E))
+    {
+        WorldSoundEvent ev{};
+        ev.Position = GetPosition();
+        ev.Radius = 15.0f;
+        ev.Loudness = 1.0f;
+        ev.Type = SoundType::Footstep; // Ç∆ÇËÇ†Ç¶Ç∏ë´âπàµÇ¢
+
+        SoundManager::Get().EmitSound(ev);
+    }
 
     bool wants_jump = input.CheckKeyBuffer(DIK_SPACE);
 

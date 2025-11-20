@@ -144,7 +144,8 @@ void Terrain::Init() {
 
 	auto terraincollider = AddComponent<TerrainCollider>("TerrainCollider");
 	terraincollider->SetMesh(m_vertices, m_indices);
-	terraincollider->Init();
+
+	GameObject::Init();
 }
 
 void Terrain::Update(const float dt) {
@@ -178,10 +179,9 @@ void Terrain::Draw(void) const
 		0);
 }
 
-void Terrain::Uninit(void) {
-	//RemoveComponent(GetComponent("Rigidbody"));
-	RemoveComponent(GetComponent("TerrainCollider"));
-
+void Terrain::Uninit(void)
+{
+	GameObject::Uninit();
 }
 
 void Terrain::makeundulationwithrandom(float min, float max)

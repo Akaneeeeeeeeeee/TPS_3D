@@ -106,8 +106,6 @@ void Enemy::Init(void)
 			waypoints.push_back(p);
 		}*/
 
-		// 必要ならメンバにもコピーしておくとデバッグしやすい
-
 		m_AIComp->SetWayPoints(waypoints);
 		m_AIComp->SetArriveRadius(50.0f);
 		m_AIComp->SetRayLength(300.0f);
@@ -115,6 +113,11 @@ void Enemy::Init(void)
 		m_AIComp->SetEyeHeight(80.0f);
 
 		m_AIComp->Init();
+	}
+
+	// サウンドコンポーネント追加
+	{
+		
 	}
 }
 

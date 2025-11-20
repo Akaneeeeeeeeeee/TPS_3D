@@ -175,6 +175,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\AI\EnemyAIComponent.h" />
+    <ClInclude Include="system\Framework\Component\AI\EnemyHearingComponent.h" />
     <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -198,6 +199,7 @@
     <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
+    <ClInclude Include="system\Framework\SoundManager\SoundManager.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
@@ -297,6 +299,7 @@
     <ClInclude Include="system\SceneClassFactory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Sound\WorldSoundEvent.h" />
     <ClInclude Include="system\SphereDrawer.h" />
     <ClInclude Include="system\stb_image.h" />
     <ClInclude Include="system\stb_perlin.h" />
@@ -342,6 +345,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\AI\EnemyAIComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\AI\EnemyHearingComponent.cpp" />
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

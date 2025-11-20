@@ -80,40 +80,36 @@ public:
 		requires std::derived_from<T, IComponent>
 	bool RemoveComponent(T* component);
 
-	virtual IComponent* GetComponent(const std::string& name) const;
-	virtual void RemoveComponent(const std::string& name);
+	IComponent* GetComponent(const std::string& name) const;
+	void RemoveComponent(const std::string& name);
+	void FlushInitializeQueue(void);
+	void FlushDestroyComponents(void);
 
 	//////////////////////////////////////////////
 	//			姿勢情報のゲッター/セッター			//
 	//////////////////////////////////////////////
-	virtual Transform GetTransform(void) const { return m_Transform; }
-	virtual Transform& TransformRef(void) { return m_Transform; }
-	virtual void SetTransform(const Transform& transform) { m_Transform = transform; }
-	virtual Vector3 GetPosition(void) const { return m_Transform.GetPosition(); }
-	virtual void SetPosition(const Vector3& position) { m_Transform.SetPosition(position); }
-	virtual Quaternion GetRotation(void) const { return m_Transform.GetRotation(); }
-	virtual void SetRotation(const Quaternion& rotation) { m_Transform.SetRotation(rotation); }
-	virtual Vector3 GetScale(void) const { return m_Transform.GetScale(); }
-	virtual void SetScale(const Vector3& scale) { m_Transform.SetScale(scale); }
+	Transform GetTransform(void) const { return m_Transform; }
+	Transform& TransformRef(void) { return m_Transform; }
+	void SetTransform(const Transform& transform) { m_Transform = transform; }
+	Vector3 GetPosition(void) const { return m_Transform.GetPosition(); }
+	void SetPosition(const Vector3& position) { m_Transform.SetPosition(position); }
+	Quaternion GetRotation(void) const { return m_Transform.GetRotation(); }
+	void SetRotation(const Quaternion& rotation) { m_Transform.SetRotation(rotation); }
+	Vector3 GetScale(void) const { return m_Transform.GetScale(); }
+	void SetScale(const Vector3& scale) { m_Transform.SetScale(scale); }
 
 	// Transform関連は直接委譲
-	virtual Matrix4x4 GetWorldMatrix(void) const { return m_Transform.GetWorldMatrix(); }
+	Matrix4x4 GetWorldMatrix(void) const { return m_Transform.GetWorldMatrix(); }
 
-	virtual Tag GetTag(void) const { return m_Tag; }
-	virtual void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
-	virtual uint64_t GetID(void) const { return m_ID; }
-	virtual std::string GetName(void) const { return m_Name; }
-	virtual bool IsActive(void) const { return m_IsActive; }
-	virtual void SetActive(const bool isActive) { m_IsActive = isActive; }
-	virtual bool IsDestroy(void) const { return m_IsDestroy; }
-	virtual void Destroy(void) { m_IsDestroy = true; }
-	virtual void SetDestroy(const bool isDestroy) { m_IsDestroy = isDestroy; }
-
-private:
-	// コンポーネントの生成
-	template<typename T, typename ...Args>
-		requires std::derived_from<T, IComponent>
-	std::unique_ptr<T> CreateComponent(Args... arg);
+	Tag GetTag(void) const { return m_Tag; }
+	void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
+	uint64_t GetID(void) const { return m_ID; }
+	std::string GetName(void) const { return m_Name; }
+	bool IsActive(void) const { return m_IsActive; }
+	void SetActive(const bool isActive) { m_IsActive = isActive; }
+	bool IsDestroy(void) const { return m_IsDestroy; }
+	void Destroy(void) { m_IsDestroy = true; }
+	void SetDestroy(const bool isDestroy) { m_IsDestroy = isDestroy; }
 
 protected:
 	// SRT情報（姿勢情報）
@@ -146,6 +142,7 @@ protected:
 
 	//! コンポーネントのマップ(コンポーネントが多数になる場合はunordered_mapとの併用も検討)
 	std::unordered_map<std::string, std::unique_ptr<IComponent>> m_Components;
+	std::vector<IComponent*> m_InitializeQueue;		// 保留中の初期化コンポーネント
 };
 
 
@@ -160,7 +157,12 @@ inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
 	auto component = m_pComponentFactory->Create<T>(*this, std::forward<Args>(args)...);
 
 	T* ptr = component.get();
+
+	// 所有権は GameObject が持つ
 	m_Components[name] = std::move(component);
+
+	// 初期化待ちキューに積む
+	m_InitializeQueue.push_back(ptr);
 	return ptr;
 }
 
@@ -175,12 +177,19 @@ inline bool GameObject::RemoveComponent(T* component)
 		[&](const auto& pair) { return pair.second.get() == component; });
 	if (it == m_Components.end()) { return false; }
 
-	// 取り外し→終了処理
+	// まだキューにいるかもしれないので一応取り除く
+	m_InitializeQueue.erase(
+		std::remove(m_InitializeQueue.begin(), m_InitializeQueue.end(), component),
+		m_InitializeQueue.end()
+	);
+
+	// 終了処理
 	it->second->Uninit();
 	it->second->Detach();
 	m_Components.erase(it);
 	return true;
 }
+
 
 template <typename T>
 	requires std::derived_from<T, IComponent>
@@ -225,12 +234,4 @@ inline void GameObject::GetComponents(std::vector<T*>& outcomponents)
 			outcomponents.push_back(p);
 		}
 	}
-}
-
-template<typename T, typename ...Args>
-	requires std::derived_from<T, IComponent>
-inline std::unique_ptr<T> GameObject::CreateComponent(Args... arg)
-{
-	std::unique_ptr<T> component = std::make_unique<T>(arg...);
-	return std::move(component);
 }

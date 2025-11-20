@@ -18,11 +18,14 @@ public:
 	virtual void Update(const float deltatime) = 0;		// 更新
 	virtual void Uninit(void) = 0;		// 終了
 
-	virtual void SetIsValid(bool flg) { IsValid = flg; }
-	virtual bool GetIsValid(void) { return IsValid; }
+	void SetIsValid(bool flg) { IsValid = flg; }
+	bool GetIsValid(void) const { return IsValid; }
+
+	void Destroy(void) { IsDestroy = true; }
+	bool IsDestroyRequested(void) const { return IsDestroy; }
 
 	virtual void SetOwner(GameObject* _obj);		// オブジェクトのアタッチ(参照渡し)
-	virtual GameObject* GetOwner(void);				// アタッチ先のオブジェクトの取得
+	virtual GameObject* GetOwner(void) const;		// アタッチ先のオブジェクトの取得
 	//void RemoveOwner(void);			// アタッチされているオブジェクトからの取り外し
 
 	virtual void Attach(EngineContext& context) = 0;	// アタッチされたときの処理(各派生コンポーネントでどの管理システムに登録するかを実装)
@@ -35,5 +38,7 @@ protected:
 	GameObject* m_pOwner = nullptr;
 	// 有効化フラグ
 	bool IsValid = true;
+	// 破棄フラグ
+	bool IsDestroy = false;
 };
 

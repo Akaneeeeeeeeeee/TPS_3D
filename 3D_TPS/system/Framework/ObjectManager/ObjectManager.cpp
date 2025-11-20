@@ -120,7 +120,8 @@ void ObjectManager::Update(const float deltatime)
 
 	for (auto& obj : m_pObjects)
 	{
-		if(!obj->IsDestroy())
+		// アクティブかつ破棄されていないオブジェクトのみ更新
+		if (obj->IsActive() && !obj->IsDestroy())
 		{
 			obj->Update(deltatime);
 		}
@@ -140,7 +141,11 @@ void ObjectManager::Draw(void) const
 {
 	for(auto& obj : m_pObjects)
 	{
-		obj->Draw();
+		// アクティブかつ破棄されていないオブジェクトのみ描画
+		if (obj->IsActive() && !obj->IsDestroy())
+		{
+			obj->Draw();
+		}
 	}
 }
 

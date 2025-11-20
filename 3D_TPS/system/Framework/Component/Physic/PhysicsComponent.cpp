@@ -7,12 +7,7 @@ void PhysicsComponent::Uninit()
     if (m_Physics && !m_BodyID.IsInvalid())
     {
         auto& bi = m_Physics->GetBodyInterface();
-        if (bi.IsAdded(m_BodyID))
-        {
-            bi.RemoveBody(m_BodyID);
-        }
-
-        m_BodyID = JPH::BodyID(); // デフォルトコンストラクタで無効IDに
+        DestroyBody(bi);
     }
 }
 
