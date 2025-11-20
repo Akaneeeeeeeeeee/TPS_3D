@@ -193,6 +193,7 @@
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
@@ -381,6 +382,7 @@
     <ClCompile Include="system\Framework\ObjectManager\ObjectManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\PhysicsSystem\ObjectContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp" />
     <ClCompile Include="system\Framework\SceneManager\SceneManager.cpp">
