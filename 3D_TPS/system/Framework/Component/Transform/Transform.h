@@ -32,16 +32,16 @@ public:
 	//				ゲッターセッター(ImGui用に参照渡しを用意)
 	//-------------------------------------------------------------
 	Vector3 GetPosition(void) const { return Position; }
-	Vector3& PositionRef(void) { m_IsDirty = true; return Position; }
-	void SetPosition(const Vector3& pos) { m_IsDirty = true; Position = pos; }
+	Vector3& PositionRef(void) { SetDirty(); return Position; }
+	void SetPosition(const Vector3& pos) { SetDirty(); Position = pos; }
 
 	Quaternion GetRotation(void) const { return Rotation; }
-	Quaternion& RotationRef(void) { m_IsDirty = true; return Rotation; }
-	void SetRotation(const Quaternion& rot) { m_IsDirty = true; Rotation = rot; }
+	Quaternion& RotationRef(void) { SetDirty(); return Rotation; }
+	void SetRotation(const Quaternion& rot) { SetDirty(); Rotation = rot; }
 
 	Vector3 GetScale(void) const { return Scale; }
-	Vector3& ScaleRef(void) { m_IsDirty = true; return Scale; }
-	void SetScale(const Vector3& scale) { m_IsDirty = true; Scale = scale; }
+	Vector3& ScaleRef(void) { SetDirty(); return Scale; }
+	void SetScale(const Vector3& scale) { SetDirty(); Scale = scale; }
 
 	void SetParent(Transform* _parent);
 

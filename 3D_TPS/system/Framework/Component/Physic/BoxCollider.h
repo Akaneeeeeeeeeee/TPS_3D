@@ -30,14 +30,13 @@ public:
     void Update(const float deltaTime) override;
     void Uninit(void) override;
 
+    void Attach(EngineContext& context) override;
+    void Detach(void) override;
+
     // å`èÛÇéÊìæ
     JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
     bool IsCollider() const noexcept override { return true; }
 	void SetHalfSize(const DirectX::XMFLOAT3& halfSize) { m_HalfSize = halfSize; }
-
-protected:
-    void Attach(EngineContext& context) override;
-    void Detach(EngineContext& context) override;
 
 public:
     JPH::RefConst<JPH::Shape> GetShape() { return JPH::RefConst<JPH::Shape>(m_Shape); }

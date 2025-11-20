@@ -11,12 +11,12 @@ void IRenderer::Attach(EngineContext& context)
 	}
 }
 
-void IRenderer::Detach(EngineContext& context)
+void IRenderer::Detach(void)
 {
 	// RenderManagerから解除
-	if (!m_pRenderManager)
+	if (m_pRenderManager)
 	{
-		context.renderManager.Unregister(this);
+		m_pRenderManager->Unregister(this);
 		m_pRenderManager = nullptr;
 	}
 }

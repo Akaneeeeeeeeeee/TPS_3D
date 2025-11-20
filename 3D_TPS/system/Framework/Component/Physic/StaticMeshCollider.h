@@ -22,6 +22,9 @@ public:
     void Update(const float deltaTime) override {}
     void Uninit(void) override;
 
+    void Attach(EngineContext& context) override;
+    void Detach(void) override;
+
     // 形状を取得
     JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
     bool IsCollider() const noexcept override { return true; }
@@ -29,9 +32,6 @@ public:
     // メッシュデータ を渡してもらう
     void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) override;
 
-protected:
-    void Attach(EngineContext& context) override;
-    void Detach(EngineContext& context) override;
 
 private:
     std::vector<JPH::Float3>            m_Positions;

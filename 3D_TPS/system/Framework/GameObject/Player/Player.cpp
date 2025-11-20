@@ -12,10 +12,10 @@ namespace {
 	constexpr Vector3 PLAYER_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
 }
 
-Player::Player(EngineContext& context, const uint64_t id, 
+Player::Player(ComponentFactory* factory, const uint64_t id,
 	const std::string& name, const Tag& tag,
 	const Transform& transform)
-	: Character(context, id, name, tag, transform)
+	: Character(factory, id, name, tag, transform)
 {
 }
 

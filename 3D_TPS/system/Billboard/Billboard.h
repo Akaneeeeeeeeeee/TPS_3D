@@ -7,10 +7,10 @@
 class Billboard : public GameObject
 {
 public:
-	Billboard(EngineContext& context, const uint64_t id, 
+	Billboard(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::None, 
 		const Transform& transform = Transform::One())
-		: GameObject(context, id, name, tag, transform),
+		: GameObject(factory, id, name, tag, transform),
 		m_Sprite(), m_pCamera()
 	{
 	}

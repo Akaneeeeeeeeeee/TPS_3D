@@ -10,13 +10,13 @@
 class obstacle : public GameObject {
 
 public:
-	obstacle(EngineContext& context,
+	obstacle(ComponentFactory* factory,
 		const uint64_t id,
 		const std::string& name = "",
 		const Tag tag = Tag::None,
 		IScene* currentscene = nullptr,
 		const Transform& transform = Transform::One())
-		: GameObject(context, id, name, tag, transform),
+		: GameObject(factory, id, name, tag, transform),
 		m_meshrenderer(nullptr),
 		m_ownerscene(currentscene) {
 	}

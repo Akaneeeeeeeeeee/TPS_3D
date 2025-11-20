@@ -100,20 +100,24 @@ bool ObjectManager::ChangeTag(const uint64_t _id, const Tag _newTag)
 //	m_ObjectsByTag.clear();
 //}
 
-void ObjectManager::Init(EngineContext* context)
+void ObjectManager::Init(GameObjectFactory* factory)
 {
-	// エンジンコンテキストのポインタをセット
-	m_Context = context;
+	// ファクトリをセット
+	m_ObjectFactory = factory;
+	//m_Context = context;
 	// オブジェクト管理用コンテナの初期化
 	m_pObjects.clear();
 	m_ObjectsByID.clear();
 	m_ObjectsByName.clear();
 	m_ObjectsByTag.clear();
+	m_PendingInitObjects.clear();
 }
 
 void ObjectManager::Update(const float deltatime)
 {
-	// 範囲for文
+	// フレーム頭で一括初期化
+	this->FlushInitQueue();
+
 	for (auto& obj : m_pObjects)
 	{
 		if(!obj->IsDestroy())
@@ -121,6 +125,9 @@ void ObjectManager::Update(const float deltatime)
 			obj->Update(deltatime);
 		}
 	}
+
+	// フレーム最後に一括破棄
+	this->FlushDestroyQueue();
 }
 
 /**
@@ -153,3 +160,50 @@ void ObjectManager::Uninit(void) {
 	//m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
 }
 
+void ObjectManager::FlushInitQueue()
+{
+	// Init 中に新しいオブジェクトが Instantiate されても安全にするため swap しておく
+	std::vector<GameObject*> current;
+	current.swap(m_PendingInitObjects);
+
+	for (GameObject* obj : current)
+	{
+		if (!obj) { continue; }
+		obj->Init();
+	}
+}
+
+void ObjectManager::FlushDestroyQueue()
+{
+	// 範囲for文
+	for (auto it = m_pObjects.begin(); it != m_pObjects.end(); )
+	{
+		GameObject* obj = it->get();
+		if (obj->IsDestroy())
+		{
+			Tag objTag = obj->GetTag();
+			// タグリストから削除
+			auto& tagList = m_ObjectsByTag[objTag];
+			tagList.erase(std::remove(tagList.begin(), tagList.end(), obj), tagList.end());
+			// 名前リストから削除
+			auto nameIt = m_ObjectsByName.find(obj->GetName());
+			if (nameIt != m_ObjectsByName.end()) {
+				m_ObjectsByName.erase(nameIt);
+			}
+			// IDリストから削除
+			auto idIt = m_ObjectsByID.find(obj->GetID());
+			if (idIt != m_ObjectsByID.end()) {
+				m_ObjectsByID.erase(idIt);
+			}
+
+			// 終了処理
+			obj->Uninit();
+			// オブジェクトコンテナから削除
+			it = m_pObjects.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}

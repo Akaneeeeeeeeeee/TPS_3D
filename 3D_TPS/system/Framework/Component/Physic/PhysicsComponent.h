@@ -33,7 +33,7 @@ public:
     virtual void DestroyBody(JPH::BodyInterface& bi);   
 
 	virtual void Attach(EngineContext& context) override;
-    virtual void Detach(EngineContext& context) override;
+    virtual void Detach(void) override;
 
     virtual void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) {};
 

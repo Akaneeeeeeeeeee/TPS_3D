@@ -25,7 +25,7 @@ void CharacterVirtualComponent::Attach(EngineContext& ctx)
 	m_Physics = &ctx.joltPhysicsManager;
 }
 
-void CharacterVirtualComponent::Detach(EngineContext& ctx)
+void CharacterVirtualComponent::Detach(void)
 {
     m_Physics = nullptr;
 }

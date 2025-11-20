@@ -7,7 +7,7 @@
 class Cube : public GameObject
 {
 public:
-	Cube(EngineContext& context, const uint64_t id,
+	Cube(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::None,
 		const Transform& transform = Transform::One());
 	~Cube();

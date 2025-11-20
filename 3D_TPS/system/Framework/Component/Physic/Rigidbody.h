@@ -38,7 +38,7 @@ public:
 	void SetObjectLayer(JPH::ObjectLayer layer) { m_ObjectLayer = layer; }
 
     void Attach(EngineContext& context) override;
-    void Detach(EngineContext& context) override;
+    void Detach(void) override;
 
     void Init(void) override;
     void Update(const float dt) override;

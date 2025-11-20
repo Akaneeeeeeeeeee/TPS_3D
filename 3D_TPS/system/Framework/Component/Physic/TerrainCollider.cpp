@@ -106,8 +106,8 @@ void TerrainCollider::Uninit()
     }
 }
 
-void TerrainCollider::Detach(EngineContext& context)
+void TerrainCollider::Detach(void)
 {
     m_Shape = nullptr;
-    PhysicsComponent::Detach(context);
+    PhysicsComponent::Detach();
 }

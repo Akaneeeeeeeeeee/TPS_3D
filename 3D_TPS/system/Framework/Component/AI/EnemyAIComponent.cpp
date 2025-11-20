@@ -16,7 +16,7 @@ void EnemyAIComponent::Attach(EngineContext& ctx)
     m_Char = m_pOwner->GetComponent<CharacterVirtualComponent>();
 }
 
-void EnemyAIComponent::Detach(EngineContext& ctx)
+void EnemyAIComponent::Detach(void)
 {
     m_Physics = nullptr;
     m_Char = nullptr;

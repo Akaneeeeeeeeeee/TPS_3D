@@ -13,10 +13,10 @@ namespace {
 	constexpr Vector3 ENEMY_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
 }
 
-Enemy::Enemy(EngineContext& context, uint64_t id, const std::string& name, const Tag& tag,
+Enemy::Enemy(ComponentFactory* factory, uint64_t id, const std::string& name, const Tag& tag,
 	Player* player,
 	const Transform& transform)
-	: Character(context, id, name, tag, transform), m_pPlayer(player)
+	: Character(factory, id, name, tag, transform), m_pPlayer(player)
 {
 }
 

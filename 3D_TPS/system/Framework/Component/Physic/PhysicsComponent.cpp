@@ -31,7 +31,7 @@ void PhysicsComponent::Attach(EngineContext& context)
     m_Physics->Register(this);
 }
 
-void PhysicsComponent::Detach(EngineContext& context)
+void PhysicsComponent::Detach(void)
 {
     if (m_Physics)
     {

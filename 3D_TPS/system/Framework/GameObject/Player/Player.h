@@ -18,7 +18,7 @@ class Player final : public Character
 {
 public:
 	Player() = default;
-	Player(EngineContext& context, const uint64_t id,
+	Player(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::Player,
 		const Transform& transform = Transform::One());
 	~Player();

@@ -26,10 +26,10 @@ void CapsuleCollider::Attach(EngineContext& context)
 	m_Radius = m_pOwner->GetScale().x * 0.5f;
 }
 
-void CapsuleCollider::Detach(EngineContext& context)
+void CapsuleCollider::Detach(void)
 {
 	m_Shape = nullptr;
-	PhysicsComponent::Detach(context);
+	PhysicsComponent::Detach();
 }
 
 void CapsuleCollider::CreateBody(JPH::BodyInterface& bi)

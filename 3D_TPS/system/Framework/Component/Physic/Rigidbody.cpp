@@ -67,9 +67,9 @@ void Rigidbody::Attach(EngineContext& context)
     PhysicsComponent::Attach(context);
 }
 
-void Rigidbody::Detach(EngineContext& context)
+void Rigidbody::Detach(void)
 {
-    PhysicsComponent::Detach(context);
+    PhysicsComponent::Detach();
 }
 
 

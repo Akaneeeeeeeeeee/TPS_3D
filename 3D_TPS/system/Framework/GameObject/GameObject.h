@@ -2,6 +2,7 @@
 #include "system/Framework/Component/Transform/Transform.h"
 #include "system/Framework/Component/IComponent/IComponent.h"
 #include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/Factory/ComponentFactory.h"
 //#include "system/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
 //#include "system/Framework/Component/ComponentFactory/ComponentFactory.h"
 //#include "system/Framework/AssetManager/AssetManager.h"
@@ -33,13 +34,13 @@ enum class Tag {
 class GameObject {
 public:
 	GameObject() = delete;
-	explicit GameObject(EngineContext& context,
+	explicit GameObject(ComponentFactory* factory,
 		const uint64_t id,
 		const std::string& name = "",
 		const Tag tag = Tag::None,
 		const Transform& transform = Transform::One());
 
-	explicit GameObject(EngineContext& context,
+	explicit GameObject(ComponentFactory* context,
 		const uint64_t id,
 		const std::string& name = "",
 		const Tag tag = Tag::None,
@@ -53,7 +54,7 @@ public:
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
-	virtual EngineContext& GetContext(void) { return m_Context; }
+	//virtual EngineContext& GetContext(void) { return m_Context; }
 
 	//////////////////////////////////////////
 	//			コンポーネントの取り外し			//
@@ -120,8 +121,10 @@ protected:
 	//! 描画の為の情報（見た目に関わる部分）
 	//Shader m_Shader; // シェーダー
 
+	ComponentFactory* m_pComponentFactory = nullptr;
+
 	// コンテキストへの参照
-	EngineContext& m_Context;
+	//EngineContext& m_Context;
 
 	//! 一意のID
 	uint64_t m_ID = 0;
@@ -153,15 +156,11 @@ inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
 	// 同名のコンポーネントが存在するなら追加しない
 	if (m_Components.find(name) != m_Components.end()) { return nullptr; }
 
-	// ユニークポインタ生成
-	auto component = this->CreateComponent<T>(std::forward<Args>(args)...);
-
-	// 所有者と初期化
-	component->SetOwner(this);
+	// 生成
+	auto component = m_pComponentFactory->Create<T>(*this, std::forward<Args>(args)...);
 
 	T* ptr = component.get();
 	m_Components[name] = std::move(component);
-	m_Components[name]->Attach(m_Context);
 	return ptr;
 }
 
@@ -178,7 +177,7 @@ inline bool GameObject::RemoveComponent(T* component)
 
 	// 取り外し→終了処理
 	it->second->Uninit();
-	it->second->Detach(m_Context);
+	it->second->Detach();
 	m_Components.erase(it);
 	return true;
 }
