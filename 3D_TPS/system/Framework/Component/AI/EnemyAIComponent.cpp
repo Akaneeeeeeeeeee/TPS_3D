@@ -32,44 +32,63 @@ void EnemyAIComponent::Init(void)
 void EnemyAIComponent::Update(const float dt)
 {
     if (!m_Char) { return; }
-    if (m_WayPoints.empty())
+
+    switch (m_State)
     {
-        m_Char->SetMoveDir(Vector3::Zero);
-        return;
+    case EnemyAIComponent::Idle:
+		UpdateIdle(dt);
+        break;
+    case EnemyAIComponent::Patrol:
+		UpdatePatrol(dt);
+        break;
+    case EnemyAIComponent::Investigate:
+		UpdateInvestigate(dt);
+        break;
+    case EnemyAIComponent::Chase:
+        break;
+    default:
+        break;
     }
 
-    Vector3 pos = m_pOwner->GetPosition();
 
-    // 1:ウェイポイントの更新
-    Vector3 target = m_WayPoints[m_CurrentIndex];
-    Vector3 toTarget = target - pos;
-    if (toTarget.LengthSquared() < m_ArriveRadius * m_ArriveRadius)
-    {
-        m_CurrentIndex = (m_CurrentIndex + 1) % m_WayPoints.size();
-        target = m_WayPoints[m_CurrentIndex];
-        toTarget = target - pos;
-    }
+    //if (m_WayPoints.empty())
+    //{
+    //    m_Char->SetMoveDir(Vector3::Zero);
+    //    return;
+    //}
 
-    if (toTarget.LengthSquared() < 0.0001f)
-    {
-        m_Char->SetMoveDir(Vector3::Zero);
-        return;
-    }
+    //Vector3 pos = m_pOwner->GetPosition();
 
-    Vector3 desired_dir = toTarget;
-    desired_dir.Normalize();
+    //// 1:ウェイポイントの更新
+    //Vector3 target = m_WayPoints[m_CurrentIndex];
+    //Vector3 toTarget = target - pos;
+    //if (toTarget.LengthSquared() < m_ArriveRadius * m_ArriveRadius)
+    //{
+    //    m_CurrentIndex = (m_CurrentIndex + 1) % m_WayPoints.size();
+    //    target = m_WayPoints[m_CurrentIndex];
+    //    toTarget = target - pos;
+    //}
 
-    // 2:障害物回避
-    Vector3 avoid_dir = ComputeAvoidDir(desired_dir);   // さっきの関数
-    Vector3 move_dir = desired_dir + avoid_dir * m_AvoidWeight;
+    //if (toTarget.LengthSquared() < 0.0001f)
+    //{
+    //    m_Char->SetMoveDir(Vector3::Zero);
+    //    return;
+    //}
 
-    if (move_dir.LengthSquared() > 0.0001f)
-        move_dir.Normalize();
-    else
-        move_dir = Vector3::Zero;
+    //Vector3 desired_dir = toTarget;
+    //desired_dir.Normalize();
 
-    // 3:CharacterVirtual に入力
-    m_Char->SetMoveDir(move_dir);
+    //// 2:障害物回避
+    //Vector3 avoid_dir = ComputeAvoidDir(desired_dir);   // さっきの関数
+    //Vector3 move_dir = desired_dir + avoid_dir * m_AvoidWeight;
+
+    //if (move_dir.LengthSquared() > 0.0001f)
+    //    move_dir.Normalize();
+    //else
+    //    move_dir = Vector3::Zero;
+
+    //// 3:CharacterVirtual に入力
+    //m_Char->SetMoveDir(move_dir);
 }
 
 void EnemyAIComponent::Uninit(void)
@@ -130,4 +149,121 @@ Vector3 EnemyAIComponent::ComputeAvoidDir(const Vector3& desired_dir)
     }
 
     return Vector3::Zero; // 障害物なし
+}
+
+void EnemyAIComponent::UpdateIdle(const float deltatime)
+{
+}
+
+void EnemyAIComponent::UpdatePatrol(const float dt)
+{
+    if (m_WayPoints.empty())
+    {
+        m_Char->SetMoveDir(Vector3::Zero);
+        m_State = Idle;
+        return;
+    }
+
+    Vector3 pos = m_pOwner->GetPosition();
+    Vector3 target = m_WayPoints[m_CurrentIndex];
+
+    Vector3 toTarget = target - pos;
+    float distSq = toTarget.LengthSquared();
+
+    // 目標地点に十分近づいたら次のウェイポイントへ
+    if (distSq < m_ArriveRadius * m_ArriveRadius)
+    {
+        m_CurrentIndex = (m_CurrentIndex + 1) % static_cast<int>(m_WayPoints.size());
+        target = m_WayPoints[m_CurrentIndex];
+        toTarget = target - pos;
+        distSq = toTarget.LengthSquared();
+    }
+
+    if (distSq > 1.0f) // ほぼゼロでなければ向かう
+    {
+        toTarget.Normalize();
+
+        // 障害物回避
+        Vector3 desiredDir = toTarget;
+        Vector3 avoidDir = ComputeAvoidDir(desiredDir);
+        Vector3 moveDir = desiredDir + avoidDir * m_AvoidWeight;
+
+        if (moveDir.LengthSquared() > 0.0001f)
+        {
+            moveDir.Normalize();
+            m_Char->SetMoveDir(moveDir);
+
+            // ここで回転も合わせる
+            float yaw = std::atan2(-moveDir.x, -moveDir.z);
+            Quaternion q = Quaternion::CreateFromAxisAngle(Vector3(0,1,0), yaw);
+            m_pOwner->SetRotation(q);
+        }
+        else
+        {
+            m_Char->SetMoveDir(Vector3::Zero);
+        }
+    }
+    else
+    {
+        m_Char->SetMoveDir(Vector3::Zero);
+    }
+}
+
+void EnemyAIComponent::UpdateInvestigate(const float dt)
+{
+    Vector3 pos = m_pOwner->GetPosition();
+    Vector3 toTarget = m_LastHeardPosition - pos;
+    float distSq = toTarget.LengthSquared();
+
+    // 1) まだ音源位置に到達していない → そこに向かって移動
+    if (distSq > m_ArriveRadius * m_ArriveRadius)
+    {
+        m_InvestigateTimer = 0.0f; // 移動中はタイマーリセット
+
+        toTarget.Normalize();
+
+        Vector3 desiredDir = toTarget;
+        Vector3 avoidDir = ComputeAvoidDir(desiredDir);
+        Vector3 moveDir = desiredDir + avoidDir * m_AvoidWeight;
+
+        if (moveDir.LengthSquared() > 0.0001f)
+        {
+            moveDir.Normalize();
+            m_Char->SetMoveDir(moveDir);
+
+            // 回転も合わせたければここで
+        }
+        else
+        {
+            m_Char->SetMoveDir(Vector3::Zero);
+        }
+
+        return;
+    }
+
+    // 2) 音源位置付近に着いた → しばらく様子を見る
+    m_Char->SetMoveDir(Vector3::Zero);
+    m_InvestigateTimer += dt;
+
+    if (m_InvestigateTimer >= m_InvestigateWaitTime)
+    {
+        // 一定時間経過したら巡回に戻る
+        m_InvestigateTimer = 0.0f;
+
+        if (!m_WayPoints.empty())
+        {
+            // 近いウェイポイントを探してそこから再開してもいいし、
+            // 今のインデックスのまま戻ってもいい
+            m_State = Patrol;
+        }
+        else
+        {
+            m_State = Idle;
+        }
+    }
+}
+
+
+void EnemyAIComponent::UpdateChase(const float deltatime)
+{
 }

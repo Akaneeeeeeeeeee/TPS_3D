@@ -186,11 +186,11 @@ void Player::Update(const float deltatime)
     {
         WorldSoundEvent ev{};
         ev.Position = GetPosition();
-        ev.Radius = 500.0f;
+        ev.Radius = 1000.0f;
         ev.Loudness = 1.0f;
         ev.Type = SoundType::Footstep; // ‚Æ‚è‚ ‚¦‚¸‘«‰¹ˆµ‚¢
 
-        SoundManager::Get().EmitSound(ev);
+        SoundManager::GetInstance().EmitSound(ev);
     }
 
     bool wants_jump = input.CheckKeyBuffer(DIK_SPACE);
@@ -212,6 +212,10 @@ void Player::Update(const float deltatime)
             AssetManager::GetInstance()
             .GetAnimationData("Akai_Run")
             ->GetAnimation("Akai_Run", 0);
+        /*aiAnimation* runAnim =
+            AssetManager::GetInstance()
+            .GetAnimationData("Walking")
+            ->GetAnimation("Walking", 0)*/;
         if (m_pCurrentAnimation != runAnim)
         {
             m_pCurrentAnimation = runAnim;

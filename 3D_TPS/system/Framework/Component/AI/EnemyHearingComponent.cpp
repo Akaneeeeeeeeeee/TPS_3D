@@ -5,7 +5,7 @@
 void EnemyHearingComponent::Update(const float dt)
 {
     // ¡ƒtƒŒ[ƒ€”­¶‚µ‚½‰¹ˆê——‚ğæ“¾
-    const auto& sounds = SoundManager::Get().GetEvents();
+    const auto& sounds = SoundManager::GetInstance().GetEvents();
     if (sounds.empty())
     {
         return;

@@ -19,6 +19,11 @@ public:
     void Update(const float deltatime) override;
     void Uninit(void) override;
 
+    void UpdateIdle(const float deltatime);
+    void UpdatePatrol(const float deltatime);
+    void UpdateInvestigate(const float deltatime);
+	void UpdateChase(const float deltatime);
+
     void Attach(EngineContext& ctx) override;
     void Detach(void) override;
 
@@ -32,6 +37,7 @@ public:
 
     enum State {
         Idle,		    // 待機状態
+		Caution,        // 警戒状態
         Patrol,		    // 巡回状態
         Investigate,    // 調査状態
         Chase,		    // 追跡状態
@@ -57,4 +63,7 @@ private:
     float m_RayLength = 300.0f;
     float m_AvoidWeight = 1.5f;
     float m_EyeHeight = 80.0f;
+    // 調査状態用
+    float m_InvestigateWaitTime = 2.0f; // 調査場所に到着後に何秒様子を見るか
+    float m_InvestigateTimer = 0.0f;
 };

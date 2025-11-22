@@ -8,12 +8,6 @@ class SoundManager : public Singleton<SoundManager>
 public:
 	friend class Singleton<SoundManager>;
 
-	static SoundManager& Get()
-	{
-		static SoundManager instance;
-		return instance;
-	}
-
 	// フレーム頭で呼ぶ。今フレの音一覧をクリア
 	void BeginFrame()
 	{
