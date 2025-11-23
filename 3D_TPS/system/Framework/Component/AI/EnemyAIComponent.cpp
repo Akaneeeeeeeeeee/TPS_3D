@@ -173,7 +173,7 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
     // 目標地点に十分近づいたら次のウェイポイントへ
     if (distSq < m_ArriveRadius * m_ArriveRadius)
     {
-        m_CurrentIndex = (m_CurrentIndex + 1) % static_cast<int>(m_WayPoints.size());
+        m_CurrentIndex = (m_CurrentIndex + 1) % m_WayPoints.size();
         target = m_WayPoints[m_CurrentIndex];
         toTarget = target - pos;
         distSq = toTarget.LengthSquared();

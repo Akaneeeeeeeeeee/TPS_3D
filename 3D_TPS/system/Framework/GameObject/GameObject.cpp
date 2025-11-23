@@ -147,10 +147,10 @@ void GameObject::Draw(void) const
 
 void GameObject::Uninit(void)
 {
-	// コンポーネントの終了処理
+	// コンポーネントの終了処理→取り外し
 	for (auto& component : m_Components) {
-		component.second->Detach();
 		component.second->Uninit();
+		component.second->Detach();
 	}
 	m_Components.clear();
 	m_InitializeQueue.clear();

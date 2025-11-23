@@ -19,10 +19,10 @@ public:
     void Update(const float deltatime) override;
     void Uninit(void) override;
 
-    void UpdateIdle(const float deltatime);
+	void UpdateIdle(const float deltatime);     // 待機状態の更新(今後実装)
     void UpdatePatrol(const float deltatime);
     void UpdateInvestigate(const float deltatime);
-	void UpdateChase(const float deltatime);
+	void UpdateChase(const float deltatime);    // 追跡状態の更新(今後実装)
 
     void Attach(EngineContext& ctx) override;
     void Detach(void) override;
