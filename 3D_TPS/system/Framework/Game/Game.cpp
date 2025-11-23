@@ -4,6 +4,7 @@
 #include "system/DebugUI.h"
 #include "system/CDirectInput.h"
 #include "fpscontrol.h"
+#include "system/Framework/SoundManager/SoundManager.h"
 
 Game::Game()
 {
@@ -14,8 +15,8 @@ Game::~Game()
 }
 
 /**
- * @brief
- * @param
+* @brief
+* @param
 */
 void Game::Init(void)
 {
@@ -46,6 +47,7 @@ void Game::Init(void)
 	ShaderManager::GetInstance().Init();
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
+
 
 	// レンダーマネージャの初期化
 	m_RenderManager.Init(&m_GraphicsDevice);
@@ -82,6 +84,7 @@ void Game::Init(void)
 */
 void Game::Update(const float deltatime)
 {
+	SoundManager::GetInstance().BeginFrame();
 	m_pContext->Update(deltatime);
 
 	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
@@ -114,8 +117,8 @@ void Game::Draw()
 
 	// 物理デバッグ描画
 	//m_PhysicsManager.DebugDraw();
-	
-	
+
+
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
 

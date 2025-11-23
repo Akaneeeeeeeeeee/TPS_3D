@@ -17,7 +17,8 @@ void IComponent::SetOwner(GameObject* _obj) {
 }
 
 // アタッチ先のオブジェクトの取得
-GameObject* IComponent::GetOwner(void) {
+GameObject* IComponent::GetOwner(void) const
+{
 	return m_pOwner;
 }
 

@@ -22,11 +22,12 @@ void obstacle::Init()
 	auto boxcollider = AddComponent<BoxCollider>("fallingboxcollider");
     boxcollider->SetHalfSize(Vector3(GetScale().x, GetScale().y, GetScale().z));
     boxcollider->SetOffset(Vector3(0.0f, GetScale().y, 0.0f));
-	boxcollider->Init();
-	auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);
+
+    auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);
 	rb->SetBodyType(Rigidbody::Type::Static);
 	rb->SetObjectLayer(Layers::NON_MOVING);
-	rb->Init();
+
+	GameObject::Init();
 
 	//DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
 }
@@ -50,8 +51,7 @@ void obstacle::Draw(void) const {
 
 void obstacle::Uninit(void)
 {
-	RemoveComponent(GetComponent("Rigidbody"));
-	RemoveComponent(GetComponent("fallingboxcollider"));
+	GameObject::Uninit();
 }
 
 

@@ -45,22 +45,76 @@ void GameObject::RemoveComponent(const std::string& name)
 {
 	// コンポーネント探索
 	auto it = m_Components.find(name);
+	if (it == m_Components.end()) { return; }
+
 	// 見つかったら削除
-	if (it != m_Components.end())
+	IComponent* comp = it->second.get();
+
+	// 初期化キューからも除外
+	m_InitializeQueue.erase(
+		std::remove(m_InitializeQueue.begin(), m_InitializeQueue.end(), comp),
+		m_InitializeQueue.end()
+	);
+
+	comp->Detach();
+	comp->Uninit();
+	m_Components.erase(it);
+}
+
+// 保留中の初期化コンポーネントを初期化する
+void GameObject::FlushInitializeQueue(void)
+{
+	// 保留中の初期化コンポーネントを初期化する
+	for (auto& component : m_InitializeQueue)
 	{
-		it->second->Uninit();
-		m_Components.erase(it);
+		if (!component) { continue; }
+
+		// 消す予定なら初期化しない
+		if (component->IsDestroyRequested()) { continue; }
+
+		component->Init();
 	}
+	m_InitializeQueue.clear();
+}
+
+// 破棄予約されたコンポーネントを破棄する
+void GameObject::FlushDestroyComponents(void)
+{
+	// 破棄予約されたコンポーネントを破棄する
+	for (auto it = m_Components.begin(); it != m_Components.end(); )
+	{
+		if (it->second->IsDestroyRequested())
+		{
+			it->second->Uninit();
+			it->second->Detach();
+			it = m_Components.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	// 初期化キュー側にも残っている可能性があるので掃除
+	m_InitializeQueue.erase(
+		std::remove_if(
+			m_InitializeQueue.begin(), m_InitializeQueue.end(),
+			[](IComponent* c) { return c && c->IsDestroyRequested(); }
+		),
+		m_InitializeQueue.end()
+	);
 }
 
 void GameObject::Init(void)
 {
 	// コンポーネントの初期化
-	//m_Components.clear();
+	FlushInitializeQueue();
 }
 
 void GameObject::Update(const float deltatime)
 {
+	// 未初期化のコンポーネントがあれば初期化する
+	FlushInitializeQueue();
+
 	// コンポーネントの更新
 	for(auto& component : m_Components)
 	{
@@ -69,6 +123,9 @@ void GameObject::Update(const float deltatime)
 			component.second->Update(deltatime);
 		}
 	}
+
+	// 破棄予約されたコンポーネントを破棄する
+	FlushDestroyComponents();
 }
 
 /// <summary>
@@ -90,11 +147,12 @@ void GameObject::Draw(void) const
 
 void GameObject::Uninit(void)
 {
-	// コンポーネントの終了処理
+	// コンポーネントの終了処理→取り外し
 	for (auto& component : m_Components) {
-		component.second->Detach();
 		component.second->Uninit();
+		component.second->Detach();
 	}
 	m_Components.clear();
+	m_InitializeQueue.clear();
 }
 

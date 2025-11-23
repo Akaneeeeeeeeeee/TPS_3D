@@ -142,6 +142,12 @@
     <Filter Include="ソース ファイル\MyFramework\Factory">
       <UniqueIdentifier>{f4411230-f211-4c37-a421-9429202e836b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\system\Sound">
+      <UniqueIdentifier>{4f894ac2-9f46-41fd-b4d9-9a15b21ff495}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Manager\SoundManager">
+      <UniqueIdentifier>{341bf0ed-2093-43c1-8b81-540e1803d889}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -483,6 +489,15 @@
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClInclude>
+    <ClInclude Include="system\Sound\WorldSoundEvent.h">
+      <Filter>ソース ファイル\system\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SoundManager\SoundManager.h">
+      <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\AI\EnemyHearingComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -736,6 +751,9 @@
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\ObjectContactListener.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\AI\EnemyHearingComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

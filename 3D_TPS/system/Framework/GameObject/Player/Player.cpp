@@ -5,6 +5,8 @@
 #include "Framework/Component/Physic/Rigidbody.h"
 #include "Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "Framework/Time/Time.h"
+#include "system/Sound/WorldSoundEvent.h"
+#include "system/Framework/SoundManager/SoundManager.h" // ’Ç‰Á
 
 namespace {
 	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f;
@@ -59,7 +61,6 @@ void Player::Init(void)
 	m_pCharaVirtualComp = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
 	m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALFHEIGHT, PLAYER_CAPSULE_RADIUS);
 	m_pCharaVirtualComp->SetOffset(PLAYER_COLLIDER_OFFSET);
-	m_pCharaVirtualComp->Init();
 
 }
 
@@ -179,6 +180,19 @@ void Player::Update(const float deltatime)
     if (input.CheckKeyBuffer(DIK_A)) { input_dir.x -= 1.0f; }
     if (input.CheckKeyBuffer(DIK_D)) { input_dir.x += 1.0f; }
 
+
+    // —á: E ƒL[‚ª‰Ÿ‚³‚ê‚½uŠÔ‚É‰¹‚ðo‚·
+    if (input.CheckKeyBuffer(DIK_E))
+    {
+        WorldSoundEvent ev{};
+        ev.Position = GetPosition();
+        ev.Radius = 1000.0f;
+        ev.Loudness = 1.0f;
+        ev.Type = SoundType::Footstep; // ‚Æ‚è‚ ‚¦‚¸‘«‰¹ˆµ‚¢
+
+        SoundManager::GetInstance().EmitSound(ev);
+    }
+
     bool wants_jump = input.CheckKeyBuffer(DIK_SPACE);
 
     Vector3 move_dir = Vector3::Zero;
@@ -198,6 +212,10 @@ void Player::Update(const float deltatime)
             AssetManager::GetInstance()
             .GetAnimationData("Akai_Run")
             ->GetAnimation("Akai_Run", 0);
+        /*aiAnimation* runAnim =
+            AssetManager::GetInstance()
+            .GetAnimationData("Walking")
+            ->GetAnimation("Walking", 0)*/;
         if (m_pCurrentAnimation != runAnim)
         {
             m_pCurrentAnimation = runAnim;

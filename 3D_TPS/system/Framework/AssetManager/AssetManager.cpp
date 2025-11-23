@@ -21,6 +21,11 @@ void AssetManager::Init(void)
 	this->LoadAnimationData("Akai_Run", "assets/model/akai/Akai_Run.fbx");
 	this->LoadAnimationData("Akai_Idle", "assets/model/akai/Akai_Idle.fbx");
 	this->LoadStaticMesh("Rock", "assets/model/Rock-Set/Rock_2/Rock_2.fbx", "assets/model/Rock-Set/Rock_2/Textures");
+
+	this->LoadAnimationData("Walking", "assets/model/akai/Walking.fbx");
+	this->LoadAnimationData("Jump", "assets/model/akai/Jump.fbx");
+	this->LoadAnimationData("Running", "assets/model/akai/Running.fbx");
+	this->LoadAnimationData("Watering", "assets/model/akai/Watering.fbx");
 }
 
 void AssetManager::Uninit(void)
