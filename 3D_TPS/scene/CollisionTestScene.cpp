@@ -520,7 +520,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		// áŠQ•¨
 		// Instantiate
 		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
-		obstacleObj->SetPosition(Vector3(0.0f, 50.0f, 0.0f));
+		obstacleObj->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 		obstacleObj->SetScale(Vector3(50.0f, 50.0f, 300.0f));
 		m_obstacles[0] = obstacleObj;
 

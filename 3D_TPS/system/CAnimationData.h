@@ -25,6 +25,6 @@ public:
 	// アニメーションデータが格納されているａｉＳｃｅｎｅを獲得する
 	const aiScene* GetAiScene(std::string name) 
 	{ 
-		return m_Animation[name]; 
+		return m_Animation[name];
 	}
 };
