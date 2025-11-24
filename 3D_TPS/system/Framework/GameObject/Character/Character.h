@@ -17,6 +17,8 @@ enum class AnimationState {
 	Death
 };
 
+class SkinnedAnimationComponent;
+
 /// <summary>
 /// アニメーション付きキャラクターオブジェクト
 /// </summary>
@@ -48,6 +50,8 @@ protected:
 
 	aiAnimation* m_pCurrentAnimation = nullptr;
 	AnimationState m_AnimState = AnimationState::Idle;
+
+	SkinnedAnimationComponent* m_pAnimComp = nullptr;
 
 	float m_AnimationSpeed = 1.0f;
 	float m_MoveSpeed = 7.5f;

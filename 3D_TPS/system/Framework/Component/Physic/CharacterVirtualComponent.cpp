@@ -8,6 +8,17 @@
 #include <DirectXMath.h>
 #include "directxtk/include/SimpleMath.h"
 
+namespace
+{
+    // キャラ専用の重力（ユニット指定）
+    // 1ユニット ≒ 1cm と仮定するなら -980.0f で地球重力ぐらい
+    constexpr float CHAR_GRAVITY_Y = -980.0f;
+
+    // キャラが到達してほしいジャンプの高さ（ユニット）
+    // 120なら 1.2m ぐらい
+    constexpr float DESIRED_JUMP_HEIGHT = 120.0f;
+}
+
 // DirectX::SimpleMath::Vector3 から JPH::Vec3 への変換関数
 static JPH::Vec3 ToJPH(const DirectX::SimpleMath::Vector3& v)
 {
@@ -35,6 +46,10 @@ void CharacterVirtualComponent::Init(void)
     if (!m_Physics) { return; }
 
     using namespace JPH;
+
+    // ---- キャラ専用の重力からジャンプ初速度を計算 ----
+    float g_char = std::abs(CHAR_GRAVITY_Y);             // ≒ 980
+    m_JumpSpeed = std::sqrt(2.0f * g_char * DESIRED_JUMP_HEIGHT);
 
     // Capsule shape 作成（立ち姿）
     RefConst<Shape> shape = new CapsuleShape(m_HalfHeight, m_Radius);
@@ -108,13 +123,14 @@ void CharacterVirtualComponent::Update(const float dt)
             vertical += up * m_JumpSpeed;
     }
 
-    Vec3 gravity = m_Physics->GetSystem().GetGravity();
-    vertical += gravity * dt;
+    // ★ キャラ専用の重力を使う
+    Vec3 charGravity(0.0f, CHAR_GRAVITY_Y, 0.0f);
+
+    vertical += charGravity * dt;
 
     Vec3 new_vel = horizontal + vertical;
     m_Character->SetLinearVelocity(new_vel);
 
-    // ExtendedUpdate 設定
     CharacterVirtual::ExtendedUpdateSettings settings;
 
     auto bp_filter = m_Physics->GetSystem().GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
@@ -124,7 +140,7 @@ void CharacterVirtualComponent::Update(const float dt)
 
     m_Character->ExtendedUpdate(
         dt,
-        gravity,
+        charGravity,  // ← ここもキャラ専用
         settings,
         bp_filter,
         obj_filter,
@@ -133,7 +149,6 @@ void CharacterVirtualComponent::Update(const float dt)
         *m_Physics->GetTempAllocator()
     );
 
-    // 位置を Transform に反映
     RVec3 pos = m_Character->GetPosition();
     m_pOwner->SetPosition(Vector3(
         (float)pos.GetX(),
