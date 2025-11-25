@@ -55,26 +55,25 @@ void CharacterVirtualComponent::Init(void)
     RefConst<Shape> shape = new CapsuleShape(m_HalfHeight, m_Radius);
 
     Ref<CharacterVirtualSettings> settings = new CharacterVirtualSettings();
-    settings->mShape = shape;
 
     // カプセル Shape
-    settings->mShape = shape;                           // CapsuleShape とか
-    settings->mInnerBodyLayer = Layers::CHARACTER;      // レイヤーはここで指定する
+    // 初期は立ち姿
+    settings->mShape = m_StandShape;
+    settings->mInnerBodyShape = m_StandShape;       // Inner Body も同じ形
+    settings->mInnerBodyLayer = Layers::CHARACTER;
 
     // ローカルオフセットをセット
-    settings->mShapeOffset = Vec3(m_Offset.x, m_Offset.y, m_Offset.z);
+    settings->mShapeOffset = ToJPH(m_Offset);
 
     // 上方向（Y軸）と SupportingVolume など
-    JPH::Vec3 up = JPH::Vec3::sAxisY();
-    settings->mUp = up;
-    settings->mSupportingVolume = JPH::Plane(up, -m_Radius);
+    settings->mUp = JPH::Vec3::sAxisY();
+    settings->mSupportingVolume = JPH::Plane(settings->mUp, -m_Radius);
 
     JPH::RVec3 start_pos = ToJPH(m_pOwner->GetPosition());
     JPH::Quat  rot = JPH::Quat::sIdentity();
-
-    // PhysicsSystem は参照なので & を付けてポインタにする
     JPH::PhysicsSystem* system = &m_Physics->GetSystem();
 
+	// キャラクター作成
     m_Character = new JPH::CharacterVirtual(
         settings,
         start_pos,
@@ -170,4 +169,60 @@ Vector3 CharacterVirtualComponent::GetLinearVelocity(void) const
 
     JPH::Vec3 velocity = m_Character->GetLinearVelocity();
     return Vector3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
+}
+
+void CharacterVirtualComponent::SetStance(Stance s)
+{
+    if (!m_Character || !m_Physics) { return; }
+    if (m_Stance == s) { return; }
+
+    using namespace JPH;
+
+    const Shape* new_shape = nullptr;
+
+	// 姿勢に応じた Shape を取得
+    switch (s)
+    {
+    case CharacterVirtualComponent::Stance::Stand:
+        new_shape = m_StandShape;
+        break;
+    case CharacterVirtualComponent::Stance::Crouch:
+        new_shape = m_CrouchShape;
+        break;
+    case CharacterVirtualComponent::Stance::Prone:
+        new_shape = m_ProneShape;
+        break;
+    default:
+        break;
+    }
+
+    if (!new_shape) { return; }
+
+    auto& system = m_Physics->GetSystem();
+    auto bp_filter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
+    auto obj_filter = system.GetDefaultLayerFilter(Layers::CHARACTER);
+    JPH::BodyFilter  body_filter;
+    JPH::ShapeFilter shape_filter;
+
+    // 許容するめり込み距離（小さすぎると失敗しやすい）
+    const float max_penetration = 0.1f;
+
+    bool ok = m_Character->SetShape(
+        new_shape,
+        max_penetration,
+        bp_filter, obj_filter,
+        body_filter, shape_filter,
+        *m_Physics->GetTempAllocator()
+    );
+
+    if (!ok)
+    {
+        // ここでログだけ出して、姿勢変更をキャンセルする、など
+        return;
+    }
+
+    // Inner Body 側の Shape も合わせる
+    m_Character->SetInnerBodyShape(new_shape);
+
+    m_Stance = s;
 }
