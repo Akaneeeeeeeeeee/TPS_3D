@@ -7,14 +7,12 @@
 #include "renderer.h"
 #include "BoneCombMatrix.h"
 #include "CStaticMeshRenderer.h"
+#include "Framework/Component/Transform/Transform.h"
 
 class CAnimationMesh : public CStaticMesh
 {
 	// ボーン辞書
 	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DX化
-
-	// 再生中のアニメーションデータ
-	aiAnimation* m_CurrentAnimation{};
 
 	// assimp ノード名ツリー（親子関係がわかる）
 	CTreeNode<std::string>	m_AssimpNodeNameTree{};
@@ -23,41 +21,37 @@ class CAnimationMesh : public CStaticMesh
 	CStaticMeshRenderer m_StaticMeshRenderer{};
 
 public:
-	void SetCurentAnimation(aiAnimation* currentanimation);
 
 	void Load(std::string filename, std::string texturedirectory = "");
+
+	// ローカルポーズ生成
+	void BuildLocalPoseMap(
+		const aiAnimation* animationdata,
+		const int& CurrentFrame,
+		std::unordered_map<std::string, Transform>& localposemap);
+
+	// ポーズのブレンド
+	void BlendLocalPose(
+		const std::unordered_map<std::string, Transform>& localposeFrom,
+		const std::unordered_map<std::string, Transform>& localposeTo,
+		float rate,
+		std::unordered_map<std::string, Transform>& blendedLocalPose);
 
 	// 階層構造を考慮したボーンコンビネーション行列を更新
 	void UpdateBoneMatrix(CTreeNode<std::string>* ptree, DirectX::SimpleMath::Matrix matrix);		// 20240714 DX化	
 
 	// アニメーションの更新
-	void Update(BoneCombMatrix& bonecombarray, int& CurrentFrame);
+	void Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, const float& timeSec);
+
+	// ブレンドアニメーションの更新
+	void UpdateBlended(BoneCombMatrix& bonecombarray,
+		const aiAnimation* animFrom,
+		int frameFrom,
+		const aiAnimation* animTo,
+		int frameTo,
+		float alpha);
 
 	// 描画
 	void Draw();
 };
 
-//class CAnimationMesh : public CStaticMesh {
-//    std::unordered_map<std::string, BONE> m_BoneDictionary{};
-//    CTreeNode<std::string> m_AssimpNodeNameTree{};
-//    CStaticMeshRenderer m_StaticMeshRenderer{};
-//    const aiScene* m_pScene = nullptr;
-//
-//public:
-//    void Load(std::string filename, std::string texturedirectory = "");
-//
-//    // アニメーションを名前で返すだけ（状態は持たない）
-//    aiAnimation* GetAnimation(const std::string& name);
-//
-//    // ルートノードを取得する getter
-//    CTreeNode<std::string>* GetRootNode() { return &m_AssimpNodeNameTree; }
-//
-//    // ボーン更新（アニメーションの状態は外から渡す）
-//    void UpdateBoneMatrix(CTreeNode<std::string>* ptree,
-//        const DirectX::SimpleMath::Matrix& parent,
-//        BoneCombMatrix& outMatrix,
-//        float timeInTicks,
-//        aiAnimation* anim);
-//
-//    void Draw();
-//};

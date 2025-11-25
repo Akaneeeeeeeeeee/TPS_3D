@@ -27,6 +27,8 @@ public:
     void Attach(EngineContext& ctx) override;
     void Detach(void) override;
 
+    // is•ûŒü‚ğŒü‚­
+    void FaceMoveDir(const Vector3& moveDir);
     Vector3 ComputeAvoidDir(const Vector3& desired_dir);
     // ’®Šo“ü—Í
     void OnHeardSound(const Vector3& pos)

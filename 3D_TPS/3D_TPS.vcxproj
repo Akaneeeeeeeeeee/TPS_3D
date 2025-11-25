@@ -176,6 +176,8 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\AI\EnemyAIComponent.h" />
     <ClInclude Include="system\Framework\Component\AI\EnemyHearingComponent.h" />
+    <ClInclude Include="system\Framework\Component\Animator\Animator.h" />
+    <ClInclude Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.h" />
     <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -346,6 +348,8 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\AI\EnemyAIComponent.cpp" />
     <ClCompile Include="system\Framework\Component\AI\EnemyHearingComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\Animator\Animator.cpp" />
+    <ClCompile Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.cpp" />
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

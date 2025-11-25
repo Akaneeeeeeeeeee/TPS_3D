@@ -458,6 +458,11 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	shader->Create("shader/vertexLightingVS.hlsl", "shader/vertexLightingPS.hlsl");
 	MeshManager::RegisterShader<CShader>("unlightshader", std::move(shader));
 
+	// アニメーション用シェーダー
+	std::unique_ptr<CShader> animshader = std::make_unique<CShader>();
+	animshader->Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	MeshManager::RegisterShader<CShader>("animshader", std::move(animshader));
+
 	// メッシュデータ読み込み（障害物用）
 	{
 		std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
@@ -481,8 +486,8 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	//m_player->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
-	m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
+	m_player->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
 	m_player->SetCamera(&m_camera);
 
 	// スカイドーム
@@ -521,7 +526,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		// Instantiate
 		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
 		obstacleObj->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-		obstacleObj->SetScale(Vector3(50.0f, 50.0f, 300.0f));
+		obstacleObj->SetScale(Vector3(50.0f, 100.0f, 300.0f));
 		m_obstacles[0] = obstacleObj;
 
 		//for (int cnt = 0; cnt < OBSTACLEMAX; cnt++)

@@ -8,7 +8,7 @@
 #endif
 
 namespace {
-        constexpr float GRAVITY_SCALE = -750.0f;     // 重力加速度スケール
+        constexpr float GRAVITY_SCALE = -98.0f;     // 重力加速度スケール
 }
 
 PhysicsManager::~PhysicsManager()
