@@ -1,4 +1,5 @@
 #include	"CAnimationObject.h"
+#include    "Framework/Component/Animator/Animator.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -12,8 +13,39 @@ void CAnimationObject::Update(float dt)
 {
 	int frame = static_cast<int>(m_CurrentFrame);
 	// アニメーションメッシュ更新
-	m_AnimMesh->Update(m_BoneCombMatrix,frame);
+	m_AnimMesh->Update(m_BoneCombMatrix, m_pCurrentAnimation ,frame);
 	m_CurrentFrame += dt;
+}
+
+void CAnimationObject::UpdateFromAnimator(const Animator& animator)
+{
+    if (!m_AnimMesh) return;
+
+    aiAnimation* current = animator.GetCurrentClip();
+    aiAnimation* next = animator.GetNextClip();
+
+    if (!current) return;
+
+    float t0Sec = animator.GetCurrentTimeSec();
+    float t1Sec = animator.GetNextTimeSec();
+    float alpha = animator.GetBlendAlpha();
+
+    if (!animator.IsBlending() || !next)
+    {
+        // 単一アニメ
+        m_AnimMesh->Update(m_BoneCombMatrix, current, t0Sec);
+    }
+    else
+    {
+        // ブレンド
+		// 秒単位で渡す版
+        //m_AnimMesh->UpdateBlended(m_BoneCombMatrix, current, t0Sec, next, t1Sec, alpha);
+
+		// フレーム番号に変換して渡す版
+        int frame0 = static_cast<int>(t0Sec * (current->mTicksPerSecond > 0.0 ? current->mTicksPerSecond : 1.0));
+        int frame1 = static_cast<int>(t1Sec * (next->mTicksPerSecond > 0.0 ? next->mTicksPerSecond : 1.0));
+        m_AnimMesh->UpdateBlended(m_BoneCombMatrix, current, frame0, next, frame1, alpha);
+    }
 }
 
 void CAnimationObject::Draw()
@@ -27,36 +59,3 @@ void CAnimationObject::Draw()
 	// メッシュ描画
 	m_AnimMesh->Draw();
 }
-
-
-//void CAnimationObject::SetAnimation(aiAnimation* anim) {
-//    m_CurrentAnimation = anim;
-//    m_CurrentTime = 0.0f;
-//}
-//
-//void CAnimationObject::Update(float dt) {
-//    if (!m_AnimMesh || !m_CurrentAnimation) return;
-//
-//    m_CurrentTime += dt * m_PlaySpeed;
-//
-//    float duration = static_cast<float>(m_CurrentAnimation->mDuration);
-//    float ticksPerSecond = static_cast<float>(
-//        m_CurrentAnimation->mTicksPerSecond != 0 ?
-//        m_CurrentAnimation->mTicksPerSecond : 25.0f);
-//
-//    float timeInTicks = fmod(m_CurrentTime * ticksPerSecond, duration);
-//
-//    // メッシュに計算してもらう
-//    m_AnimMesh->UpdateBoneMatrix(
-//        m_AnimMesh->GetRootNode(),
-//        DirectX::SimpleMath::Matrix::Identity,
-//        m_BoneCombMatrix,
-//        timeInTicks,
-//        m_CurrentAnimation);
-//}
-
-//void CAnimationObject::Draw() {
-//    if (m_AnimMesh) {
-//        m_AnimMesh->Draw();
-//    }
-//}

@@ -148,6 +148,9 @@
     <Filter Include="ソース ファイル\MyFramework\Manager\SoundManager">
       <UniqueIdentifier>{341bf0ed-2093-43c1-8b81-540e1803d889}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Animator">
+      <UniqueIdentifier>{6377d4e5-ffca-4bca-b02b-be6e0a49c503}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -498,6 +501,12 @@
     <ClInclude Include="system\Framework\Component\AI\EnemyHearingComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Animator\Animator.h">
+      <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -754,6 +763,12 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\AI\EnemyHearingComponent.cpp">
       <Filter>ソース ファイル\MyFramework\Component\EnemyAI</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Animator\Animator.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

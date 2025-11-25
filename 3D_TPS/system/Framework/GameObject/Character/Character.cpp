@@ -1,5 +1,6 @@
 #include "Character.h"
 #include "system/Framework/AssetManager/AssetManager.h"
+#include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 
 void Character::Init(void)
 {
@@ -20,13 +21,18 @@ void Character::Draw(void) const
 	// 例: モデルの描画、エフェクトの適用など
 	
 	// シェーダーをセット
-	m_Shader.SetGPU();
+	//m_Shader.SetGPU();
 
-	// ワールド行列をセット
-	Matrix4x4 worldMatrix = this->GetWorldMatrix();
-	Renderer::SetWorldMatrix(&worldMatrix);
+	//// ワールド行列をセット
+	//Matrix4x4 worldMatrix = this->GetWorldMatrix();
+	//Renderer::SetWorldMatrix(&worldMatrix);
 
-	m_pAnimationObject->Draw();
+	//m_pAnimationObject->Draw();
+
+	if (m_pAnimComp)
+	{
+		m_pAnimComp->Draw();
+	}
 }
 
 void Character::Uninit(void)

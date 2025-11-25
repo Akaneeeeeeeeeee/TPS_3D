@@ -193,10 +193,8 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
             moveDir.Normalize();
             m_Char->SetMoveDir(moveDir);
 
-            // ここで回転も合わせる
-            float yaw = std::atan2(-moveDir.x, -moveDir.z);
-            Quaternion q = Quaternion::CreateFromAxisAngle(Vector3(0,1,0), yaw);
-            m_pOwner->SetRotation(q);
+            // キャラの向きも合わせる
+            FaceMoveDir(moveDir);
         }
         else
         {
@@ -228,10 +226,11 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
 
         if (moveDir.LengthSquared() > 0.0001f)
         {
+			// 正規化してセット
             moveDir.Normalize();
             m_Char->SetMoveDir(moveDir);
-
-            // 回転も合わせたければここで
+			// キャラの向きも合わせる
+            FaceMoveDir(moveDir);
         }
         else
         {
@@ -263,7 +262,21 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
     }
 }
 
-
 void EnemyAIComponent::UpdateChase(const float deltatime)
 {
+}
+
+void EnemyAIComponent::FaceMoveDir(const Vector3& moveDir)
+{
+    if (moveDir.LengthSquared() <= 0.0001f)
+        return;
+
+    Vector3 dir = moveDir;
+    dir.Normalize();
+
+    // Zマイナスが前、という前提は Patrol と同じ
+    float yaw = std::atan2(-dir.x, -dir.z);
+
+    Quaternion q = Quaternion::CreateFromAxisAngle(Vector3(0, 1, 0), yaw);
+    m_pOwner->SetRotation(q);
 }

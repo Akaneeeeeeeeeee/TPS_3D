@@ -7,6 +7,8 @@
 #include "system/Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "system/RandomEngine.h"
 #include "Framework/Component/AI/EnemyHearingComponent.h"
+#include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
+#include "system/meshmanager.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -28,151 +30,143 @@ Enemy::~Enemy()
 
 void Enemy::Init(void)
 {
-	// アニメーションオブジェクトを生成
-	this->m_pAnimationObject = std::make_unique<CAnimationObject>();
-	this->m_pAnimationObject->Init();
+    auto& am = AssetManager::GetInstance();
 
-	// メッシュを取得
-	this->m_pAnimationMesh = AssetManager::GetInstance().GetAnimationMesh("Akai");
-	// シェーダーの初期化
-	m_Shader.Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+    // ==========
+    //  アニメ系
+    // ==========
+    // 1) コンポーネント追加
+    m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
-	// アニメーションデータ取得
-	this->m_pAnimationData = AssetManager::GetInstance().GetAnimationData("Akai_Idle");
-	// 現在のアニメーションをセット
-	aiAnimation* animation = m_pAnimationData->GetAnimation("Akai_Idle", 0);
-	this->m_pCurrentAnimation = animation;
-	m_pAnimationMesh->SetCurentAnimation(animation);
-	// アニメーションメッシュをセット
-	this->m_pAnimationObject->SetAnimationMesh(m_pAnimationMesh);
+    // 2) メッシュとシェーダ設定（プレイヤーと同じものを使う想定）
+    CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+    m_pAnimComp->SetMesh(mesh);
 
-	// =========================
-	//  敵の初期位置をランダム決定
-	// =========================
-	auto& rng = RandomEngine::tls();           // スレッドローカル RNG
+    // MeshManager から共通アニメ用シェーダ取得（プレイヤーと同じ）
+    CShader* shader = MeshManager::getShader<CShader>("animshader");
+    m_pAnimComp->SetShader(shader);
 
-	float mapMinX = -2500.0f;
-	float mapMaxX = 2500.0f;
-	float mapMinZ = -2500.0f;
-	float mapMaxZ = 2500.0f;
+    // 3) 必要なクリップをキャッシュ
+    auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+    auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+    auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
 
-	float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
-	float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
+    m_pAnimComp->SetClip(AnimType::Idle, idle);
+    m_pAnimComp->SetClip(AnimType::Walk, walk);
+    m_pAnimComp->SetClip(AnimType::Run, run);
 
-	m_StartPos = Vector3(startX, 5.0f, startZ);
-	m_Transform.SetPosition(m_StartPos);
+    // =================================
+    //  敵の位置決定（あなたの既存処理）
+    // =================================
+    auto& rng = RandomEngine::tls();
 
-	// パトロール範囲
-	float patrolRange = 1000.0f;
+    float mapMinX = -2500.0f;
+    float mapMaxX = 2500.0f;
+    float mapMinZ = -2500.0f;
+    float mapMaxZ = 2500.0f;
 
-	// 1つ目の終点（今までの m_EndPos と同じイメージ）
-	float endOffsetX = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
-	float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
-	m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
+    float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
+    float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
 
-	// ==== ここからコンポーネントをアタッチする ====
+    m_StartPos = Vector3(startX, 5.0f, startZ);
+    m_Transform.SetPosition(m_StartPos);
 
-	m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
-	m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
+    float patrolRange = 1000.0f;
+    float endOffsetX = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+    float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+    m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
 
-	// 1) 物理: CharacterVirtualComponent を付ける
-	{
-		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
-		// 敵用のカプセルサイズ（プレイヤーと同じでも OK）
-		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
-		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
-	}
+    // テストで固定したいならここを上書き（元コードと同じ）
+    m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
+    m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
 
-	// 2) AI: EnemyAIComponent を付けて、巡回ルートなどを渡す
-	{
-		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
+    // ===========================
+    //  物理 / AI / 聴覚コンポーネント
+    // ===========================
 
-		std::vector<Vector3> waypoints;
-		waypoints.reserve(4);
+    // 1) CharacterVirtualComponent
+    {
+        m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
+        m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
+        m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
+    }
 
-		// スタート地点
-		waypoints.push_back(m_StartPos);
+    // 2) EnemyAIComponent
+    {
+        m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
 
-		// エンド地点（上で作った m_EndPos）
-		waypoints.push_back(m_EndPos);
+        std::vector<Vector3> waypoints;
+        waypoints.reserve(2);
+        waypoints.push_back(m_StartPos);
+        waypoints.push_back(m_EndPos);
 
-		// 追加のランダムポイント
-		/*const int extraCount = 2;
-		for (int i = 0; i < extraCount; ++i)
-		{
-			float ox = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
-			float oz = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
-			Vector3 p = m_StartPos + Vector3(ox, 0.0f, oz);
-			waypoints.push_back(p);
-		}*/
+        m_AIComp->SetWayPoints(waypoints);
+        m_AIComp->SetArriveRadius(50.0f);
+        m_AIComp->SetRayLength(300.0f);
+        m_AIComp->SetAvoidWeight(1.5f);
+        m_AIComp->SetEyeHeight(80.0f);
+    }
 
-		m_AIComp->SetWayPoints(waypoints);
-		m_AIComp->SetArriveRadius(50.0f);
-		m_AIComp->SetRayLength(300.0f);
-		m_AIComp->SetAvoidWeight(1.5f);
-		m_AIComp->SetEyeHeight(80.0f);
+    // 3) EnemyHearingComponent
+    {
+        auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
+        hearingComp->SetEnemyAI(m_AIComp);
+    }
 
-	}
-
-	// サウンドコンポーネント追加
-	{
-		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
-		hearingComp->SetEnemyAI(m_AIComp);
-	}
-	GameObject::Init();
+    GameObject::Init();
 }
 
 void Enemy::Update(const float deltatime)
 {
-	if (m_pPlayer && m_pPlayer->IsDestroy()) { m_pPlayer = nullptr; }
+    if (m_pPlayer && m_pPlayer->IsDestroy())
+    {
+        m_pPlayer = nullptr;
+    }
 
-	// コンポーネント更新（AI / CharacterVirtual）を呼ぶ
-	GameObject::Update(deltatime);
+    // まずコンポーネント更新（AI / CharacterVirtual など）
+    GameObject::Update(deltatime);
 
-	// ---- ここからはアニメーション状態だけ決める ----
+    // ==========
+    //  アニメ判定
+    // ==========
+    Vector3 vel = Vector3::Zero;
+    if (m_CharComp)
+    {
+        vel = m_CharComp->GetLinearVelocity();
+        // 垂直速度は無視して水平速度だけ見たいなら
+        // vel.y = 0.0f;
+    }
 
-	// 速度ベクトルから「歩きかアイドルか」を決める
-	Vector3 vel = Vector3::Zero;
-	if (m_CharComp)
-	{
-		vel = m_CharComp->GetLinearVelocity();
-	}
+    if (m_pAnimComp)
+    {
+        float speed = vel.Length();
 
-	aiAnimation* animdata = nullptr;
+        // 閾値は好みで調整
+        const float walkThreshold = 10.0f;   // これ未満なら Idle
+        const float runThreshold = 200.0f;  // これ以上なら Run
 
-	if (vel.Length() > 0.1f)
-	{
-		// Run アニメーション
-		animdata = AssetManager::GetInstance()
-			.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	}
-	else
-	{
-		// Idle アニメーション
-		animdata = AssetManager::GetInstance()
-			.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	}
-
-	if (animdata && m_pCurrentAnimation != animdata)
-	{
-		m_pCurrentAnimation = animdata;
-		m_pAnimationMesh->SetCurentAnimation(m_pCurrentAnimation);
-	}
-
-	m_pAnimationObject->Update(m_AnimationSpeed);
+        if (speed < walkThreshold)
+        {
+            // ほぼ停止 → Idle
+            m_pAnimComp->Play(AnimType::Idle, 0.1f);
+        }
+        else if (speed < runThreshold)
+        {
+            // そこそこ動いている → Walk
+            m_pAnimComp->Play(AnimType::Walk, 0.1f);
+        }
+        else
+        {
+            // だいぶ速い → Run
+            m_pAnimComp->Play(AnimType::Run, 0.1f);
+        }
+    }
 }
 
 
 void Enemy::Draw(void) const
 {
-	// シェーダーをセット
-	m_Shader.SetGPU();
-
-	// ワールド行列をセット
-	Matrix4x4 worldMatrix = this->GetWorldMatrix();
-	Renderer::SetWorldMatrix(&worldMatrix);
-
-	m_pAnimationObject->Draw();
+    Character::Draw();
 }
 
 void Enemy::Uninit(void)

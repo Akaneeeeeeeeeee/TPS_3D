@@ -11,7 +11,7 @@
 */
 void Application::Init(void)
 {
-	m_Game.Init();					// ゲーム初期化	
+	m_Game.Init();					// ゲーム初期化
 }
 
 /**
@@ -29,7 +29,7 @@ void Application::Run(void)
 	{
 		// FPS制御
 		fpsrate.Tick();
-		// ★ Tick で確定したマイクロ秒を Time に渡す
+		// Tick で確定したマイクロ秒を Time に渡す
 		Time::GetInstance().Update(fpsrate.GetDeltaTime());
 
 		m_Game.Update(Time::GetInstance().Deltatime());
