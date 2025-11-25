@@ -19,23 +19,11 @@ public:
     void Update(const float deltatime) override;
     void Uninit(void) override;
 
-	void UpdateIdle(const float deltatime);     // 待機状態の更新(今後実装)
-    void UpdatePatrol(const float deltatime);
-    void UpdateInvestigate(const float deltatime);
-	void UpdateChase(const float deltatime);    // 追跡状態の更新(今後実装)
-
     void Attach(EngineContext& ctx) override;
     void Detach(void) override;
 
-    // 進行方向を向く
-    void FaceMoveDir(const Vector3& moveDir);
-    Vector3 ComputeAvoidDir(const Vector3& desired_dir);
     // 聴覚入力
-    void OnHeardSound(const Vector3& pos)
-    {
-        m_LastHeardPosition = pos;
-        m_State = Investigate;
-    }
+    void OnHeardSound(const Vector3& pos, float strength);
 
     enum State {
         Idle,		    // 待機状態
@@ -53,19 +41,33 @@ public:
     void SetEyeHeight(float height) { m_EyeHeight = height; }
 
 private:
+    void UpdateIdle(const float deltatime);     // 待機状態の更新(今後実装)
+    void UpdatePatrol(const float deltatime);
+    void UpdateInvestigate(const float deltatime);
+    void UpdateChase(const float deltatime);    // 追跡状態の更新(今後実装)
+
+    // 移動計算用のヘルパ
+	Vector3 ComputeAvoidDir(const Vector3& desired_dir);        // 簡易版
+	Vector3 ComputeMoveDirToTarget(const Vector3& target);      // 目標地点への移動方向計算
+    void FaceMoveDir(const Vector3& moveDir);
+
     PhysicsManager* m_Physics = nullptr;
     CharacterVirtualComponent* m_Char = nullptr;
 
     State m_State = State::Patrol;
     Vector3 m_LastHeardPosition = Vector3::Zero;
 
+    //壁回避モード
+    bool m_IsAvoidingWall = false;
+    float m_AvoidSideSign = 1.0f;   // +1 = 左方向、-1 = 右方向
+
     std::vector<Vector3> m_WayPoints;
-    int   m_CurrentIndex = 0;
-    float m_ArriveRadius = 50.0f;
-    float m_RayLength = 300.0f;
-    float m_AvoidWeight = 1.5f;
-    float m_EyeHeight = 80.0f;
+	int   m_CurrentIndex = 0;       // 現在の巡回地点インデックス
+	float m_ArriveRadius = 50.0f;   // 到着判定半径
+	float m_RayLength = 300.0f;     // 障害物回避用のRay長さ
+	float m_AvoidWeight = 1.5f;     // 障害物回避の重み付け
+	float m_EyeHeight = 80.0f;      // Rayの発射位置（敵の目の高さ）
     // 調査状態用
     float m_InvestigateWaitTime = 2.0f; // 調査場所に到着後に何秒様子を見るか
-    float m_InvestigateTimer = 0.0f;
+	float m_InvestigateTimer = 0.0f;    // 調査中の経過時間
 };

@@ -19,8 +19,21 @@ class PhysicsManager;
 class CharacterVirtualComponent : public IComponent
 {
 public:
-    CharacterVirtualComponent() = default;
+    CharacterVirtualComponent()
+        : m_Physics(nullptr)
+        , m_Character(nullptr)
+        , m_InnerBodyID(JPH::BodyID())   // 無効 ID
+    {
+    }
     ~CharacterVirtualComponent() noexcept override; // デストラクタの例外指定を親クラスと一致させるため、noexceptを追加
+
+	// 姿勢
+    enum class Stance
+    {
+		Stand,  // 立ち
+		Crouch, // しゃがみ
+		Prone,  // 伏せ
+    };
 
 	void Init(void) override;
 	void Update(const float deltaTime) override;
@@ -29,6 +42,8 @@ public:
 	void Attach(EngineContext& context) override;
 	void Detach(void) override;
    
+	void SetStance(Stance stance);
+
     // --- 入力 API ---
     void SetMoveDir(const Vector3& dir) { m_MoveDir = dir; }
     void RequestJump(void) { m_WantsJump = true; }
@@ -46,19 +61,30 @@ public:
 private:
     PhysicsManager* m_Physics = nullptr;
     JPH::CharacterVirtual* m_Character = nullptr;
+    JPH::BodyID m_InnerBodyID;
+
+    // 姿勢ごとの Shape を保持
+    JPH::RefConst<JPH::Shape> m_StandShape;
+    JPH::RefConst<JPH::Shape> m_CrouchShape;
+    JPH::RefConst<JPH::Shape> m_ProneShape;
+
+	Stance m_Stance = Stance::Stand;
 
 	// カプセル形状パラメータ
     float   m_HalfHeight = 60.0f;
-    float   m_Radius = 35.0f;
 	Vector3 m_Offset = Vector3::Zero;
+
+    // 姿勢ごとのパラメータ
+    float   m_StandHalfHeight = 60.0f;
+    float   m_CrouchHalfHeight = 40.0f;
+    float   m_ProneHalfHeight = 20.0f;
+    float   m_Radius = 35.0f;
 
 	// 移動制御用パラメータ
     Vector3 m_MoveDir = Vector3::Zero;
     bool    m_WantsJump = false;
 
     // チューニング用
-    //float   m_Acceleration = 800.0f;
-    //float   m_Friction = 1.0f;
     float   m_MoveSpeed = 500.0f;   // 最高速度
     float   m_JumpSpeed = 400.0f;
 };
