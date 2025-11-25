@@ -19,7 +19,12 @@ class PhysicsManager;
 class CharacterVirtualComponent : public IComponent
 {
 public:
-    CharacterVirtualComponent() = default;
+    CharacterVirtualComponent()
+        : m_Physics(nullptr)
+        , m_Character(nullptr)
+        , m_InnerBodyID(JPH::BodyID())   // 無効 ID
+    {
+    }
     ~CharacterVirtualComponent() noexcept override; // デストラクタの例外指定を親クラスと一致させるため、noexceptを追加
 
 	// 姿勢
@@ -56,6 +61,7 @@ public:
 private:
     PhysicsManager* m_Physics = nullptr;
     JPH::CharacterVirtual* m_Character = nullptr;
+    JPH::BodyID m_InnerBodyID;
 
     // 姿勢ごとの Shape を保持
     JPH::RefConst<JPH::Shape> m_StandShape;
@@ -66,7 +72,6 @@ private:
 
 	// カプセル形状パラメータ
     float   m_HalfHeight = 60.0f;
-    float   m_Radius = 35.0f;
 	Vector3 m_Offset = Vector3::Zero;
 
     // 姿勢ごとのパラメータ
