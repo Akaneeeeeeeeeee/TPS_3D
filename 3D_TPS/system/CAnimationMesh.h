@@ -27,7 +27,7 @@ public:
 	// ローカルポーズ生成
 	void BuildLocalPoseMap(
 		const aiAnimation* animationdata,
-		int& CurrentFrame,
+		const int& CurrentFrame,
 		std::unordered_map<std::string, Transform>& localposemap);
 
 	// ポーズのブレンド
@@ -41,8 +41,7 @@ public:
 	void UpdateBoneMatrix(CTreeNode<std::string>* ptree, DirectX::SimpleMath::Matrix matrix);		// 20240714 DX化	
 
 	// アニメーションの更新
-	void Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, int& CurrentFrame);
-	void Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, float& timeSec);
+	void Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, const float& timeSec);
 
 	// ブレンドアニメーションの更新
 	void UpdateBlended(BoneCombMatrix& bonecombarray,

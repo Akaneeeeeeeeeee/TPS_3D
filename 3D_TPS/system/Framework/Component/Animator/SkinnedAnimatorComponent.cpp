@@ -45,7 +45,7 @@ void SkinnedAnimationComponent::Init(void)
 void SkinnedAnimationComponent::Update(const float dt)
 {
     // アニメ時間を進める
-    m_Animator.Update(dt, m_TimeScale);
+    m_Animator.Update(dt);
 
     // ボーン行列計算
     if (m_AnimObject)

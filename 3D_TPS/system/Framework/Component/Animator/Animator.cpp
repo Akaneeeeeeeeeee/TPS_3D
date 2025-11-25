@@ -58,15 +58,13 @@ void Animator::RequestTransition(aiAnimation* nextClip, float blendDurationSec)
     m_BlendTimer = 0.0f;
 }
 
-void Animator::Update(float dt, float timeScale)
+void Animator::Update(const float dt)
 {
     if (!m_CurrentClip)
         return;
 
-    const float scaledDt = dt * timeScale;
-
     // 現在アニメの再生時間 [秒] を進める
-    m_CurrentTimeSec += scaledDt;
+    m_CurrentTimeSec += dt;
 
     if (!IsBlending())
     {
@@ -78,7 +76,7 @@ void Animator::Update(float dt, float timeScale)
     }
 
     // ブレンド中なら次側の時間も進める
-    m_NextTimeSec += scaledDt;
+    m_NextTimeSec += dt;
     m_BlendTimer += dt;
 
     if (m_BlendTimer >= m_BlendDuration)

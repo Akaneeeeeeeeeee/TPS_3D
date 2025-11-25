@@ -38,7 +38,13 @@ void CAnimationObject::UpdateFromAnimator(const Animator& animator)
     else
     {
         // ブレンド
-        m_AnimMesh->UpdateBlended(m_BoneCombMatrix, current, t0Sec, next, t1Sec, alpha);
+		// 秒単位で渡す版
+        //m_AnimMesh->UpdateBlended(m_BoneCombMatrix, current, t0Sec, next, t1Sec, alpha);
+
+		// フレーム番号に変換して渡す版
+        int frame0 = static_cast<int>(t0Sec * (current->mTicksPerSecond > 0.0 ? current->mTicksPerSecond : 1.0));
+        int frame1 = static_cast<int>(t1Sec * (next->mTicksPerSecond > 0.0 ? next->mTicksPerSecond : 1.0));
+        m_AnimMesh->UpdateBlended(m_BoneCombMatrix, current, frame0, next, frame1, alpha);
     }
 }
 

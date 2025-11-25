@@ -26,7 +26,7 @@ public:
         float blendDurationSec);
 
     // 毎フレーム呼ぶ。dt は秒。
-    void Update(float dt, float timeScale = 1.0f);
+    void Update(const float dt);
 
     // ===== メッシュ側に渡すための情報取得 =====
 

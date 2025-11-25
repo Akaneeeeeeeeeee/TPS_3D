@@ -194,53 +194,7 @@ void CAnimationMesh::BlendLocalPose(
 }
 
 // アニメーションの更新
-void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, int& CurrentFrame)
-{
-	if (!animation) { return; }
-
-	// ボーン数分ループしてボーン行列を作成
-	for (unsigned int c = 0; c < animation->mNumChannels; c++)
-	{
-		aiNodeAnim* nodeAnim = animation->mChannels[c];
-
-		// ノード名からボーン辞書を使ってassimpのボーン情報を取得
-		BONE* bone = &(m_BoneDictionary[nodeAnim->mNodeName.C_Str()]);	// 20240714 DX化
-
-		int f;
-
-		f = CurrentFrame % nodeAnim->mNumRotationKeys;				//簡易実装
-		aiQuaternion rot = nodeAnim->mRotationKeys[f].mValue;
-
-		f = CurrentFrame % nodeAnim->mNumPositionKeys;				//簡易実装
-		aiVector3D pos = nodeAnim->mPositionKeys[f].mValue;
-
-		// SRTから行列を生成
-		Vector3 s = { 1.0f,1.0f,1.0f };		// 20240714 DX化
-		Vector3 t = { pos.x,pos.y,pos.z };	// 20240714 DX化
-		Quaternion r{};						// 20240714 DX化
-
-		r.x = rot.x;						// 20240714 DX化
-		r.y = rot.y;						// 20240714 DX化
-		r.z = rot.z;						// 20240714 DX化
-		r.w = rot.w;						// 20240714 DX化
-
-		Matrix scalemtx = Matrix::CreateScale(s.x, s.y, s.z);		// 20240714 DX化
-		Matrix rotmtx = Matrix::CreateFromQuaternion(r);			// 20240714 DX化
-		Matrix transmtx = Matrix::CreateTranslation(t.x, t.y, t.z);	// 20240714 DX化
-
-		bone->AnimationMatrix = scalemtx * rotmtx * transmtx;		// 20240714 DX化
-	}
-
-	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix::Identity);		// 20240714 DX化	
-
-	// ボーンコンビネーション行列の配列をセット
-	for (const auto& bone : m_BoneDictionary)
-	{
-		bonecombarray.ConstantBufferMemory.BoneCombMtx[bone.second.idx] = bone.second.Matrix.Transpose();	// 20240714 DX化
-	}
-}
-
-void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, float& timeSec)
+void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, const float& timeSec)
 {
 	if (!animation) return;
 
@@ -368,7 +322,7 @@ void CAnimationMesh::UpdateBlended(BoneCombMatrix& bonecombarray,
 
 void CAnimationMesh::BuildLocalPoseMap(
 	const aiAnimation* animationdata,
-	int& frame,
+	const int& frame,
 	std::unordered_map<std::string, Transform>& localposemap)
 {
 	if (!animationdata) return;
