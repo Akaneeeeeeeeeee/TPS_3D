@@ -334,7 +334,7 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 	//m_pObjectManager->CreateObject<Character>("testcharacter");
 
 	// メッシュを生成
-	auto terrain = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+	auto terrain = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
 	terrain->Init();
 	//terrain->SetImage("assets/texture/Hole1.png");
 	// スカイドーム生成

@@ -126,3 +126,38 @@ public:
         return true;
     }
 };
+
+// -------------------------
+// BodyFilter: キャラとトリガーを除外
+// -------------------------
+class AvoidCharAndTriggerBodyFilter : public JPH::BodyFilter
+{
+public:
+    explicit AvoidCharAndTriggerBodyFilter(JPH::PhysicsSystem& system)
+        : m_System(system)
+    {
+    }
+
+    bool ShouldCollide(const JPH::BodyID& bodyID) const override
+    {
+        JPH::BodyLockRead lock(m_System.GetBodyLockInterface(), bodyID);
+        if (!lock.Succeeded())
+            return false;
+
+        return ShouldCollideLocked(lock.GetBody());
+    }
+
+    bool ShouldCollideLocked(const JPH::Body& body) const override
+    {
+        auto layer = body.GetObjectLayer();
+
+        // キャラとトリガーはレイキャストの対象外
+        if (layer == Layers::CHARACTER || layer == Layers::TRIGGER)
+            return false;
+
+        return true;
+    }
+
+private:
+    JPH::PhysicsSystem& m_System;
+};

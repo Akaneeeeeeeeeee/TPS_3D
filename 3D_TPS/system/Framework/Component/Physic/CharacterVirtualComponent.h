@@ -59,15 +59,18 @@ public:
 	}
 
 private:
+    // 内部ヘルパ
+    void BuildStanceShapes();
     PhysicsManager* m_Physics = nullptr;
     JPH::CharacterVirtual* m_Character = nullptr;
-    JPH::BodyID m_InnerBodyID;
+	JPH::BodyID m_InnerBodyID;      // Inner BodyのID
 
     // 姿勢ごとの Shape を保持
     JPH::RefConst<JPH::Shape> m_StandShape;
     JPH::RefConst<JPH::Shape> m_CrouchShape;
     JPH::RefConst<JPH::Shape> m_ProneShape;
 
+	// 現在の姿勢
 	Stance m_Stance = Stance::Stand;
 
 	// カプセル形状パラメータ

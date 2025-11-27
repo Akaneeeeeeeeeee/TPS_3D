@@ -9,6 +9,7 @@
 #include "system/LineDrawer.h"
 #include "GameObject/Skydome.h"
 #include "GameObject/Rock.h"
+#include "Framework/GameObject/Terrain/Terrain.h"
 
 #include "system/TriangleDrawer.h"
 #include "system/meshmanager.h"
@@ -42,7 +43,7 @@ void CollisionTestScene::debugFieldHeight() {
 	int sqno = m_field->GetSquareNo(srt.GetPosition());
 	ImGui::SliderInt("square no ", &sqno, -100, 100);
 
-	std::array<Terrain::Face, 2> retfaces;
+	std::array<Field::Face, 2> retfaces;
 	if (sqno != -1) {
 		m_field->GetFace(srt.GetPosition(), retfaces);
 	}
@@ -170,7 +171,7 @@ void CollisionTestScene::debugFieldRemake() {
 
 		// フィールド初期化
 		m_pObjectManager->DeleteObject("field");
-		m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+		m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
 		m_field->setdepth(depth);
 		m_field->setwidth(width);
 		m_field->setdividex(dividex);
@@ -419,7 +420,7 @@ void CollisionTestScene::Draw(void)
 
 	int sqno = m_field->GetSquareNo(m_player->GetTransform().GetPosition());
 
-	std::array<Terrain::Face, 2> retfaces;
+	std::array<Field::Face, 2> retfaces;
 	std::array<Vector3, 3> vertices1;
 	std::array<Vector3, 3> vertices2;
 
@@ -463,7 +464,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	animshader->Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
 	MeshManager::RegisterShader<CShader>("animshader", std::move(animshader));
 
-	// メッシュデータ読み込み（障害物用）
+	// メッシュデータ読み込み
 	{
 		std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
 		smesh->Load("assets/model/obj/box.obj", "assets/model/obj/");
@@ -479,14 +480,25 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		std::unique_ptr<CStaticMeshRenderer> rockrenderer = std::make_unique<CStaticMeshRenderer>();
 		rockrenderer->Init(*rockmesh);
 		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclerock", std::move(rockrenderer));
+
+		// 地形用
+		std::unique_ptr<CStaticMesh> terrainmesh = std::make_unique<CStaticMesh>();
+		terrainmesh->Load("assets/model/factory/factoryterrainmesh.fbx", "assets/model/factory");
+		std::unique_ptr<CStaticMeshRenderer> terrainrenderer = std::make_unique<CStaticMeshRenderer>();
+		terrainrenderer->Init(*terrainmesh);
+		MeshManager::RegisterMesh<CStaticMesh>("terrainmesh", std::move(terrainmesh));
+		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("terrainmesh", std::move(terrainrenderer));
 	}
 
 	// フィールド初期化
-	m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+	m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
+	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
+	m_terrain->SetPosition(Vector3(0.0f, -50.0f, 0.0f));
+	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+	m_player->SetPosition(Vector3(100.0f, 0.0f, 1.0f));
 	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
 	m_player->SetCamera(&m_camera);
 
@@ -503,14 +515,14 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	{
 		// 大きい床（Static）
 		{
-			auto ground = m_pObjectManager->Instantiate<Terrain>("Terrain", Tag::Object);
+			//m_field = m_pObjectManager->Instantiate<Field>("Field", Tag::Object);
 
-			Transform tf = ground->GetTransform();
-			tf.SetScale(Vector3(500.0f, 1.0f, 500.0f));   // 横長・薄い床
-			tf.SetPosition(Vector3(0.0f, -50.0f, 0.0f));   // 少し下げて床位置へ
-			tf.SetRotation(Quaternion::Identity);
+			//Transform tf = m_field->GetTransform();
+			//tf.SetScale(Vector3(500.0f, 1.0f, 500.0f));   // 横長・薄い床
+			//tf.SetPosition(Vector3(0.0f, -50.0f, 0.0f));   // 少し下げて床位置へ
+			//tf.SetRotation(Quaternion::Identity);
 
-			ground->SetTransform(tf);
+			//m_field->SetTransform(tf);
 
 			// Rigidbody を Static に
 			/*ground->AddComponent<BoxCollider>("boxcollider")->Init();
@@ -523,82 +535,16 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		rng.uniformReal(-500, 500);
 
 		// 障害物
-		// Instantiate
-		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
-		obstacleObj->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-		obstacleObj->SetScale(Vector3(50.0f, 100.0f, 300.0f));
-		m_obstacles[0] = obstacleObj;
-
-		//for (int cnt = 0; cnt < OBSTACLEMAX; cnt++)
-		//{
-		//	// Instantiate
-		//	auto obstacleObj =
-		//		m_pObjectManager->Instantiate<obstacle>(
-		//			"Obstacle" + std::to_string(cnt),
-		//			Tag::Object,
-		//			this
-		//		);
-
-		//	// Transform を取得
-		//	Transform tf = obstacleObj->GetTransform();
-
-		//	// ★ ランダムスケール
-		//	tf.SetScale(Vector3(
-		//		static_cast<float>(rng.uniformReal(30.0f, 100.0f)),
-		//		static_cast<float>(rng.uniformReal(30.0f, 100.0f)),
-		//		static_cast<float>(rng.uniformReal(30.0f, 100.0f))
-		//	));
-
-		//	// ★ ランダム Y 回転
-		//	float yrot = static_cast<float>(rng.uniformReal(-PI, PI));
-		//	tf.SetRotation(Quaternion::CreateFromYawPitchRoll(yrot, 0.0f, 0.0f));
-
-		//	// ★ ランダム位置（地形の高さに合わせる）
-		//	Vector3 pos;
-		//	pos.x = static_cast<float>(rng.uniformReal(-1750.0f, 1750.0f));
-		//	pos.z = static_cast<float>(rng.uniformReal(-1750.0f, 1750.0f));
-		//	pos.y = m_field->GetHeight2(pos);
-
-		//	tf.SetPosition(pos);
-
-		//	// 反映
-		//	obstacleObj->SetTransform(tf);
-
-		//	// Init() 実行（FallingBox と同じ順）
-		//	obstacleObj->Init();
-
-		//	// 配列に保持したいなら
-		//	m_obstacles[cnt] = obstacleObj;
-		//}
+		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
+		//obstacleObj->SetPosition(Vector3(100.0f, 0.0f, 0.0f));
+		//obstacleObj->SetScale(Vector3(50.0f, 100.0f, 600.0f));
+		//m_obstacles[0] = obstacleObj;
 
 		// 敵
-		// Instantiate
 		auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
-		// 初期化
 		// 配列に保持
 		m_enemies[0] = enemyObj;
-		//for(int cnt = 0; cnt < ENEMYMAX; cnt++)
-		//{
-		//	// Instantiate
-		//	auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy" + std::to_string(cnt), Tag::Enemy);
-		//	// 初期化
-		//	enemyObj->Init();
-		//	// 配列に保持
-		//	m_enemies[cnt] = enemyObj;
-		//}
-
-		// 落下する箱
-		//{
-		//    auto fallingBox = m_pObjectManager->Instantiate<obstacle>("FallingBox", Tag::Object, this);
-
-		//    Transform tf = fallingBox->GetTransform();
-		//    tf.SetScale(Vector3(20.0f, 20.0f, 20.0f));    // 小さめ
-		//    tf.SetPosition(Vector3(0.0f, 200.0f, 0.0f));  // 高所に配置
-		//    tf.SetRotation(Quaternion::Identity);
-
-		//    fallingBox->SetTransform(tf);
-		//    fallingBox->Init();
-		//}
+		
 	}
 
 	// デバッグ Directional light

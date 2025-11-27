@@ -35,7 +35,7 @@ void TestScene::debugFieldHeight() {
     int sqno = m_field->GetSquareNo(srt.GetPosition());
     ImGui::SliderInt("square no ", &sqno, -100, 100);
 
-    std::array<Terrain::Face, 2> retfaces;
+    std::array<Field::Face, 2> retfaces;
     if (sqno != -1) {
         m_field->GetFace(srt.GetPosition(), retfaces);
     }
@@ -163,7 +163,7 @@ void TestScene::debugFieldRemake() {
 
         // フィールド初期化
         m_pObjectManager->DeleteObject("field");
-        m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+        m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
         m_field->setdepth(depth);
         m_field->setwidth(width);
         m_field->setdividex(dividex);
@@ -420,7 +420,7 @@ void TestScene::Draw(void)
 
     int sqno = m_field->GetSquareNo(m_player->GetTransform().GetPosition());
 
-    std::array<Terrain::Face, 2> retfaces;
+    std::array<Field::Face, 2> retfaces;
     std::array<Vector3, 3> vertices1;
     std::array<Vector3, 3> vertices2;
 
@@ -484,7 +484,7 @@ void TestScene::Init(ObjectManager* mgr)
     }
 
     // フィールド初期化
-    m_field = m_pObjectManager->Instantiate<Terrain>("field", Tag::Field);
+    m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
     m_field->Init();
 
     // プレイヤ

@@ -76,7 +76,7 @@ void Enemy::Init(void)
     float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
     m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
 
-    // テストで固定したいならここを上書き（元コードと同じ）
+    // テストで固定したいならここを上書き
     m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
     m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
 

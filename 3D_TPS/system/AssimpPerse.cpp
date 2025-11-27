@@ -264,49 +264,81 @@ namespace myAssimp{
 				// t番目のテクスチャパス取得
 				if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, t), path))
 				{
-					// テクスチャパス取得
-					std::string texpath = std::string(path.C_Str());
-					std::cout << texpath << std::endl;
+					// 生のパス文字列
+					std::string texpath_raw = std::string(path.C_Str());
+					std::cout << "raw texpath: " << texpath_raw << std::endl;
 
-					texpaths.push_back(texpath);
-					// 内蔵テクスチャかどうかを判断する
-					if (auto tex = pScene->GetEmbeddedTexture(path.C_Str())) {
+					texpaths.push_back(texpath_raw);
 
-						std::unique_ptr<CTexture> texture =std::make_unique<CTexture>();
+					// まず埋め込みテクスチャかどうかだけ判定
+					if (auto tex = pScene->GetEmbeddedTexture(path.C_Str()))
+					{
+						std::unique_ptr<CTexture> texture = std::make_unique<CTexture>();
 
-						// 内蔵テクスチャの場合
 						bool sts = texture->LoadFromFemory(
-							(unsigned char*)tex->pcData,			// 先頭アドレス
-							tex->mWidth);			// テクスチャサイズ（メモリにある場合幅がサイズ）	
-						if (sts) {
-							g_diffuseTextures[m] = std::move(texture);
-						}
-						std::cout << "Embedded" << std::endl;
-
-					}
-					else {
-						// 外部テクスチャファイルの場合
-						std::unique_ptr<CTexture>	texture;
-						texture = std::make_unique<CTexture>();
-
-						std::string texname = texturedirectory + "/" + texpath;
-
-						bool sts=texture->Load(texname);
-						if (sts) {
+							(unsigned char*)tex->pcData,    // 先頭アドレス
+							tex->mWidth                     // 埋め込みの場合は幅=サイズ
+						);
+						if (sts)
+						{
 							g_diffuseTextures[m] = std::move(texture);
 						}
 
-						std::cout << "other Embedded" << std::endl;
+						std::cout << "Embedded texture" << std::endl;
+					}
+					else
+					{
+						// ==== ここから外部テクスチャ用のパス整形 ====
+
+						// バックスラッシュをスラッシュに統一
+						std::string normalized = texpath_raw;
+						std::replace(normalized.begin(), normalized.end(), '\\', '/');
+
+						// ファイル名だけ取り出す
+						std::string filename;
+						{
+							const size_t slash_pos = normalized.find_last_of('/');
+							if (slash_pos == std::string::npos)
+							{
+								// "details.jpg" みたいにパス無しのとき
+								filename = normalized;
+							}
+							else
+							{
+								// "textures/details.jpg" や "F:/.../textures/details.jpg" から
+								// 最後の '/' より後ろだけ取る → "details.jpg"
+								filename = normalized.substr(slash_pos + 1);
+							}
+						}
+
+						// texturedirectory と結合（末尾の / 有無を吸収）
+						std::string base_dir = texturedirectory;
+						if (!base_dir.empty() &&
+							base_dir.back() != '/' &&
+							base_dir.back() != '\\')
+						{
+							base_dir += '/';
+						}
+
+						const std::string texname = base_dir + filename;
+						std::cout << "final texname: " << texname << std::endl;
+
+						std::unique_ptr<CTexture> texture = std::make_unique<CTexture>();
+						bool sts = texture->Load(texname);
+						if (sts)
+						{
+							g_diffuseTextures[m] = std::move(texture);
+						}
+						else
+						{
+							// 必要ならここでログだけ出す
+							std::cout << "failed to load texture: " << texname << std::endl;
+						}
+
+						// ==== 外部テクスチャ処理終わり ====
 					}
 				}
-				// ディフューズテクスチャがなかった場合
-				else
-				{
-					// 外部テクスチャファイルの場合
-					std::unique_ptr<CTexture>	texture;
-					texture = std::make_unique<CTexture>();
-					g_diffuseTextures[m] = std::move(texture);
-				}
+
 			}
 
 			// マテリアル情報を保存

@@ -14,11 +14,6 @@ void obstacle::Init()
 	m_shader = MeshManager::getShader<CShader>("unlightshader");
 	m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
 
-	/*AddComponent<BoxCollider>("BoxCollider", DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f))->Init();
-	auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);
-	rb->SetBodyType(Rigidbody::Type::Static);
-	rb->Init();*/
-
 	auto boxcollider = AddComponent<BoxCollider>("fallingboxcollider");
     boxcollider->SetHalfSize(Vector3(GetScale().x, GetScale().y, GetScale().z));
     boxcollider->SetOffset(Vector3(0.0f, GetScale().y, 0.0f));

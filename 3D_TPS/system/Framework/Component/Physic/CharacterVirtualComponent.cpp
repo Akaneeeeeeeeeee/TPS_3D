@@ -41,6 +41,19 @@ void CharacterVirtualComponent::Detach(void)
     m_Physics = nullptr;
 }
 
+// 姿勢ごとの Shape を作成
+void CharacterVirtualComponent::BuildStanceShapes()
+{
+    using namespace JPH;
+
+    // 立ち
+    m_StandShape = new CapsuleShape(m_StandHalfHeight, m_Radius);
+    // しゃがみ
+    m_CrouchShape = new CapsuleShape(m_CrouchHalfHeight, m_Radius);
+    // 伏せ
+    m_ProneShape = new CapsuleShape(m_ProneHalfHeight, m_Radius);
+}
+
 void CharacterVirtualComponent::Init(void)
 {
     if (!m_Physics) { return; }
@@ -48,16 +61,16 @@ void CharacterVirtualComponent::Init(void)
     using namespace JPH;
 
     // ---- キャラ専用の重力からジャンプ初速度を計算 ----
-    float g_char = std::abs(CHAR_GRAVITY_Y);             // ≒ 980
+    float g_char = std::abs(CHAR_GRAVITY_Y);             // 980
     m_JumpSpeed = std::sqrt(2.0f * g_char * DESIRED_JUMP_HEIGHT);
 
-    // Capsule shape 作成（立ち姿）
-    RefConst<Shape> shape = new CapsuleShape(m_HalfHeight, m_Radius);
+	// 各姿勢の Shape を作成
+    this->BuildStanceShapes();
 
     Ref<CharacterVirtualSettings> settings = new CharacterVirtualSettings();
 
-    // カプセル Shape
     // 初期は立ち姿
+    m_Stance = Stance::Stand;
     settings->mShape = m_StandShape;
     settings->mInnerBodyShape = m_StandShape;       // Inner Body も同じ形
     settings->mInnerBodyLayer = Layers::CHARACTER;
@@ -69,6 +82,7 @@ void CharacterVirtualComponent::Init(void)
     settings->mUp = JPH::Vec3::sAxisY();
     settings->mSupportingVolume = JPH::Plane(settings->mUp, -m_Radius);
 
+    // 開始位置
     JPH::RVec3 start_pos = ToJPH(m_pOwner->GetPosition());
     JPH::Quat  rot = JPH::Quat::sIdentity();
     JPH::PhysicsSystem* system = &m_Physics->GetSystem();
@@ -80,6 +94,9 @@ void CharacterVirtualComponent::Init(void)
         rot,
         system
     );
+
+    // InnerBodyID を控える
+    m_InnerBodyID = m_Character->GetInnerBodyID();
 }
 
 void CharacterVirtualComponent::Update(const float dt)

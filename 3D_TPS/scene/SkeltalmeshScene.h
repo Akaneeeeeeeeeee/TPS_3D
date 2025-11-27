@@ -11,7 +11,7 @@
 #include "system/CAnimationData.h"
 #include "system/CAnimationObject.h"
 #include "system/CPlaneMesh.h"
-#include "GameObject/Terrain.h"
+#include "GameObject/Field.h"
 #include "GameObject/Skydome.h"
 #include "system/Framework/GameObject/Player/Player.h"
 #include "system/Framework/GameObject/Enemy/Enemy.h"
@@ -144,7 +144,7 @@ private:
 
 	bool IsClear = false; // クリアしたかどうか
 
-	std::unique_ptr<Terrain>				m_pTerrain;		// 地形メッシュ
+	std::unique_ptr<Field>				m_pTerrain;		// 地形メッシュ
 	std::unique_ptr<Skydome>				m_pSkydome;		// スカイドーム(カリングおかしい)
 	std::unique_ptr<Billboard>				m_pBillboard;	// ビルボード(カリングおかしい)
 	//std::unique_ptr<CPlaneMesh>			m_pplanemesh;	// 平面メッシュ

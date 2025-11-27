@@ -253,6 +253,214 @@ void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
 * @param	target		目標位置
 * @return	移動方向ベクトル（正規化されている）
 */
+//Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
+//{
+//    using namespace JPH;
+//
+//    if (!m_Physics) { return Vector3::Zero; }
+//
+//    auto& system = m_Physics->GetSystem();
+//    auto& npq = system.GetNarrowPhaseQuery();
+//
+//    Vector3 pos = m_pOwner->GetPosition();
+//    Vector3 toTarget = target - pos;
+//    toTarget.y = 0.0f;
+//
+//    float distToTarget = toTarget.Length();
+//    
+//    if (distToTarget < 1.0f) { return Vector3::Zero; }
+//
+//    // 本来進みたい「前方」
+//    Vector3 forward = toTarget / distToTarget;
+//
+//    // 目の高さあたりからレイを飛ばす
+//    Vector3 origin3 = pos;
+//    origin3.y += m_EyeHeight;
+//
+//    float rayLen = m_RayLength;
+//
+//    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
+//    auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
+//    BodyFilter bodyFilter;
+//
+//	// 指定方向にレイを飛ばして、障害物までの距離を返すヘルパ
+//    auto castDist = [&](const Vector3& dir3) -> float
+//        {
+//            Vector3 d = dir3;
+//            if (d.LengthSquared() < 0.0001f) { return rayLen; }
+//            d.Normalize();
+//
+//            RVec3 origin(origin3.x, origin3.y, origin3.z);
+//            Vec3  jdir(d.x, d.y, d.z);
+//
+//            RRayCast ray(origin, jdir * rayLen);
+//            RayCastResult hit;
+//
+//            if (npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
+//            {
+//                // 当たった距離
+//                return hit.mFraction * rayLen;
+//            }
+//            // 何も当たらなければ最大距離まで空いている
+//            return rayLen;
+//        };
+//
+//    // 横方向（水平面の右ベクトル）
+//    Vector3 side(-forward.z, 0.0f, forward.x);
+//
+//    // 前・左前・右前への空き具合
+//    float centerFree = castDist(forward);
+//    float leftFree = castDist(forward + side);
+//    float rightFree = castDist(forward - side);
+//
+//    const float blockThreshold = rayLen * 0.6f; // この距離以内に障害物があれば「塞がれている」
+//
+//    bool frontBlocked = centerFree < blockThreshold;
+//
+//    if (!frontBlocked)
+//    {
+//        // 前が空いたら回避モード解除して、素直に前進
+//        m_IsAvoidingWall = false;
+//        return forward;
+//    }
+//
+//    // ここに来るのは「前が壁で塞がれている」ケース
+//
+//    if (!m_IsAvoidingWall)
+//    {
+//        // 回避モードに入る瞬間：左と右のどちらに回り込むか決める
+//        m_IsAvoidingWall = true;
+//
+//        // 右側のほうが空いていれば右に回り込む（side に -1）
+//        m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
+//    }
+//
+//    // 回避モード中：障害物に沿って「横方向＋少し前」の方向へ進む
+//
+//    Vector3 wallDir = side * m_AvoidSideSign; // 左 or 右
+//    wallDir.y = 0.0f;
+//    wallDir.Normalize();
+//
+//    // 壁に沿って進みつつ、少しだけターゲット方向も混ぜる
+//    const float alongWallWeight = 0.5f; // 0.7: ほぼ壁沿い、0.3: 目標方向
+//    const float toTargetWeight = 1.0f - alongWallWeight;
+//
+//    Vector3 moveDir = wallDir * alongWallWeight + forward * toTargetWeight;
+//
+//    if (moveDir.LengthSquared() < 0.0001f) { return Vector3::Zero; }
+//
+//    moveDir.Normalize();
+//    return moveDir;
+//}
+
+
+// EnemyAIComponent.cpp
+
+//Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
+//{
+//    using namespace JPH;
+//
+//    if (!m_Physics) { return Vector3::Zero; }
+//
+//    auto& system = m_Physics->GetSystem();
+//    auto& npq = system.GetNarrowPhaseQuery();
+//
+//    Vector3 pos = m_pOwner->GetPosition();
+//    Vector3 toTarget = target - pos;
+//    toTarget.y = 0.0f;
+//
+//    float distToTarget = toTarget.Length();
+//    // ほぼ到着扱い
+//    if (distToTarget < m_ArriveRadius * 0.5f)
+//    {
+//        m_IsAvoidingWall = false;
+//        return Vector3::Zero;
+//    }
+//
+//    // 本来進みたい方向
+//    Vector3 forward = toTarget / distToTarget;
+//
+//    // レイ原点（目の高さ）
+//    Vector3 origin3 = pos;
+//    origin3.y += m_EyeHeight;
+//
+//    float rayLen = m_RayLength;
+//    float maxCheckDist = std::min(rayLen, distToTarget);
+//
+//    // 目標までの半分くらいで「塞がれた」判定
+//    float blockThreshold = maxCheckDist * 0.5f;
+//
+//    // 地形だけを見たいので NON_MOVING に当てる
+//    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::NON_MOVING);
+//    auto objFilter = system.GetDefaultLayerFilter(Layers::NON_MOVING);
+//
+//    JPH::BodyFilter bodyFilter; // 必要ならここをカスタム
+//
+//    auto castDist = [&](const Vector3& dir3) -> float
+//        {
+//            Vector3 d = dir3;
+//            if (d.LengthSquared() < 0.0001f) { return maxCheckDist; }
+//            d.Normalize();
+//
+//            RVec3 origin(origin3.x, origin3.y, origin3.z);
+//            Vec3  jdir(d.x, d.y, d.z);
+//
+//            RRayCast ray(origin, jdir * maxCheckDist);
+//            RayCastResult hit;
+//
+//            if (npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
+//            {
+//                return hit.mFraction * maxCheckDist;
+//            }
+//            return maxCheckDist;
+//        };
+//
+//    // XZ 平面の右方向（side）
+//    Vector3 side(-forward.z, 0.0f, forward.x);
+//    if (side.LengthSquared() < 0.0001f)
+//    {
+//        // forward が(0,0,±1)に近い場合の保険
+//        side = Vector3(1, 0, 0);
+//    }
+//
+//    float centerFree = castDist(forward);
+//    float leftFree = castDist(forward + side);
+//    float rightFree = castDist(forward - side);
+//
+//    bool frontBlocked = centerFree < blockThreshold;
+//
+//    if (!frontBlocked)
+//    {
+//        // 前が空いたら回避モード解除して素直に前進
+//        m_IsAvoidingWall = false;
+//        return forward;
+//    }
+//
+//    // ここに来るのは「前が塞がれている」ケース
+//
+//    if (!m_IsAvoidingWall)
+//    {
+//        // 回避開始フレームだけ左右決定
+//        m_IsAvoidingWall = true;
+//        // 右側のほうが空いていたら右回り（side に -1）
+//        m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
+//    }
+//
+//    // ★ 回避中は「壁方向のみ」で進む
+//    Vector3 moveDir = side * m_AvoidSideSign;
+//    moveDir.y = 0.0f;
+//
+//    if (moveDir.LengthSquared() < 0.0001f)
+//    {
+//        // 万一ゼロになったときの保険
+//        moveDir = forward;
+//    }
+//
+//    moveDir.Normalize();
+//    return moveDir;
+//}
+
+
 Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 {
     using namespace JPH;
@@ -267,86 +475,75 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     toTarget.y = 0.0f;
 
     float distToTarget = toTarget.Length();
-    
-    if (distToTarget < 1.0f) { return Vector3::Zero; }
+    if (distToTarget < m_ArriveRadius * 0.5f)
+    {
+        m_IsAvoidingWall = false;
+        return Vector3::Zero;
+    }
 
-    // 本来進みたい「前方」
     Vector3 forward = toTarget / distToTarget;
 
-    // 目の高さあたりからレイを飛ばす
     Vector3 origin3 = pos;
     origin3.y += m_EyeHeight;
 
     float rayLen = m_RayLength;
+    float maxCheckDist = std::min(rayLen, distToTarget);
+    //float blockThreshold = maxCheckDist * 0.5f;
+    float blockThreshold = maxCheckDist;
 
+    // レイの持ち主は「キャラ」なので CHARACTER を渡す
     auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
     auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
-    BodyFilter bodyFilter;
+
+    // キャラ／トリガー（必要なら MOVING も）を無視する BodyFilter
+    AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
     auto castDist = [&](const Vector3& dir3) -> float
         {
             Vector3 d = dir3;
-            if (d.LengthSquared() < 0.0001f) { return rayLen; }
+            if (d.LengthSquared() < 0.0001f) { return maxCheckDist; }
             d.Normalize();
 
             RVec3 origin(origin3.x, origin3.y, origin3.z);
             Vec3  jdir(d.x, d.y, d.z);
 
-            RRayCast ray(origin, jdir * rayLen);
+            RRayCast ray(origin, jdir * maxCheckDist);
             RayCastResult hit;
 
             if (npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
             {
-                // 当たった距離
-                return hit.mFraction * rayLen;
+                return hit.mFraction * maxCheckDist;
             }
-            // 何も当たらなければ最大距離まで空いている
-            return rayLen;
+            return maxCheckDist;
         };
 
-    // 横方向（水平面の右ベクトル）
     Vector3 side(-forward.z, 0.0f, forward.x);
+    if (side.LengthSquared() < 0.0001f)
+        side = Vector3(1, 0, 0);
 
-    // 前・左前・右前への空き具合
     float centerFree = castDist(forward);
     float leftFree = castDist(forward + side);
     float rightFree = castDist(forward - side);
-
-    const float blockThreshold = rayLen * 0.6f; // この距離以内に障害物があれば「塞がれている」
 
     bool frontBlocked = centerFree < blockThreshold;
 
     if (!frontBlocked)
     {
-        // 前が空いたら回避モード解除して、素直に前進
         m_IsAvoidingWall = false;
         return forward;
     }
 
-    // ここに来るのは「前が壁で塞がれている」ケース
-
     if (!m_IsAvoidingWall)
     {
-        // ★ 回避モードに入る瞬間：左と右のどちらに回り込むか決める
         m_IsAvoidingWall = true;
-
-        // 右側のほうが空いていれば右に回り込む（side に -1）
         m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
     }
 
-    // 回避モード中：障害物に沿って「横方向＋少し前」の方向へ進む
+    Vector3 moveDir = side * m_AvoidSideSign;
+    moveDir.y = 0.0f;
 
-    Vector3 wallDir = side * m_AvoidSideSign; // 左 or 右
-    wallDir.y = 0.0f;
-    wallDir.Normalize();
-
-    // 壁に沿って進みつつ、少しだけターゲット方向も混ぜる
-    const float alongWallWeight = 0.7f; // 0.7: ほぼ壁沿い、0.3: 目標方向
-    const float toTargetWeight = 1.0f - alongWallWeight;
-
-    Vector3 moveDir = wallDir * alongWallWeight + forward * toTargetWeight;
-
-    if (moveDir.LengthSquared() < 0.0001f) { return Vector3::Zero; }
+    if (moveDir.LengthSquared() < 0.0001f)
+        moveDir = forward;
 
     moveDir.Normalize();
     return moveDir;

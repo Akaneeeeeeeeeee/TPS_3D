@@ -151,6 +151,9 @@
     <Filter Include="ソース ファイル\MyFramework\Component\Animator">
       <UniqueIdentifier>{6377d4e5-ffca-4bca-b02b-be6e0a49c503}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\Terrain">
+      <UniqueIdentifier>{8b344675-7fd7-4630-8835-236ed0ff6e6b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -423,7 +426,7 @@
     <ClInclude Include="system\GameObject\Skydome.h">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="system\GameObject\Terrain.h">
+    <ClInclude Include="system\GameObject\Field.h">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="system\TriangleDrawer.h">
@@ -506,6 +509,9 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -749,7 +755,7 @@
     <ClCompile Include="system\DebugUI.cpp">
       <Filter>ソース ファイル\system\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="system\GameObject\Terrain.cpp">
+    <ClCompile Include="system\GameObject\Field.cpp">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\CharacterVirtualComponent.cpp">
@@ -769,6 +775,9 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Animator</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
