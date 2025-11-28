@@ -12,10 +12,8 @@
 void Terrain::Init()
 {
     // メッシュ／レンダラー／シェーダー取得
-    m_mesh = MeshManager::getMesh<CStaticMesh>("townmesh");
-    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("townrenderer");
-    /*m_mesh = MeshManager::getMesh<CStaticMesh>("terrainmesh");
-    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("terrainmesh");*/
+    m_mesh = MeshManager::getMesh<CStaticMesh>("terrainmesh");
+    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("terrainmesh");
     m_shader = MeshManager::getShader<CShader>("unlightshader"); // 実際のキー名に合わせる
 
     // 物理メッシュコライダを追加

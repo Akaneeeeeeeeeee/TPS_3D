@@ -498,7 +498,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
 	// ƒvƒŒƒCƒ„
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(100.0f, 0.0f, 1.0f));
+	m_player->SetPosition(Vector3(100.0f, 100.0f, 1.0f));
 	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
 	m_player->SetCamera(&m_camera);
 

@@ -35,9 +35,9 @@ void Player::Init(void)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	// 2) メッシュとシェーダ設定
-	CAnimationMesh* mesh = am.GetAnimationMesh("maincharacter");
+	//CAnimationMesh* mesh = am.GetAnimationMesh("maincharacter");
 	//CAnimationMesh* mesh = am.GetAnimationMesh("character");
-	//CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
 	m_pAnimComp->SetMesh(mesh);
 	CShader* shader = MeshManager::getShader<CShader>("animshader");
 	m_pAnimComp->SetShader(shader);
