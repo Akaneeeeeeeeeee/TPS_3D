@@ -50,6 +50,7 @@ public:
 	void SetOffset(const Vector3& offset) { m_Offset = offset; }
 
 	Vector3 GetLinearVelocity(void) const;
+    float GetHorizontalSpeed(void) const;
 
 	// カプセル形状
 	void SetCapsule(float halfHeight, float radius)
@@ -57,6 +58,8 @@ public:
         m_HalfHeight = halfHeight;
 		m_Radius = radius;
 	}
+
+    bool IsOnGround(void) const;
 
 private:
     // 内部ヘルパ
@@ -79,9 +82,14 @@ private:
 
     // 姿勢ごとのパラメータ
     float   m_StandHalfHeight = 60.0f;
-    float   m_CrouchHalfHeight = 40.0f;
+    float   m_CrouchHalfHeight = 20.0f;
     float   m_ProneHalfHeight = 20.0f;
     float   m_Radius = 35.0f;
+
+	// 姿勢ごとのオフセット
+    Vector3 m_StandOffset{};
+    Vector3 m_CrouchOffset{};
+    Vector3 m_ProneOffset{};
 
 	// 移動制御用パラメータ
     Vector3 m_MoveDir = Vector3::Zero;

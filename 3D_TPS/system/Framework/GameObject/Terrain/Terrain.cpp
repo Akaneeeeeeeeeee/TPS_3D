@@ -12,8 +12,10 @@
 void Terrain::Init()
 {
     // メッシュ／レンダラー／シェーダー取得
-    m_mesh = MeshManager::getMesh<CStaticMesh>("terrainmesh");
-    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("terrainmesh");
+    m_mesh = MeshManager::getMesh<CStaticMesh>("townmesh");
+    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("townrenderer");
+    /*m_mesh = MeshManager::getMesh<CStaticMesh>("terrainmesh");
+    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("terrainmesh");*/
     m_shader = MeshManager::getShader<CShader>("unlightshader"); // 実際のキー名に合わせる
 
     // 物理メッシュコライダを追加
@@ -32,7 +34,7 @@ void Terrain::Init()
 
 
     // 必要ならデバッグ UI 登録
-    DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
+    //DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
 }
 
 void Terrain::Update(const float delta)
@@ -42,8 +44,7 @@ void Terrain::Update(const float delta)
 
 void Terrain::Draw() const
 {
-    if (!m_mesh || !m_meshrenderer || !m_shader)
-        return;
+    if (!m_mesh || !m_meshrenderer || !m_shader) { return; }
 
     Matrix4x4 mtx = m_Transform.GetWorldMatrix();
     Renderer::SetWorldMatrix(&mtx);

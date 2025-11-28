@@ -35,7 +35,9 @@ void Player::Init(void)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	// 2) メッシュとシェーダ設定
-	CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	CAnimationMesh* mesh = am.GetAnimationMesh("maincharacter");
+	//CAnimationMesh* mesh = am.GetAnimationMesh("character");
+	//CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
 	m_pAnimComp->SetMesh(mesh);
 	CShader* shader = MeshManager::getShader<CShader>("animshader");
 	m_pAnimComp->SetShader(shader);
@@ -115,12 +117,15 @@ void Player::Update(const float deltatime)
 		m_Transform.SetRotation(q);
 	}
 
-	// ---- どのアニメを再生したいかだけ決める ----
+	// ---- 3) アニメーション選択 ----
 	float mag = input_dir.Length();
 	if (m_pAnimComp)
 	{
 		if (isCrouching)
 		{
+			// しゃがみ姿勢に設定
+			m_pCharaVirtualComp->SetStance(CharacterVirtualComponent::Stance::Crouch);
+
 			if (mag < 0.1f)
 			{
 				// しゃがみ＋入力なし → しゃがみ待機
@@ -134,6 +139,9 @@ void Player::Update(const float deltatime)
 		}
 		else
 		{
+			// 立ち姿勢に設定
+			m_pCharaVirtualComp->SetStance(CharacterVirtualComponent::Stance::Stand);
+
 			if (mag < 0.1f)
 			{
 				// 立ち＋入力なし → 通常待機
@@ -147,7 +155,7 @@ void Player::Update(const float deltatime)
 		}
 	}
 
-	// ---- 3) CharacterVirtual に入力を渡す ----
+	// ---- 4) CharacterVirtual に入力を渡す ----
 	if (m_pCharaVirtualComp)
 	{
 		// 方向だけ渡す（速さは CharVirtual 側の m_MoveAccel で調整）
@@ -157,10 +165,72 @@ void Player::Update(const float deltatime)
 			m_pCharaVirtualComp->RequestJump();
 	}
 
-	// ---- 4) コンポーネント更新（ここで位置が決まる）----
+	// ---- 5) コンポーネント更新（ここで位置が決まる）----
 	GameObject::Update(deltatime);
 
-	// ---- 5) 位置を使ってカメラ更新 ----
+	// ---- 6) CharacterVirtual の接地判定に同期して足音を出す ----
+	if (m_pCharaVirtualComp && m_FootstepEnabled)
+	{
+		bool  onGround = m_pCharaVirtualComp->IsOnGround();
+		float horizontalSpeed = m_pCharaVirtualComp->GetHorizontalSpeed();
+
+		// 速度がごく小さい場合は「足音なし」とみなす
+		const float moveThreshold = 5.0f; // ユニット/秒（調整用）
+
+		bool isMoving = horizontalSpeed > moveThreshold;
+
+		if (onGround && isMoving)
+		{
+			// しゃがみ中かどうかで間隔を変える
+			float interval = isCrouching ? m_FootstepIntervalCrouch : m_FootstepIntervalRun;
+
+			m_FootstepTimer += deltatime;
+
+			if (m_FootstepTimer >= interval)
+			{
+				m_FootstepTimer = 0.0f;
+
+				// 足音の WorldSoundEvent を飛ばす
+				WorldSoundEvent ev{};
+				ev.Position = GetPosition();
+				ev.Radius = 800.0f;   // 聞こえる距離（調整用）
+				ev.Loudness = isCrouching ? 0.4f : 1.0f; // しゃがみは小さく
+				ev.Volume = 1.0f;     // 実音量（オーディオ側用に使いたければ）
+				ev.Type = SoundType::Footstep;
+
+				SoundManager::GetInstance().EmitSound(ev);
+			}
+		}
+		else
+		{
+			// 空中や停止中はタイマーをリセット
+			m_FootstepTimer = 0.0f;
+		}
+
+		// 着地音をつけたいならここで「前フレーム非接地 → 今フレーム接地」を見る
+		if (!m_WasOnGround && onGround)
+		{
+			// 着地時の縦速度から強さを決めるなども可能
+			Vector3 v = m_pCharaVirtualComp->GetLinearVelocity();
+			float   vy = v.y;
+			float   impact = std::max(0.0f, -vy); // 下向き速度
+
+			if (impact > 200.0f) // そこそこ高いところから落ちたときだけ
+			{
+				WorldSoundEvent ev{};
+				ev.Position = GetPosition();
+				ev.Radius = 900.0f;
+				ev.Loudness = std::clamp(impact / 500.0f, 0.5f, 2.0f); // 雑にスケール
+				ev.Type = SoundType::Footstep; // 着地専用種別を作ってもいい
+
+				SoundManager::GetInstance().EmitSound(ev);
+			}
+		}
+
+		m_WasOnGround = onGround;
+	}
+
+	// ---- 7) 位置を使ってカメラ更新 ----
 	Vector3 pos = m_Transform.GetPosition();
 
 	if (m_pCamera)

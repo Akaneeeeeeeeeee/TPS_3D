@@ -116,7 +116,7 @@ void Game::Draw()
 	m_SceneManager.Draw();
 
 	// 物理デバッグ描画
-	m_PhysicsManager.DebugDraw();
+	//m_PhysicsManager.DebugDraw();
 
 
 	/*m_RenderManager.CollectRenderInfo();

@@ -5,6 +5,7 @@
 // 前方宣言
 class PhysicsManager;
 class CharacterVirtualComponent;
+class Player;
 
 /*
 * @brief    敵AIコンポーネント
@@ -39,6 +40,19 @@ public:
     void SetRayLength(float length) { m_RayLength = length; }
     void SetAvoidWeight(float weight) { m_AvoidWeight = weight; }
     void SetEyeHeight(float height) { m_EyeHeight = height; }
+    void SetViewParams(float angleDeg, float distance)
+    {
+        m_ViewAngle = angleDeg;
+        m_ViewDistance = distance;
+    }
+    void SetPlayer(Player* player) { m_pPlayer = player; }
+
+    // 任意ターゲット位置を見る
+    bool CanSeeTarget(const Vector3& targetPos) const;
+    // Player* がセットされているならプレイヤーを見る
+    bool CanSeePlayer() const;
+
+    bool IsFound() const { return m_IsFound; }
 
 private:
     void UpdateIdle(const float deltatime);     // 待機状態の更新(今後実装)
@@ -51,8 +65,14 @@ private:
 	Vector3 ComputeMoveDirToTarget(const Vector3& target);      // 目標地点への移動方向計算
     void FaceMoveDir(const Vector3& moveDir);
 
+    // 視線更新
+    void    UpdateSight(const float deltatime);
+    Vector3 GetEyePosition() const;
+    Vector3 GetForwardFromOwnerRotation() const;
+
     PhysicsManager* m_Physics = nullptr;
     CharacterVirtualComponent* m_Char = nullptr;
+    Player* m_pPlayer = nullptr;
 
     State m_State = State::Patrol;
     Vector3 m_LastHeardPosition = Vector3::Zero;
@@ -67,7 +87,17 @@ private:
 	float m_RayLength = 300.0f;     // 障害物回避用のRay長さ
 	float m_AvoidWeight = 1.5f;     // 障害物回避の重み付け
 	float m_EyeHeight = 80.0f;      // Rayの発射位置（敵の目の高さ）
+
     // 調査状態用
     float m_InvestigateWaitTime = 2.0f; // 調査場所に到着後に何秒様子を見るか
 	float m_InvestigateTimer = 0.0f;    // 調査中の経過時間
+
+    float m_ViewAngle = 60.0f;
+    float m_ViewDistance = 500.0f;
+
+    bool  m_IsFound = false;
+
+    // 視線チェックの頻度
+    float m_SightCheckInterval = 0.1f; // 0.1秒ごと
+    float m_SightCheckTimer = 0.0f;
 };

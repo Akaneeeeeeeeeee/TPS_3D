@@ -7,132 +7,133 @@
 
 void EnemyHearingComponent::Attach(EngineContext& context)
 {
-    m_pPhysics = &context.joltPhysicsManager;
+	m_pPhysics = &context.joltPhysicsManager;
 }
 
 void EnemyHearingComponent::Detach(void)
 {
-    m_pPhysics = nullptr;
+	m_pPhysics = nullptr;
 }
 
 static JPH::Vec3 ToJPH(const Vector3& v)
 {
-    return JPH::Vec3(v.x, v.y, v.z);
+	return JPH::Vec3(v.x, v.y, v.z);
 }
 
+/*
+* @brief	音の聞こえ具合を計算する
+* @param	ev		音イベント情報
+* @return	聞こえ具合のスコア（0.0f 〜）
+*/
 float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev) const
 {
-    // Owner or Physics or AI が無いなら聞こえない
-    if (!m_pOwner || !m_pPhysics)
-    {
-        return 0.0f;
-    }
+	if (!m_pOwner || !m_pPhysics)
+		return 0.0f;
 
-    Vector3 myPos = m_pOwner->GetPosition();
-    Vector3 toSound = ev.Position - myPos;
+	// 耳の位置
+	Vector3 earPos = m_pOwner->GetPosition();
+	earPos.y += m_EarHeight;
 
-    float dist = toSound.Length();
-    if (dist <= 0.0001f)
-    {
-        dist = 0.0001f;
-    }
+	Vector3 toSound = ev.Position - earPos;
+	float   dist = toSound.Length();
+	if (dist <= 0.0001f) dist = 0.0001f;
 
-    // 1) 距離で減衰（半径を超えたら聞こえない）
-    if (dist > ev.Radius)
-    {
-        return 0.0f;
-    }
+	// 距離外ならそもそも聞こえない
+	if (dist > ev.Radius)
+		return 0.0f;
 
-    // 距離 0 → 1.0, 距離 = Radius → 0.0
-    float distFactor = 1.0f - (dist / ev.Radius);
-    distFactor = std::clamp(distFactor, 0.0f, 1.0f);
+	float distFactor = 1.0f - (dist / ev.Radius);
+	distFactor = std::clamp(distFactor, 0.0f, 1.0f);
 
-    float loudness = ev.Loudness * distFactor;
+	// 遮蔽物「なし」での基準音量
+	float baseLoudness = ev.Loudness * distFactor;
 
-    // 2) 遮蔽物チェック（Physics でレイキャスト）
-    using namespace JPH;
+	// ここで「遮蔽物なしで聞こえるか」を判定
+	if (baseLoudness < m_Threshold)
+		return 0.0f;
 
-    auto& system = m_pPhysics->GetSystem();
-    auto& npq = system.GetNarrowPhaseQuery();
+	// ここから遮蔽物による減衰
+	using namespace JPH;
 
-    // 耳の高さから音源へ
-    JPH::RVec3 origin(
-        myPos.x,
-        myPos.y + m_EarHeight,
-        myPos.z
-    );
+	auto& system = m_pPhysics->GetSystem();
+	auto& npq = system.GetNarrowPhaseQuery();
 
-    Vector3 dir3 = ev.Position - myPos;
-    dir3.Normalize();
-    JPH::Vec3 dir = ToJPH(dir3);
+	Vector3 dir3 = toSound / dist;
+	RVec3 origin(earPos.x, earPos.y, earPos.z);
+	Vec3  dir = ToJPH(dir3);
 
-    float maxDist = dist;
+	RRayCast ray(origin, dir * dist);
+	RayCastResult hit;
 
-    JPH::RRayCast ray(origin, dir * maxDist);
+	// レイヤ設定
+	auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::NON_MOVING);
+	auto objFilter = system.GetDefaultLayerFilter(Layers::NON_MOVING);
 
-    JPH::RayCastResult hit;
+	// 自分自身やトリガーを無視するフィルタ
+	AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
-    // CHARACTER と同じフィルタ
-    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
-    auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
-    JPH::BodyFilter  bodyFilter;
+	bool blocked = npq.CastRay(
+		ray,
+		hit,
+		bpFilter,
+		objFilter,
+		bodyFilter
+	);
 
-    bool blocked = npq.CastRay(
-        ray,
-        hit,
-        bpFilter,
-        objFilter,
-        bodyFilter
-    );
+	float loudness = baseLoudness;
 
-    if (blocked)
-    {
-        // hit.mFraction が 0〜1 で「どれくらい手前か」
-        // 手前ほど強く減衰させてもいいが、まずは簡単に一定係数にする
-        // ここで一枚の壁でどれくらい音が減るかを簡単に変えられる
-        constexpr float OCCLUSION_FACTOR = 0.3f; // 壁1枚で 70% 減衰
-        loudness *= OCCLUSION_FACTOR;
-    }
+	if (blocked)
+	{
+		// hit.mFraction が 0〜1 で「どれくらい手前か」
+		// 手前ほど強く減衰させてもいいが、まずは簡単に一定係数にする
+		// ここで一枚の壁でどれくらい音が減るかを簡単に変えられる
 
-    return loudness;
+		constexpr float OCCLUSION_FACTOR = 0.3f;
+		loudness *= OCCLUSION_FACTOR;
+	}
+
+	return loudness;
 }
 
 
 void EnemyHearingComponent::Update(const float dt)
 {
-    if (!m_pEnemyAI) { return; }
+	if (!m_pEnemyAI) { return; }
 
-    const auto& events = SoundManager::GetInstance().GetEvents();
+	const auto& events = SoundManager::GetInstance().GetEvents();
 
-    for (const auto& ev : events)
-    {
-        float perceived = ComputePerceivedLoudness(ev);
+	for (const auto& ev : events)
+	{
+		float perceived = ComputePerceivedLoudness(ev);
 
-        // 弱すぎる音は無視
-        if (perceived < m_Threshold)
-        {
-            continue;
-        }
+		// 弱すぎる音は無視
+		//if (perceived < m_Threshold)
+		if (perceived <= 0.0f)
+		{
+			continue;
+		}
 
-        // 音を AI に通知
-        m_pEnemyAI->OnHeardSound(ev.Position, perceived);
-    }
+		// 音を AI に通知
+		m_pEnemyAI->OnHeardSound(ev.Position, perceived);
+	}
 }
 
 void EnemyHearingComponent::SetEnemyAI(EnemyAIComponent* ai)
 {
-    m_pEnemyAI = ai;
+	m_pEnemyAI = ai;
 }
 
 void EnemyHearingComponent::OnWorldSound(const WorldSoundEvent& ev)
 {
-    if (!m_pEnemyAI) { return; }
+	if (!m_pEnemyAI) { return; }
 
-    float perceived = ComputePerceivedLoudness(ev);
+	float perceived = ComputePerceivedLoudness(ev);
 
-    // しきい値未満 → 無視
-    if (perceived < m_Threshold) { return; }
+	// しきい値未満 → 無視
+	//if (perceived < m_Threshold) { return; }
+	// 0 以下なら「聞こえない」扱い
+	if (perceived <= 0.0f) { return; }
 
-    // AI に「この位置でこの強さの音がした」と知らせる
-    m_pEnemyAI->OnHeardSound(ev.Position, perceived);
+	// AI に「この位置でこの強さの音がした」と知らせる
+	m_pEnemyAI->OnHeardSound(ev.Position, perceived);
 }

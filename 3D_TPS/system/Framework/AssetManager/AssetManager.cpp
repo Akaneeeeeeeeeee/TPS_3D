@@ -18,9 +18,13 @@ void AssetManager::Init(void)
 	//m_pTexture = std::make_unique<CTexture>();
 	//m_pTexture->Load("Assets/texture.png");
 	this->LoadAnimationMesh("Akai", "assets/model/akai/akai.fbx", "assets/model/akai/");
+	//this->LoadAnimationMesh("maincharacter", "assets/model/mainchara/SK_ScifiSoldierUE4_headless.fbx", "assets/model/mainchara/textures/");
+	//this->LoadAnimationMesh("zombie", "assets/model/zombie/BaseMesh.fbx", "assets/model/zombie/textures/Texture1/");
+	//this->LoadAnimationMesh("character", "assets/model/akai/character.fbx", "assets/model/akai/");
 	this->LoadAnimationData("Akai_Run", "assets/model/akai/Akai_Run.fbx");
 	this->LoadAnimationData("Akai_Idle", "assets/model/akai/Akai_Idle.fbx");
 	this->LoadStaticMesh("Rock", "assets/model/Rock-Set/Rock_2/Rock_2.fbx", "assets/model/Rock-Set/Rock_2/Textures");
+	//this->LoadStaticMesh("town", "assets/model/town/DesertTown_Scene.FBX", "assets/model/town/Terrain/");
 
 	this->LoadAnimationData("Walking", "assets/model/akai/Walking.fbx");
 	this->LoadAnimationData("Jump", "assets/model/akai/Jump.fbx");
