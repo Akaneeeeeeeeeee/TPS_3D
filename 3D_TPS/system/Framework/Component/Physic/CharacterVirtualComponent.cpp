@@ -77,7 +77,6 @@ void CharacterVirtualComponent::BuildStanceShapes()
 		{
 			// 原点 = 足元 にしたいので、カプセル中心を (0, half_height + radius, 0) に置く
 			float off_y = half_height + radius;
-			//float off_y = half_height + radius;
 			return Vector3(0.0f, off_y, 0.0f);
 		};
 
@@ -102,12 +101,9 @@ void CharacterVirtualComponent::Init(void)
 	Ref<CharacterVirtualSettings> settings = new CharacterVirtualSettings();
 
 	// 初期は立ち姿
-	m_Stance = Stance::Crouch;
-	settings->mShape = m_CrouchShape;
-	settings->mInnerBodyShape = m_CrouchShape;       // Inner Body も同じ形
-	//m_Stance = Stance::Stand;
-	//settings->mShape = m_StandShape;
-	//settings->mInnerBodyShape = m_StandShape;       // Inner Body も同じ形
+	m_Stance = Stance::Stand;
+	settings->mShape = m_StandShape;
+	settings->mInnerBodyShape = m_StandShape;       // Inner Body も同じ形
 	settings->mInnerBodyLayer = Layers::CHARACTER;
 
 	// 姿勢ごとの offset を使う(初期は立ち)
