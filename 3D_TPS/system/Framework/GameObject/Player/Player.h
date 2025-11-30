@@ -33,5 +33,15 @@ public:
 private:
 	FreeCamera* m_pCamera = nullptr;
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
+
+	// 足音用
+	float m_FootstepTimer = 0.0f;
+	float m_FootstepIntervalRun = 0.30f;  // 走り時の間隔
+	float m_FootstepIntervalCrouch = 0.50f;  // しゃがみ歩き
+	bool  m_FootstepEnabled = true;   // 必要なら ON/OFF できるように
+
+	// 「前フレームで接地していたか」も持っておくと着地音などに使える
+	bool  m_WasOnGround = false;
+
 };
 

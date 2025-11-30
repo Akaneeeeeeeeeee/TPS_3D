@@ -195,6 +195,7 @@
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
+    <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
@@ -206,7 +207,7 @@
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
     <ClInclude Include="system\GameObject\Skydome.h" />
-    <ClInclude Include="system\GameObject\Terrain.h" />
+    <ClInclude Include="system\GameObject\Field.h" />
     <ClInclude Include="system\MyIndexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -379,6 +380,7 @@
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
+    <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -414,7 +416,7 @@
     <ClCompile Include="system\GameObject\obstacle.cpp" />
     <ClCompile Include="system\GameObject\Rock.cpp" />
     <ClCompile Include="system\GameObject\Skydome.cpp" />
-    <ClCompile Include="system\GameObject\Terrain.cpp" />
+    <ClCompile Include="system\GameObject\Field.cpp" />
     <ClCompile Include="system\imgui\imgui.cpp" />
     <ClCompile Include="system\imgui\imgui_demo.cpp" />
     <ClCompile Include="system\imgui\imgui_draw.cpp" />

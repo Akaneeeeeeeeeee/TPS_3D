@@ -18,7 +18,7 @@ public:
 		return m_materials;
 	}
 
-	const std::vector<SUBSET>& GetSubsets() {
+	const std::vector<SUBSET>& GetSubsets() const {
 		return m_subsets;
 	}
 

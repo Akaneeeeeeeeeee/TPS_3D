@@ -1,4 +1,5 @@
 #include "StaticMeshCollider.h"
+#include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/EngineContext/EngineContext.h"
 #include "system/Framework/PhysicsSystem/PhysicsManager.h"
 #include "system/Framework/PhysicsSystem/PhysicsLayer.h"
@@ -7,6 +8,7 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include "system/CStaticMesh.h"
 
 
 void StaticMeshCollider::Attach(EngineContext& context)
@@ -25,6 +27,68 @@ void StaticMeshCollider::Init()
     CreateBody(m_Physics->GetBodyInterface());
 }
 
+
+void StaticMeshCollider::SetMesh(const CStaticMesh& mesh)
+{
+    // 既存 Body を消す
+    if (m_Physics && !m_BodyID.IsInvalid())
+    {
+        auto& bi = m_Physics->GetBodyInterface();
+        if (bi.IsAdded(m_BodyID))
+            bi.RemoveBody(m_BodyID);
+        m_BodyID = JPH::BodyID();
+    }
+
+	// オーナーのスケールを取得（必要なら頂点に適用する）
+    Vector3 scale = m_pOwner ? m_pOwner->GetScale() : Vector3::One;
+
+    // 頂点配列・インデックス配列・サブセットを取得
+    const auto& vertices = mesh.GetVertices();   // フラット配列
+    const auto& indices = mesh.GetIndices();    // フラット配列
+    const auto& subsets = mesh.GetSubsets();    // SUBSET 配列
+
+    // 位置リスト
+    m_Positions.clear();
+    m_Positions.reserve(vertices.size());
+
+	// 頂点位置をスケール適用して登録
+    for (auto& v : vertices)
+    {
+        Vector3 p = v.Position;
+        p.x *= scale.x;
+        p.y *= scale.y;
+        p.z *= scale.z;
+
+        m_Positions.emplace_back(JPH::Float3(p.x, p.y, p.z));
+    }
+
+    // 三角形リスト
+    m_Triangles.clear();
+
+    for (const auto& sub : subsets)
+    {
+        const uint32_t index_begin = sub.IndexBase;
+        const uint32_t index_end = sub.IndexBase + sub.IndexNum;
+        const uint32_t vbase = sub.VertexBase;
+
+        // サブセット内のインデックスは「ローカル頂点番号」なので vbase を足す
+        for (uint32_t i = index_begin; i + 2 < index_end; i += 3)
+        {
+            uint32_t i0 = indices[i + 0] + vbase;
+            uint32_t i1 = indices[i + 1] + vbase;
+            uint32_t i2 = indices[i + 2] + vbase;
+
+            JPH::IndexedTriangle tri;
+            tri.mIdx[0] = i0;
+            tri.mIdx[1] = i1;
+            tri.mIdx[2] = i2;
+            tri.mMaterialIndex = 0;
+
+            m_Triangles.emplace_back(tri);
+        }
+    }
+}
+
 void StaticMeshCollider::SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices)
 {
     // 既存の地形を削除（再生成対応）
@@ -39,8 +103,19 @@ void StaticMeshCollider::SetMesh(const std::vector<VERTEX_3D>& vertices, const s
     m_Positions.clear();
     m_Positions.reserve(vertices.size());
 
+    // オーナーのスケールを取得（必要なら頂点に適用する）
+    Vector3 scale = m_pOwner ? m_pOwner->GetScale() : Vector3::One;
+
+    // 頂点位置をスケール適用して登録
     for (auto& v : vertices)
-        m_Positions.emplace_back(JPH::Float3(v.Position.x, v.Position.y, v.Position.z));
+    {
+        Vector3 p = v.Position;
+        p.x *= scale.x;
+        p.y *= scale.y;
+        p.z *= scale.z;
+
+        m_Positions.emplace_back(JPH::Float3(p.x, p.y, p.z));
+    }
 
     // 三角形リスト作成
     m_Triangles.clear();
@@ -77,28 +152,43 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
         tris.push_back(t); // JPH::IndexedTriangle(i0,i1,i2, material)
 
     // どのバージョンでも動く安全策：メンバに代入してから Create()
-    JPH::MeshShapeSettings mesh_settings;
+    MeshShapeSettings mesh_settings;
     mesh_settings.mTriangleVertices = std::move(verts);
     mesh_settings.mIndexedTriangles = std::move(tris);
-    // 例: ランタイム優先
-    // mesh_settings.mBuildQuality = JPH::MeshShapeSettings::EBuildQuality::FavorRuntimePerformance;
 
-    // RefConst<Shape> を受け取る（生ポインタへのキャストは不要/不可）
-    JPH::RefConst<JPH::Shape> shape = mesh_settings.Create().Get();
-    m_Shape = shape; // メンバ保持
+    mesh_settings.Sanitize();
+    
+    // ----- Shape を作成 -----
+    auto result = mesh_settings.Create();          // ShapeSettings::ShapeResult
 
-    JPH::BodyCreationSettings settings(
-        m_Shape,                 // const Shape* に暗黙変換OK
-        JPH::RVec3::sZero(),
-        JPH::Quat::sIdentity(),
-        JPH::EMotionType::Static,
-        Layers::NON_MOVING
+    if (result.HasError())
+    {
+        // ここでエラーメッセージをログに出しておくと原因が分かりやすい
+        // 例:
+        JPH::Trace("MeshShape Create error: %s", result.GetError().c_str());
+        m_Shape = nullptr;
+        return;
+    }
+
+    ShapeRefC shape = result.Get();                // ShapeRefC = RefConst<Shape>
+    m_Shape = shape;
+
+    // オーナーの位置を使うならここで変換
+    Vector3 pos = m_pOwner ? m_pOwner->GetPosition() : Vector3::Zero;
+    RVec3  jpos(pos.x, pos.y, pos.z);
+
+    BodyCreationSettings settings(
+        m_Shape,                 // const Shape* へ暗黙変換
+        jpos,
+        Quat::sIdentity(),
+        EMotionType::Static,
+        Layers::TERRAIN
     );
 
-    m_BodyID = bi.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
+    m_BodyID = bi.CreateAndAddBody(settings, EActivation::Activate);
 }
 
-void StaticMeshCollider::Uninit()
+void StaticMeshCollider::Uninit(void)
 {
     if (m_Physics && m_Physics->GetBodyInterface().IsAdded(m_BodyID))
     {

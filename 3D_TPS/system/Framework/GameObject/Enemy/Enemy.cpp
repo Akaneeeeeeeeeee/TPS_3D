@@ -65,18 +65,18 @@ void Enemy::Init(void)
     float mapMinZ = -2500.0f;
     float mapMaxZ = 2500.0f;
 
-    float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
-    float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
+    //float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
+    //float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
 
-    m_StartPos = Vector3(startX, 5.0f, startZ);
-    m_Transform.SetPosition(m_StartPos);
+    //m_StartPos = Vector3(startX, 5.0f, startZ);
+    //m_Transform.SetPosition(m_StartPos);
 
     float patrolRange = 1000.0f;
     float endOffsetX = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
     float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
     m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
 
-    // テストで固定したいならここを上書き（元コードと同じ）
+    // テストで固定したいならここを上書き
     m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
     m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
 
@@ -105,6 +105,7 @@ void Enemy::Init(void)
         m_AIComp->SetRayLength(300.0f);
         m_AIComp->SetAvoidWeight(1.5f);
         m_AIComp->SetEyeHeight(80.0f);
+		m_AIComp->SetPlayer(m_pPlayer);
     }
 
     // 3) EnemyHearingComponent
@@ -113,7 +114,7 @@ void Enemy::Init(void)
         hearingComp->SetEnemyAI(m_AIComp);
     }
 
-    GameObject::Init();
+    //GameObject::Init();
 }
 
 void Enemy::Update(const float deltatime)
@@ -176,25 +177,5 @@ void Enemy::Uninit(void)
 
 bool Enemy::CanSeePlayer(const Vector3& playerPos) const
 {
-	Vector3 enemyPos = m_Transform.GetPosition();
-
-	// 前方向ベクトル
-	Vector3 forward = Vector3::TransformNormal(Vector3(0, 0, -1),
-		Matrix4x4::CreateFromQuaternion(m_Transform.GetRotation()));
-
-	// プレイヤーへのベクトル（高さを無視）
-	Vector3 toPlayer = playerPos - enemyPos;
-	toPlayer.y = 0; // 水平面だけで判定
-	float distance = toPlayer.Length();
-	if (distance > m_ViewDistance) return false;
-
-	toPlayer.Normalize();
-	forward.y = 0;
-	forward.Normalize();
-
-	// 内積で角度判定
-	float dot = std::clamp(forward.Dot(toPlayer), -1.0f, 1.0f);
-	float angle = std::acos(dot) * (180.0f / 3.14159f);
-
-	return angle <= (m_ViewAngle * 0.5f);
+    return m_AIComp ? m_AIComp->CanSeeTarget(playerPos) : false;
 }

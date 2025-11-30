@@ -1,6 +1,7 @@
 ﻿#include "EnemyAIComponent.h"
 #include "Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "Framework/GameObject/GameObject.h"
+#include "Framework/GameObject/Player/Player.h"
 
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/RayCast.h>
@@ -8,7 +9,11 @@
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 
-
+namespace
+{
+	constexpr float PI = std::numbers::pi_v<float>;
+    constexpr float DEG2RAD = PI / 180.0f;
+}
 
 void EnemyAIComponent::Attach(EngineContext& ctx)
 {
@@ -36,6 +41,9 @@ void EnemyAIComponent::Update(const float dt)
 {
     if (!m_Char) { return; }
 
+    // 視線チェック
+    UpdateSight(dt);
+
     switch (m_State)
     {
     case EnemyAIComponent::Idle:
@@ -48,6 +56,7 @@ void EnemyAIComponent::Update(const float dt)
 		UpdateInvestigate(dt);
         break;
     case EnemyAIComponent::Chase:
+		UpdateChase(dt);
         break;
     default:
         break;
@@ -247,6 +256,110 @@ void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
     m_InvestigateTimer = 0.0f;
 }
 
+Vector3 EnemyAIComponent::GetEyePosition(void) const
+{
+    if (!m_pOwner) return Vector3::Zero;
+
+    Vector3 pos = m_pOwner->GetPosition();
+    pos.y += m_EyeHeight;
+    return pos;
+}
+
+Vector3 EnemyAIComponent::GetForwardFromOwnerRotation(void) const
+{
+    if (!m_pOwner) { return Vector3(0.0f, 0.0f, -1.0f); }
+
+    Quaternion rot = m_pOwner->GetRotation();
+    Vector3 localForward(0.0f, 0.0f, -1.0f);
+    Vector3 worldForward = Vector3::Transform(localForward, rot);
+    worldForward.Normalize();
+    return worldForward;
+}
+
+void EnemyAIComponent::UpdateSight(const float dt)
+{
+    if (!m_pPlayer || !m_Physics || !m_pOwner)
+        return;
+
+    m_SightCheckTimer += dt;
+    if (m_SightCheckTimer < m_SightCheckInterval)
+        return;
+
+    m_SightCheckTimer = 0.0f;
+
+    if (CanSeePlayer())
+    {
+        m_IsFound = true;
+        m_LastHeardPosition = m_pPlayer->GetPosition(); // 視覚でも最後に見た位置を覚えておく
+
+        // 追跡ステートに移るならここ
+        // m_State = Chase;
+    }
+}
+
+bool EnemyAIComponent::CanSeePlayer(void) const
+{
+    if (!m_pPlayer) { return false; }
+
+    Vector3 targetPos = m_pPlayer->GetPosition();
+    // プレイヤーの「頭」を見る場合はここで +高さ
+    targetPos.y += m_EyeHeight;
+
+    return CanSeeTarget(targetPos);
+}
+
+bool EnemyAIComponent::CanSeeTarget(const Vector3& targetPos) const
+{
+    if (!m_Physics || !m_pOwner) return false;
+
+    using namespace JPH;
+
+    // 1. 目の位置
+    Vector3 eyePos = GetEyePosition();
+
+    // 2. 距離チェック
+    Vector3 toTarget = targetPos - eyePos;
+    float   dist = toTarget.Length();
+    if (dist <= 0.0001f || dist > m_ViewDistance)
+        return false;
+
+    // 3. 視野角チェック
+    Vector3 dir = toTarget / dist;
+
+    Vector3 forward = GetForwardFromOwnerRotation();
+    forward.Normalize();
+
+    //float cosAngle = Vector3::Dot(forward, dir);
+	float cosAngle = forward.Dot(dir);
+    float cosHalfFov = std::cos(m_ViewAngle * 0.5f * DEG2RAD);
+
+    if (cosAngle < cosHalfFov)
+        return false;
+
+    // 4. レイキャストで遮蔽物チェック
+    auto& system = m_Physics->GetSystem();
+    auto& npq = system.GetNarrowPhaseQuery();
+
+    RVec3 origin(eyePos.x, eyePos.y, eyePos.z);
+    Vec3  jdir(dir.x, dir.y, dir.z);
+
+    RRayCast ray(origin, jdir * dist);
+    RayCastResult hit;
+
+    // 「遮蔽物」として見たいレイヤ
+    // 地形系だけにしたいなら NON_MOVING など、プロジェクトの定義に合わせる
+    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::NON_MOVING);
+    auto objFilter = system.GetDefaultLayerFilter(Layers::NON_MOVING);
+
+    // 自分自身やトリガーを無視する BodyFilter（既に実装済み前提）
+    AvoidCharAndTriggerBodyFilter bodyFilter(system);
+
+    bool blocked = npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter);
+
+    // 遮蔽物がなければ true
+    return !blocked;
+}
+
 /*
 * @brief	ターゲット位置に向かうための移動方向を計算する
 * @detail	障害物を避けつつターゲットに向かう方向ベクトルを返す
@@ -267,86 +380,75 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     toTarget.y = 0.0f;
 
     float distToTarget = toTarget.Length();
-    
-    if (distToTarget < 1.0f) { return Vector3::Zero; }
+    if (distToTarget < m_ArriveRadius * 0.5f)
+    {
+        m_IsAvoidingWall = false;
+        return Vector3::Zero;
+    }
 
-    // 本来進みたい「前方」
     Vector3 forward = toTarget / distToTarget;
 
-    // 目の高さあたりからレイを飛ばす
     Vector3 origin3 = pos;
     origin3.y += m_EyeHeight;
 
     float rayLen = m_RayLength;
+    float maxCheckDist = std::min(rayLen, distToTarget);
+    //float blockThreshold = maxCheckDist * 0.5f;
+    float blockThreshold = maxCheckDist;
 
+    // レイの持ち主は「キャラ」なので CHARACTER を渡す
     auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
     auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
-    BodyFilter bodyFilter;
+
+    // キャラ／トリガー（必要なら MOVING も）を無視する BodyFilter
+    AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
     auto castDist = [&](const Vector3& dir3) -> float
         {
             Vector3 d = dir3;
-            if (d.LengthSquared() < 0.0001f) { return rayLen; }
+            if (d.LengthSquared() < 0.0001f) { return maxCheckDist; }
             d.Normalize();
 
             RVec3 origin(origin3.x, origin3.y, origin3.z);
             Vec3  jdir(d.x, d.y, d.z);
 
-            RRayCast ray(origin, jdir * rayLen);
+            RRayCast ray(origin, jdir * maxCheckDist);
             RayCastResult hit;
 
             if (npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
             {
-                // 当たった距離
-                return hit.mFraction * rayLen;
+                return hit.mFraction * maxCheckDist;
             }
-            // 何も当たらなければ最大距離まで空いている
-            return rayLen;
+            return maxCheckDist;
         };
 
-    // 横方向（水平面の右ベクトル）
     Vector3 side(-forward.z, 0.0f, forward.x);
+    if (side.LengthSquared() < 0.0001f)
+        side = Vector3(1, 0, 0);
 
-    // 前・左前・右前への空き具合
     float centerFree = castDist(forward);
     float leftFree = castDist(forward + side);
     float rightFree = castDist(forward - side);
-
-    const float blockThreshold = rayLen * 0.6f; // この距離以内に障害物があれば「塞がれている」
 
     bool frontBlocked = centerFree < blockThreshold;
 
     if (!frontBlocked)
     {
-        // 前が空いたら回避モード解除して、素直に前進
         m_IsAvoidingWall = false;
         return forward;
     }
 
-    // ここに来るのは「前が壁で塞がれている」ケース
-
     if (!m_IsAvoidingWall)
     {
-        // ★ 回避モードに入る瞬間：左と右のどちらに回り込むか決める
         m_IsAvoidingWall = true;
-
-        // 右側のほうが空いていれば右に回り込む（side に -1）
         m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
     }
 
-    // 回避モード中：障害物に沿って「横方向＋少し前」の方向へ進む
+    Vector3 moveDir = side * m_AvoidSideSign;
+    moveDir.y = 0.0f;
 
-    Vector3 wallDir = side * m_AvoidSideSign; // 左 or 右
-    wallDir.y = 0.0f;
-    wallDir.Normalize();
-
-    // 壁に沿って進みつつ、少しだけターゲット方向も混ぜる
-    const float alongWallWeight = 0.7f; // 0.7: ほぼ壁沿い、0.3: 目標方向
-    const float toTargetWeight = 1.0f - alongWallWeight;
-
-    Vector3 moveDir = wallDir * alongWallWeight + forward * toTargetWeight;
-
-    if (moveDir.LengthSquared() < 0.0001f) { return Vector3::Zero; }
+    if (moveDir.LengthSquared() < 0.0001f)
+        moveDir = forward;
 
     moveDir.Normalize();
     return moveDir;

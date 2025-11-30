@@ -50,6 +50,7 @@ public:
 	void SetOffset(const Vector3& offset) { m_Offset = offset; }
 
 	Vector3 GetLinearVelocity(void) const;
+    float GetHorizontalSpeed(void) const;
 
 	// カプセル形状
 	void SetCapsule(float halfHeight, float radius)
@@ -58,16 +59,21 @@ public:
 		m_Radius = radius;
 	}
 
+    bool IsOnGround(void) const;
+
 private:
+    // 内部ヘルパ
+    void BuildStanceShapes();
     PhysicsManager* m_Physics = nullptr;
     JPH::CharacterVirtual* m_Character = nullptr;
-    JPH::BodyID m_InnerBodyID;
+	JPH::BodyID m_InnerBodyID;      // Inner BodyのID
 
     // 姿勢ごとの Shape を保持
     JPH::RefConst<JPH::Shape> m_StandShape;
     JPH::RefConst<JPH::Shape> m_CrouchShape;
     JPH::RefConst<JPH::Shape> m_ProneShape;
 
+	// 現在の姿勢
 	Stance m_Stance = Stance::Stand;
 
 	// カプセル形状パラメータ
@@ -76,9 +82,14 @@ private:
 
     // 姿勢ごとのパラメータ
     float   m_StandHalfHeight = 60.0f;
-    float   m_CrouchHalfHeight = 40.0f;
+    float   m_CrouchHalfHeight = 20.0f;
     float   m_ProneHalfHeight = 20.0f;
     float   m_Radius = 35.0f;
+
+	// 姿勢ごとのオフセット
+    Vector3 m_StandOffset{};
+    Vector3 m_CrouchOffset{};
+    Vector3 m_ProneOffset{};
 
 	// 移動制御用パラメータ
     Vector3 m_MoveDir = Vector3::Zero;

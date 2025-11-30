@@ -11,6 +11,36 @@ namespace {
         constexpr float GRAVITY_SCALE = -98.0f;     // 重力加速度スケール
 }
 
+static void MyJoltTraceImpl(const char* inFMT, ...)
+{
+    char buffer[1024];
+
+    va_list list;
+    va_start(list, inFMT);
+    vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, inFMT, list);
+    va_end(list);
+
+	// デバッグログに出力
+    printf("%s\n", buffer);
+}
+
+#ifdef JPH_ENABLE_ASSERTS
+static bool MyJoltAssertFailedImpl(const char* inExpression,
+    const char* inMessage,
+    const char* inFile,
+    UINT inLine)
+{
+    // デバッグログを出してブレークしたいならここで制御
+    char buffer[1024];
+    sprintf_s(buffer, "Jolt Assert Failed: %s\nMessage: %s\nFile: %s(%u)\n",
+        inExpression, inMessage, inFile, inLine);
+    OutputDebugStringA(buffer);
+
+    // true を返すとブレークポイントを張ることを意味する（デフォルト仕様）
+    return true;
+}
+#endif
+
 PhysicsManager::~PhysicsManager()
 {
 #ifdef JPH_DEBUG_RENDERER
@@ -21,6 +51,8 @@ PhysicsManager::~PhysicsManager()
 void PhysicsManager::Init()
 {
     JPH::RegisterDefaultAllocator();
+    // ★ここで差し替える
+    JPH::Trace = MyJoltTraceImpl;
     JPH::Factory::sInstance = new JPH::Factory();
     JPH::RegisterTypes();
 

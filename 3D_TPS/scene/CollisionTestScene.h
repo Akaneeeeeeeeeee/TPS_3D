@@ -10,9 +10,10 @@
 
 #include "Framework/Component/Transform/Transform.h"
 #include "system/SceneClassFactory.h"
-#include "GameObject/Terrain.h"
+#include "GameObject/Field.h"
 #include "Framework/GameObject/Player/Player.h"
 #include "Framework/GameObject/Enemy/Enemy.h"
+#include "Framework/GameObject/Terrain/Terrain.h"
 #include "GameObject/obstacle.h"
 
 /**
@@ -122,7 +123,12 @@ private:
 	/**
 	* @brief フィールド
 	*/
-	Terrain* m_field;
+	Field* m_field;
+
+	/**
+	* @brief 読み込んだ地形
+	*/
+	Terrain* m_terrain;
 
 	/**
 	* @brief プレイヤ

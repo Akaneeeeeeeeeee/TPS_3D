@@ -1,11 +1,13 @@
 #pragma once
 #include "PhysicsComponent.h"
 
+// 前方宣言
+class CStaticMesh;
+
 /*
 * @brief	メッシュコライダーコンポーネント
 * @detail	任意のメッシュ形状のコライダーを提供するコンポーネント
-* @remark	物理演算を行うためには Rigidbody コンポーネントと組み合わせて使用する必要がある
-* @remark   !!
+* @remark	地形は一つしかないため、Rigidbodyは使用せず、このコライダー内でBodyを生成する。
 * @auther	赤根 和樹
 * @date     2025/11/11
 */
@@ -17,6 +19,9 @@ public:
     ~StaticMeshCollider() noexcept override = default;
 
     void CreateBody(JPH::BodyInterface& bi) override;
+
+    // CStaticMesh 版
+    void SetMesh(const CStaticMesh& mesh);
 
     void Init(void) override;
     void Update(const float deltaTime) override {}

@@ -49,7 +49,7 @@ private:
 
     // 閾値(これ未満は「聞こえない」扱い)
     // どのあたりから「もう聞こえない扱い」にするか調整できる
-    float m_Threshold = 0.3f;       
+    float m_Threshold = 0.1f;       
 
 	EnemyAIComponent* m_pEnemyAI = nullptr;
 	PhysicsManager* m_pPhysics = nullptr;

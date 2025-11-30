@@ -24,10 +24,8 @@ void Rock::Init(void)
 	m_MeshRenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclerock");
 	m_Shader = MeshManager::getShader<CShader>("unlightshader");
 
-	auto meshcolider = AddComponent<StaticMeshCollider>("meshcollider");
+	auto meshcolider = AddComponent<StaticMeshCollider>("RockMeshcollider");
 	meshcolider->SetMesh(m_Mesh->GetVertices(), m_Mesh->GetIndices());
-	meshcolider->Init();
-	//AddComponent<MeshRenderer>("");
 }
 
 void Rock::Update(const float deltatime)
