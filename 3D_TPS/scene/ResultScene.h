@@ -89,4 +89,4 @@ private:
 	CShader			m_shader;							// シェーダ
 };
 
-REGISTER_CLASS(ResultScene)
+REGISTER_SCENE(ResultScene)

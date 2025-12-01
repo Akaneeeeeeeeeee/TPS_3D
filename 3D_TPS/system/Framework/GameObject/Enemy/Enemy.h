@@ -27,6 +27,7 @@ public:
 	void Draw(void) const override;
 	void Uninit(void) override;
 
+	void SetPlayer(Player* player) { m_pPlayer = player; }
 	bool CanSeePlayer(const Vector3& playerPos) const;
 
 private:
@@ -45,6 +46,7 @@ private:
 	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
 
-	bool IsFound = false;		// プレイヤーを発見したかどうか
+	// すでにゲームオーバー処理を走らせたかどうか
+	bool m_GameOverTriggered = false;
 };
 

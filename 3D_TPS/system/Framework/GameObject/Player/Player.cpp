@@ -283,3 +283,61 @@ void Player::Uninit(void)
 {
 	GameObject::Uninit();
 }
+
+void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const
+{
+	out.clear();
+
+	auto* ch = m_pCharaVirtualComp;
+	if (!ch)
+	{
+		// 最低限、頭くらいの 1 点だけでも返す
+		out.push_back(GetPosition() + Vector3(0.0f, 80.0f, 0.0f));
+		return;
+	}
+
+	float hh = ch->GetCurrentHalfHeight();
+	float r = ch->GetRadius();
+
+	Vector3 foot = GetPosition();   // 足元（カプセルの下端近辺）
+	float topY = 2.0f * (hh + r); // カプセルの上端近辺
+	float midY = 0.5f * topY;
+
+	Vector3 centerMid = foot + Vector3(0.0f, midY, 0.0f);
+	Vector3 top = foot + Vector3(0.0f, topY - r, 0.0f); // 頭寄り
+	Vector3 bottom = foot + Vector3(0.0f, r, 0.0f); // 足寄り
+
+	// 敵から見た左右方向を決める
+	Vector3 viewDir = centerMid - eyePos;
+	if (viewDir.LengthSquared() < 1e-6f)
+	{
+		viewDir = Vector3(0.0f, 0.0f, -1.0f);
+	}
+	viewDir.Normalize();
+
+	Vector3 up(0.0f, 1.0f, 0.0f);
+	Vector3 side = viewDir.Cross(up); // SimpleMath ならこう
+	if (side.LengthSquared() < 1e-6f)
+	{
+		side = Vector3(1.0f, 0.0f, 0.0f);
+	}
+	side.Normalize();
+
+	// 中心線
+	out.push_back(centerMid);
+	out.push_back(top);
+	out.push_back(bottom);
+
+	// 左右（楕円の横方向）
+	out.push_back(centerMid + side * r);
+	out.push_back(centerMid - side * r);
+}
+
+JPH::BodyID Player::GetInnerBodyID(void) const
+{
+	if (m_pCharaVirtualComp)
+	{
+		return m_pCharaVirtualComp->GetInnerBodyID();
+	}
+	return JPH::BodyID();
+}

@@ -141,4 +141,4 @@ private:
 
 };
 
-REGISTER_CLASS(TestScene)
+REGISTER_SCENE(TestScene)

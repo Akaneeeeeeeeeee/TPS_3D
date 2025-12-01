@@ -18,7 +18,7 @@ public:
      *
      * 遷移が開始されたときに一度だけ呼ばれる。初期化や設定に利用。
      */
-    virtual void start(const std::string& nextSceneName) = 0;
+    virtual void Start(const std::string& nextSceneName) = 0;
 
     /**
      * @brief 遷移演出の更新処理
@@ -26,14 +26,27 @@ public:
      *
      * アニメーションや状態の更新に使用する。
      */
-    virtual void update(uint64_t deltaTime) = 0;
+    virtual void Update(const float deltaTime) = 0;
 
     /**
      * @brief 遷移演出の描画処理
      *
      * 通常のシーン描画後に重ねて表示される。
      */
-    virtual void draw() = 0;
+    virtual void Draw(void) = 0;
+
+    /*
+	* @brief シーン切り替えが必要かどうかを返す
+    * 
+    * フェードアウト完了など「ここでシーン切り替えてほしい」タイミング
+    */
+    virtual bool NeedsSceneChange(void) const { return false; }
+
+    /*
+	* @brief シーンが切り替わったときに呼ばれる
+    * SceneManager が ChangeSceneImmediate を実行した直後に呼ぶ
+    */
+    virtual void OnSceneChanged(void) {}
 
     /**
      * @brief 演出が完了したかどうかを返す
@@ -42,5 +55,5 @@ public:
      *
      * SceneManager はこれを監視して、シーンを切り替えるタイミングを制御する。
      */
-    virtual bool isFinished() const = 0;
+    virtual bool IsFinished() const = 0;
 };

@@ -47,10 +47,8 @@ public:
     }
     void SetPlayer(Player* player) { m_pPlayer = player; }
 
-    // 任意ターゲット位置を見る
-    bool CanSeeTarget(const Vector3& targetPos) const;
     // Player* がセットされているならプレイヤーを見る
-    bool CanSeePlayer() const;
+    bool CanSeePlayer(void) const;
 
     bool IsFound() const { return m_IsFound; }
 
@@ -69,6 +67,9 @@ private:
     void    UpdateSight(const float deltatime);
     Vector3 GetEyePosition() const;
     Vector3 GetForwardFromOwnerRotation() const;
+	bool IsInViewCone(const Vector3& eyePos, const Vector3& targetPos) const;
+	bool CanSeePoint(const Vector3& eyePos, const Vector3& targetPos) const;
+    bool IsOccludedByWorld(const Vector3& eyePos, const Vector3& targetPos) const;
 
     PhysicsManager* m_Physics = nullptr;
     CharacterVirtualComponent* m_Char = nullptr;

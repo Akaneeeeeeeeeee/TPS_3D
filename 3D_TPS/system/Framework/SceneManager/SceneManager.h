@@ -1,75 +1,68 @@
 ﻿#pragma once
 #include "system/noncopyable.h"
-#include "system/SceneClassFactory.h"
-#include "system/Framework/SceneManager/Transition/SceneTransition.h"
-#include <future>
+#include <memory>
+#include <string>
 
+// 前方宣言
 class IScene;
 class ObjectManager;
+class SceneTransition;
 
-struct Load3DInfo {
-	std::string filename;
-	std::string texdirectoryname;
-	Load3DInfo(std::string p1, std::string p2) {
-		filename = p1;
-		texdirectoryname = p2;
-	}
-};
-
-/**
- * @brief シーン管理クラス
- * オブジェクト管理はタグと名前を使うが、シーンの管理はシーンの名前(こちらで定義)のみで行う
- * 
- * シーン切り替え関数が必要
+/*
+* @brief	シーンマネージャークラス
+* @detail	シーンの管理、シーン間の遷移演出を担当するクラス
+* @author	赤根　和樹
+* @date		2025/12/01(最終更新)
+* @remark	シーンの生成にはファクトリを使用する
+* @remarks	SceneManager は「現在シーン 1 つ」だけを持つ
 */
 class SceneManager : public NonCopyable
 {
 public:
-	SceneManager()
-	{
-		// シーン保持しているコンテナを空にする
-		this->m_pScenes.clear();
-		this->m_CurrentSceneName = "";
-		this->IsQuit = false;
-	};
-	~SceneManager() {};
+	SceneManager();
+	~SceneManager();
 
-	template <typename T>
-	void AddScene(const std::string& name)
-	{
-		static_assert(std::is_base_of_v<IScene, T>, "T must be derived from IScene");
-		if (m_pScenes.find(name) == m_pScenes.end()) {
-			m_pScenes[name] = std::make_unique<T>();
-			//m_pScenes[name]->Init(m_pObjectManager);
-		}
-	}
+	//  first_scene_name は "TitleScene" など、REGISTER_SCENE で登録した名前
+	void Init(ObjectManager* object_manager, const std::string& first_scene_name);
 
-	void Init(ObjectManager* _pObjectMgr);		//! 初期化
-	//void Init(SceneClassFactory* _factory, ObjectManager* _pObjectMgr);		//! 初期化
-	void Update(const float deltatime);			//! 更新
-	void Draw(void);					//! 描画
-	void Uninit(void);							//! 終了
+	// 更新
+	void Update(float delta_time);
 
-	void SetCurrentScene(const std::string& name, std::unique_ptr<SceneTransition> transition = nullptr);
-	void ChangeScene(const std::string& nextscenename);
+	// 描画
+	void Draw(void);
 
-	void SetSceneFactory(SceneClassFactory* factory);
-	void SetObjectManager(ObjectManager* _pObjectManager);	//! オブジェクト管理クラスへのポインタをセット
+	// 終了
+	void Uninit();
 
-	bool GetIsQuit(void) const { return IsQuit; }	//! ゲーム終了フラグ取得
-	void SetIsQuit(bool _Flg) { IsQuit = _Flg; }	//! ゲーム終了フラグ設定
+	// 遷移の入り口を 2 種類用意
+	// 外部から「次のシーンに変えたい」ときに呼ぶ
+	// transition が null なら演出なしで即切り替え
+	// 遷移演出をフェード以外にしたくなれば、SceneTransitionの実装を変えるだけでよい。
+	void RequestChangeScene(const std::string& next_scene_name, std::unique_ptr<SceneTransition> transition);
+
+	// 演出なしで即切り替え
+	void ChangeSceneImmediate(const std::string& next_scene_name);
+
+	bool GetIsQuit(void) const { return m_IsQuit; }
+	void SetIsQuit(bool value) { m_IsQuit = value; }
 
 private:
-	std::unordered_map<std::string, std::unique_ptr<IScene>> m_pScenes;	//! シーン配列
-	std::string m_CurrentSceneName;				//! 現在のシーン名
-	ObjectManager* m_pObjectManager;			//! オブジェクト管理クラスへのポインタ
-	//SceneClassFactory* m_pSceneFactory;			//! シーンファクトリへのポインタ
-	std::unique_ptr<SceneTransition> m_Transition;	//! シーン遷移演出オブジェクト
-	bool IsSceneChanging = false;	//! シーン遷移中フラグ
-	bool IsQuit = false;			//! ゲーム終了フラグ
+	// Factory を使ってシーンを生成して Init まで行う
+	// 重いロード処理を非同期にしたくなったらこの中だけに手を入れればよい
+	std::unique_ptr<IScene> CreateScene(const std::string& scene_name);
 
-	// 非同期シーンロード用
-	//std::future<void> m_LoadingTask;
-	//std::atomic<bool> m_LoadingDone{ false };
+private:
+	ObjectManager* m_pObjectManager = nullptr;
+
+	std::unique_ptr<IScene> m_CurrentScene = nullptr;
+	std::string m_CurrentSceneName;
+
+	// 遷移制御
+	bool m_IsSceneChanging = false;
+	std::string m_NextSceneName;
+	std::unique_ptr<SceneTransition> m_Transition = nullptr;
+
+	bool m_IsQuit = false;
+	bool m_SceneChangedInTransition = false; // 今のトランジション中で一度だけ切り替えたか
 };
 

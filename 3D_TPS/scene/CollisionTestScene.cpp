@@ -493,12 +493,12 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	// フィールド初期化
 	m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
 	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
-	m_terrain->SetPosition(Vector3(0.0f, -50.0f, 0.0f));
+	m_terrain->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(100.0f, 100.0f, 1.0f));
+	m_player->SetPosition(Vector3(-300.0f, 10.0f, -100.0f));
 	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
 	m_player->SetCamera(&m_camera);
 
@@ -535,13 +535,18 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		rng.uniformReal(-500, 500);
 
 		// 障害物
-		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
-		//obstacleObj->SetPosition(Vector3(100.0f, 0.0f, 0.0f));
-		//obstacleObj->SetScale(Vector3(50.0f, 100.0f, 600.0f));
-		//m_obstacles[0] = obstacleObj;
+		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
+		// 落下テスト用
+		//obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
+		//obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
+		obstacleObj->SetPosition(Vector3(-300.0f, 10.0f, 0.0f));
+		obstacleObj->SetScale(Vector3(150.0f, 50.0f, 25.0f));
+		m_obstacles[0] = obstacleObj;
 
 		// 敵
 		auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
+		enemyObj->SetPosition(Vector3(-300.0f, 10.0f, 750.0f));
+		enemyObj->SetPlayer(m_player);
 		// 配列に保持
 		m_enemies[0] = enemyObj;
 		

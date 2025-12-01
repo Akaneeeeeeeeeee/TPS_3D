@@ -47,6 +47,10 @@ bool CharacterVirtualComponent::IsOnGround(void) const
 	return m_Character->GetGroundState() == JPH::CharacterVirtual::EGroundState::OnGround;
 }
 
+/*
+* @brief	水平速度の取得
+* @return	水平速度の大きさ
+*/
 float CharacterVirtualComponent::GetHorizontalSpeed(void) const
 {
 	if (!m_Character) { return 0.0f; }
@@ -61,7 +65,21 @@ float CharacterVirtualComponent::GetHorizontalSpeed(void) const
 	return v_xz.Length();
 }
 
-// 姿勢ごとの Shape を作成
+/*
+* @brief	線形速度を取得する
+* @return	線形速度ベクトル
+*/
+Vector3 CharacterVirtualComponent::GetLinearVelocity(void) const
+{
+	if (!m_Character) { return Vector3::Zero; }
+
+	JPH::Vec3 velocity = m_Character->GetLinearVelocity();
+	return Vector3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
+}
+
+/*
+* @brief	姿勢ごとの Shape を作成
+*/
 void CharacterVirtualComponent::BuildStanceShapes()
 {
 	using namespace JPH;
@@ -211,14 +229,10 @@ void CharacterVirtualComponent::Uninit()
 	m_Character = nullptr;
 }
 
-Vector3 CharacterVirtualComponent::GetLinearVelocity(void) const
-{
-	if (!m_Character) { return Vector3::Zero; }
-
-	JPH::Vec3 velocity = m_Character->GetLinearVelocity();
-	return Vector3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
-}
-
+/*
+* @brief	姿勢を設定する
+* @param	s	姿勢
+*/
 void CharacterVirtualComponent::SetStance(Stance s)
 {
 	if (!m_Character || !m_Physics) { return; }
@@ -258,7 +272,7 @@ void CharacterVirtualComponent::SetStance(Stance s)
 	JPH::ShapeFilter shape_filter;
 
 	// 許容するめり込み距離（小さすぎると失敗しやすい）
-	const float max_penetration = 0.1f;
+	const float max_penetration = 40.1f;
 
 	bool ok = m_Character->SetShape(
 		new_shape,
@@ -280,4 +294,15 @@ void CharacterVirtualComponent::SetStance(Stance s)
 	m_Character->SetShapeOffset(ToJPH(new_offset));
 
 	m_Stance = s;
+}
+
+float CharacterVirtualComponent::GetCurrentHalfHeight(void) const
+{
+	switch (m_Stance)
+	{
+	case Stance::Stand:  return m_StandHalfHeight;
+	case Stance::Crouch: return m_CrouchHalfHeight;
+	case Stance::Prone:  return m_ProneHalfHeight;
+	}
+	return m_StandHalfHeight;
 }
