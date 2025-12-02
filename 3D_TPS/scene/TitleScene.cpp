@@ -7,24 +7,7 @@
 #include "system/DebugUI.h"
 #include "system/utility.h"
 #include "system/AimOrientation.h"
-
 #include "TitleScene.h"
-
-//struct Load3DInfo {
-//	std::string filename;
-//	std::string texdirectoryname;
-//	Load3DInfo(std::string p1, std::string p2) {
-//		filename = p1;
-//		texdirectoryname = p2;
-//	}
-//};
-
-std::array<Load3DInfo, 1> g_loadmodel2 =
-{
-		Load3DInfo(
-			"assets/model/akai/akai.fbx",			// モデル名
-			"assets/model/akai/")					// テクスチャのパス
-};
 
 // 平行光源の方向セット
 void TitleScene::debugDirectionalLight()
@@ -91,17 +74,17 @@ void TitleScene::debug3DModelSelect()
 	static int old_item = -1;
 
 	// アイテムのリスト
-	const char* items[] = {
-		g_loadmodel2[0].filename.c_str(),
-		//		g_loadmodel[1].filename.c_str(),
-		//		g_loadmodel[2].filename.c_str(),
-		//		g_loadmodel[3].filename.c_str(),
-		//		g_loadmodel[4].filename.c_str(),
-		//		g_loadmodel[5].filename.c_str(),
-		//		g_loadmodel[6].filename.c_str(),
-		//		g_loadmodel[7].filename.c_str(),
-		//		g_loadmodel[8].filename.c_str(),
-	};
+	//const char* items[] = {
+	//	g_loadmodel2[0].filename.c_str(),
+	//			g_loadmodel[1].filename.c_str(),
+	//			g_loadmodel[2].filename.c_str(),
+	//			g_loadmodel[3].filename.c_str(),
+	//			g_loadmodel[4].filename.c_str(),
+	//			g_loadmodel[5].filename.c_str(),
+	//			g_loadmodel[6].filename.c_str(),
+	//			g_loadmodel[7].filename.c_str(),
+	//			g_loadmodel[8].filename.c_str(),
+	//};
 
 	ImGui::Text("\n\n");
 	ImGui::Separator();

@@ -3,7 +3,9 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
-#include "system/Framework/Scene/IScene.h"
+
+// 前方宣言
+class IScene;
 
 /**
  * @brief シーンのクラスを名前で登録・生成するためのファクトリクラス
@@ -36,8 +38,9 @@ public:
      * @param name クラス名（create() で指定するキー）
      * @param func クラスインスタンスを生成する関数（例：std::make_unique）
      */
-    void RegisterScene(const std::string& name, SceneCreatorFunc func) {
-        m_Registry[name] = func;
+    void RegisterScene(const std::string& name, SceneCreatorFunc func)
+    {
+        m_Registry[name] = std::move(func);
     }
 
     /**
@@ -46,15 +49,18 @@ public:
      * @param name 生成したいクラスの名前（registerClass で登録されたキー）
      * @return std::unique_ptr<IScene> 該当クラスのユニークポインタ（見つからなければ nullptr）
      */
-    std::unique_ptr<IScene> Create(const std::string& name) {
+    std::unique_ptr<IScene> Create(const std::string& name) const
+    {
+		// 登録テーブルから生成関数を探す
         auto it = m_Registry.find(name);
-        if (it != m_Registry.end()) {
-            return it->second();
-        }
-        return nullptr;
+
+        if (it == m_Registry.end()) { return nullptr; }
+		// 見つかったら生成関数を呼び出してインスタンスを返す
+        return it->second();
     }
 
 private:
+	SceneClassFactory() = default;
     /**
      * @brief クラス名と生成関数のマッピングテーブル
      */
@@ -75,14 +81,15 @@ private:
  *
  * @param CLASSNAME 登録対象のクラス名
  */
-#define REGISTER_CLASS(CLASSNAME) \
+#define REGISTER_SCENE(CLASSNAME) \
     namespace { \
         struct CLASSNAME##Registrar { \
             CLASSNAME##Registrar() { \
-                SceneClassFactory::GetInstance().RegisterScene(#CLASSNAME, []() { \
-                    return std::make_unique<CLASSNAME>(); \
-                }); \
+                SceneClassFactory::GetInstance().RegisterScene( \
+                    #CLASSNAME, \
+                    []() { return std::make_unique<CLASSNAME>(); } \
+                ); \
             } \
         }; \
-        static CLASSNAME##Registrar global_##CLASSNAME##_registrar; \
+        static CLASSNAME##Registrar s_##CLASSNAME##_registrar; \
     }

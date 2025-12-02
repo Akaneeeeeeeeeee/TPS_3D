@@ -28,8 +28,10 @@ public:
 	void Draw(void) const override;
 	void Uninit(void) override;
 
-	void SetCamera(FreeCamera* cam) { m_pCamera = cam; }
+	JPH::BodyID GetInnerBodyID() const;
 
+	void SetCamera(FreeCamera* cam) { m_pCamera = cam; }
+	void GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const;	// 視線判定用のサンプリング点を取得
 private:
 	FreeCamera* m_pCamera = nullptr;
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;

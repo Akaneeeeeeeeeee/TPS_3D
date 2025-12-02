@@ -12,21 +12,6 @@
 #include "system/Framework/GameObject/Character/Character.h"
 #include "system/Cube/Cube.h"
 
-//struct Load3DInfo{
-//	std::string filename;
-//	std::string texdirectoryname;
-//	Load3DInfo(std::string p1, std::string p2) {
-//		filename = p1;
-//		texdirectoryname = p2;
-//	}
-//};
-
-std::array<Load3DInfo,1> g_loadmodel = 
-{
-		Load3DInfo(
-			"assets/model/akai/akai.fbx",			// モデル名
-			"assets/model/akai/")					// テクスチャのパス
-};
 
 // 平行光源の方向セット
 void SkeltalmeshScene::debugDirectionalLight()
@@ -93,8 +78,8 @@ void SkeltalmeshScene::debug3DModelSelect()
 	static int old_item = -1;
 
 	// アイテムのリスト
-	const char* items[] = {
-		g_loadmodel[0].filename.c_str(),
+//	const char* items[] = {
+//		g_loadmodel[0].filename.c_str(),
 //		g_loadmodel[1].filename.c_str(),
 //		g_loadmodel[2].filename.c_str(),
 //		g_loadmodel[3].filename.c_str(),
@@ -103,13 +88,13 @@ void SkeltalmeshScene::debug3DModelSelect()
 //		g_loadmodel[6].filename.c_str(),
 //		g_loadmodel[7].filename.c_str(),
 //		g_loadmodel[8].filename.c_str(),
-	};
+//	};
 
 	ImGui::Text("\n\n");
 	ImGui::Separator();
 
-	ImGui::Text("%s",g_loadmodel[current_item].filename.c_str());
-	ImGui::Text("\n\n");
+	//ImGui::Text("%s",g_loadmodel[current_item].filename.c_str());
+	//ImGui::Text("\n\n");
 
 	ImGui::Separator();
 	// 頂点数　三角形数　サブセット数　マテリアル数

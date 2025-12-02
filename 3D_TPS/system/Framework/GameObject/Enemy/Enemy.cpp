@@ -9,6 +9,7 @@
 #include "Framework/Component/AI/EnemyHearingComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 #include "system/meshmanager.h"
+#include "system/Framework/Time/Time.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -30,144 +31,160 @@ Enemy::~Enemy()
 
 void Enemy::Init(void)
 {
-    auto& am = AssetManager::GetInstance();
+	auto& am = AssetManager::GetInstance();
 
-    // ==========
-    //  アニメ系
-    // ==========
-    // 1) コンポーネント追加
-    m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
+	// ==========
+	//  アニメ系
+	// ==========
+	// 1) コンポーネント追加
+	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
-    // 2) メッシュとシェーダ設定（プレイヤーと同じものを使う想定）
-    CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
-    m_pAnimComp->SetMesh(mesh);
+	// 2) メッシュとシェーダ設定（プレイヤーと同じものを使う想定）
+	CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	m_pAnimComp->SetMesh(mesh);
 
-    // MeshManager から共通アニメ用シェーダ取得（プレイヤーと同じ）
-    CShader* shader = MeshManager::getShader<CShader>("animshader");
-    m_pAnimComp->SetShader(shader);
+	// MeshManager から共通アニメ用シェーダ取得（プレイヤーと同じ）
+	CShader* shader = MeshManager::getShader<CShader>("animshader");
+	m_pAnimComp->SetShader(shader);
 
-    // 3) 必要なクリップをキャッシュ
-    auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-    auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-    auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
+	// 3) 必要なクリップをキャッシュ
+	auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+	auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
 
-    m_pAnimComp->SetClip(AnimType::Idle, idle);
-    m_pAnimComp->SetClip(AnimType::Walk, walk);
-    m_pAnimComp->SetClip(AnimType::Run, run);
+	m_pAnimComp->SetClip(AnimType::Idle, idle);
+	m_pAnimComp->SetClip(AnimType::Walk, walk);
+	m_pAnimComp->SetClip(AnimType::Run, run);
 
-    // =================================
-    //  敵の位置決定（あなたの既存処理）
-    // =================================
-    auto& rng = RandomEngine::tls();
+	// =================================
+	//  敵の位置決定（あなたの既存処理）
+	// =================================
+	auto& rng = RandomEngine::tls();
 
-    float mapMinX = -2500.0f;
-    float mapMaxX = 2500.0f;
-    float mapMinZ = -2500.0f;
-    float mapMaxZ = 2500.0f;
+	float mapMinX = -2500.0f;
+	float mapMaxX = 2500.0f;
+	float mapMinZ = -2500.0f;
+	float mapMaxZ = 2500.0f;
 
-    //float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
-    //float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
+	//float startX = static_cast<float>(rng.uniformReal(mapMinX, mapMaxX));
+	//float startZ = static_cast<float>(rng.uniformReal(mapMinZ, mapMaxZ));
 
-    //m_StartPos = Vector3(startX, 5.0f, startZ);
-    //m_Transform.SetPosition(m_StartPos);
+	//m_StartPos = Vector3(startX, 5.0f, startZ);
+	//m_Transform.SetPosition(m_StartPos);
 
-    float patrolRange = 1000.0f;
-    float endOffsetX = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
-    float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
-    m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
+	float patrolRange = 1000.0f;
+	float endOffsetX = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+	float endOffsetZ = static_cast<float>(rng.uniformReal(-patrolRange, patrolRange));
+	m_EndPos = m_StartPos + Vector3(endOffsetX, 0.0f, endOffsetZ);
 
-    // テストで固定したいならここを上書き
-    m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
-    m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
+	// テストで固定したいならここを上書き
+	m_StartPos = Vector3(-300.0f, 10.0f, 1750.0f);
+	m_EndPos = Vector3(-300.0f, 10.0f, 140.0f);
+	//m_StartPos = Vector3(500.0f, 0.0f, 0.0f);
+	//m_EndPos = Vector3(-500.0f, 0.0f, 0.0f);
 
-    // ===========================
-    //  物理 / AI / 聴覚コンポーネント
-    // ===========================
+	// ===========================
+	//  物理 / AI / 聴覚コンポーネント
+	// ===========================
 
-    // 1) CharacterVirtualComponent
-    {
-        m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
-        m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
-        m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
-    }
+	// 1) CharacterVirtualComponent
+	{
+		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
+		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
+		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
+	}
 
-    // 2) EnemyAIComponent
-    {
-        m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
+	// 2) EnemyAIComponent
+	{
+		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
 
-        std::vector<Vector3> waypoints;
-        waypoints.reserve(2);
-        waypoints.push_back(m_StartPos);
-        waypoints.push_back(m_EndPos);
+		std::vector<Vector3> waypoints;
+		waypoints.reserve(2);
+		waypoints.push_back(m_StartPos);
+		waypoints.push_back(m_EndPos);
 
-        m_AIComp->SetWayPoints(waypoints);
-        m_AIComp->SetArriveRadius(50.0f);
-        m_AIComp->SetRayLength(300.0f);
-        m_AIComp->SetAvoidWeight(1.5f);
-        m_AIComp->SetEyeHeight(80.0f);
+		m_AIComp->SetWayPoints(waypoints);
+		//m_AIComp->SetArriveRadius(50.0f);
+		m_AIComp->SetRayLength(300.0f);
+		m_AIComp->SetAvoidWeight(1.5f);
+		m_AIComp->SetEyeHeight(80.0f);
 		m_AIComp->SetPlayer(m_pPlayer);
-    }
+	}
 
-    // 3) EnemyHearingComponent
-    {
-        auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
-        hearingComp->SetEnemyAI(m_AIComp);
-    }
+	// 3) EnemyHearingComponent
+	{
+		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
+		hearingComp->SetEnemyAI(m_AIComp);
+	}
 
-    //GameObject::Init();
+	//GameObject::Init();
 }
 
 void Enemy::Update(const float deltatime)
 {
-    if (m_pPlayer && m_pPlayer->IsDestroy())
-    {
-        m_pPlayer = nullptr;
-    }
+	if (m_pPlayer && m_pPlayer->IsDestroy())
+	{
+		m_pPlayer = nullptr;
+	}
 
-    // まずコンポーネント更新（AI / CharacterVirtual など）
-    GameObject::Update(deltatime);
+	// まずコンポーネント更新（AI / CharacterVirtual など）
+	GameObject::Update(deltatime);
 
-    // ==========
-    //  アニメ判定
-    // ==========
-    Vector3 vel = Vector3::Zero;
-    if (m_CharComp)
-    {
-        vel = m_CharComp->GetLinearVelocity();
-        // 垂直速度は無視して水平速度だけ見たいなら
-        // vel.y = 0.0f;
-    }
+	// ==========
+	//  アニメ判定
+	// ==========
+	Vector3 vel = Vector3::Zero;
+	if (m_CharComp)
+	{
+		vel = m_CharComp->GetLinearVelocity();
+		// 垂直速度は無視して水平速度だけ見たいなら
+		// vel.y = 0.0f;
+	}
 
-    if (m_pAnimComp)
-    {
-        float speed = vel.Length();
+	if (m_pAnimComp)
+	{
+		float speed = vel.Length();
 
-        // 閾値は好みで調整
-        const float walkThreshold = 10.0f;   // これ未満なら Idle
-        const float runThreshold = 200.0f;  // これ以上なら Run
+		// 閾値は好みで調整
+		const float walkThreshold = 10.0f;   // これ未満なら Idle
+		const float runThreshold = 200.0f;  // これ以上なら Run
 
-        if (speed < walkThreshold)
-        {
-            // ほぼ停止 → Idle
-            m_pAnimComp->Play(AnimType::Idle, 0.1f);
-        }
-        else if (speed < runThreshold)
-        {
-            // そこそこ動いている → Walk
-            m_pAnimComp->Play(AnimType::Walk, 0.1f);
-        }
-        else
-        {
-            // だいぶ速い → Run
-            m_pAnimComp->Play(AnimType::Run, 0.1f);
-        }
-    }
+		if (speed < walkThreshold)
+		{
+			// ほぼ停止 → Idle
+			m_pAnimComp->Play(AnimType::Idle, 0.1f);
+		}
+		else if (speed < runThreshold)
+		{
+			// そこそこ動いている → Walk
+			m_pAnimComp->Play(AnimType::Walk, 0.1f);
+		}
+		else
+		{
+			// だいぶ速い → Run
+			m_pAnimComp->Play(AnimType::Run, 0.1f);
+		}
+	}
+
+	// ========== プレイヤー発見 → スロー＋ゲームオーバー ==========
+	if (!m_GameOverTriggered && m_AIComp && m_AIComp->IsFound())
+	{
+		m_GameOverTriggered = true;
+
+		// タイムスケールを 0.5 に
+		Time::GetInstance().SetTimeScale(0.5f);
+
+		// ゲームオーバー遷移
+		// 実際の実装に合わせて書き換える
+		//auto& sm = SceneManager::GetInstance();
+		//sm.ChangeScene;  // もしくは sm.ChangeScene(SceneType::GameOver);
+	}
 }
 
 
 void Enemy::Draw(void) const
 {
-    Character::Draw();
+	Character::Draw();
 }
 
 void Enemy::Uninit(void)
@@ -177,5 +194,5 @@ void Enemy::Uninit(void)
 
 bool Enemy::CanSeePlayer(const Vector3& playerPos) const
 {
-    return m_AIComp ? m_AIComp->CanSeeTarget(playerPos) : false;
+	return m_AIComp ? m_AIComp->CanSeePlayer() : false;
 }

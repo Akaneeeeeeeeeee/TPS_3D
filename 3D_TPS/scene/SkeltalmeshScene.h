@@ -160,4 +160,4 @@ private:
 	CShader			m_arrowshader;						// シェーダ
 };
 
-REGISTER_CLASS(SkeltalmeshScene)
+REGISTER_SCENE(SkeltalmeshScene)

@@ -1,7 +1,6 @@
 #pragma once
 #include "system/Framework/SceneManager/SceneManager.h"
 #include "SceneTransition.h"
-#include "system/BoxDrawer.h"
 
 /**
  * @brief フェード演出によるシーン遷移を行うクラス
@@ -20,37 +19,27 @@ public:
 		FadeInOut       // 暗転→明転
     };
 
-public:
-    /**
-    * @brief コンストラクタ
-     *
-    * @param durationMs フェード時間（ミリ秒）
-    * @param mode フェードモード（デフォルトは FadeInOut）
-    */
-    explicit FadeTransition(SceneManager* _pMgr, float durationMs, Mode mode = Mode::FadeInOut)
-        : m_pSceneManager(_pMgr), m_duration(durationMs), m_mode(mode)
-    {
-        BoxDrawerInit();
-    }
+    // duration_sec は 1.0f なら 1 秒など、SceneManager::Update の delta_time に合わせる
+    explicit FadeTransition(float duration_sec, Mode mode = Mode::FadeInOut);
 
     /**
      * @brief フェード演出の開始処理
     *
     * @param nextSceneName 遷移先のシーン名
     */
-    void start(const std::string& nextSceneName) override;
+    void Start(const std::string& nextSceneName) override;
 
     /**
      * @brief フェード演出の更新処理
     *
     * @param deltaTime 前フレームからの経過時間（マイクロ秒）
     */
-    void update(uint64_t deltaTime) override;
+    void Update(const float deltaTime) override;
 
     /**
     * @brief 黒フェード矩形の描画処理
     */
-    void draw() override;
+    void Draw(void) override;
 
     /**
      * @brief フェード演出の完了判定
@@ -58,29 +47,27 @@ public:
     * @return true フェード演出が終了している
     * @return false 演出中
     */
-    bool isFinished() const override;
+    bool IsFinished(void) const override;
 
-    bool NeedsSceneChange() const { return m_phase == Phase::ChangeScene; }
-    std::string GetNextScene() const { return m_nextScene; }
-    void OnSceneChanged() { m_phase = Phase::FadeIn; }
+    bool NeedsSceneChange(void) const override;
+    void OnSceneChanged(void) override;
 
 private:
-    float m_alpha = 0.0f;
-    float m_duration;
-    uint64_t m_elapsed = 0;
-    std::string m_nextScene;
-    Mode m_mode;
-
-	SceneManager* m_pSceneManager = nullptr;
-
     /**
     * @brief 現在のフェードフェーズ
     */
     enum class Phase {
         None,
         FadeOut,
-        ChangeScene,
+        WaitSceneChange, // SceneManager に切り替えを要求して待っている状態
         FadeIn
-    } m_phase = Phase::None;
+    };
 
+    Phase m_Phase = Phase::None;
+    Mode m_Mode;
+
+	float m_Alpha = 0.0f;   // 0.0f ～ 1.0f
+	float m_Duration;       // ミリ秒
+	float m_Elapsed = 0;    // 経過時間（ミリ秒）
+    std::string m_NextSceneName;
 };

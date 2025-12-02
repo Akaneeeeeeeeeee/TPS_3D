@@ -68,7 +68,7 @@ void Game::Init(void)
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーンマネージャの初期化
-	m_SceneManager.Init(&m_ObjectManager);
+	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	// デバッグ時のみ、デバッグUIの初期化
 #ifdef _DEBUG

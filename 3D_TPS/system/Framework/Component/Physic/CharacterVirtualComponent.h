@@ -51,6 +51,9 @@ public:
 
 	Vector3 GetLinearVelocity(void) const;
     float GetHorizontalSpeed(void) const;
+    float GetCurrentHalfHeight(void) const;
+	float GetRadius(void) const { return m_Radius; }
+	Stance GetStance(void) const { return m_Stance; }
 
 	// カプセル形状
 	void SetCapsule(float halfHeight, float radius)
@@ -58,7 +61,10 @@ public:
         m_HalfHeight = halfHeight;
 		m_Radius = radius;
 	}
-
+    
+	// Inner Body ID 取得
+    const JPH::BodyID& GetInnerBodyID(void) const { return m_InnerBodyID; }
+	// 地面接地判定
     bool IsOnGround(void) const;
 
 private:

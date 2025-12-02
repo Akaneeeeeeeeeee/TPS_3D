@@ -4,82 +4,113 @@
 #include    "system/BoxDrawer.h"
 
 /**
+* @brief コンストラクタ
+* @param durationMs フェード時間（ミリ秒）
+* @param mode フェードモード（デフォルトは FadeInOut）
+*/
+FadeTransition::FadeTransition(float duration_sec, Mode mode)
+	: m_Mode(mode)
+	, m_Duration(duration_sec)
+{
+	BoxDrawerInit();
+}
+
+/**
  * @brief フェード遷移の開始処理
  *
  * モードに応じてフェーズを設定し、必要に応じて先にシーンを切り替える。
  *
  * @param nextSceneName 遷移先のシーン名
  */
-void FadeTransition::start(const std::string& nextSceneName) {
-    m_nextScene = nextSceneName;
-    m_elapsed = 0;
+void FadeTransition::Start(const std::string& nextSceneName) {
+	m_NextSceneName = nextSceneName;
+	m_Elapsed = 0;
 
-    switch (m_mode) {
-    case Mode::FadeOutOnly:
-        m_phase = Phase::FadeOut;
-        m_alpha = 0.0f;
-        break;
-    case Mode::FadeInOnly:
+	switch (m_Mode) {
+	case Mode::FadeOutOnly:
+		m_Phase = Phase::FadeOut;
+		m_Alpha = 0.0f;
+		break;
+	case Mode::FadeInOnly:
 		// ここで切り替えると遷移が二回行われるので、updateで切り替える
-        //m_pSceneManager->ChangeScene(m_nextScene); // 先にシーン変更
-        m_phase = Phase::FadeIn;
-        m_alpha = 1.0f;
-        break;
-    case Mode::FadeInOut:
-        m_phase = Phase::FadeOut;
-        m_alpha = 0.0f;
-        break;
-    }
+		//m_pSceneManager->ChangeScene(m_nextScene); // 先にシーン変更
+		m_Phase = Phase::FadeIn;
+		m_Alpha = 1.0f;
+		break;
+	case Mode::FadeInOut:
+		m_Phase = Phase::FadeOut;
+		m_Alpha = 0.0f;
+		break;
+	}
 }
 
 /**
  * @brief フェードの進行を更新する
  *
- * 経過時間に基づいて透明度（m_alpha）を変化させる。
+ * 経過時間に基づいて透明度（m_Alpha）を変化させる。
  * フェードアウト終了後はシーンを切り替え、フェードインに移行する。
  *
  * @param deltaTime 前フレームからの経過時間（マイクロ秒）
  */
-void FadeTransition::update(uint64_t deltaTime) {
-	// 累積経過時間を更新
-    m_elapsed += deltaTime;
+void FadeTransition::Update(const float deltaTime)
+{
+	// フェーズが None なら何もしない
+	if (m_Phase == Phase::None) { return; }
 
-    switch (m_phase) {
-    case Phase::FadeOut:
-		// フェードアウト完了後にシーン切り替え
-        m_alpha = static_cast<float>(m_elapsed) / m_duration;
-        if (m_elapsed >= m_duration) {
-            m_alpha = 1.0f;
-            m_elapsed = 0;
+	// 単純にこのフェーズに対する経過時間だけを見る
+	m_Elapsed += deltaTime;
 
-            if (m_mode == Mode::FadeOutOnly) {
-                m_phase = Phase::None;
-            }
-            else {
-				// ここが重すぎるので非同期処理が必要
-                m_pSceneManager->ChangeScene(m_nextScene);
-                m_phase = Phase::FadeIn;
-            }
-        }
-        break;
+	switch (m_Phase) {
+	case Phase::FadeOut:
+	{
+		// フェードアウト進行
+		float t = std::min(m_Elapsed / m_Duration, 1.0f);
+		m_Alpha = t;
+		if (t >= 1.0f)
+		{
+			// フェードアウト完了
+			if (m_Mode == Mode::FadeOutOnly)
+			{
+				// ここで終わり（黒のまま切り替え終了）
+				m_Phase = Phase::None;
+			}
+			else if (m_Mode == Mode::FadeInOut)
+			{
+				// SceneManager に「今が切り替えタイミング」と伝えたい
+				m_Phase = Phase::WaitSceneChange;
+				// 次のフェーズに備えてリセット
+				m_Elapsed = 0.0f;
+			}
+		}
+		break;
+	}
 
-    case Phase::FadeIn:
-        // FadeInOnlyの場合はここでシーン切り替えを行う
-        if (m_mode == Mode::FadeInOnly && m_elapsed == deltaTime) {
-            // 最初のフレームだけ切り替え
-            m_pSceneManager->ChangeScene(m_nextScene);
-        }
+	case Phase::WaitSceneChange:
+		// SceneManager が ChangeSceneImmediate を呼ぶまでここで待機
+		// alpha は 1.0（真っ黒）のまま
+		m_Alpha = 1.0f;
+		break;
 
-        m_alpha = 1.0f - static_cast<float>(m_elapsed) / m_duration;
-        if (m_elapsed >= m_duration) {
-            m_alpha = 0.0f;
-            m_phase = Phase::None;
-        }
-        break;
+	case Phase::FadeIn:
+		// FadeInOnlyの場合はここでシーン切り替えを行う
+	{
+		float t = std::min(m_Elapsed / m_Duration, 1.0f);
+		m_Alpha = 1.0f - t;
 
-    default:
-        break;
-    }
+		if (t >= 1.0f)
+		{
+			m_Alpha = 0.0f;
+			m_Phase = Phase::None;
+		}
+		break;
+	}
+
+	case Phase::None:
+		// 何もしない
+		break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -87,19 +118,16 @@ void FadeTransition::update(uint64_t deltaTime) {
  *
  * 現在の透明度に応じた黒い全画面オーバーレイを表示し、自然なフェード効果を演出する。
  */
-void FadeTransition::draw() {
-    if (m_phase != Phase::None) {
-        /*BoxDrawerDraw(
-            SCREEN_WIDTH, SCREEN_HEIGHT, 0,
-            Color(0, 0, 0, m_alpha),
-            0.0f, 0.0f, 0
-        );*/
-        BoxDrawerDraw(
-            SCREEN_WIDTH, SCREEN_HEIGHT, 0,
-            Color(0, 0, 0, m_alpha),
-            SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0
-        );
-    }
+void FadeTransition::Draw(void)
+{
+	if (m_Phase != Phase::None)
+	{
+		BoxDrawerDraw(
+			SCREEN_WIDTH, SCREEN_HEIGHT, 0,
+			Color(0, 0, 0, m_Alpha),
+			SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0
+		);
+	}
 }
 
 /**
@@ -110,6 +138,32 @@ void FadeTransition::draw() {
  * @return true フェードが完了している
  * @return false まだ演出中である
  */
-bool FadeTransition::isFinished() const {
-    return m_phase == Phase::None;
+bool FadeTransition::IsFinished(void) const
+{
+	return m_Phase == Phase::None;
+}
+
+bool FadeTransition::NeedsSceneChange(void) const
+{
+	// フェードアウト完了後、黒画面になって SceneManager に切り替えを依頼したい瞬間
+	return m_Phase == Phase::WaitSceneChange;
+}
+
+
+
+void FadeTransition::OnSceneChanged(void)
+{
+	// SceneManager が ChangeSceneImmediate を呼んだ直後にこれを呼ぶ
+	if (m_Mode == Mode::FadeInOut || m_Mode == Mode::FadeInOnly)
+	{
+		m_Phase = Phase::FadeIn;
+		m_Elapsed = 0.0f;
+		// alpha は 1.0（真っ黒）から 0.0 へ落としていく
+		m_Alpha = 1.0f;
+	}
+	else
+	{
+		// FadeOutOnly の場合はもう終わりで良い
+		m_Phase = Phase::None;
+	}
 }

@@ -9,7 +9,8 @@
 /*
 * @brief	エンジンコンテキスト
 * @detail	各種マネージャークラスの参照を保持する構造体
-* @remark	各種マネージャークラスの参照を保持し、コンポーネントやシステムに依存性を注入するために使用
+* @remark	ゲームオブジェクト／コンポーネントが使う下位サービスのマネージャ系のみを管理。
+* @remarks	シーンマネージャ、オブジェクトマネージャ、コンポーネントマネージャなど、各オブジェクト/コンポーネントから触られたくないような上位サービスは含めない。
 * @auther	赤根和樹
 * @date		2025/10/02
 */
@@ -25,9 +26,6 @@ struct EngineContext
 		joltPhysicsManager.Update(deltaTime);
 	}
 
-	/*EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, ColliderManager& cm, PhysicsManager& pm)
-		: renderManager(rm), shaderManager(sm), assetManager(am), colliderManager(cm), joltPhysicsManager(pm) {
-	}*/
 	EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, PhysicsManager& pm)
 		: renderManager(rm), shaderManager(sm), assetManager(am), joltPhysicsManager(pm) {
 	}

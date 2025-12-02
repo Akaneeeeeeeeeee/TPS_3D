@@ -297,46 +297,68 @@ void EnemyAIComponent::UpdateSight(const float dt)
     }
 }
 
+/*
+* @brief	プレイヤーが見えているかを判定する
+*/
 bool EnemyAIComponent::CanSeePlayer(void) const
 {
-    if (!m_pPlayer) { return false; }
+    if (!m_pPlayer || !m_Physics || !m_pOwner) { return false; }
 
-    Vector3 targetPos = m_pPlayer->GetPosition();
-    // プレイヤーの「頭」を見る場合はここで +高さ
-    targetPos.y += m_EyeHeight;
-
-    return CanSeeTarget(targetPos);
-}
-
-bool EnemyAIComponent::CanSeeTarget(const Vector3& targetPos) const
-{
-    if (!m_Physics || !m_pOwner) return false;
-
-    using namespace JPH;
-
-    // 1. 目の位置
     Vector3 eyePos = GetEyePosition();
 
-    // 2. 距離チェック
+    std::vector<Vector3> samples;
+    m_pPlayer->GetVisibilitySamplePoints(eyePos, samples);
+
+    for (const auto& p : samples)
+    {
+        // まず視野角・視距離の円錐内か？
+        if (!IsInViewCone(eyePos, p))
+            continue;
+
+        // 敵の目から、プレイヤーのカプセル上の点までの間に、壁などの“遮蔽物”があるか？
+        if (CanSeePoint(eyePos, p))
+            return true;
+    }
+
+    return false;
+}
+
+
+/*
+* @brief	ターゲット位置が視野円錐内にあるかを判定する
+*/
+bool EnemyAIComponent::IsInViewCone(
+    const Vector3& eyePos,
+    const Vector3& targetPos) const
+{
     Vector3 toTarget = targetPos - eyePos;
     float   dist = toTarget.Length();
     if (dist <= 0.0001f || dist > m_ViewDistance)
         return false;
 
-    // 3. 視野角チェック
     Vector3 dir = toTarget / dist;
 
     Vector3 forward = GetForwardFromOwnerRotation();
     forward.Normalize();
 
-    //float cosAngle = Vector3::Dot(forward, dir);
-	float cosAngle = forward.Dot(dir);
+    float cosAngle = forward.Dot(dir);
     float cosHalfFov = std::cos(m_ViewAngle * 0.5f * DEG2RAD);
 
-    if (cosAngle < cosHalfFov)
+    return cosAngle >= cosHalfFov;
+}
+
+bool EnemyAIComponent::CanSeePoint(const Vector3& eyePos, const Vector3& targetPos) const
+{
+    using namespace JPH;
+    if (!m_Physics) return false;
+
+    Vector3 toTarget = targetPos - eyePos;
+    float   dist = toTarget.Length();
+    if (dist <= 0.0001f)
         return false;
 
-    // 4. レイキャストで遮蔽物チェック
+    Vector3 dir = toTarget / dist;
+
     auto& system = m_Physics->GetSystem();
     auto& npq = system.GetNarrowPhaseQuery();
 
@@ -346,19 +368,22 @@ bool EnemyAIComponent::CanSeeTarget(const Vector3& targetPos) const
     RRayCast ray(origin, jdir * dist);
     RayCastResult hit;
 
-    // 「遮蔽物」として見たいレイヤ
-    // 地形系だけにしたいなら NON_MOVING など、プロジェクトの定義に合わせる
-    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::NON_MOVING);
-    auto objFilter = system.GetDefaultLayerFilter(Layers::NON_MOVING);
+    // 「キャラから見て何に当たるか」という組み合わせを使う
+    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
+    auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
 
-    // 自分自身やトリガーを無視する BodyFilter（既に実装済み前提）
+    // 遮蔽物だけを対象にしたいので「キャラとトリガーは無視」
     AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
+    // ★ここがポイント：
+    // hit == true  → 遮蔽物あり
+    // hit == false → 遮蔽物なし
     bool blocked = npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter);
 
-    // 遮蔽物がなければ true
+    // 遮蔽物がなければ「その点は見えている」
     return !blocked;
 }
+
 
 /*
 * @brief	ターゲット位置に向かうための移動方向を計算する
@@ -448,7 +473,9 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     moveDir.y = 0.0f;
 
     if (moveDir.LengthSquared() < 0.0001f)
+    {
         moveDir = forward;
+    }
 
     moveDir.Normalize();
     return moveDir;
