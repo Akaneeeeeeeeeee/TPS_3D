@@ -144,18 +144,22 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
     JPH::Array<JPH::Float3> verts;
     verts.reserve(m_Positions.size());
     for (const auto& p : m_Positions)
+    {
         verts.push_back(p); // JPH::Float3(x,y,z)
+    }
 
     JPH::Array<JPH::IndexedTriangle> tris;
     tris.reserve(m_Triangles.size());
     for (const auto& t : m_Triangles)
+    {
         tris.push_back(t); // JPH::IndexedTriangle(i0,i1,i2, material)
+    }
 
     // どのバージョンでも動く安全策：メンバに代入してから Create()
     MeshShapeSettings mesh_settings;
     mesh_settings.mTriangleVertices = std::move(verts);
     mesh_settings.mIndexedTriangles = std::move(tris);
-
+    // メッシュデータを検証、縮退した三角形を削除する
     mesh_settings.Sanitize();
     
     // ----- Shape を作成 -----
@@ -164,7 +168,6 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
     if (result.HasError())
     {
         // ここでエラーメッセージをログに出しておくと原因が分かりやすい
-        // 例:
         JPH::Trace("MeshShape Create error: %s", result.GetError().c_str());
         m_Shape = nullptr;
         return;
