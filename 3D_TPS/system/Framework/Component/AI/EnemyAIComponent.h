@@ -50,7 +50,7 @@ public:
     // Player* がセットされているならプレイヤーを見る
     bool CanSeePlayer(void) const;
 
-    bool IsFound() const { return m_IsFound; }
+    bool IsFound(void) const { return m_IsFound; }
 
 private:
     void UpdateIdle(const float deltatime);     // 待機状態の更新(今後実装)

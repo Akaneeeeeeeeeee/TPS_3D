@@ -194,9 +194,5 @@ void Enemy::Uninit(void)
 
 bool Enemy::CanSeePlayer(const Vector3& playerPos) const
 {
-	//return m_AIComp ? m_AIComp->CanSeeTarget(playerPos) : false;
-	if (!m_AIComp)
-	{
-		return false;
-	}
+	return m_AIComp ? m_AIComp->CanSeePlayer() : false;
 }

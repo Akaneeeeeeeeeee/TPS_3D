@@ -302,8 +302,7 @@ void EnemyAIComponent::UpdateSight(const float dt)
 */
 bool EnemyAIComponent::CanSeePlayer(void) const
 {
-    if (!m_pPlayer || !m_Physics || !m_pOwner)
-        return false;
+    if (!m_pPlayer || !m_Physics || !m_pOwner) { return false; }
 
     Vector3 eyePos = GetEyePosition();
 
@@ -474,7 +473,9 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     moveDir.y = 0.0f;
 
     if (moveDir.LengthSquared() < 0.0001f)
+    {
         moveDir = forward;
+    }
 
     moveDir.Normalize();
     return moveDir;
