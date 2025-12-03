@@ -115,7 +115,7 @@ private:
 	float m_InvestigateTimer = 0.0f;    // ’²¸’†‚ÌŒo‰ßŠÔ
 
     // Cautioni‚»‚Ìê‚ÅU‚èŒü‚«{‘Ò‹@j—p
-    float      m_CautionTurnDuration = 0.8f;  // ù‰ñ‚É‚©‚¯‚éŠÔ(•b)
+    float      m_CautionTurnDuration = 10.8f;  // ù‰ñ‚É‚©‚¯‚éŠÔ(•b)
     float      m_CautionWaitDuration = 1.0f;  // U‚èŒü‚«Œã‚É‚»‚Ìê‚Å‘Ò‚ÂŠÔ
 
     float      m_CautionTurnTime = 0.0f;
@@ -132,7 +132,7 @@ private:
 
 
     float m_ViewAngle = 60.0f;
-    float m_ViewDistance = 500.0f;
+    float m_ViewDistance = 750.0f;
     bool m_HasLookedAtHeard = false;
 
     bool  m_IsFound = false;
