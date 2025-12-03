@@ -115,8 +115,8 @@ private:
 	float m_InvestigateTimer = 0.0f;    // 調査中の経過時間
 
     // Caution（その場で振り向き＋待機）用
-    float      m_CautionTurnDuration = 10.8f;  // 旋回にかける時間(秒)
-    float      m_CautionWaitDuration = 1.0f;  // 振り向き後にその場で待つ時間
+    float      m_CautionTurnDuration = 1.0f;  // 旋回にかける時間(秒)
+    float      m_CautionWaitDuration = 3.0f;  // 振り向き後にその場で待つ時間
 
     float      m_CautionTurnTime = 0.0f;
     float      m_CautionWaitTime = 0.0f;
@@ -137,7 +137,4 @@ private:
 
     bool  m_IsFound = false;
 
-    // 視線チェックの頻度
-    float m_SightCheckInterval = 0.1f; // 0.1秒ごと
-    float m_SightCheckTimer = 0.0f;
 };

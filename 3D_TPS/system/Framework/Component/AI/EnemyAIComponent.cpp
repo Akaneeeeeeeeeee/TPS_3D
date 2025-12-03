@@ -41,7 +41,29 @@ void EnemyAIComponent::Update(const float dt)
 {
     if (!m_Char) { return; }
 
-    // Caution 以外では、視線を身体の forward に追従させる
+    // 1) 状態ごとの処理（Caution の中で視線補間）
+    switch (m_State)
+    {
+    case EnemyAIComponent::Idle:
+        UpdateIdle(dt);
+        break;
+    case EnemyAIComponent::Caution:
+        UpdateCaution(dt);   // ← ここで m_ViewForward を回す
+        break;
+    case EnemyAIComponent::Patrol:
+        UpdatePatrol(dt);
+        break;
+    case EnemyAIComponent::Investigate:
+        UpdateInvestigate(dt);
+        break;
+    case EnemyAIComponent::Chase:
+        UpdateChase(dt);
+        break;
+    default:
+        break;
+    }
+
+    // 2) Caution 以外は本体の forward を視線にコピー
     if (m_State != State::Caution && m_pOwner)
     {
         m_ViewForward = m_pOwner->GetForward(); // Z+ 前方系
@@ -55,30 +77,9 @@ void EnemyAIComponent::Update(const float dt)
             m_ViewForward = Vector3::Forward;
         }
     }
-    
-    // 視線チェック
-    UpdateSight(dt);
 
-    switch (m_State)
-    {
-    case EnemyAIComponent::Idle:
-		UpdateIdle(dt);
-        break;
-	case EnemyAIComponent::Caution:
-		UpdateCaution(dt);
-        break;
-    case EnemyAIComponent::Patrol:
-		UpdatePatrol(dt);
-        break;
-    case EnemyAIComponent::Investigate:
-		UpdateInvestigate(dt);
-        break;
-    case EnemyAIComponent::Chase:
-		UpdateChase(dt);
-        break;
-    default:
-        break;
-    }
+    // 3) 最終的な m_ViewForward を使って視線チェック
+    UpdateSight(dt);
 }
 
 void EnemyAIComponent::Uninit(void)
@@ -323,6 +324,9 @@ void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
     m_CautionTurnTime = 0.0f;
     m_CautionWaitTime = 0.0f;
 	m_HasLookedAtHeard = false; // まだ音源方向を見ていない
+    // 視線の開始方向・目標方向をセット
+    m_CautionStartViewDir = forward;   // 今の視線
+    m_CautionTargetViewDir = toSound;   // 音の方向
     m_State = Caution;
 }
 
@@ -341,12 +345,6 @@ void EnemyAIComponent::UpdateSight(const float dt)
 {
     if (!m_pPlayer || !m_Physics || !m_pOwner)
         return;
-
-    m_SightCheckTimer += dt;
-    if (m_SightCheckTimer < m_SightCheckInterval)
-        return;
-
-    m_SightCheckTimer = 0.0f;
 
     if (CanSeePlayer())
     {
@@ -549,15 +547,6 @@ bool EnemyAIComponent::ConsumeHeardSoundPosition(Vector3& outPos)
     outPos = m_LastHeardPosition;
     m_HeardThisFrame = false; // 一度読んだらクリア
     return true;
-}
-
-
-static Vector3 LerpDir(const Vector3& a, const Vector3& b, float t)
-{
-    Vector3 v = a * (1.0f - t) + b * t;
-    if (v.LengthSquared() < 1e-6f) return b;
-    v.Normalize();
-    return v;
 }
 
 void EnemyAIComponent::UpdateCaution(const float dt)

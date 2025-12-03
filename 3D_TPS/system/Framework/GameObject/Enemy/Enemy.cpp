@@ -266,14 +266,14 @@ bool Enemy::TryStartSurpriseTurn(const Vector3& soundPos)
 	// ここは実際の見た目に合わせて決める
 	bool turnRight = (crossY > 0.0f);  // 右向きアニメかどうか
 
-	// todo : アニメーションだけ逆で設定してるので注意
+	// 回転アニメ再生
 	if (turnRight)
 	{
-		m_pAnimComp->Play(AnimType::Surprise_LeftTurn, 0.1f);
+		m_pAnimComp->Play(AnimType::Surprise_RightTurn, 0.1f);
 	}
 	else
 	{
-		m_pAnimComp->Play(AnimType::Surprise_RightTurn, 0.1f);
+		m_pAnimComp->Play(AnimType::Surprise_LeftTurn, 0.1f);
 	}
 
 	return true;
