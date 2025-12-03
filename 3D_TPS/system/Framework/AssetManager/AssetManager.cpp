@@ -32,6 +32,8 @@ void AssetManager::Init(void)
 	this->LoadAnimationData("Watering", "assets/model/akai/Watering.fbx");
 	this->LoadAnimationData("Crouching_Idle", "assets/model/akai/Crouching_Idle.fbx");
 	this->LoadAnimationData("Crouched_Walking", "assets/model/akai/Crouched_Walking.fbx");
+	this->LoadAnimationData("Right_Turn", "assets/model/akai/Right_Turn.fbx");
+	this->LoadAnimationData("Left_Turn", "assets/model/akai/Left_Turn.fbx");
 }
 
 void AssetManager::Uninit(void)

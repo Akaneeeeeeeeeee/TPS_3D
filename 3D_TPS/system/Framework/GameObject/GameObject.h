@@ -97,6 +97,7 @@ public:
 	void SetRotation(const Quaternion& rotation) { m_Transform.SetRotation(rotation); }
 	Vector3 GetScale(void) const { return m_Transform.GetScale(); }
 	void SetScale(const Vector3& scale) { m_Transform.SetScale(scale); }
+	Vector3 GetForward(void) const { return m_Transform.GetForward(); }
 
 	// Transform関連は直接委譲
 	Matrix4x4 GetWorldMatrix(void) const { return m_Transform.GetWorldMatrix(); }

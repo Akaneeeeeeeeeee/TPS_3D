@@ -39,20 +39,18 @@ public:
 	virtual void Draw(void) const override;
 	virtual void Uninit(void);
 
-	virtual void SetAnimationData(CAnimationData* pAnimationData) { m_pAnimationData = pAnimationData; }
-	virtual void SetAnimationMesh(CAnimationMesh* pAnimationMesh) { m_pAnimationMesh = pAnimationMesh; }
 
 protected:
-	CAnimationData* m_pAnimationData;
-	CAnimationMesh* m_pAnimationMesh;
-	std::unique_ptr<CAnimationObject> m_pAnimationObject;
-	CShader m_Shader;
+	//CAnimationData* m_pAnimationData;
+	//CAnimationMesh* m_pAnimationMesh;
+	//std::unique_ptr<CAnimationObject> m_pAnimationObject;
+	//CShader m_Shader;
 
 	aiAnimation* m_pCurrentAnimation = nullptr;
 	AnimationState m_AnimState = AnimationState::Idle;
 
 	SkinnedAnimationComponent* m_pAnimComp = nullptr;
 
-	float m_AnimationSpeed = 1.0f;
-	float m_MoveSpeed = 7.5f;
+	float m_AnimationSpeed = 1.0f;	// アニメーション速度倍率
+	float m_MoveSpeed = 7.5f;		// 移動速度
 };

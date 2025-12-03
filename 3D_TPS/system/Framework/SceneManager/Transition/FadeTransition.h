@@ -1,6 +1,7 @@
 #pragma once
 #include "system/Framework/SceneManager/SceneManager.h"
 #include "SceneTransition.h"
+#include "system/C3DShape.h"
 
 /**
  * @brief フェード演出によるシーン遷移を行うクラス
@@ -66,6 +67,7 @@ private:
     Phase m_Phase = Phase::None;
     Mode m_Mode;
 
+    Box m_Box;
 	float m_Alpha = 0.0f;   // 0.0f ～ 1.0f
 	float m_Duration;       // ミリ秒
 	float m_Elapsed = 0;    // 経過時間（ミリ秒）

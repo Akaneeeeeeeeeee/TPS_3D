@@ -29,13 +29,21 @@ public:
 
 	void SetPlayer(Player* player) { m_pPlayer = player; }
 	bool CanSeePlayer(const Vector3& playerPos) const;
-
+	void DebugImGui(void);
 private:
 	Player* m_pPlayer = nullptr;
 
-	// 視野パラメータ（今まで通り）
-	float m_ViewAngle = 60.0f;
-	float m_ViewDistance = 500.0f;
+	// ==== 驚きターン用 ====
+	enum class FacingState
+	{
+		Normal,
+		SurprisedTurn,
+	};
+
+	FacingState m_FacingState = FacingState::Normal;
+
+	bool       m_TurnRight = false; // 右向きアニメかどうか
+	bool TryStartSurpriseTurn(const Vector3& soundPos);
 
 	// 「前の実装で使っていた巡回用情報」はここでは使わず、
 	// コンポーネントに渡すための一時データとしてだけ使ってもOK

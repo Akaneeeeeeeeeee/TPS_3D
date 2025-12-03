@@ -1,11 +1,9 @@
 #include "SkinnedAnimatorComponent.h"
 #include "Animator.h"
 #include "Framework/GameObject/GameObject.h"
-#include "system/Renderer.h"   // ‚ ‚È‚½‚ÌŠÂ‹«‚É‡‚í‚¹‚é
+#include "system/Renderer.h"
 
-void SkinnedAnimationComponent::SetClip(AnimType type,
-    aiAnimation* clip,
-    float speed)
+void SkinnedAnimationComponent::SetClip(AnimType type, aiAnimation* clip, float speed)
 {
     if (!clip) return;
     int idx = static_cast<int>(type);

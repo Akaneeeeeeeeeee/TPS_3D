@@ -11,9 +11,13 @@
 #include "system/meshmanager.h"
 
 namespace {
-	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f;
-	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f;
+	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f;	// プレイヤーカプセルコライダーの高さ(半分)
+	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f;		// プレイヤーカプセルコライダーの半径
 	constexpr Vector3 PLAYER_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
+	constexpr float CROUCH_MOVESPEED_FACTOR = 0.5f;     // しゃがみ移動速度係数
+	constexpr float PRONE_MOVESPEED_FACTOR = 0.25f;     // 伏せ移動速度係数
+
+
 }
 
 Player::Player(ComponentFactory* factory, const uint64_t id,
@@ -64,7 +68,6 @@ void Player::Init(void)
 	{
 		m_pCharaVirtualComp = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
 		m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALFHEIGHT, PLAYER_CAPSULE_RADIUS);
-		m_pCharaVirtualComp->SetOffset(PLAYER_COLLIDER_OFFSET);
 	}
 }
 
@@ -181,8 +184,13 @@ void Player::Update(const float deltatime)
 
 		if (onGround && isMoving)
 		{
-			// しゃがみ中かどうかで間隔を変える
-			float interval = isCrouching ? m_FootstepIntervalCrouch : m_FootstepIntervalRun;
+			// 姿勢ごとの係数を取得
+			float kInterval = m_pCharaVirtualComp->GetFootstepIntervalCoeff();
+			float kRadius = m_pCharaVirtualComp->GetFootstepRadiusCoeff();
+			float kLoudness = m_pCharaVirtualComp->GetFootstepLoudnessCoeff();
+
+			// 実際の足音間隔 = 立ち基準 * 姿勢係数
+			float interval = FOOTSTEP_BASE_INTERVAL * kInterval;
 
 			m_FootstepTimer += deltatime;
 
@@ -193,11 +201,10 @@ void Player::Update(const float deltatime)
 				// 足音の WorldSoundEvent を飛ばす
 				WorldSoundEvent ev{};
 				ev.Position = GetPosition();
-				ev.Radius = 800.0f;   // 聞こえる距離（調整用）
-				ev.Loudness = isCrouching ? 0.4f : 1.0f; // しゃがみは小さく
-				ev.Volume = 1.0f;     // 実音量（オーディオ側用に使いたければ）
+				ev.Radius = FOOTSTEP_BASE_RADIUS * kRadius;
+				ev.Loudness = FOOTSTEP_BASE_LOUDNESS * kLoudness;
+				ev.Volume = 1.0f;
 				ev.Type = SoundType::Footstep;
-
 				SoundManager::GetInstance().EmitSound(ev);
 			}
 		}
@@ -300,7 +307,7 @@ void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector
 	float r = ch->GetRadius();
 
 	Vector3 foot = GetPosition();   // 足元（カプセルの下端近辺）
-	float topY = 2.0f * (hh + r); // カプセルの上端近辺
+	float topY = 2.0f * (hh + r);	// カプセルの上端近辺
 	float midY = 0.5f * topY;
 
 	Vector3 centerMid = foot + Vector3(0.0f, midY, 0.0f);

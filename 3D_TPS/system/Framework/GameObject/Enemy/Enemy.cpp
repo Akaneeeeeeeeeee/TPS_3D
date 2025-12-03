@@ -10,6 +10,8 @@
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 #include "system/meshmanager.h"
 #include "system/Framework/Time/Time.h"
+#include "system/imgui/imgui.h"
+#include "system/DebugUI.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -51,10 +53,16 @@ void Enemy::Init(void)
 	auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
 	auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
 	auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
+	//auto* surprise_right = am.GetAnimationData("Surprise_RightTurn")->GetAnimation("Surprise_RightTurn", 0);
+	//auto* surprise_left = am.GetAnimationData("Surprise_LeftTurn")->GetAnimation("Surprise_LeftTurn", 0);
+	auto* surprise_right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
+	auto* surprise_left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
 
 	m_pAnimComp->SetClip(AnimType::Idle, idle);
 	m_pAnimComp->SetClip(AnimType::Walk, walk);
 	m_pAnimComp->SetClip(AnimType::Run, run);
+	m_pAnimComp->SetClip(AnimType::Surprise_RightTurn, surprise_right);
+	m_pAnimComp->SetClip(AnimType::Surprise_LeftTurn, surprise_left);
 
 	// =================================
 	//  敵の位置決定（あなたの既存処理）
@@ -117,7 +125,9 @@ void Enemy::Init(void)
 		hearingComp->SetEnemyAI(m_AIComp);
 	}
 
-	//GameObject::Init();
+	DebugUI::RedistDebugFunction([this]() {
+		DebugImGui();
+		});
 }
 
 void Enemy::Update(const float deltatime)
@@ -127,43 +137,24 @@ void Enemy::Update(const float deltatime)
 		m_pPlayer = nullptr;
 	}
 
-	// まずコンポーネント更新（AI / CharacterVirtual など）
+	// 1) まずコンポーネント更新（AI / CharacterVirtual など）
 	GameObject::Update(deltatime);
 
-	// ==========
-	//  アニメ判定
-	// ==========
-	Vector3 vel = Vector3::Zero;
-	if (m_CharComp)
+	// 2) 今フレーム「音を聞いた」通知が AI に入っていれば、驚きアニメ開始
+	if (m_AIComp)
 	{
-		vel = m_CharComp->GetLinearVelocity();
-		// 垂直速度は無視して水平速度だけ見たいなら
-		// vel.y = 0.0f;
+		Vector3 heardPos;
+		if (m_AIComp->ConsumeHeardSoundPosition(heardPos))
+		{
+			TryStartSurpriseTurn(heardPos);
+		}
 	}
 
-	if (m_pAnimComp)
+	// ==== ここで AI のステートを取得 ====
+	EnemyAIComponent::State aiState = EnemyAIComponent::State::Idle;
+	if (m_AIComp)
 	{
-		float speed = vel.Length();
-
-		// 閾値は好みで調整
-		const float walkThreshold = 10.0f;   // これ未満なら Idle
-		const float runThreshold = 200.0f;  // これ以上なら Run
-
-		if (speed < walkThreshold)
-		{
-			// ほぼ停止 → Idle
-			m_pAnimComp->Play(AnimType::Idle, 0.1f);
-		}
-		else if (speed < runThreshold)
-		{
-			// そこそこ動いている → Walk
-			m_pAnimComp->Play(AnimType::Walk, 0.1f);
-		}
-		else
-		{
-			// だいぶ速い → Run
-			m_pAnimComp->Play(AnimType::Run, 0.1f);
-		}
+		aiState = m_AIComp->GetState();
 	}
 
 	// ========== プレイヤー発見 → スロー＋ゲームオーバー ==========
@@ -178,6 +169,55 @@ void Enemy::Update(const float deltatime)
 		// 実際の実装に合わせて書き換える
 		//auto& sm = SceneManager::GetInstance();
 		//sm.ChangeScene;  // もしくは sm.ChangeScene(SceneType::GameOver);
+	}
+
+	// ========== アニメ判定 ==========
+	if (m_pAnimComp)
+	{
+		if (aiState == EnemyAIComponent::State::Caution && m_AIComp)
+		{
+			// 1) Caution かつ「振り向き中」のあいだは、
+			//    TryStartSurpriseTurn で再生した驚きアニメを維持するだけ。
+			if (m_AIComp->IsInCautionTurnPhase())
+			{
+				// ここでは何も再生しない
+				// → 最初にかけた Surprise_Left/RightTurn がそのまま流れ続ける
+			}
+			else
+			{
+				// 2) 振り向きが終わって「待機時間」に入ったら Idle に切り替える
+				m_pAnimComp->Play(AnimType::Idle, 0.1f);
+			}
+
+			// Caution 中はここで終了。歩き/走りアニメには切り替えない
+			return;
+		}
+
+		// それ以外の状態: Idle / Walk / Run を速度に応じて再生
+		Vector3 vel = Vector3::Zero;
+		if (m_CharComp)
+		{
+			vel = m_CharComp->GetLinearVelocity();
+			// 必要なら vel.y = 0.0f;
+		}
+
+		float speed = vel.Length();
+
+		const float walkThreshold = 10.0f;
+		const float runThreshold = 200.0f;
+
+		if (speed < walkThreshold)
+		{
+			m_pAnimComp->Play(AnimType::Idle, 0.1f);
+		}
+		else if (speed < runThreshold)
+		{
+			m_pAnimComp->Play(AnimType::Walk, 0.1f);
+		}
+		else
+		{
+			m_pAnimComp->Play(AnimType::Run, 0.1f);
+		}
 	}
 }
 
@@ -195,4 +235,69 @@ void Enemy::Uninit(void)
 bool Enemy::CanSeePlayer(const Vector3& playerPos) const
 {
 	return m_AIComp ? m_AIComp->CanSeePlayer() : false;
+}
+
+bool Enemy::TryStartSurpriseTurn(const Vector3& soundPos)
+{
+	if (!m_pAnimComp)
+		return false;
+
+	Vector3 pos = m_Transform.GetPosition();
+	Vector3 toSound = soundPos - pos;
+	toSound.y = 0.0f;
+
+	if (toSound.LengthSquared() < 1e-4f)
+		return false;
+
+	toSound.Normalize();
+
+	// 現在の前方（Z+ 前提）
+	Vector3 forward = m_Transform.GetForward();
+	forward.y = 0.0f;
+	if (forward.LengthSquared() < 1e-4f)
+	{
+		forward = Vector3::Forward; // (0,0,1)
+	}
+	forward.Normalize();
+
+	// forward × toSound の Y 成分で左右判定
+	float crossY = forward.x * toSound.z - forward.z * toSound.x;
+
+	// ここは実際の見た目に合わせて決める
+	bool turnRight = (crossY > 0.0f);  // 右向きアニメかどうか
+
+	// 回転アニメ再生
+	if (turnRight)
+	{
+		m_pAnimComp->Play(AnimType::Surprise_RightTurn, 0.1f);
+	}
+	else
+	{
+		m_pAnimComp->Play(AnimType::Surprise_LeftTurn, 0.1f);
+	}
+
+	return true;
+}
+
+
+void Enemy::DebugImGui(void)
+{
+	if (ImGui::CollapsingHeader("Enemy Transform"))
+	{
+		Vector3 pos = m_Transform.GetPosition();
+		Vector3 scale = m_Transform.GetScale();
+
+		ImGui::Text("Pos:   (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+		ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
+
+		Matrix4x4 world = m_Transform.GetWorldMatrix();
+		Vector3 worldScale;
+		Quaternion worldRot;
+		Vector3 worldPos;
+		if (world.Decompose(worldScale, worldRot, worldPos))
+		{
+			ImGui::Text("WorldScale: (%.2f, %.2f, %.2f)",
+				worldScale.x, worldScale.y, worldScale.z);
+		}
+	}
 }
