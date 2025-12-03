@@ -11,9 +11,9 @@
 
 namespace
 {
-	constexpr float PI = std::numbers::pi_v<float>;
     constexpr float DEG2RAD = PI / 180.0f;
 }
+
 
 void EnemyAIComponent::Attach(EngineContext& ctx)
 {
@@ -41,6 +41,21 @@ void EnemyAIComponent::Update(const float dt)
 {
     if (!m_Char) { return; }
 
+    // Caution 以外では、視線を身体の forward に追従させる
+    if (m_State != State::Caution && m_pOwner)
+    {
+        m_ViewForward = m_pOwner->GetForward(); // Z+ 前方系
+        m_ViewForward.y = 0.0f;
+        if (m_ViewForward.LengthSquared() > 1e-6f)
+        {
+            m_ViewForward.Normalize();
+        }
+        else
+        {
+            m_ViewForward = Vector3::Forward;
+        }
+    }
+    
     // 視線チェック
     UpdateSight(dt);
 
@@ -48,6 +63,9 @@ void EnemyAIComponent::Update(const float dt)
     {
     case EnemyAIComponent::Idle:
 		UpdateIdle(dt);
+        break;
+	case EnemyAIComponent::Caution:
+		UpdateCaution(dt);
         break;
     case EnemyAIComponent::Patrol:
 		UpdatePatrol(dt);
@@ -185,7 +203,6 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
         toTarget.Normalize();
 
         Vector3 desiredDir = toTarget;
-        //Vector3 avoidDir = ComputeAvoidDir(desiredDir);
         
         Vector3 moveDir = ComputeMoveDirToTarget(m_LastHeardPosition);
 
@@ -237,24 +254,78 @@ void EnemyAIComponent::FaceMoveDir(const Vector3& moveDir)
     if (moveDir.LengthSquared() <= 0.0001f) { return; }
 
     Vector3 dir = moveDir;
+    dir.y = 0.0f;
     dir.Normalize();
 
-    // Zマイナスが前、という前提は Patrol と同じ
+	// モデルの回転だけはz-前方系のヨー角に合わせる
     float yaw = std::atan2(-dir.x, -dir.z);
 
-    Quaternion q = Quaternion::CreateFromAxisAngle(Vector3(0, 1, 0), yaw);
+    Quaternion q = Quaternion::CreateFromAxisAngle(Vector3::Up, yaw);
     m_pOwner->SetRotation(q);
 }
 
 void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
 {
-    // とりあえず最後に聞こえた位置を更新して、調査状態 に入る
-    m_LastHeardPosition = pos;
+    // 驚いてる最中は方向だけ更新する
+    if (m_State == State::Caution)
+    {
+        //m_LastHeardPosition = pos;
+        return;
+    }
 
-    // すでに追跡中なら無視、などの条件を付けたいならここで分岐
-    m_State = Investigate;
-    m_InvestigateTimer = 0.0f;
+    // Idle / Patrol / Investigate / Chase から来た場合は
+    // 「新しい驚き」として扱う
+    m_LastHeardPosition = pos;
+    m_HeardThisFrame = true;   // Enemy が驚きアニメを再生するトリガ
+    if (!m_pOwner) return;
+
+    // 角度チェックは必要なら残す（正面ほぼ一致なら直接 Investigate へ）
+    Vector3 selfPos = m_pOwner->GetPosition();
+    Vector3 toSound = pos - selfPos;
+    toSound.y = 0.0f;
+
+    if (toSound.LengthSquared() < 1e-4f)
+    {
+        m_State = Investigate;
+        m_InvestigateTimer = 0.0f;
+        return;
+    }
+    toSound.Normalize();
+
+    // 現在向いている方向（Transform は Z- 前方系）
+    Quaternion rot = m_pOwner->GetRotation();
+    Vector3 forward = Vector3::Transform(Vector3::Forward, rot);
+    forward.y = 0.0f;
+
+    if (forward.LengthSquared() < 1e-4f)
+    { 
+        forward = Vector3::Forward; 
+    }
+    
+    forward.Normalize();
+
+    float currentYaw = std::atan2(-forward.x, -forward.z);
+    float targetYaw = std::atan2(-toSound.x, -toSound.z);
+
+    float delta = targetYaw - currentYaw;
+    while (delta > PI) delta -= 2.0f * PI;
+    while (delta < -PI) delta += 2.0f * PI;
+
+    if (std::fabs(delta) < 0.1f)
+    {
+        // ほぼ正面なら驚き挟まずに即 Investigate
+        m_State = Investigate;
+        m_InvestigateTimer = 0.0f;
+        return;
+    }
+
+    // Caution 状態へ
+    m_CautionTurnTime = 0.0f;
+    m_CautionWaitTime = 0.0f;
+	m_HasLookedAtHeard = false; // まだ音源方向を見ていない
+    m_State = Caution;
 }
+
 
 Vector3 EnemyAIComponent::GetEyePosition(void) const
 {
@@ -265,16 +336,6 @@ Vector3 EnemyAIComponent::GetEyePosition(void) const
     return pos;
 }
 
-Vector3 EnemyAIComponent::GetForwardFromOwnerRotation(void) const
-{
-    if (!m_pOwner) { return Vector3(0.0f, 0.0f, -1.0f); }
-
-    Quaternion rot = m_pOwner->GetRotation();
-    Vector3 localForward(0.0f, 0.0f, -1.0f);
-    Vector3 worldForward = Vector3::Transform(localForward, rot);
-    worldForward.Normalize();
-    return worldForward;
-}
 
 void EnemyAIComponent::UpdateSight(const float dt)
 {
@@ -338,7 +399,7 @@ bool EnemyAIComponent::IsInViewCone(
 
     Vector3 dir = toTarget / dist;
 
-    Vector3 forward = GetForwardFromOwnerRotation();
+    Vector3 forward = GetViewForward();
     forward.Normalize();
 
     float cosAngle = forward.Dot(dir);
@@ -375,7 +436,6 @@ bool EnemyAIComponent::CanSeePoint(const Vector3& eyePos, const Vector3& targetP
     // 遮蔽物だけを対象にしたいので「キャラとトリガーは無視」
     AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
-    // ★ここがポイント：
     // hit == true  → 遮蔽物あり
     // hit == false → 遮蔽物なし
     bool blocked = npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter);
@@ -479,4 +539,67 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 
     moveDir.Normalize();
     return moveDir;
+}
+
+
+bool EnemyAIComponent::ConsumeHeardSoundPosition(Vector3& outPos)
+{
+    if (!m_HeardThisFrame) { return false; }
+
+    outPos = m_LastHeardPosition;
+    m_HeardThisFrame = false; // 一度読んだらクリア
+    return true;
+}
+
+
+static Vector3 LerpDir(const Vector3& a, const Vector3& b, float t)
+{
+    Vector3 v = a * (1.0f - t) + b * t;
+    if (v.LengthSquared() < 1e-6f) return b;
+    v.Normalize();
+    return v;
+}
+
+void EnemyAIComponent::UpdateCaution(const float dt)
+{
+    // その場で停止
+    if (m_Char) {
+        m_Char->SetMoveDir(Vector3::Zero);
+    }
+
+    // 1:視線回転フェーズ
+    if (m_CautionTurnTime < m_CautionTurnDuration)
+    {
+        m_CautionTurnTime += dt;
+        float t = m_CautionTurnTime / m_CautionTurnDuration;
+        if (t > 1.0f) t = 1.0f;
+
+        // 視線だけ補間
+        m_ViewForward = LerpDir(m_CautionStartViewDir, m_CautionTargetViewDir, t);
+
+        return; // 回転中は待機フェーズに入らない
+    }
+
+    // 完全にターゲット方向を向いた状態
+    m_ViewForward = m_CautionTargetViewDir;
+    // 回転完了した瞬間に一度だけ本体の向きを音方向にスナップ
+    if (!m_HasLookedAtHeard && m_pOwner)
+    {
+        m_HasLookedAtHeard = true;
+
+        Vector3 dir = m_CautionTargetViewDir;   // Z+ 前方系
+        float yaw = std::atan2(-dir.x, -dir.z); // モデルが Z- 前方なのでこの計算
+
+        Quaternion q = Quaternion::CreateFromYawPitchRoll(yaw, 0.0f, 0.0f);
+        m_pOwner->SetRotation(q);
+    }
+
+    // 2:待機フェーズ
+    m_CautionWaitTime += dt;
+    if (m_CautionWaitTime >= m_CautionWaitDuration)
+    {
+        // 調査状態へ移行
+        m_State = Investigate;
+        m_InvestigateTimer = 0.0f;
+    }
 }

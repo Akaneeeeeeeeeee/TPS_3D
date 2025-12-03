@@ -1,10 +1,9 @@
 #pragma once
-
 #include "Framework/Component/IComponent/IComponent.h"
 #include "Framework/PhysicsSystem/PhysicsManager.h"
-
 #include <Jolt/Physics/Character/CharacterVirtual.h>
 
+// 前方宣言
 class PhysicsManager;
 
 /*
@@ -54,6 +53,10 @@ public:
     float GetCurrentHalfHeight(void) const;
 	float GetRadius(void) const { return m_Radius; }
 	Stance GetStance(void) const { return m_Stance; }
+    float GetMoveSpeedCoeff() const;
+    float GetFootstepIntervalCoeff() const;
+    float GetFootstepRadiusCoeff() const;
+    float GetFootstepLoudnessCoeff() const;
 
 	// カプセル形状
 	void SetCapsule(float halfHeight, float radius)
@@ -68,6 +71,19 @@ public:
     bool IsOnGround(void) const;
 
 private:
+    // 姿勢ごとの係数
+    struct StanceCoeff
+    {
+		float moveSpeed;        // 移動速度係数
+		float footstepInterval; // 足音間隔
+		float footstepRadius;   // 足音範囲
+		float footstepLoudness; // 足音大きさ
+    };
+
+    static constexpr StanceCoeff StandCoeff{ 1.0f, 1.0f, 1.0f, 1.0f };
+    static constexpr StanceCoeff CrouchCoeff{ 0.5f, 1.6f, 0.5f, 0.4f };
+    static constexpr StanceCoeff ProneCoeff{ 0.25f, 2.0f, 0.3f, 0.2f };
+
     // 内部ヘルパ
     void BuildStanceShapes();
     PhysicsManager* m_Physics = nullptr;
@@ -102,6 +118,7 @@ private:
     bool    m_WantsJump = false;
 
     // チューニング用
+    float m_BaseMoveSpeed = 500.0f; // 立ち状態を基準にした最高速度
     float   m_MoveSpeed = 500.0f;   // 最高速度
     float   m_JumpSpeed = 400.0f;
 };

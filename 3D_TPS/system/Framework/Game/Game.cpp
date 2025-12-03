@@ -5,6 +5,7 @@
 #include "system/CDirectInput.h"
 #include "fpscontrol.h"
 #include "system/Framework/SoundManager/SoundManager.h"
+#include "system/Sound/SoundWaveVisualizer.h"
 
 Game::Game()
 {
@@ -70,6 +71,8 @@ void Game::Init(void)
 	// シーンマネージャの初期化
 	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
+	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
+
 	// デバッグ時のみ、デバッグUIの初期化
 #ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
@@ -95,6 +98,7 @@ void Game::Update(const float deltatime)
 	{
 		// イベント発生まではループし続ける
 		m_SceneManager.Update(deltatime);
+		SoundWaveVisualizer::GetInstance().Update(deltatime);
 	}
 	// ゲーム終了フラグが立ったら
 	else
@@ -118,6 +122,7 @@ void Game::Draw()
 	// 物理デバッグ描画
 	//m_PhysicsManager.DebugDraw();
 
+	SoundWaveVisualizer::GetInstance().DrawWorld();
 
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/

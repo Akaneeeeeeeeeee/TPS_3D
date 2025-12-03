@@ -49,6 +49,15 @@ public:
 
 	void SetDirty(void);
 
+	// 前方ベクトルを取得する
+	Vector3 GetForward(void) const
+	{
+		// デフォルトの前方ベクトル (Zプラス方向)
+		static const Vector3 defaultForward = Vector3::Forward;
+		// 回転を適用して前方ベクトルを返す
+		return Vector3::Transform(defaultForward, Rotation);
+	}
+
 private:
 	Vector3		Position;	// ローカル座標
 	Quaternion	Rotation;	// ローカル回転

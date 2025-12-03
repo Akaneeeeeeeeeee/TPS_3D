@@ -154,6 +154,9 @@
     <Filter Include="ソース ファイル\MyFramework\GameObject\Terrain">
       <UniqueIdentifier>{8b344675-7fd7-4630-8835-236ed0ff6e6b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\SoundVisualizer">
+      <UniqueIdentifier>{695a774f-c6d5-4cf2-8573-9cad44ecb2dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -513,6 +516,9 @@
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h">
       <Filter>ソース ファイル\MyFramework\GameObject\Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="system\Sound\SoundWaveVisualizer.h">
+      <Filter>ソース ファイル\MyFramework\Component\SoundVisualizer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -631,9 +637,6 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Application\Application.cpp">
       <Filter>ソース ファイル\MyFramework\Application</Filter>
-    </ClCompile>
-    <ClCompile Include="system\Framework\Game\Game.cpp">
-      <Filter>ソース ファイル\MyFramework\Game</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Application\Entry\main.cpp">
       <Filter>ソース ファイル\MyFramework\エントリーポイント</Filter>
@@ -778,6 +781,12 @@
     </ClCompile>
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Game\Game.cpp">
+      <Filter>ソース ファイル\MyFramework\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Sound\SoundWaveVisualizer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\SoundVisualizer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

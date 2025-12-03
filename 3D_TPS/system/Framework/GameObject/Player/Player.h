@@ -28,7 +28,7 @@ public:
 	void Draw(void) const override;
 	void Uninit(void) override;
 
-	JPH::BodyID GetInnerBodyID() const;
+	JPH::BodyID GetInnerBodyID(void) const;
 
 	void SetCamera(FreeCamera* cam) { m_pCamera = cam; }
 	void GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const;	// 視線判定用のサンプリング点を取得
@@ -37,13 +37,15 @@ private:
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 
 	// 足音用
+	static constexpr float FOOTSTEP_BASE_INTERVAL = 0.3f;
+	static constexpr float FOOTSTEP_BASE_RADIUS = 800.0f;
+	static constexpr float FOOTSTEP_BASE_LOUDNESS = 1.0f;
+
 	float m_FootstepTimer = 0.0f;
 	float m_FootstepIntervalRun = 0.30f;  // 走り時の間隔
 	float m_FootstepIntervalCrouch = 0.50f;  // しゃがみ歩き
 	bool  m_FootstepEnabled = true;   // 必要なら ON/OFF できるように
 
-	// 「前フレームで接地していたか」も持っておくと着地音などに使える
+	// 前フレームで接地していたか
 	bool  m_WasOnGround = false;
-
 };
-

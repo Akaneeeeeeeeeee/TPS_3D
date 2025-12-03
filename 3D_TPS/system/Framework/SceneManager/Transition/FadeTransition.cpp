@@ -11,8 +11,9 @@
 FadeTransition::FadeTransition(float duration_sec, Mode mode)
 	: m_Mode(mode)
 	, m_Duration(duration_sec)
+	, m_Box(SCREEN_WIDTH, SCREEN_HEIGHT, 0)
 {
-	BoxDrawerInit();
+	//BoxDrawerInit();
 }
 
 /**
@@ -122,10 +123,14 @@ void FadeTransition::Draw(void)
 {
 	if (m_Phase != Phase::None)
 	{
-		BoxDrawerDraw(
-			SCREEN_WIDTH, SCREEN_HEIGHT, 0,
-			Color(0, 0, 0, m_Alpha),
-			SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0
+		//BoxDrawerDraw(
+		//	SCREEN_WIDTH, SCREEN_HEIGHT, 0,
+		//	Color(0, 0, 0, m_Alpha),
+		//	SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0
+		//);
+		m_Box.Draw(
+			Matrix4x4::CreateTranslation(SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0.0f),
+			Color(0, 0, 0, m_Alpha)
 		);
 	}
 }

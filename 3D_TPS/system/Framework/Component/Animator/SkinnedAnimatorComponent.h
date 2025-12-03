@@ -13,6 +13,8 @@ enum class AnimType
 	Crouch,
 	CrouchWalk,
     Walk,
+	Surprise_RightTurn, // 右振り向き
+	Surprise_LeftTurn,  // 左振り向き
     Run,
     Max,
 };
@@ -53,7 +55,7 @@ public:
 
     // 描画（GameObject::Draw から呼ぶ）
     void Draw() const;
-
+    void DebugImGui();
 private:
     struct ClipInfo
     {
@@ -68,4 +70,5 @@ private:
     std::unique_ptr<CAnimationObject> m_AnimObject;    // 1体専用
     Animator m_Animator;                // 1体専用
     CShader* m_pShader = nullptr;
+	bool m_CurrentLoop = true;
 };

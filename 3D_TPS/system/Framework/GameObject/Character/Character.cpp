@@ -12,7 +12,7 @@ void Character::Update(const float deltatime)
 {
 	// キャラクターの更新処理
 	// 例: 入力に基づく移動、アニメーションの更新など
-	m_pAnimationObject->Update(m_AnimationSpeed);
+	GameObject::Update(deltatime);
 }
 
 void Character::Draw(void) const

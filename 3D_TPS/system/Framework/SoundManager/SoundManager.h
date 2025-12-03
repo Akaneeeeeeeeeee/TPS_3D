@@ -2,6 +2,7 @@
 #include "system/Framework/NonCopyable/Singleton_Template.h"
 #include "system/Sound/WorldSoundEvent.h"
 #include <vector>
+#include "system/Sound/SoundWaveVisualizer.h"
 
 class SoundManager : public Singleton<SoundManager>
 {
@@ -21,6 +22,9 @@ public:
 
 		// ここで実際のサウンド再生に繋いでもよい（必要なら）
 		// AudioSystem::Get().Play3DSound(ev.type, ev.position, ev.loudness);
+
+		// 波エフェクトへ通知
+		SoundWaveVisualizer::GetInstance().OnEmit(ev);
 	}
 
 	// 今フレーム発生した音の一覧

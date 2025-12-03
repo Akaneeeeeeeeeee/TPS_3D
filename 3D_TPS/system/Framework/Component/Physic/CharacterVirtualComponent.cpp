@@ -146,6 +146,10 @@ void CharacterVirtualComponent::Init(void)
 
 	// InnerBodyID を控える
 	m_InnerBodyID = m_Character->GetInnerBodyID();
+
+	// 姿勢に応じて移動速度を設定
+	m_MoveSpeed = m_BaseMoveSpeed * GetMoveSpeedCoeff();
+
 }
 
 void CharacterVirtualComponent::Update(const float dt)
@@ -170,7 +174,7 @@ void CharacterVirtualComponent::Update(const float dt)
 	{
 		// 念のため正規化
 		move_dir = move_dir.Normalized();
-		horizontal = move_dir * m_MoveSpeed;   // ★ 新パラメータ（最高速度）
+		horizontal = move_dir * m_MoveSpeed;
 	}
 	else
 	{
@@ -271,7 +275,7 @@ void CharacterVirtualComponent::SetStance(Stance s)
 	JPH::BodyFilter  body_filter;
 	JPH::ShapeFilter shape_filter;
 
-	// 許容するめり込み距離（小さすぎると失敗しやすい）
+	// 許容するめり込み距離（40.0までだと失敗する）
 	const float max_penetration = 40.1f;
 
 	bool ok = m_Character->SetShape(
@@ -292,8 +296,10 @@ void CharacterVirtualComponent::SetStance(Stance s)
 	m_Character->SetInnerBodyShape(new_shape);
 	// 足元が動かないようオフセットも姿勢用に切り替える
 	m_Character->SetShapeOffset(ToJPH(new_offset));
-
+	// 現在の姿勢を更新
 	m_Stance = s;
+	// 係数に応じて最高速度を更新
+	m_MoveSpeed = m_BaseMoveSpeed * GetMoveSpeedCoeff();
 }
 
 float CharacterVirtualComponent::GetCurrentHalfHeight(void) const
@@ -305,4 +311,48 @@ float CharacterVirtualComponent::GetCurrentHalfHeight(void) const
 	case Stance::Prone:  return m_ProneHalfHeight;
 	}
 	return m_StandHalfHeight;
+}
+
+float CharacterVirtualComponent::GetMoveSpeedCoeff(void) const
+{
+	switch (m_Stance)
+	{
+	case Stance::Stand:  return StandCoeff.moveSpeed;
+	case Stance::Crouch: return CrouchCoeff.moveSpeed;
+	case Stance::Prone:  return ProneCoeff.moveSpeed;
+	}
+	return 1.0f;
+}
+
+float CharacterVirtualComponent::GetFootstepIntervalCoeff(void) const
+{
+	switch (m_Stance)
+	{
+	case Stance::Stand:  return StandCoeff.footstepInterval;
+	case Stance::Crouch: return CrouchCoeff.footstepInterval;
+	case Stance::Prone:  return ProneCoeff.footstepInterval;
+	}
+	return 1.0f;
+}
+
+float CharacterVirtualComponent::GetFootstepRadiusCoeff(void) const
+{
+	switch (m_Stance)
+	{
+	case Stance::Stand:  return StandCoeff.footstepRadius;
+	case Stance::Crouch: return CrouchCoeff.footstepRadius;
+	case Stance::Prone:  return ProneCoeff.footstepRadius;
+	}
+	return 1.0f;
+}
+
+float CharacterVirtualComponent::GetFootstepLoudnessCoeff(void) const
+{
+	switch (m_Stance)
+	{
+	case Stance::Stand:  return StandCoeff.footstepLoudness;
+	case Stance::Crouch: return CrouchCoeff.footstepLoudness;
+	case Stance::Prone:  return ProneCoeff.footstepLoudness;
+	}
+	return 1.0f;
 }

@@ -302,6 +302,7 @@
     <ClInclude Include="system\SceneClassFactory.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Sound\SoundWaveVisualizer.h" />
     <ClInclude Include="system\Sound\WorldSoundEvent.h" />
     <ClInclude Include="system\SphereDrawer.h" />
     <ClInclude Include="system\stb_image.h" />
@@ -426,6 +427,7 @@
     <ClCompile Include="system\imgui\imgui_widgets.cpp" />
     <ClCompile Include="system\LineDrawer.cpp" />
     <ClCompile Include="system\renderer.cpp" />
+    <ClCompile Include="system\Sound\SoundWaveVisualizer.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />
     <ClCompile Include="system\stb.cpp" />
     <ClCompile Include="system\stbperlin.cpp" />
