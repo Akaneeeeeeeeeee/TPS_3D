@@ -1,7 +1,7 @@
-// ParticleComponent.cpp
 #include "ParticleComponent.h"
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/Component/Transform/Transform.h"
+#include "system/Framework/WeatherSystem/WeatherSystem.h"
 
 using namespace DirectX;
 
@@ -12,19 +12,22 @@ ParticleComponent::ParticleComponent()
 
 void ParticleComponent::Attach(EngineContext& context)
 {
-    m_Context = &context;
-
-    // •K—v‚È‚ç‚±‚±‚Å RenderManager / ParticleManager ‚É“o˜^‚·‚é
-    // —á:
-    // m_Context->particleManager.Register(&m_Emitter);
+    // ‚±‚±‚Å“o˜^
+    m_WeatherSystem = &context.weatherSystem;
+    if (m_WeatherSystem)
+    {
+        m_WeatherSystem->Register(this);
+    }
 }
 
-void ParticleComponent::Detach()
+void ParticleComponent::Detach(void)
 {
-    // •K—v‚È‚ç‚±‚±‚Å“o˜^‰ðœ
-    // if (m_Context) { m_Context->particleManager.Unregister(&m_Emitter); }
-
-    m_Context = nullptr;
+    // “o˜^‰ðœ
+    if (m_WeatherSystem)
+    { 
+        m_WeatherSystem->Unregister(this);
+        m_WeatherSystem = nullptr;
+    }
 }
 
 void ParticleComponent::Init(void)

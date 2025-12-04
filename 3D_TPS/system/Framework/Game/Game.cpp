@@ -56,7 +56,7 @@ void Game::Init(void)
 	m_RenderManager.Init(&m_GraphicsDevice);
 	// 物理マネージャの初期化
 	m_PhysicsManager.Init();
-	m_WeatherSystem.Init();
+	//m_WeatherSystem.Init();
 
 
 	m_pContext = std::make_unique<EngineContext>(

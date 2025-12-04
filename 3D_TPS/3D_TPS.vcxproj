@@ -148,10 +148,14 @@
   <ItemGroup>
     <ClInclude Include="fpscontrol.h" />
     <ClInclude Include="scene\CollisionTestScene.h" />
-    <ClInclude Include="scene\ResultScene.h" />
+    <ClInclude Include="scene\ResultScene.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="scene\SkeltalmeshScene.h" />
     <ClInclude Include="scene\TestScene.h" />
-    <ClInclude Include="scene\TitleScene.h" />
+    <ClInclude Include="scene\TitleScene.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\AimOrientation.h" />
     <ClInclude Include="system\AssimpPerse.h" />
     <ClInclude Include="system\Billboard\Billboard.h" />
@@ -318,10 +322,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene\CollisionTestScene.cpp" />
-    <ClCompile Include="scene\ResultScene.cpp" />
+    <ClCompile Include="scene\ResultScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="scene\SkeltalmeshScene.cpp" />
     <ClCompile Include="scene\TestScene.cpp" />
-    <ClCompile Include="scene\TitleScene.cpp" />
+    <ClCompile Include="scene\TitleScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\AssimpPerse.cpp" />
     <ClCompile Include="system\Billboard\Billboard.cpp" />
     <ClCompile Include="system\BoneCombMatrix.cpp" />

@@ -5,6 +5,7 @@
 
 // 前方宣言
 class GameObject;
+class WeatherSystem;
 
 class ParticleComponent : public IComponent
 {
@@ -26,7 +27,7 @@ public:
     void SetLocalOffset(const DirectX::XMFLOAT3& offset) { m_LocalOffset = offset; }
 
 private:
-    EngineContext* m_Context = nullptr;
+    WeatherSystem* m_WeatherSystem;
     ParticleEmitter m_Emitter;
 
     // Owner の原点からのオフセット（カメラの少し上など）

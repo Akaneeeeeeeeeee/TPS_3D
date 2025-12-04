@@ -26,8 +26,10 @@ struct EngineContext
 	WeatherSystem& weatherSystem;
 	CameraManager& cameraManager;
 	
-	void Update(const float deltaTime) {
+	void Update(const float deltaTime)
+	{
 		joltPhysicsManager.Update(deltaTime);
+		weatherSystem.Update(deltaTime);
 	}
 
 	EngineContext(

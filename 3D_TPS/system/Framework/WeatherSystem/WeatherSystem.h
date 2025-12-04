@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "system/commontypes.h"
 
 // 天候タイプ
 enum class WeatherType {
@@ -111,7 +112,7 @@ class ParticleComponent;
 class WeatherSystem
 {
 public:
-    WeatherSystem() = default;
+    WeatherSystem();
 
     // ParticleComponent の登録 / 解除
     void Register(ParticleComponent* comp);
@@ -123,88 +124,14 @@ public:
     WeatherType GetWeather() const { return m_CurrentWeather; }
 
     // 毎フレーム呼ぶ
-    void Update(float dt)
-    {
-        if (m_TransitionT < 1.0f)
-        {
-            m_TransitionT += dt / m_TransitionTime;
-            if (m_TransitionT > 1.0f) m_TransitionT = 1.0f;
-
-            m_CurrentParams = LerpParams(m_SrcParams, m_DstParams, m_TransitionT);
-        }
-
-        ApplyToParticles();
-        // ApplyToSky();
-        // ApplyToFog();
-    }
+    void Update(float dt);
 
 private:
-    static WeatherParticleParams LerpParams(
-        const WeatherParticleParams& a,
-        const WeatherParticleParams& b,
-        float t)
-    {
-        auto lerp = [](float x, float y, float t) {
-            return x + (y - x) * t;
-            };
+    // パラメータ補間
+    static WeatherParticleParams LerpParams(const WeatherParticleParams& a, const WeatherParticleParams& b, float t);
 
-        WeatherParticleParams r{};
-
-        r.rainEmitRate = lerp(a.rainEmitRate, b.rainEmitRate, t);
-        r.rainMinLife = lerp(a.rainMinLife, b.rainMinLife, t);
-        r.rainMaxLife = lerp(a.rainMaxLife, b.rainMaxLife, t);
-        r.rainMinSpeed = lerp(a.rainMinSpeed, b.rainMinSpeed, t);
-        r.rainMaxSpeed = lerp(a.rainMaxSpeed, b.rainMaxSpeed, t);
-
-        r.sandEmitRate = lerp(a.sandEmitRate, b.sandEmitRate, t);
-        r.sandMinLife = lerp(a.sandMinLife, b.sandMinLife, t);
-        r.sandMaxLife = lerp(a.sandMaxLife, b.sandMaxLife, t);
-        r.sandMinSpeed = lerp(a.sandMinSpeed, b.sandMinSpeed, t);
-        r.sandMaxSpeed = lerp(a.sandMaxSpeed, b.sandMaxSpeed, t);
-
-        r.rainDir = a.rainDir;   // 方向はとりあえずスイッチだけ
-        r.sandDir = a.sandDir;   // 必要なら正規化付き補間にしてもよい
-
-        r.fogDensity = lerp(a.fogDensity, b.fogDensity, t);
-        r.fogColor.x = lerp(a.fogColor.x, b.fogColor.x, t);
-        r.fogColor.y = lerp(a.fogColor.y, b.fogColor.y, t);
-        r.fogColor.z = lerp(a.fogColor.z, b.fogColor.z, t);
-
-        return r;
-    }
-
-    void ApplyToParticles()
-    {
-        // 雨パーティクル
-        if (m_RainComponent)
-        {
-            auto& emitter = m_RainComponent->GetEmitter();
-
-            emitter.SetEmitRate(m_CurrentParams.rainEmitRate);
-            emitter.SetLifeRange(m_CurrentParams.rainMinLife,
-                m_CurrentParams.rainMaxLife);
-            emitter.SetSpeedRange(m_CurrentParams.rainMinSpeed,
-                m_CurrentParams.rainMaxSpeed);
-            emitter.SetDirection(m_CurrentParams.rainDir);
-            emitter.SetGravity(DirectX::XMFLOAT3(0.0f, -9.8f, 0.0f));
-        }
-
-        // 砂嵐パーティクル
-        if (m_SandComponent)
-        {
-            auto& emitter = m_SandComponent->GetEmitter();
-
-            emitter.SetEmitRate(m_CurrentParams.sandEmitRate);
-            emitter.SetLifeRange(m_CurrentParams.sandMinLife,
-                m_CurrentParams.sandMaxLife);
-            emitter.SetSpeedRange(m_CurrentParams.sandMinSpeed,
-                m_CurrentParams.sandMaxSpeed);
-            emitter.SetDirection(m_CurrentParams.sandDir);
-
-            // 砂が少し上に舞うなら重力を弱めるなど
-            emitter.SetGravity(DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f));
-        }
-    }
+    // 現在の天候パラメータを、登録済みパーティクルへ反映
+    void ApplyToParticles();
 
 private:
     WeatherType           m_CurrentWeather = WeatherType::Clear;
@@ -216,7 +143,6 @@ private:
     float                 m_TransitionTime = 1.0f;
     float                 m_TransitionT = 1.0f;
 
-    // 対応するコンポーネント
-    std::array<ParticleComponent*, static_cast<size_t>(WeatherType::Weather_MAX)> m_Weeathers;
+    // 登録されているパーティクルコンポーネント
+    std::vector<ParticleComponent*> m_ParticleComponents;
 };
-
