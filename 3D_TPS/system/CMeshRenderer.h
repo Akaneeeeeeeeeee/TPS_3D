@@ -75,6 +75,20 @@ public:
 			0);										// 頂点バッファの最初から使う
 	}
 
+	// インスタンシング描画
+	virtual void DrawInstanced(UINT instanceCount) const
+	{
+		BeforeDraw(); // トポロジーと VB/IB セット
+
+		Renderer::GetDeviceContext()->DrawIndexedInstanced(
+			m_IndexNum,      // 1 インスタンスあたりのインデックス数
+			instanceCount,   // インスタンス数
+			0,               // StartIndexLocation
+			0,               // BaseVertexLocation
+			0                // StartInstanceLocation
+		);
+	}
+
 	// 頂点バッファを更新
 	void Modify(const std::vector<VERTEX_3D>& vertices)
 	{

@@ -394,8 +394,6 @@ void CollisionTestScene::LightUpdate(float dt)
  */
 void CollisionTestScene::Draw(void)
 {
-	m_camera.Draw();
-
 	// 3軸カラー
 	Color axiscol[3] = {
 		Color(1, 0, 0, 1),
@@ -444,8 +442,6 @@ void CollisionTestScene::Draw(void)
 void CollisionTestScene::Init(ObjectManager* mgr)
 {
 	m_pObjectManager = mgr;
-	// カメラ(3D)の初期化
-	m_camera.Init();
 
 	// ローカル軸表示用線分の初期化
 	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
@@ -500,7 +496,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
 	m_player->SetPosition(Vector3(-300.0f, 10.0f, -100.0f));
 	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
-	m_player->SetCamera(&m_camera);
 
 	// スカイドーム
 	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);

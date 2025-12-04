@@ -26,6 +26,8 @@ private:
 	ShaderManager m_ShaderManager;				// シェーダーマネージャー
 	AssetManager m_AssetManager;				// アセットマネージャー
 	RenderManager m_RenderManager;				// レンダーマネージャー
+	CameraManager m_CameraManager;				// カメラマネージャー
+	WeatherSystem m_WeatherSystem;				// 天候システム
 	PhysicsManager m_PhysicsManager;			// 物理マネージャー
 	std::unique_ptr<EngineContext> m_pContext;	// エンジンコンテキスト(Init後に生成したいためunique_ptr)
 	

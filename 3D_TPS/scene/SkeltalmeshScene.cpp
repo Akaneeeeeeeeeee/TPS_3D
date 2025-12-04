@@ -307,7 +307,6 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 	// ƒvƒŒƒCƒ„[¶¬
 	auto player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
 	player->Init();
-	player->SetCamera(&m_camera);
 
 	// “G¶¬
 	for (size_t i = 0; i < m_pEnemies.size(); i++)

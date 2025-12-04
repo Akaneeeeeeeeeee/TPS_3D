@@ -1,9 +1,9 @@
 #pragma once
 #include "system/Framework/GameObject/Character/Character.h"
-#include "system/camera.h"
 
 // 前方宣言
 class CharacterVirtualComponent;
+class CameraComponent;
 
 /*
 * @brief	プレイヤークラス
@@ -30,11 +30,12 @@ public:
 
 	JPH::BodyID GetInnerBodyID(void) const;
 
-	void SetCamera(FreeCamera* cam) { m_pCamera = cam; }
+	CameraComponent* GetCamera(void) { return m_pCamera; }
+
 	void GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const;	// 視線判定用のサンプリング点を取得
 private:
-	FreeCamera* m_pCamera = nullptr;
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
+	CameraComponent* m_pCamera = nullptr;
 
 	// 足音用
 	static constexpr float FOOTSTEP_BASE_INTERVAL = 0.3f;

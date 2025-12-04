@@ -49,8 +49,6 @@ void ResultScene::Draw(void)
 	// 描画時に使用する行列にまとめる
 	m_mtxWorld = Matrix4x4::Identity;
 
-	m_camera.Draw();
-
 	Renderer::SetWorldMatrix(&m_mtxWorld);
 
 	// タイトル画像の描画
@@ -66,8 +64,6 @@ void ResultScene::Draw(void)
  */
 void ResultScene::Init(ObjectManager* _Mgr)
 {
-	// カメラ(3D)の初期化
-	m_camera.Init();
 
 	// リザルト画像の生成
 	m_ResultImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameOver.jpg");

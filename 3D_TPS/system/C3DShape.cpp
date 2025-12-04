@@ -14,6 +14,7 @@ C3DShape::C3DShape() {
 
     if (m_first) {
           SphereDrawerInit();
+		  SphereInstancedDrawerInit();
           BoxDrawerInit();
           CylinderDrawerInit();
           ConeDrawerInit(true);

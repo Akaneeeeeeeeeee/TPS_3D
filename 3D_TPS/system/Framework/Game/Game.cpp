@@ -49,18 +49,23 @@ void Game::Init(void)
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
 
+	//m_CameraManager.Init();
+
 
 	// レンダーマネージャの初期化
 	m_RenderManager.Init(&m_GraphicsDevice);
 	// 物理マネージャの初期化
 	m_PhysicsManager.Init();
+	m_WeatherSystem.Init();
 
 
 	m_pContext = std::make_unique<EngineContext>(
 		m_RenderManager,
 		ShaderManager::GetInstance(),
 		AssetManager::GetInstance(),
-		m_PhysicsManager);
+		m_PhysicsManager,
+		m_WeatherSystem,
+		m_CameraManager);
 
 	m_ComponentFactory.Init(m_pContext.get());
 	m_ObjectFactory.Init(&m_ComponentFactory);

@@ -4,6 +4,8 @@
 #include "system/Framework/Graphics/RenderManager.h"
 //#include "system/Framework/ColliderManager/ColliderManager.h"
 #include "Framework/PhysicsSystem/PhysicsManager.h"
+#include "Framework/WeatherSystem/WeatherSystem.h"
+#include "Framework/CameraManager/CameraManager.h"
 
 
 /*
@@ -21,12 +23,26 @@ struct EngineContext
 	AssetManager& assetManager;
 	//ColliderManager& colliderManager;
 	PhysicsManager& joltPhysicsManager;
+	WeatherSystem& weatherSystem;
+	CameraManager& cameraManager;
 	
 	void Update(const float deltaTime) {
 		joltPhysicsManager.Update(deltaTime);
 	}
 
-	EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, PhysicsManager& pm)
-		: renderManager(rm), shaderManager(sm), assetManager(am), joltPhysicsManager(pm) {
+	EngineContext(
+		RenderManager& rm,
+		ShaderManager& sm,
+		AssetManager& am,
+		PhysicsManager& pm,
+		WeatherSystem& ws,
+		CameraManager& cm)
+		: renderManager(rm), 
+		shaderManager(sm), 
+		assetManager(am), 
+		joltPhysicsManager(pm),
+		weatherSystem(ws),
+		cameraManager(cm)
+	{
 	}
 };
