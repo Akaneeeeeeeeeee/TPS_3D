@@ -12,6 +12,7 @@
 //! オブジェクト管理用タグ
 enum class Tag {
 	None,			//! タグなし
+	Camera,			//! カメラ
 	Player,			//! プレイヤー
 	Field,			//! フィールド
 	Skydome,		//! スカイドーム

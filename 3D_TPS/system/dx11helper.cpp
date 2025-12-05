@@ -110,6 +110,8 @@ HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCST
 	// the shaders to be optimized and to run exactly the way they will run in 
 	// the release configuration of this program.
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
+	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+
 #endif
 
 	ID3DBlob* pErrorBlob = nullptr;

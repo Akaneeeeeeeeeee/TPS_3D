@@ -35,6 +35,8 @@ ComPtr<ID3D11BlendState> Renderer::m_BlendState[MAX_BLENDSTATE];
 ComPtr<ID3D11BlendState> Renderer::m_BlendStateATC;
 
 LIGHT Renderer::m_Light;
+Matrix4x4 Renderer::m_CurrentView = Matrix4x4::Identity;
+Matrix4x4 Renderer::m_CurrentProjection = Matrix4x4::Identity;
 
 //------------------------------------------------------------------------------
 // Renderer クラスの各関数の実装
@@ -348,9 +350,10 @@ void Renderer::SetWorldViewProjection2D()
  * @brief 任意のワールド行列をシェーダーにセットします。
  * @param WorldMatrix ワールド行列へのポインタ
  */
-void Renderer::SetWorldMatrix(Matrix4x4* WorldMatrix)
+void Renderer::SetWorldMatrix(Matrix4x4* WorldMatrix, UINT slot)
 {
     Matrix4x4 mat = WorldMatrix->Transpose();
+    m_DeviceContext->VSSetConstantBuffers(slot, 1, m_WorldBuffer.GetAddressOf());
     m_DeviceContext->UpdateSubresource(m_WorldBuffer.Get(), 0, nullptr, &mat, 0, 0);
 }
 
@@ -358,19 +361,41 @@ void Renderer::SetWorldMatrix(Matrix4x4* WorldMatrix)
  * @brief 任意のビュー行列をシェーダーにセットします。
  * @param ViewMatrix ビュー行列へのポインタ
  */
-void Renderer::SetViewMatrix(Matrix4x4* ViewMatrix)
-{
-    Matrix4x4 mat = ViewMatrix->Transpose();
-    m_DeviceContext->UpdateSubresource(m_ViewBuffer.Get(), 0, nullptr, &mat, 0, 0);
-}
+//void Renderer::SetViewMatrix(Matrix4x4* ViewMatrix)
+//{
+//    Matrix4x4 mat = ViewMatrix->Transpose();
+//    m_DeviceContext->UpdateSubresource(m_ViewBuffer.Get(), 0, nullptr, &mat, 0, 0);
+//}
 
 /**
  * @brief 任意のプロジェクション行列をシェーダーにセットします。
  * @param ProjectionMatrix 射影行列へのポインタ
  */
-void Renderer::SetProjectionMatrix(Matrix4x4* ProjectionMatrix)
+//void Renderer::SetProjectionMatrix(Matrix4x4* ProjectionMatrix)
+//{
+//    Matrix4x4 mat = ProjectionMatrix->Transpose();
+//    m_DeviceContext->UpdateSubresource(m_ProjectionBuffer.Get(), 0, nullptr, &mat, 0, 0);
+//}
+
+void Renderer::SetViewMatrix(Matrix4x4* ViewMatrix, UINT slot)
 {
+    // ★ 元の行列を保持（非転置のまま）
+    m_CurrentView = *ViewMatrix;
+
+    // 定数バッファ用に転置して GPU に送る
+    Matrix4x4 mat = ViewMatrix->Transpose();
+    m_DeviceContext->VSSetConstantBuffers(slot, 1, m_ViewBuffer.GetAddressOf());
+    m_DeviceContext->UpdateSubresource(m_ViewBuffer.Get(), 0, nullptr, &mat, 0, 0);
+}
+
+void Renderer::SetProjectionMatrix(Matrix4x4* ProjectionMatrix, UINT slot)
+{
+    // ★ 元の行列を保持（非転置のまま）
+    m_CurrentProjection = *ProjectionMatrix;
+
+    // 定数バッファ用に転置して GPU に送る
     Matrix4x4 mat = ProjectionMatrix->Transpose();
+    m_DeviceContext->VSSetConstantBuffers(slot, 1, m_ProjectionBuffer.GetAddressOf());
     m_DeviceContext->UpdateSubresource(m_ProjectionBuffer.Get(), 0, nullptr, &mat, 0, 0);
 }
 

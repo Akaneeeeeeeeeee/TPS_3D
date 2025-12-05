@@ -12,6 +12,11 @@ static CSphereMesh g_mesh;
 static CMeshRenderer g_renderer;
 static CMaterial g_material;
 static CShader g_shader;
+
+static CSphereMesh           g_instMesh;
+static CMeshRenderer         g_instRenderer;
+static CMaterial             g_instMaterial;
+static CShader               g_instShader;
 static ComPtr<ID3D11Buffer>  g_cbCamera;
 static ComPtr<ID3D11Buffer>  g_cbInstance;
 
@@ -102,8 +107,8 @@ void SphereInstancedDrawerInit()
 	ID3D11Device* dev = Renderer::GetDevice();
 
 	// メッシュ（普通の球）
-	g_mesh.Init(1.0f, Color(1, 1, 1, 1), 32, 32);
-	g_renderer.Init(g_mesh);
+	g_instMesh.Init(1.0f, Color(1, 1, 1, 1), 32, 32);
+	g_instRenderer.Init(g_instMesh);
 
 	// マテリアル（単色）
 	MATERIAL mtrl;
@@ -113,10 +118,10 @@ void SphereInstancedDrawerInit()
 	mtrl.Specular = Color(0, 0, 0, 0);
 	mtrl.Shiness = 0;
 	mtrl.TextureEnable = FALSE;
-	g_material.Create(mtrl);
+	g_instMaterial.Create(mtrl);
 
 	// シェーダ（インスタンス用）
-	g_shader.Create(
+	g_instShader.Create(
 		"shader/instancedSphereVS.hlsl",
 		"shader/instancedSpherePS.hlsl"
 	);
@@ -164,11 +169,11 @@ void SphereInstancedDrawerDraw(
 	ctx->UpdateSubresource(g_cbCamera.Get(), 0, nullptr, &cam, 0, 0);
 
 	// b0 にカメラ行列
-	ctx->VSSetConstantBuffers(0, 1, g_cbCamera.GetAddressOf());
+	ctx->VSSetConstantBuffers(7, 1, g_cbCamera.GetAddressOf());
 
 	// マテリアル（色だけ使う）
-	g_material.SetDiffuse(col);
-	g_material.Update(); // b3 にセットされる
+	g_instMaterial.SetDiffuse(col);
+	g_instMaterial.Update(); // b3 にセットされる
 
 	// ===== 2) インスタンスを MAX_INSTANCE ごとに描く =====
 
@@ -188,20 +193,20 @@ void SphereInstancedDrawerDraw(
 			Matrix4x4 trans = Matrix4x4::CreateTranslation(c.x, c.y, c.z);
 			Matrix4x4 world = scale * trans;
 
-			inst.world[i] = world;
+			inst.world[i] = world; // 転置
 		}
 
 		ctx->UpdateSubresource(g_cbInstance.Get(), 0, nullptr, &inst, 0, 0);
 
 		// b1 にインスタンス行列配列
-		ctx->VSSetConstantBuffers(1, 1, g_cbInstance.GetAddressOf());
+		ctx->VSSetConstantBuffers(8, 1, g_cbInstance.GetAddressOf());
 
 		// シェーダ・マテリアルをセット
-		g_shader.SetGPU();
-		g_material.SetGPU();
+		g_instShader.SetGPU();
+		g_instMaterial.SetGPU();
 
 		// メッシュをバインドしてインスタンシング描画
-		g_renderer.DrawInstanced(static_cast<UINT>(batchCount));
+		g_instRenderer.DrawInstanced(static_cast<UINT>(batchCount));
 
 		offset += batchCount;
 	}

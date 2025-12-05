@@ -10,6 +10,7 @@
 #include "GameObject/Skydome.h"
 #include "GameObject/Rock.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
+#include "Framework/GameObject/WeatherController/WeatherController.h"
 
 #include "system/TriangleDrawer.h"
 #include "system/meshmanager.h"
@@ -505,6 +506,9 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	/*auto rock = m_pObjectManager->Instantiate<Rock>("obstacleRock1", Tag::Object);
 	rock->Init();*/
 
+	// 天候オブジェクト
+	auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
+	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
 
 	// --- 衝突テスト用障害物 ---
 	{

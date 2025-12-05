@@ -6,6 +6,7 @@
 #include "Framework/PhysicsSystem/PhysicsManager.h"
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/CameraManager/CameraManager.h"
+#include "Framework/Component/Camera/CameraComponent.h"
 
 
 /*
@@ -25,11 +26,24 @@ struct EngineContext
 	PhysicsManager& joltPhysicsManager;
 	WeatherSystem& weatherSystem;
 	CameraManager& cameraManager;
-	
+
 	void Update(const float deltaTime)
 	{
 		joltPhysicsManager.Update(deltaTime);
 		weatherSystem.Update(deltaTime);
+
+		CameraComponent* cam = cameraManager.GetMain();
+		Matrix4x4 view;
+		Matrix4x4 proj;
+		if (!cam) {
+			view = Matrix4x4::Identity;
+			proj = Matrix4x4::Identity;
+		}
+		else {
+			view = cam->GetViewMatrix();
+			proj = cam->GetProjMatrix();
+		}
+		weatherSystem.SetViewProjMatrices(view, proj);
 	}
 
 	EngineContext(
@@ -39,9 +53,9 @@ struct EngineContext
 		PhysicsManager& pm,
 		WeatherSystem& ws,
 		CameraManager& cm)
-		: renderManager(rm), 
-		shaderManager(sm), 
-		assetManager(am), 
+		: renderManager(rm),
+		shaderManager(sm),
+		assetManager(am),
 		joltPhysicsManager(pm),
 		weatherSystem(ws),
 		cameraManager(cm)

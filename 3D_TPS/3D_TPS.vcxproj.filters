@@ -166,6 +166,9 @@
     <Filter Include="ソース ファイル\MyFramework\Manager\CameraManager">
       <UniqueIdentifier>{0d80cd81-a541-45a6-b1be-eedbcf2f3f61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\WeatherController">
+      <UniqueIdentifier>{85ac46a1-df06-44e2-88e5-865a1b8eea89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -543,6 +546,9 @@
     <ClInclude Include="system\Framework\CameraManager\CameraManager.h">
       <Filter>ソース ファイル\MyFramework\Manager\CameraManager</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -823,6 +829,9 @@
     </ClCompile>
     <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp">
       <Filter>ソース ファイル\MyFramework\WeatherSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

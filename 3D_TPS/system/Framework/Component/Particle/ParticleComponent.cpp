@@ -6,7 +6,7 @@
 using namespace DirectX;
 
 ParticleComponent::ParticleComponent()
-    : IComponent()
+	: IComponent(), m_WeatherSystem(nullptr)
 {
 }
 

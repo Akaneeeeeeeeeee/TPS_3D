@@ -204,6 +204,7 @@
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
+    <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
@@ -398,6 +399,7 @@
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
+    <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

@@ -67,6 +67,8 @@ void Game::Init(void)
 		m_WeatherSystem,
 		m_CameraManager);
 
+	m_WeatherSystem.SetWeather(WeatherType::HeavyRain, 0.0f);
+
 	m_ComponentFactory.Init(m_pContext.get());
 	m_ObjectFactory.Init(&m_ComponentFactory);
 
@@ -127,7 +129,10 @@ void Game::Draw()
 	// 物理デバッグ描画
 	//m_PhysicsManager.DebugDraw();
 
+
+	// todo:ここは後から描画機能に責任を持たせる
 	SoundWaveVisualizer::GetInstance().DrawWorld();
+	m_pContext->weatherSystem.DebugDrawParticles();
 
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/

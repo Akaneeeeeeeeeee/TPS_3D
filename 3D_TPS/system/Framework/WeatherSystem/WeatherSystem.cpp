@@ -1,7 +1,8 @@
 #include "WeatherSystem.h"
 #include "system/Framework/Component/Particle/ParticleComponent.h"
 #include <cassert>
-#include <DirectXMath.h>
+#include "SphereDrawer.h"
+#include "renderer.h"
 
 using DirectX::XMFLOAT3;
 
@@ -68,7 +69,7 @@ void WeatherSystem::SetWeather(WeatherType type, float transitionSec)
 }
 
 // パラメータ補間
-WeatherParticleParams LerpParams(const WeatherParticleParams& a, const WeatherParticleParams& b, float t)
+WeatherParticleParams WeatherSystem::LerpParams(const WeatherParticleParams& a, const WeatherParticleParams& b, float t)
 {
     auto lerp = [](float x, float y, float t) {
         return x + (y - x) * t;
@@ -148,4 +149,66 @@ void WeatherSystem::ApplyToParticles()
         emitter.SetDirection(dir);
         emitter.SetGravity(gravity);
     }
+}
+
+
+void WeatherSystem::DebugDrawParticles(void) const
+{
+    // 2) 天候に応じて色を決める（仮）
+    Color rainColor(0.4f, 0.4f, 1.0f, 1.0f);
+    Color sandColor(0.9f, 0.8f, 0.5f, 1.0f);
+    Color col(1.0f, 1.0f, 1.0f, 1.0f);
+
+    if (m_CurrentParams.rainEmitRate > 0.0f)
+    {
+        col = rainColor;
+    }
+    else if (m_CurrentParams.sandEmitRate > 0.0f)
+    {
+        col = sandColor;
+    }
+
+    constexpr float PARTICLE_RADIUS = 3.0f;
+
+    // 3) 全 ParticleComponent から粒子位置を集める
+    size_t totalCount = 0;
+    for (auto* comp : m_ParticleComponents)
+    {
+        if (!comp || !comp->GetIsValid()) continue;
+        totalCount += comp->GetEmitter().GetParticles().size();
+    }
+    if (totalCount == 0) return;
+
+    std::vector<Vector3> centers;
+    centers.reserve(totalCount);
+
+    for (auto* comp : m_ParticleComponents)
+    {
+        if (!comp || !comp->GetIsValid()) continue;
+
+        const auto& particles = comp->GetEmitter().GetParticles();
+        for (const auto& p : particles)
+        {
+            centers.emplace_back(p.pos.x, p.pos.y, p.pos.z);
+        }
+    }
+
+    // 4) インスタンシング描画
+    SphereInstancedDrawerDraw(
+        view,
+        proj,
+        centers,
+        PARTICLE_RADIUS,
+        col);
+
+
+    //std::vector<Vector3> centers;
+    //centers.emplace_back(0.0f, 50.0f, 0.0f);
+
+    //SphereInstancedDrawerDraw(
+    //    view,
+    //    proj,
+    //    centers,
+    //    5.0f,
+    //    Color(1, 0, 0, 1));
 }

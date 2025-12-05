@@ -114,7 +114,7 @@ class WeatherSystem
 public:
     WeatherSystem();
 
-    // ParticleComponent の登録 / 解除
+    // ParticleComponent の登録 / 解除   
     void Register(ParticleComponent* comp);
     void Unregister(ParticleComponent* comp);
 
@@ -126,6 +126,13 @@ public:
     // 毎フレーム呼ぶ
     void Update(float dt);
 
+    void DebugDrawParticles(void) const;
+
+    void SetViewProjMatrices(Matrix4x4& viewMatrix, Matrix4x4& projMatrix)
+    {
+        view = viewMatrix;
+        proj = projMatrix;
+	}
 private:
     // パラメータ補間
     static WeatherParticleParams LerpParams(const WeatherParticleParams& a, const WeatherParticleParams& b, float t);
@@ -145,4 +152,8 @@ private:
 
     // 登録されているパーティクルコンポーネント
     std::vector<ParticleComponent*> m_ParticleComponents;
+
+
+   Matrix4x4 view = Matrix4x4::Identity;
+   Matrix4x4 proj = Matrix4x4::Identity;
 };
