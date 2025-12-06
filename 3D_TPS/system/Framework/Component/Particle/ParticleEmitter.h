@@ -47,6 +47,19 @@ public:
     // 描画用に粒配列へアクセス（GPU 転送などに使う）
     const std::vector<ParticleInstance>& GetParticles() const { return m_Particles; }
 
+    // 発生範囲の設定（XZ 平面、中心は m_Origin）
+    void SetSpawnAreaXZ(float halfWidth, float halfDepth)
+    {
+        m_SpawnHalfWidth = std::max(0.0f, halfWidth);
+        m_SpawnHalfDepth = std::max(0.0f, halfDepth);
+    }
+
+    // 発生高さのオフセット（m_Origin.y からの相対）
+    void SetSpawnHeight(float height)
+    {
+        m_SpawnHeight = height;
+    }
+
 private:
     void SpawnParticles(float dt);
     ParticleInstance CreateOneParticle();
@@ -62,6 +75,10 @@ private:
     float m_MinSpeed = 1.0f;
     float m_MaxSpeed = 1.0f;
     size_t m_MaxParticles = 1000;
+    // 発生範囲
+    float m_SpawnHalfWidth = 0.0f;  // X
+    float m_SpawnHalfDepth = 0.0f;  // Z
+    float m_SpawnHeight = 0.0f;  // Y
 
     std::vector<ParticleInstance> m_Particles;
 

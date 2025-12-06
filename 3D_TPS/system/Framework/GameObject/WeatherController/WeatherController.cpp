@@ -15,9 +15,6 @@ WeatherController::~WeatherController()
 void WeatherController::Init(void)
 {
 	m_ParticleComp = AddComponent<ParticleComponent>("WeatherParticle");
-
-    // 例えばカメラの少し上にオフセットを置く
-	m_ParticleComp->SetLocalOffset(DirectX::XMFLOAT3(0.0f, 200.0f, 0.0f));
 }
 
 void WeatherController::Update(const float dt)

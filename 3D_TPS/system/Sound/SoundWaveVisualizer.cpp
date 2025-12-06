@@ -75,7 +75,7 @@ void SoundWaveVisualizer::DrawWorld(void)
 
         // 円を SEGMENT 個の線分に分けて描画
         const float r = w.currentRadius;
-        const float y = w.center.y + 5.0f; // 地面から少し浮かせる
+        const float y = w.center.y + 50.0f; // 地面から少し浮かせる
 
         for (int i = 0; i < SEGMENT; ++i)
         {

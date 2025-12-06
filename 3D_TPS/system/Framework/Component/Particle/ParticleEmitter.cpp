@@ -124,13 +124,13 @@ ParticleInstance ParticleEmitter::CreateOneParticle()
 {
     ParticleInstance p{};
 
-    // 寿命 [m_MinLife, m_MaxLife]
+    // 寿命
     double life = m_Rng.uniformReal(static_cast<double>(m_MinLife),
         static_cast<double>(m_MaxLife));
     p.maxLife = static_cast<float>(life);
     p.life = p.maxLife;
 
-    // 速度の大きさ [m_MinSpeed, m_MaxSpeed]
+    // 速度の大きさ
     double speed = m_Rng.uniformReal(static_cast<double>(m_MinSpeed),
         static_cast<double>(m_MaxSpeed));
 
@@ -142,12 +142,13 @@ ParticleInstance ParticleEmitter::CreateOneParticle()
     }
     dir = XMVector3Normalize(dir);
 
-    // 少しだけ方向にばらつきを加える
+    // 方向に少しばらつき
     double jx = m_Rng.uniformReal(-0.1, 0.1);
     double jy = m_Rng.uniformReal(-0.1, 0.1);
     double jz = m_Rng.uniformReal(-0.1, 0.1);
 
-    dir = XMVectorAdd(dir, XMVectorSet(static_cast<float>(jx),
+    dir = XMVectorAdd(dir, XMVectorSet(
+        static_cast<float>(jx),
         static_cast<float>(jy),
         static_cast<float>(jz), 0.0f));
     dir = XMVector3Normalize(dir);
@@ -159,7 +160,30 @@ ParticleInstance ParticleEmitter::CreateOneParticle()
     p.vel.y = v.y * static_cast<float>(speed);
     p.vel.z = v.z * static_cast<float>(speed);
 
-    p.pos = m_Origin;
+    // ★ ここがポイント：発生位置に XZ のランダムを足す
+    float ox = 0.0f;
+    float oz = 0.0f;
+    float oy = 0.0f;
+
+    if (m_SpawnHalfWidth > 0.0f || m_SpawnHalfDepth > 0.0f)
+    {
+        ox = static_cast<float>(
+            m_Rng.uniformReal(-static_cast<double>(m_SpawnHalfWidth),
+                static_cast<double>(m_SpawnHalfWidth)));
+        oz = static_cast<float>(
+            m_Rng.uniformReal(-static_cast<double>(m_SpawnHalfDepth),
+                static_cast<double>(m_SpawnHalfDepth)));
+    }
+
+    if (m_SpawnHeight != 0.0f)
+    {
+        // 高さ方向も少しバラつかせたければここを工夫
+        oy = m_SpawnHeight;
+    }
+
+    p.pos.x = m_Origin.x + ox;
+    p.pos.y = m_Origin.y + oy;
+    p.pos.z = m_Origin.z + oz;
 
     return p;
 }

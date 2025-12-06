@@ -155,14 +155,6 @@ void SphereInstancedDrawerDraw(
 	// ===== 1) カメラ行列を cbuffer に詰める =====
 	CBInstSphereCamera cam{};
 
-	// ここはあなたの Renderer / カメラ実装に合わせる
-	// 例：
-	// cam.view = Renderer::GetViewMatrix();
-	// cam.proj = Renderer::GetProjMatrix();
-	//
-	// もし row-major <-> column-major の転置が必要ならここで行う
-
-	// 仮に Renderer に GetView/GetProj があるとする
 	cam.view = view;
 	cam.proj = proj;
 

@@ -56,7 +56,7 @@ void Game::Init(void)
 	m_RenderManager.Init(&m_GraphicsDevice);
 	// 物理マネージャの初期化
 	m_PhysicsManager.Init();
-	//m_WeatherSystem.Init();
+	m_WeatherSystem.Init();
 
 
 	m_pContext = std::make_unique<EngineContext>(
@@ -133,6 +133,7 @@ void Game::Draw()
 	// todo:ここは後から描画機能に責任を持たせる
 	SoundWaveVisualizer::GetInstance().DrawWorld();
 	m_pContext->weatherSystem.DebugDrawParticles();
+	m_pContext->weatherSystem.DebugDrawSun();
 
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
