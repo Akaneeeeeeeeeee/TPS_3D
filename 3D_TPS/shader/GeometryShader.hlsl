@@ -1,10 +1,15 @@
 #include "common.hlsl"
 
+cbuffer LineWidthCB : register(b6)
+{
+    float4 gLineWidth; // x を太さとして使う
+}
+
 [maxvertexcount(6)]
 void main(line PS_IN input[2], inout TriangleStream<PS_IN> OutputStream)
 {
     PS_IN output;
-    float thickness = 0.3f; // 線の太さ、適宜調整
+    float thickness = gLineWidth.x; // 線の太さ、適宜調整
 
     // 線の方向を計算
     float2 dir = normalize(input[1].Position.xy - input[0].Position.xy);

@@ -6,11 +6,17 @@
 class PhysicsManager;
 class CharacterVirtualComponent;
 class Player;
+class WeatherSystem;
+
+namespace
+{
+    constexpr float DEG2RAD = PI / 180.0f;
+}
 
 /*
 * @brief    敵AIコンポーネント
 * @detail   指定地点を巡回するように移動し、障害物を回避するAIコンポーネント
-* @author   赤根　和樹
+* @author   赤根　和樹２４８
 * @date     2025/11/16
 */
 class EnemyAIComponent : public IComponent
@@ -44,8 +50,13 @@ public:
     void SetEyeHeight(float height) { m_EyeHeight = height; }
     void SetViewParams(float angleDeg, float distance)
     {
-        m_ViewAngle = angleDeg;
-        m_ViewDistance = distance;
+        // 基準視界距離
+        m_BaseViewDistance = distance;
+        m_CurrentViewDistance = distance;  // 初期状態では一致させておく
+
+        // 基準視野角（度 → ラジアン）
+        m_BaseFOV = angleDeg * DEG2RAD;
+        m_CurrentFOV = m_BaseFOV;
     }
     void SetPlayer(Player* player) { m_pPlayer = player; }
 
@@ -72,6 +83,28 @@ public:
 
 
 private:
+    PhysicsManager* m_Physics = nullptr;
+    CharacterVirtualComponent* m_Char = nullptr;
+    Player* m_pPlayer = nullptr;
+    WeatherSystem* m_Weather = nullptr;
+
+    // ---------- 経路・視線などのベクトル系 ----------
+    std::vector<Vector3> m_WayPoints;
+    Vector3              m_LastHeardPosition = Vector3::Zero;   // 最後に聞こえた音の位置
+    Vector3              m_ViewForward = Vector3::Forward;      // 身体とは独立した「視線用 forward」
+    // Caution 用：視線の開始方向・目標方向
+    Vector3              m_CautionStartViewDir = Vector3::Forward;
+    Vector3              m_CautionTargetViewDir = Vector3::Forward;
+    Vector3              m_LastMoveDir = Vector3::Forward;
+
+    // スタック検出用
+    Vector3 m_LastPosForStuck = Vector3::Zero;
+    float   m_StuckTimer = 0.0f;
+    bool    m_IsStuck = false;
+
+    void UpdateStuck(float dt, const Vector3& desiredDir);
+    void ResolveStuck();
+
 	// 状態ごとの更新処理
     void UpdateIdle(const float deltatime);
     void UpdatePatrol(const float deltatime);
@@ -91,22 +124,16 @@ private:
 	bool IsInViewCone(const Vector3& eyePos, const Vector3& targetPos) const;
 	bool CanSeePoint(const Vector3& eyePos, const Vector3& targetPos) const;
     
-    PhysicsManager* m_Physics = nullptr;
-    CharacterVirtualComponent* m_Char = nullptr;
-    Player* m_pPlayer = nullptr;
-
     State m_State = State::Patrol;
-	Vector3 m_LastHeardPosition = Vector3::Zero;    // 最後に聞こえた音の位置
 	bool    m_HeardThisFrame = false;               // 今フレーム音を聞いたかどうか
 
     //壁回避モード
     bool m_IsAvoidingWall = false;
     float m_AvoidSideSign = 1.0f;   // +1 = 左方向、-1 = 右方向
 
-    std::vector<Vector3> m_WayPoints;
 	int   m_CurrentIndex = 0;       // 現在の巡回地点インデックス
 	float m_ArriveRadius = 75.0f;   // 到着判定半径
-	float m_RayLength = 300.0f;     // 障害物回避用のRay長さ
+	float m_RayLength = 1000.0f;     // 障害物回避用のRay長さ
 	float m_AvoidWeight = 1.5f;     // 障害物回避の重み付け
 	float m_EyeHeight = 80.0f;      // Rayの発射位置（敵の目の高さ）
 
@@ -123,18 +150,15 @@ private:
     Quaternion m_CautionStartRot{};
     Quaternion m_CautionTargetRot{};
     bool       m_CautionTurnRight = false;
-    // 身体とは独立した「視線用 forward」
-    Vector3 m_ViewForward = Vector3::Forward; // Z+ 前方
+    
+	// 視野パラメータ
+    // 視野パラメータ（「環境に依存しない基準値」と「環境込みの現在値」を分ける）
+    float m_BaseViewDistance = 1000.0f;              // 基準の視界距離
+    float m_CurrentViewDistance = 0.0f;              // 環境を反映した視界距離
 
-    // Caution 用：視線の開始方向・目標方向
-    Vector3 m_CautionStartViewDir = Vector3::Forward;
-    Vector3 m_CautionTargetViewDir = Vector3::Forward;
-
-
-    float m_ViewAngle = 60.0f;
-    float m_ViewDistance = 750.0f;
+    float m_BaseFOV = 80.0f * DEG2RAD;    // 基準の視野角（ラジアン）
+    float m_CurrentFOV = 60.0f * DEG2RAD;    // 環境を反映した視野角（ラジアン）
     bool m_HasLookedAtHeard = false;
 
     bool  m_IsFound = false;
-
 };

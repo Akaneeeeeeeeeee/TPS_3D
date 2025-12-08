@@ -1,28 +1,33 @@
-#include "WeatherSystem.h"
+ï»¿#include "WeatherSystem.h"
 #include "system/Framework/Component/Particle/ParticleComponent.h"
 #include "SphereDrawer.h"
 #include "renderer.h"
 #include "DebugUI.h"
+#include "CylinderDrawer.h"
 
 using DirectX::XMFLOAT3;
 
 // ==============================
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 // ==============================
 WeatherSystem::WeatherSystem()
+    : m_Rng(RandomEngine::tls().stream("WeatherSystem")) // â˜… weather ç”¨ã‚µãƒ–ã‚¹ãƒˆãƒªãƒ¼ãƒ 
 {
-    // ‰Šúó‘Ô‚Í Clear
+	// åˆæœŸçŠ¶æ…‹ã¯æ™´ã‚Œ
     m_CurrentParams = MakePreset(WeatherType::Clear);
     m_SrcParams = m_CurrentParams;
     m_DstParams = m_CurrentParams;
     m_TransitionTime = 1.0f;
     m_TransitionT = 1.0f;
 
-    // ‘¾—z‚Ì‰Šúİ’è
-    m_Sun.timeOfDayHours = 12.0f;   // ³Œß
-    m_Sun.dayLengthSec = 60.0f;    // Œ»À 10 •ª‚Å 1 “ú
+    // å¤ªé™½ã®åˆæœŸè¨­å®š
+    m_Sun.timeOfDayHours = 12.0f;    // æ­£åˆã‚¹ã‚¿ãƒ¼ãƒˆ
 
-    // ‰Šú‚Ì•ûŒüiŒy‚­“ì’†‚µ‚Ä‚¢‚éƒCƒ[ƒWj
+    // 1æ—¥ã®é•·ã•ã‚’ã€Œ5åˆ† = 300ç§’ã€ã«ã—ã¦ãŠã
+    // SetDayLength() ã‚„ ImGui ã®ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã‹ã‚‰å¤‰æ›´å¯èƒ½
+    m_Sun.dayLengthSec = 300.0f;
+
+    // åˆæœŸã®æ–¹å‘
     m_Sun.dirToSun = Vector3(0.0f, 1.0f, 0.0f);
     m_Sun.lightDir = -m_Sun.dirToSun;
     m_Sun.lightColor = Color(1, 1, 1, 1);
@@ -30,7 +35,7 @@ WeatherSystem::WeatherSystem()
 }
 
 // ==============================
-// ParticleComponent “o˜^E‰ğœ
+// ParticleComponent ç™»éŒ²ãƒ»è§£é™¤
 // ==============================
 void WeatherSystem::Register(ParticleComponent* comp)
 {
@@ -57,7 +62,7 @@ void WeatherSystem::Unregister(ParticleComponent* comp)
 }
 
 // ==============================
-// “VŒó•ÏXiƒvƒŠƒZƒbƒg‘JˆÚŠJnj
+// å¤©å€™å¤‰æ›´ï¼ˆãƒ—ãƒªã‚»ãƒƒãƒˆé·ç§»é–‹å§‹ï¼‰
 // ==============================
 void WeatherSystem::SetWeather(WeatherType type, float transitionSec)
 {
@@ -70,7 +75,84 @@ void WeatherSystem::SetWeather(WeatherType type, float transitionSec)
 }
 
 // ==============================
-// “VŒóƒpƒ‰ƒ[ƒ^•âŠÔ
+// 1æ—¥çµŒéæ™‚ã®å‡¦ç†
+// ==============================
+void WeatherSystem::OnNewDay()
+{
+    // ãã®æ—¥ã®å¤©å€™ã‚’ä¸€åº¦ã ã‘æ±ºã‚ã‚‹
+    WeatherType next = ChooseNextWeather();
+
+    // åŒã˜å¤©å€™ã‚’å¼•ãã“ã¨ã‚‚è‡ªç„¶ãªã®ã§è¨±å®¹
+    // å¿…ãšå¤‰ãˆãŸã„ãªã‚‰ if (next == m_CurrentWeather) ... ã§å†æŠ½é¸ã—ã¦ã‚‚ã‚ˆã„
+    if (next != m_CurrentWeather)
+    {
+        // æ—¥ä»˜ãŒå¤‰ã‚ã£ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§æ•°ç§’ã‹ã‘ã¦åˆ‡ã‚Šæ›¿ãˆã‚‹
+        constexpr float TRANSITION_SEC = 3.0f;
+        SetWeather(next, TRANSITION_SEC);
+    }
+}
+
+// ==============================
+// æ¬¡ã®æ—¥ã®å¤©å€™ã‚’ä¹±æ•°ã§æ±ºã‚ã‚‹
+// ==============================
+WeatherType WeatherSystem::ChooseNextWeather()
+{
+    using WT = WeatherType;
+
+    // WeatherType::Weather_MAX å€‹ã¶ã‚“ã®é‡ã¿
+    std::array<double, static_cast<size_t>(WT::Weather_MAX)> w{};
+
+	// ç¾åœ¨ã®å¤©å€™ã«å¿œã˜ã¦ã€æ¬¡ã®å¤©å€™ã®é‡ã¿ã‚’è¨­å®š
+    switch (m_CurrentWeather)
+    {
+    case WT::Clear:
+        // æ™´ã‚ŒãŒå¤šã‚ã€ãŸã¾ã«å°é›¨ã€ã¾ã‚Œã«åœŸç ‚é™ã‚Šã‚„ç ‚åµ
+        w[static_cast<size_t>(WT::Clear)] = 5.0;
+        w[static_cast<size_t>(WT::LightRain)] = 3.0;
+        w[static_cast<size_t>(WT::HeavyRain)] = 1.0;
+        w[static_cast<size_t>(WT::Sandstorm)] = 1.0;
+        break;
+
+    case WT::LightRain:
+        // å°é›¨ãŒç¶šã or æ™´ã‚Œã‚‹ or å¼·ã„é›¨
+        w[static_cast<size_t>(WT::Clear)] = 3.0;
+        w[static_cast<size_t>(WT::LightRain)] = 4.0;
+        w[static_cast<size_t>(WT::HeavyRain)] = 2.0;
+        w[static_cast<size_t>(WT::Sandstorm)] = 1.0;
+        break;
+
+    case WT::HeavyRain:
+        // åœŸç ‚é™ã‚ŠãŒé€£ç¶šã™ã‚‹ã¨é‡ã„ã®ã§ã€è»½ã„é›¨ã‹æ™´ã‚Œã«å¯„ã›ã‚‹
+        w[static_cast<size_t>(WT::Clear)] = 4.0;
+        w[static_cast<size_t>(WT::LightRain)] = 4.0;
+        w[static_cast<size_t>(WT::HeavyRain)] = 1.0;
+        w[static_cast<size_t>(WT::Sandstorm)] = 1.0;
+        break;
+
+    case WT::Sandstorm:
+        // ç ‚åµã¯ãƒ¬ã‚¢ã«ã—ã¦ã€æ¬¡ã®æ—¥ã¯æ™´ã‚Œã‹å°é›¨ã«æˆ»ã‚Šã‚„ã™ã
+        w[static_cast<size_t>(WT::Clear)] = 4.0;
+        w[static_cast<size_t>(WT::LightRain)] = 3.0;
+        w[static_cast<size_t>(WT::HeavyRain)] = 1.0;
+        w[static_cast<size_t>(WT::Sandstorm)] = 1.0;
+        break;
+
+    default:
+        // ä¸‡ä¸€æœªè¨­å®šãªã‚‰å…¨éƒ¨ã€Œæ™´ã‚Œã€
+        w[static_cast<size_t>(WT::Clear)] = 1.0;
+        break;
+    }
+
+    // RandomEngine ã®é‡ã¿ä»˜ãã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã§ 0..Weather_MAX-1 ã‚’é¸ã¶
+    std::span<const double> span(w.data(), w.size());
+    size_t idx = m_Rng.weightedIndex(span);
+
+    return static_cast<WeatherType>(idx);
+}
+
+
+// ==============================
+// å¤©å€™ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è£œé–“
 // ==============================
 WeatherParticleParams WeatherSystem::LerpParams(
     const WeatherParticleParams& a,
@@ -96,7 +178,7 @@ WeatherParticleParams WeatherSystem::LerpParams(
     r.sandMinSpeed = lerp(a.sandMinSpeed, b.sandMinSpeed, t);
     r.sandMaxSpeed = lerp(a.sandMaxSpeed, b.sandMaxSpeed, t);
 
-    // Œü‚«‚ÍŒ»óu“VŒó‚²‚Æ‚ÉŒˆ‚ß‘Å‚¿v‚Å‚æ‚¢‚Ì‚Å a ‚ğÌ—p
+    // å‘ãã¯ç¾çŠ¶ã€Œå¤©å€™ã”ã¨ã«æ±ºã‚æ‰“ã¡ã€ã§ã‚ˆã„ã®ã§ a ã‚’æ¡ç”¨
     r.rainDir = a.rainDir;
     r.sandDir = a.sandDir;
 
@@ -109,7 +191,7 @@ WeatherParticleParams WeatherSystem::LerpParams(
 }
 
 // ==============================
-// ƒp[ƒeƒBƒNƒ‹‚Ö‚Ì”½‰f
+// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ã¸ã®åæ˜ 
 // ==============================
 void WeatherSystem::ApplyToParticles()
 {
@@ -126,7 +208,11 @@ void WeatherSystem::ApplyToParticles()
     float   spawnHeight = 0.0f;
     size_t  maxParticles = 2000;
 
-    // ‰J‚ª—LŒø
+    // é«˜ã•ãƒ¬ãƒ³ã‚¸ï¼ˆEmitter ãƒ­ãƒ¼ã‚«ãƒ« Yï¼‰
+    float   spawnMinY = 0.0f;
+    float   spawnMaxY = 0.0f;
+
+    // é›¨ãŒæœ‰åŠ¹
     if (m_CurrentParams.rainEmitRate > 0.0f)
     {
         emitRate = m_CurrentParams.rainEmitRate;
@@ -140,9 +226,13 @@ void WeatherSystem::ApplyToParticles()
         spawnHalfWidth = 800.0f;
         spawnHalfDepth = 800.0f;
         spawnHeight = 0.0f;
+
+        // é›¨ã¯ã‚¨ãƒŸãƒƒã‚¿ã®çœŸä¸Šã‚ãŸã‚Šã«ã¾ã¨ã‚ã¦å‡ºã™ã‚¤ãƒ¡ãƒ¼ã‚¸ãªã‚‰ 0ã€œ0 ã§ã‚‚ã‚ˆã„
+        spawnMinY = 0.0f;
+        spawnMaxY = 0.0f;
         maxParticles = 15000;
     }
-    // »—’‚ª—LŒø
+    // ç ‚åµãŒæœ‰åŠ¹
     else if (m_CurrentParams.sandEmitRate > 0.0f)
     {
         emitRate = m_CurrentParams.sandEmitRate;
@@ -152,11 +242,21 @@ void WeatherSystem::ApplyToParticles()
         maxSpeed = m_CurrentParams.sandMaxSpeed;
         dir = m_CurrentParams.sandDir;
         gravity = XMFLOAT3(0.0f, -1.0f, 0.0f);
+        // ãƒ—ãƒªã‚»ãƒƒãƒˆã§æ±ºã‚ãŸé«˜ã•ãƒ¬ãƒ³ã‚¸ã‚’ãã®ã¾ã¾ä½¿ã†
+        spawnMinY = m_CurrentParams.sandMinHeight;
+        spawnMaxY = m_CurrentParams.sandMaxHeight;
 
-        spawnHalfWidth = 1000.0f;
-        spawnHalfDepth = 1000.0f;
-        spawnHeight = 0.0f;
-        maxParticles = 12000;
+        // XZæ–¹å‘ã‚’åºƒã’ã‚‹
+        spawnHalfWidth = 2000.0f;   // 1000 â†’ 2000
+        spawnHalfDepth = 2000.0f;
+
+        // é«˜ã•æ–¹å‘ã®åšã¿ã‚’æŒãŸã›ãŸã„ãªã‚‰ã€spawnHeight ã‚‚ä¸Šã’ã‚‹
+        //  SetSpawnHeight ã®è§£é‡ˆã¯å®Ÿè£…æ¬¡ç¬¬ãªã®ã§ï¼ˆæ¨æ¸¬ã§ã™ï¼‰ã€
+        //   ã€Œé«˜ã•ãƒ¬ãƒ³ã‚¸ã€ã¨ã—ã¦ä½¿ã£ã¦ã„ã‚‹ãªã‚‰ 200ã€œ500 ãã‚‰ã„ã‚’è©¦ã™ã€‚
+        spawnHeight = 300.0f;    // 0 â†’ 300ï¼ˆæ¨æ¸¬ã§ã™ï¼‰
+
+        // æœ€å¤§ç²’å­æ•°ã‚‚å¢—ã‚„ã—ã¦é–“å¼•ã‹ã‚Œãªã„ã‚ˆã†ã«
+        maxParticles = 300000;     // 12000 â†’ 30000
     }
 
     for (auto* comp : m_ParticleComponents)
@@ -173,51 +273,63 @@ void WeatherSystem::ApplyToParticles()
 
         emitter.SetSpawnAreaXZ(spawnHalfWidth, spawnHalfDepth);
         emitter.SetSpawnHeight(spawnHeight);
+        // ã€Œé«˜ã•ãƒ¬ãƒ³ã‚¸ã€ã‚’æ¸¡ã™æ–°ã—ã„ API ã‚’å‘¼ã¶
+        emitter.SetSpawnHeightRange(spawnMinY, spawnMaxY);
         emitter.SetMaxParticles(maxParticles);
     }
 }
 
 // ==============================
-// ‘¾—zF1) ‚ği‚ß‚é
+// å¤ªé™½ï¼š1) å¤ªé™½æ™‚åˆ»æ›´æ–°
 // ==============================
 void WeatherSystem::UpdateSunTime(float dt)
 {
     if (m_Sun.dayLengthSec <= 0.0f)
         m_Sun.dayLengthSec = 1.0f;
 
-    // dayLengthSec •b‚Å 24 ŠÔi‚Ş‚æ‚¤‚É‰ÁZ
+    // æ›´æ–°å‰ã®ã‚²ãƒ¼ãƒ å†…æ™‚åˆ»ã‚’ä¿å­˜
+    float prevHours = m_Sun.timeOfDayHours;
+
+    // dayLengthSec ç§’ã§ 24 æ™‚é–“é€²ã‚€
     m_Sun.timeOfDayHours += (dt / m_Sun.dayLengthSec) * 24.0f;
 
-    // 0`24 ‚É³‹K‰»
+    // 0ï½24 ã«æ­£è¦åŒ–
     if (m_Sun.timeOfDayHours >= 24.0f)
-        m_Sun.timeOfDayHours = fmodf(m_Sun.timeOfDayHours, 24.0f);
+        m_Sun.timeOfDayHours = std::fmod(m_Sun.timeOfDayHours, 24.0f);
     if (m_Sun.timeOfDayHours < 0.0f)
         m_Sun.timeOfDayHours += 24.0f;
+
+    // 24 â†’ 0 ã«å›ã‚Šè¾¼ã‚“ã ã‚‰ã€Œ1æ—¥çµŒéã€
+    // ï¼ˆprev=23.9 â†’ now=0.1 ã®ã‚ˆã†ãªã‚±ãƒ¼ã‚¹ï¼‰
+    if (m_Sun.timeOfDayHours < prevHours)
+    {
+        OnNewDay();
+    }
 }
 
 // ==============================
-// ‘¾—zF2) ‚©‚ç•ûŒü‚ğ‹‚ß‚é
+// å¤ªé™½ï¼š2) æ™‚åˆ»ã‹ã‚‰æ–¹å‘ã‚’æ±‚ã‚ã‚‹
 // ==============================
 void WeatherSystem::UpdateSunDirection()
 {
-    // 0`24 ¨ 0`2ƒÎ ‚É•ÏŠ·‚µAƒÎ/2 ‚¸‚ç‚µ‚Äu6‚ª’n•½üv‚É‚È‚é‚æ‚¤’²®
+    // 0ï½24 â†’ 0ï½2Ï€ ã«å¤‰æ›ã—ã€Ï€/2 ãšã‚‰ã—ã¦ã€Œ6æ™‚ãŒåœ°å¹³ç·šã€ã«ãªã‚‹ã‚ˆã†èª¿æ•´
     float angle = (m_Sun.timeOfDayHours / 24.0f) * DirectX::XM_2PI
         - DirectX::XM_PIDIV2;
 
     Vector3 dirToSun;
     dirToSun.x = 0.0f;
-    dirToSun.y = std::sinf(angle); // ‚‚³
-    dirToSun.z = std::cosf(angle); // ‘OŒã•ûŒü
+    dirToSun.y = std::sinf(angle); // é«˜ã•
+    dirToSun.z = std::cosf(angle); // å‰å¾Œæ–¹å‘
     dirToSun.Normalize();
 
-    // ‹ó‚ÉŒü‚©‚¤Œü‚«
+    // ç©ºã«å‘ã‹ã†å‘ã
     m_Sun.dirToSun = dirToSun;
-    // Œõ‚ª”ò‚ñ‚Å‚­‚éŒü‚«iƒVƒF[ƒ_—pj
+    // å…‰ãŒé£›ã‚“ã§ãã‚‹å‘ãï¼ˆã‚·ã‚§ãƒ¼ãƒ€ç”¨ï¼‰
     m_Sun.lightDir = -dirToSun;
 }
 
 // ==============================
-// ‘¾—zF3) ‚©‚çŠî€F‚ğ‹‚ß‚é
+// å¤ªé™½ï¼š3) æ™‚åˆ»ã‹ã‚‰åŸºæº–è‰²ã‚’æ±‚ã‚ã‚‹
 // ==============================
 Color WeatherSystem::ComputeSunBaseColor(float hours) const
 {
@@ -227,26 +339,26 @@ Color WeatherSystem::ComputeSunBaseColor(float hours) const
     const Color sunsetColor = Color(1.0f, 0.5f, 0.2f);
 
     if (hours < 4.0f) {
-        // ^–é’†
+        // çœŸå¤œä¸­
         return nightColor;
     }
     else if (hours < 7.0f) {
-        // –é ¨ ’©Ä‚¯
+        // å¤œ â†’ æœç„¼ã‘
         float k = (hours - 4.0f) / 3.0f;
         return nightColor + (morningColor - nightColor) * k;
     }
     else if (hours < 16.0f) {
-        // ’©Ä‚¯ ¨ ’‹
+        // æœç„¼ã‘ â†’ æ˜¼
         float k = (hours - 7.0f) / 9.0f;
         return morningColor + (noonColor - morningColor) * k;
     }
     else if (hours < 19.0f) {
-        // ’‹ ¨ —[Ä‚¯
+        // æ˜¼ â†’ å¤•ç„¼ã‘
         float k = (hours - 16.0f) / 3.0f;
         return noonColor + (sunsetColor - noonColor) * k;
     }
     else {
-        // —[Ä‚¯ ¨ –é
+        // å¤•ç„¼ã‘ â†’ å¤œ
         float k = (hours - 19.0f) / 5.0f;
         return sunsetColor + (nightColor - sunsetColor) * k;
     }
@@ -254,11 +366,11 @@ Color WeatherSystem::ComputeSunBaseColor(float hours) const
 
 void WeatherSystem::UpdateSunColorAndIntensity()
 {
-    // Šî€FiŠÔ‘Ñ‚É‰‚¶‚½Fj
+    // åŸºæº–è‰²ï¼ˆæ™‚é–“å¸¯ã«å¿œã˜ãŸè‰²ï¼‰
     Color base = ComputeSunBaseColor(m_Sun.timeOfDayHours);
 
-    // ‚‚³‚É‰‚¶‚Ä‹­“x‚ğŒˆ‚ß‚é
-    // dirToSun.y ‚ª‚‚¢‚Ù‚Ç–¾‚é‚­‚·‚éB0 ˆÈ‰º‚Í–é‚Æ‚µ‚Ä 0B
+    // é«˜ã•ã«å¿œã˜ã¦å¼·åº¦ã‚’æ±ºã‚ã‚‹
+    // dirToSun.y ãŒé«˜ã„ã»ã©æ˜ã‚‹ãã™ã‚‹ã€‚0 ä»¥ä¸‹ã¯å¤œã¨ã—ã¦ 0ã€‚
     float heightFactor = std::clamp(m_Sun.dirToSun.y, 0.0f, 1.0f);
     float intensity = std::pow(heightFactor, 0.5f);
 
@@ -267,11 +379,11 @@ void WeatherSystem::UpdateSunColorAndIntensity()
 }
 
 // ==============================
-// ‘¾—zF4) SunState ¨ LIGHT ‚Ö‹l‚ß‚é
+// å¤ªé™½ï¼š4) SunState â†’ LIGHT ã¸è©°ã‚ã‚‹
 // ==============================
 void WeatherSystem::ApplyToLight()
 {
-    // ¡‚Ìƒ‰ƒCƒg‚ğƒx[ƒX‚Éã‘‚«
+    // ä»Šã®ãƒ©ã‚¤ãƒˆã‚’ãƒ™ãƒ¼ã‚¹ã«ä¸Šæ›¸ã
     LIGHT light = Renderer::GetLight();
 
     light.Enable = true;
@@ -281,11 +393,11 @@ void WeatherSystem::ApplyToLight()
         m_Sun.lightDir.z,
         0.0f);
 
-    // ‘¾—z‚»‚Ì‚à‚Ì‚Ì Diffuse ¬•ª
+    // å¤ªé™½ãã®ã‚‚ã®ã® Diffuse æˆåˆ†
     Color sun = m_Sun.lightColor * m_Sun.lightIntensity;
     float I = m_Sun.lightIntensity;
 
-    // ŠÈˆÕ GIF‹óE’n–Ê‚©‚ç‚ÌŠÔÚŒõ‚ğ‘«‚·
+    // ç°¡æ˜“ GIï¼šç©ºãƒ»åœ°é¢ã‹ã‚‰ã®é–“æ¥å…‰ã‚’è¶³ã™
     Color skyColor = Color(0.3f, 0.4f, 0.5f) * (0.5f + 0.5f * I);
     Color groundColor = Color(0.1f, 0.1f, 0.05f) * (1.0f - I);
 
@@ -304,11 +416,11 @@ void WeatherSystem::Init(void)
 }
 
 // ==============================
-// –ˆƒtƒŒ[ƒ€ Update
+// æ¯ãƒ•ãƒ¬ãƒ¼ãƒ  Update
 // ==============================
 void WeatherSystem::Update(float dt)
 {
-    // ---- 1) “VŒóƒpƒ‰ƒ[ƒ^‚Ì‘JˆÚ ----
+    // ---- 1) å¤©å€™ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®é·ç§» ----
     if (m_TransitionT < 1.0f)
     {
         m_TransitionT += dt / m_TransitionTime;
@@ -317,35 +429,151 @@ void WeatherSystem::Update(float dt)
         m_CurrentParams = LerpParams(m_SrcParams, m_DstParams, m_TransitionT);
     }
 
-    // ƒp[ƒeƒBƒNƒ‹‚Ö”½‰f
+    // ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ã¸åæ˜ 
     ApplyToParticles();
 
-    // ---- 2) ‘¾—zEƒ‰ƒCƒgXV ----
-    UpdateSunTime(dt);           // ‚ği‚ß‚é
-    UpdateSunDirection();        //  ¨ •ûŒü
-    UpdateSunColorAndIntensity();// •ûŒü{ŠÔ ¨ FE‹­‚³
-    ApplyToLight();              // SunState ¨ Renderer::SetLight
+    // ---- 2) å¤ªé™½ãƒ»ãƒ©ã‚¤ãƒˆæ›´æ–° ----
+    UpdateSunTime(dt);           // æ™‚åˆ»ã‚’é€²ã‚ã‚‹
+    UpdateSunDirection();        // æ™‚åˆ» â†’ æ–¹å‘
+    UpdateSunColorAndIntensity();// æ–¹å‘ï¼‹æ™‚é–“ â†’ è‰²ãƒ»å¼·ã•
+    ApplyToLight();              // SunState â†’ Renderer::SetLight
 
-    // «—ˆ“I‚É Fog / Sky / PBR —p’è”ƒoƒbƒtƒ@‚à‚±‚±‚ÅXV
+	// ---- 3) çŸ¥è¦šå½±éŸ¿æ›´æ–° ----
+	UpdatePerception();
+
+    // å°†æ¥çš„ã« Fog / Sky / PBR ç”¨å®šæ•°ãƒãƒƒãƒ•ã‚¡ã‚‚ã“ã“ã§æ›´æ–°
+}
+
+void WeatherSystem::UpdatePerception(void)
+{
+    // 1) æ™‚åˆ»ã«ã‚ˆã‚‹æ˜ã‚‹ã•ï¼ˆ0ï½1ï¼‰
+    float t = (m_Sun.timeOfDayHours - 6.0f) / 12.0f; // 6ï½18æ™‚ã‚’ 0ï½1
+    t = std::clamp(t, 0.0f, 1.0f);
+
+    float angle = t * PI;
+    float noonFactor = std::sin(angle);   // æ˜¼ 1.0, å¤œ 0.0
+    noonFactor = std::max(0.0f, noonFactor);
+
+    float timeVisibility = 0.2f + 0.8f * noonFactor;
+    // â†’ çœŸå¤œä¸­ 0.2, æ­£åˆ 1.0 ãã‚‰ã„ã®ã‚¤ãƒ¡ãƒ¼ã‚¸
+
+    // 2) å¤©å€™ã«ã‚ˆã‚‹ãƒšãƒŠãƒ«ãƒ†ã‚£
+    float weatherVisibility = 1.0f;
+    float weatherHearing = 1.0f;
+
+    switch (m_CurrentWeather)
+    {
+    case WeatherType::Clear:
+        weatherVisibility = 1.0f;
+        weatherHearing = 1.0f;
+        break;
+    case WeatherType::LightRain:
+        weatherVisibility = 0.8f;
+        weatherHearing = 0.9f;
+        break;
+    case WeatherType::HeavyRain:
+        weatherVisibility = 0.5f;
+        weatherHearing = 0.6f; // é›¨éŸ³ã§èã“ãˆã¥ã‚‰ã„
+        break;
+    case WeatherType::Sandstorm:
+        weatherVisibility = 0.3f;
+        weatherHearing = 0.8f;
+        break;
+    default:
+        break;
+    }
+
+    m_Perception.visibility = std::clamp(timeVisibility * weatherVisibility, 0.1f, 1.0f);
+    m_Perception.hearing = std::clamp(weatherHearing, 0.1f, 1.0f);
 }
 
 // ==============================
-// ƒfƒoƒbƒOFƒp[ƒeƒBƒNƒ‹•`‰æ
+// ãƒ‡ãƒãƒƒã‚°ï¼šãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«æç”»
 // ==============================
-void WeatherSystem::DebugDrawParticles() const
+void WeatherSystem::DebugDrawParticles(void) const
 {
-    Color rainColor(0.4f, 0.4f, 1.0f, 1.0f);
+    if (m_CurrentParams.rainEmitRate > 0.0f)
+    {
+        DebugDrawRain();
+    }
+    else if (m_CurrentParams.sandEmitRate > 0.0f)
+    {
+        DebugDrawSand();
+    }
+}
+
+
+void WeatherSystem::DebugDrawRain() const
+{
+    // åŠå¾„ï¼ˆå¤ªã•ï¼‰ã¨è‰²ã¯èª¿æ•´ç”¨
+    constexpr float RAIN_RADIUS = 0.5f;
+    Color rainColor(0.6f, 0.6f, 1.0f, 1.0f);
+
+    std::vector<RainInstance> instances;
+
+    for (auto* comp : m_ParticleComponents)
+    {
+        if (!comp || !comp->GetIsValid()) continue;
+
+        const auto& particles = comp->GetEmitter().GetParticles();
+        instances.reserve(instances.size() + particles.size());
+
+        for (const auto& p : particles)
+        {
+            // é€Ÿåº¦ãƒ™ã‚¯ãƒˆãƒ«ã‹ã‚‰é•·ã•ã‚’æ±ºã‚ã‚‹ï¼ˆç°¡æ˜“ï¼‰
+            Vector3 vel(p.vel.x, p.vel.y, p.vel.z);
+            float speed = vel.Length();
+
+            RainInstance ri;
+            ri.pos = Vector3(p.pos.x, p.pos.y, p.pos.z);
+            ri.length = std::clamp(speed * 0.02f, 10.0f, 200.0f); // æœ€å°/æœ€å¤§ã‚’åˆ¶é™
+
+            instances.push_back(ri);
+        }
+    }
+
+    if (instances.empty()) return;
+
+    RainInstancedDrawerDraw(
+        view,
+        proj,
+        instances,
+        RAIN_RADIUS,
+        rainColor);
+}
+
+// ==============================
+// ãƒ‡ãƒãƒƒã‚°ï¼šå¤ªé™½ã®å¯è¦–åŒ–
+// ==============================
+void WeatherSystem::DebugDrawSun() const
+{
+    // ã‚«ãƒ¡ãƒ©åŸç‚¹ã‹ã‚‰è¦‹ã¦ã€Œç©ºã®ä¸€ç‚¹ã€ã«è¦‹ãˆã‚‹ã‚ˆã†ã€å¤§ãã•ã¨è·é›¢ã‚’åˆ†ã‘ã¦è¨­å®š
+    constexpr float SUN_DISTANCE = 5000.0f; // å¤ªé™½ã¾ã§ã®è·é›¢
+    constexpr float SUN_RADIUS = 300.0f;  // è¦‹ãŸç›®ã®åŠå¾„
+
+    Vector3 dir = m_Sun.dirToSun;
+    if (dir.LengthSquared() < 1e-6f) return;
+    dir.Normalize();
+
+    // åŸç‚¹ã‹ã‚‰ dir æ–¹å‘ã« SUN_DISTANCE é›¢ã‚ŒãŸå ´æ‰€ã«å¤ªé™½ã‚’ç½®ã
+    Vector3 sunPos = dir * SUN_DISTANCE;
+
+    Matrix4x4 scale = Matrix4x4::CreateScale(SUN_RADIUS, SUN_RADIUS, SUN_RADIUS);
+    Matrix4x4 trans = Matrix4x4::CreateTranslation(sunPos.x, sunPos.y, sunPos.z);
+    Matrix4x4 world = scale * trans;
+
+    // å¤ªé™½ã®è‰²ã¯ SunState ã®è‰²ãƒ»å¼·ã•ã‚’ä½¿ç”¨
+    Color sunColor = m_Sun.lightColor * m_Sun.lightIntensity;
+
+    Renderer::SetDepthEnable(false);
+    SphereDrawerDraw(world, sunColor);
+    Renderer::SetDepthEnable(true);
+}
+
+void WeatherSystem::DebugDrawSand() const
+{
     Color sandColor(0.9f, 0.8f, 0.5f, 1.0f);
-    Color col(1.0f, 1.0f, 1.0f, 1.0f);
-
-    if (m_CurrentParams.rainEmitRate > 0.0f) {
-        col = rainColor;
-    }
-    else if (m_CurrentParams.sandEmitRate > 0.0f) {
-        col = sandColor;
-    }
-
-    constexpr float PARTICLE_RADIUS = 0.5f;
+    constexpr float SAND_RADIUS = 0.5f;   // ã‹ãªã‚Šå°ã•ã‚ã«
 
     size_t totalCount = 0;
     for (auto* comp : m_ParticleComponents)
@@ -373,44 +601,15 @@ void WeatherSystem::DebugDrawParticles() const
         view,
         proj,
         centers,
-        PARTICLE_RADIUS,
-        col);
+        SAND_RADIUS,
+        sandColor);
 }
 
-// ==============================
-// ƒfƒoƒbƒOF‘¾—z‚Ì‰Â‹‰»
-// ==============================
-void WeatherSystem::DebugDrawSun() const
-{
-    // ƒJƒƒ‰Œ´“_‚©‚çŒ©‚Äu‹ó‚Ìˆê“_v‚ÉŒ©‚¦‚é‚æ‚¤A‘å‚«‚³‚Æ‹——£‚ğ•ª‚¯‚Äİ’è
-    constexpr float SUN_DISTANCE = 5000.0f; // ‘¾—z‚Ü‚Å‚Ì‹——£
-    constexpr float SUN_RADIUS = 300.0f;  // Œ©‚½–Ú‚Ì”¼Œa
-
-    Vector3 dir = m_Sun.dirToSun;
-    if (dir.LengthSquared() < 1e-6f) return;
-    dir.Normalize();
-
-    // Œ´“_‚©‚ç dir •ûŒü‚É SUN_DISTANCE —£‚ê‚½êŠ‚É‘¾—z‚ğ’u‚­
-    Vector3 sunPos = dir * SUN_DISTANCE;
-
-    Matrix4x4 scale = Matrix4x4::CreateScale(SUN_RADIUS, SUN_RADIUS, SUN_RADIUS);
-    Matrix4x4 trans = Matrix4x4::CreateTranslation(sunPos.x, sunPos.y, sunPos.z);
-    Matrix4x4 world = scale * trans;
-
-    // ‘¾—z‚ÌF‚Í SunState ‚ÌFE‹­‚³‚ğg—p
-    Color sunColor = m_Sun.lightColor * m_Sun.lightIntensity;
-
-    Renderer::SetDepthEnable(false);
-    SphereDrawerDraw(world, sunColor);
-    Renderer::SetDepthEnable(true);
-}
-
-// WeatherSystem.cpp
 
 void WeatherSystem::DebugImGui()
 {
 #ifdef _DEBUG
-    // ƒEƒBƒ“ƒhƒEŠJn
+    // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦é–‹å§‹
     if (!ImGui::Begin("Weather / Sun System"))
     {
         ImGui::End();
@@ -418,23 +617,23 @@ void WeatherSystem::DebugImGui()
     }
 
     // -----------------------------
-    // 1. ŠÔE‘¾—z‚Ü‚í‚è
+    // 1. æ™‚é–“ãƒ»å¤ªé™½ã¾ã‚ã‚Š
     // -----------------------------
     ImGui::Text("Time / Sun");
     ImGui::Separator();
 
-    // ƒQ[ƒ€“àŠÔi0`24 ŠÔj
+    // ã‚²ãƒ¼ãƒ å†…æ™‚é–“ï¼ˆ0ï½24 æ™‚é–“ï¼‰
     float hours = m_Sun.timeOfDayHours;
     if (ImGui::SliderFloat("TimeOfDay [hours]", &hours, 0.0f, 24.0f))
     {
-        // ƒXƒ‰ƒCƒ_[‚©‚ç’¼Ú•ÏX‚µ‚½‚¢ê‡
+        // ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã‹ã‚‰ç›´æ¥å¤‰æ›´ã—ãŸã„å ´åˆ
         m_Sun.timeOfDayHours = hours;
     }
 
-    // 1“ú‚Ì’·‚³i•bj
+    // 1æ—¥ã®é•·ã•ï¼ˆç§’ï¼‰
     ImGui::SliderFloat("DayLength [sec]", &m_Sun.dayLengthSec, 10.0f, 3600.0f);
 
-    // Œ»İ‚Ì SunState ‚©‚çî•ñ‚ğ•\¦
+    // ç¾åœ¨ã® SunState ã‹ã‚‰æƒ…å ±ã‚’è¡¨ç¤º
     ImGui::Separator();
     ImGui::Text("SunState");
 
@@ -448,13 +647,13 @@ void WeatherSystem::DebugImGui()
     ImGui::Text("intensity = %.3f", m_Sun.lightIntensity);
 
     // -----------------------------
-    // 2. “VŒóEƒtƒHƒO
+    // 2. å¤©å€™ãƒ»ãƒ•ã‚©ã‚°
     // -----------------------------
     ImGui::Separator();
     ImGui::Text("Weather");
     ImGui::Separator();
 
-    // “VŒóƒ^ƒCƒv‚ğƒRƒ“ƒ{ƒ{ƒbƒNƒX‚Å‘I‘ğ
+    // å¤©å€™ã‚¿ã‚¤ãƒ—ã‚’ã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹ã§é¸æŠ
     static const char* s_WeatherNames[] = {
         "Clear",
         "LightRain",
@@ -467,12 +666,12 @@ void WeatherSystem::DebugImGui()
         s_WeatherNames,
         IM_ARRAYSIZE(s_WeatherNames)))
     {
-        // “VŒó•ÏXB‘JˆÚŠÔ‚Í‰¼‚Å 3 •b
+        // å¤©å€™å¤‰æ›´ã€‚é·ç§»æ™‚é–“ã¯ä»®ã§ 3 ç§’
         WeatherType newType = static_cast<WeatherType>(weatherIndex);
         SetWeather(newType, 3.0f);
     }
 
-    // Œ»İƒpƒ‰ƒ[ƒ^‚Ì fog ‚ğŠm”FE’²®
+    // ç¾åœ¨ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã® fog ã‚’ç¢ºèªãƒ»èª¿æ•´
     ImGui::Separator();
     ImGui::Text("Fog (CurrentParams)");
 
@@ -490,7 +689,7 @@ void WeatherSystem::DebugImGui()
         m_CurrentParams.fogColor.z = fogCol[2];
     }
 
-    // Œ»İ‚Ì‰JE»—’ƒpƒ‰ƒ[ƒ^‚à‚´‚Á‚­‚èŒ©‚½‚¢ê‡
+    // ç¾åœ¨ã®é›¨ãƒ»ç ‚åµãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚‚ã–ã£ãã‚Šè¦‹ãŸã„å ´åˆ
     ImGui::Separator();
     ImGui::Text("Particles (CurrentParams)");
     ImGui::Text("Rain EmitRate = %.1f", m_CurrentParams.rainEmitRate);

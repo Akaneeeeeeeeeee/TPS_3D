@@ -290,12 +290,12 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	//m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
 	//m_field->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
 	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
-	m_terrain->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
+	m_terrain->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(-300.0f, 10.0f, -100.0f));
+	m_player->SetPosition(Vector3(-300.0f, 210.0f, -100.0f));
 	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
 
 	// スカイドーム
@@ -325,23 +325,21 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 			rb->SetBodyType(Rigidbody::Type::Static);
 			rb->Init();*/
 		}
-
-		auto& rng = RandomEngine::tls();
-		rng.uniformReal(-500, 500);
-
+		
 		// 障害物
 		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
 		// 落下テスト用
 		//obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
 		//obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
-		obstacleObj->SetPosition(Vector3(-300.0f, 5.0f, 0.0f));
-		obstacleObj->SetScale(Vector3(150.0f, 50.0f, 25.0f));
+		obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
+		obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
 		m_obstacles[0] = obstacleObj;
 
 		// 敵
 		auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
-		enemyObj->SetPosition(Vector3(-300.0f, 10.0f, 750.0f));
+		enemyObj->SetPosition(Vector3(-300.0f, 210.0f, 750.0f));
 		enemyObj->SetPlayer(m_player);
+		enemyObj->SetTerrain(m_terrain);
 		// 配列に保持
 		m_enemies[0] = enemyObj;
 		

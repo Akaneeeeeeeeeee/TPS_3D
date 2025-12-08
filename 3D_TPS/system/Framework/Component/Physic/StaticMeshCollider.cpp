@@ -10,6 +10,65 @@
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include "system/CStaticMesh.h"
 
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseQuery.h>
+
+namespace
+{
+    // このコライダの BodyID だけを許可する BodyFilter
+    class SingleBodyFilter final : public JPH::BodyFilter
+    {
+    public:
+        explicit SingleBodyFilter(JPH::BodyID id) : mTarget(id) {}
+
+        bool ShouldCollide(const JPH::BodyID& inBodyID) const override
+        {
+            return inBodyID == mTarget;
+        }
+
+    private:
+        JPH::BodyID mTarget;
+    };
+}
+
+bool StaticMeshCollider::SampleHeight(float x, float z, float& outY) const
+{
+    if (!m_Physics || m_BodyID.IsInvalid()) { return false; }
+
+    using namespace JPH;
+
+    auto& system = m_Physics->GetSystem();
+    auto& npq = system.GetNarrowPhaseQuery();
+
+    // 上から下へ長いレイを飛ばす
+    const float CAST_HEIGHT = 10000.0f;
+    const float MAX_DIST = 20000.0f;
+
+    RVec3 origin(x, CAST_HEIGHT, z);
+    Vec3  dir(0.0f, -1.0f, 0.0f);
+
+    RRayCast ray(origin, dir * MAX_DIST);
+    RayCastResult hit;
+
+    // Layers::TERRAIN「TERRAIN と衝突する側」のレイヤーにする（例: CHARACTER）
+    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
+    auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
+
+    // この StaticMeshCollider の Body だけに絞る
+    SingleBodyFilter bodyFilter(m_BodyID);
+
+    if (!npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
+    {
+        JPH::Trace("SampleHeight: CastRay no hit (CHARACTER filter).");
+        return false;
+    }
+
+    float dist = hit.mFraction * MAX_DIST;
+    outY = CAST_HEIGHT - dist;
+    return true;
+}
+
 
 void StaticMeshCollider::Attach(EngineContext& context)
 {
@@ -18,13 +77,14 @@ void StaticMeshCollider::Attach(EngineContext& context)
 
 void StaticMeshCollider::Init()
 {
-    if (!m_Physics) return;
+    if (!m_Physics) { return; }
 
     // SetMesh が呼ばれていない場合は作れない
-    if (m_Positions.empty() || m_Triangles.empty())
-        return;
+    if (m_Positions.empty() || m_Triangles.empty()) { return; }
 
     CreateBody(m_Physics->GetBodyInterface());
+    JPH::Trace("StaticMeshCollider: BodyID = %u", m_BodyID.GetIndex());
+
 }
 
 
@@ -203,4 +263,30 @@ void StaticMeshCollider::Detach(void)
 {
     m_Shape = nullptr;
     PhysicsComponent::Detach();
+}
+
+bool StaticMeshCollider::GetWorldXZBounds(Vector3& outMin, Vector3& outMax) const
+{
+    if (!m_Physics || m_BodyID.IsInvalid()) { return false; }
+
+    using namespace JPH;
+
+    // PhysicsSystem を取得
+    auto& system = m_Physics->GetSystem();
+
+    // BodyLockInterfaceNoLock はコピー不可なので、参照で取得する
+    auto& lock_interface = system.GetBodyLockInterfaceNoLock();
+
+    // 読み取りロック
+    BodyLockRead lock(lock_interface, m_BodyID);
+    if (!lock.Succeeded()) { return false; }
+
+    const Body& body = lock.GetBody();
+
+    // ここで world AABB を取得
+    const AABox& aabb = body.GetWorldSpaceBounds();
+
+    outMin = Vector3(aabb.mMin.GetX(), aabb.mMin.GetY(), aabb.mMin.GetZ());
+    outMax = Vector3(aabb.mMax.GetX(), aabb.mMax.GetY(), aabb.mMax.GetZ());
+    return true;
 }

@@ -43,7 +43,7 @@ static bool MyJoltAssertFailedImpl(const char* inExpression,
 
 PhysicsManager::~PhysicsManager()
 {
-#ifdef JPH_DEBUG_RENDERER
+#if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     m_DebugRenderer.reset(); // Ensures ~JoltDebugRendererDX11 -> ~DebugRenderer runs.
 #endif
 }
@@ -71,7 +71,7 @@ void PhysicsManager::Init()
     m_TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
     m_JobSystem = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers);
 
-#ifdef JPH_DEBUG_RENDERER
+#if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     m_DebugRenderer = std::make_unique<JoltDebugRendererDX11>();
     //JPH::DebugRenderer::sInstance = m_DebugRenderer.get();
 #endif
@@ -82,6 +82,7 @@ void PhysicsManager::Update(const float deltaTime)
     m_System.Update(deltaTime, 1, m_TempAllocator.get(), m_JobSystem.get());
 }
 
+#ifdef _DEBUG
 void PhysicsManager::DebugDraw(void)
 {
 #ifdef JPH_DEBUG_RENDERER
@@ -119,6 +120,7 @@ void PhysicsManager::DebugDraw(void)
 
 #endif // JPH_DEBUG_RENDERER
 }
+#endif
 
 void PhysicsManager::Register(PhysicsComponent* component)
 {

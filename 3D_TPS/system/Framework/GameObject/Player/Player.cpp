@@ -333,7 +333,7 @@ void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector
 	viewDir.Normalize();
 
 	Vector3 up(0.0f, 1.0f, 0.0f);
-	Vector3 side = viewDir.Cross(up); // SimpleMath ‚È‚ç‚±‚¤
+	Vector3 side = viewDir.Cross(up);
 	if (side.LengthSquared() < 1e-6f)
 	{
 		side = Vector3(1.0f, 0.0f, 0.0f);

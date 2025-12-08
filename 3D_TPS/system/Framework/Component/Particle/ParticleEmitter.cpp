@@ -147,10 +147,13 @@ ParticleInstance ParticleEmitter::CreateOneParticle()
     double jy = m_Rng.uniformReal(-0.1, 0.1);
     double jz = m_Rng.uniformReal(-0.1, 0.1);
 
-    dir = XMVectorAdd(dir, XMVectorSet(
-        static_cast<float>(jx),
-        static_cast<float>(jy),
-        static_cast<float>(jz), 0.0f));
+    dir = XMVectorAdd(
+        dir,
+        XMVectorSet(
+            static_cast<float>(jx),
+            static_cast<float>(jy),
+            static_cast<float>(jz),
+            0.0f));
     dir = XMVector3Normalize(dir);
 
     XMFLOAT3 v;
@@ -160,25 +163,42 @@ ParticleInstance ParticleEmitter::CreateOneParticle()
     p.vel.y = v.y * static_cast<float>(speed);
     p.vel.z = v.z * static_cast<float>(speed);
 
-    // ★ ここがポイント：発生位置に XZ のランダムを足す
+    // ---------------------------
+    // 発生位置の決定
+    // ---------------------------
     float ox = 0.0f;
     float oz = 0.0f;
     float oy = 0.0f;
 
+    // XZ は -half ～ +half の一様乱数
     if (m_SpawnHalfWidth > 0.0f || m_SpawnHalfDepth > 0.0f)
     {
         ox = static_cast<float>(
-            m_Rng.uniformReal(-static_cast<double>(m_SpawnHalfWidth),
+            m_Rng.uniformReal(
+                -static_cast<double>(m_SpawnHalfWidth),
                 static_cast<double>(m_SpawnHalfWidth)));
+
         oz = static_cast<float>(
-            m_Rng.uniformReal(-static_cast<double>(m_SpawnHalfDepth),
+            m_Rng.uniformReal(
+                -static_cast<double>(m_SpawnHalfDepth),
                 static_cast<double>(m_SpawnHalfDepth)));
     }
 
-    if (m_SpawnHeight != 0.0f)
+    // ★ Y は「原点を中心とした帯」の中で一様乱数
+    //
+    //   ・m_SpawnHeight == 0 のとき → ちょうど原点の高さだけ
+    //   ・m_SpawnHeight > 0 のとき → [ -m_SpawnHeight, +m_SpawnHeight ] の範囲
+    //
+    if (m_SpawnHeight > 0.0f)
     {
-        // 高さ方向も少しバラつかせたければここを工夫
-        oy = m_SpawnHeight;
+        double yLocal = m_Rng.uniformReal(
+            -static_cast<double>(m_SpawnHeight),
+            static_cast<double>(m_SpawnHeight));
+        oy = static_cast<float>(yLocal);
+    }
+    else
+    {
+        oy = 0.0f; // 原点ちょうど
     }
 
     p.pos.x = m_Origin.x + ox;

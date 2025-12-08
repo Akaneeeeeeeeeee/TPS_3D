@@ -37,7 +37,12 @@ public:
     // メッシュデータ を渡してもらう
     void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) override;
 
+    // 地形クエリ用の API
+    // XZ の AABB を返す（ワールド座標）
+    bool GetWorldXZBounds(Vector3& outMin, Vector3& outMax) const;
 
+    // (x, z) の真下の地形表面 Y を取得
+    bool SampleHeight(float x, float z, float& outY) const;
 private:
     std::vector<JPH::Float3>            m_Positions;
     std::vector<JPH::IndexedTriangle>   m_Triangles;

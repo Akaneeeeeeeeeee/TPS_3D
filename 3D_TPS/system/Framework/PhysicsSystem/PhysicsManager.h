@@ -8,7 +8,7 @@
 #include "JoltDebugRendererDX11.h"
 
 class PhysicsComponent; // 前方宣言
-#ifdef JPH_DEBUG_RENDERER
+#if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
 class JoltDebugRendererDX11;
 #endif
 
@@ -25,7 +25,9 @@ public:
     void Init(void);
     void Update(const float deltaTime);
 
+#ifdef _DEBUG
     void DebugDraw(void);
+#endif
     //void DebugDraw(const DirectX::XMMATRIX& vp);
 
     void Register(PhysicsComponent* rb);
@@ -45,8 +47,7 @@ private:
     std::unique_ptr<JPH::TempAllocatorImpl> m_TempAllocator;
     std::unique_ptr<JPH::JobSystemThreadPool> m_JobSystem;
     std::vector<PhysicsComponent*> m_PhysicsObjects;
-#ifdef JPH_DEBUG_RENDERER
+#if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     std::unique_ptr<JoltDebugRendererDX11> m_DebugRenderer;
 #endif
 };
-

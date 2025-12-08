@@ -29,7 +29,16 @@ public:
     void Update(const float delta) override;
     void Draw() const override;
     void Uninit() override;
+
     void DebugImGui();
+    // 地形の XZ 範囲
+    const Vector3& GetXZMin() const { return m_XZMin; }
+    const Vector3& GetXZMax() const { return m_XZMax; }
+
+    // (x,z) の真下の地形表面の高さを取得する
+    // 返り値: 高さが取れたら true
+    bool GetWorldXZBounds(Vector3& outMin, Vector3& outMax) const;
+    bool SampleHeight(float x, float z, float& outY) const;
 
 private:
     CStaticMesh* m_mesh{};
@@ -38,4 +47,6 @@ private:
     StaticMeshCollider* m_collider{};
 
     IScene* m_ownerscene = nullptr;
+    Vector3 m_XZMin = Vector3::Zero;
+    Vector3 m_XZMax = Vector3::Zero;
 };

@@ -9,22 +9,22 @@
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
 
-namespace
-{
-    constexpr float DEG2RAD = PI / 180.0f;
-}
-
 
 void EnemyAIComponent::Attach(EngineContext& ctx)
 {
+    // 物理とキャラクター制御
     m_Physics = &ctx.joltPhysicsManager;
     m_Char = m_pOwner->GetComponent<CharacterVirtualComponent>();
+
+    // 天候・時間管理（視界パラメータの補正に使う）
+    m_Weather = &ctx.weatherSystem;
 }
 
 void EnemyAIComponent::Detach(void)
 {
     m_Physics = nullptr;
     m_Char = nullptr;
+    m_Weather = nullptr;
 }
 
 void EnemyAIComponent::Init(void)
@@ -35,13 +35,43 @@ void EnemyAIComponent::Init(void)
         m_Char = m_pOwner->GetComponent<CharacterVirtualComponent>(); 
     }
 
+    // スタック監視初期化
+    if (m_pOwner)
+    {
+        m_LastPosForStuck = m_pOwner->GetPosition();
+    }
+    m_StuckTimer = 0.0f;
+    m_IsStuck = false;
+
+    m_LastMoveDir = Vector3::Forward;
 }
 
 void EnemyAIComponent::Update(const float dt)
 {
     if (!m_Char) { return; }
 
-    // 1) 状態ごとの処理（Caution の中で視線補間）
+    // ------------------------------------------------------------
+    // 1) 天候・時間に応じて「視界距離」「視野角」を更新する
+    // ------------------------------------------------------------
+    float visibilityFactor = 1.0f;
+
+    // WeatherSystem 側で計算済みの「視認性係数」をもらう（0.0 ～ 1.0 想定）
+    float envVis = m_Weather ? m_Weather->GetVisibilityFactor() : 1.0f;
+
+    // envVis (0.1～1.0) を 0.7～1.0 に圧縮する
+    float f = 0.7f + 0.3f * envVis; // envVis=1 → f=1, envVis=0.1 → f=0.73
+    // 視界距離を係数でスケーリング
+    // 例: visibilityFactor = 0.5 → 視界距離 半分
+    m_CurrentViewDistance = m_BaseViewDistance * f;
+
+    // 視野角も暗いほど少し狭くする（好みで調整）
+    // visibilityFactor = 1.0 → fovScale = 1.0（昼は基準そのまま）
+    // visibilityFactor = 0.0 → fovScale = 0.7（真っ暗なら 70% 程度）
+    m_CurrentFOV = m_BaseFOV * f;
+
+    // ------------------------------------------------------------
+    // 2) 状態ごとの処理（移動や内部状態更新）
+    // ------------------------------------------------------------
     switch (m_State)
     {
     case EnemyAIComponent::Idle:
@@ -63,11 +93,16 @@ void EnemyAIComponent::Update(const float dt)
         break;
     }
 
-    // 2) Caution 以外は本体の forward を視線にコピー
+    // ------------------------------------------------------------
+    // 3) Caution 以外では「身体の向き」に視線を合わせる
+    //    （警戒中だけは m_ViewForward を別管理）
+    // ------------------------------------------------------------
     if (m_State != State::Caution && m_pOwner)
     {
-        m_ViewForward = m_pOwner->GetForward(); // Z+ 前方系
+        // モデルの前方（Z+）を視線として保持
+        m_ViewForward = m_pOwner->GetForward();
         m_ViewForward.y = 0.0f;
+
         if (m_ViewForward.LengthSquared() > 1e-6f)
         {
             m_ViewForward.Normalize();
@@ -78,7 +113,9 @@ void EnemyAIComponent::Update(const float dt)
         }
     }
 
-    // 3) 最終的な m_ViewForward を使って視線チェック
+    // ------------------------------------------------------------
+    // 4) 最終的な視界情報を使ってプレイヤーの視認判定を行う
+    // ------------------------------------------------------------
     UpdateSight(dt);
 }
 
@@ -175,9 +212,12 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
         toTarget = target - pos;
         distSq = toTarget.LengthSquared();
     }
-    
-    // 障害物回避
+
+    // 障害物回避込みの移動方向
     Vector3 moveDir = ComputeMoveDirToTarget(target);
+
+    // スタック検出：どこへ行きたいか（toTarget）を渡す
+    UpdateStuck(dt, toTarget);
 
     if (moveDir.LengthSquared() > 0.0001f)
     {
@@ -249,6 +289,51 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
 void EnemyAIComponent::UpdateChase(const float deltatime)
 {
 }
+
+// スタック状態の更新
+void EnemyAIComponent::UpdateStuck(float dt, const Vector3& desiredDir)
+{
+    if (!m_pOwner || !m_Char) return;
+
+    // 動く意図がほぼないなら、スタック判定はリセット
+    if (desiredDir.LengthSquared() < 1.0f) // しきい値は適宜調整
+    {
+        m_StuckTimer = 0.0f;
+        m_IsStuck = false;
+        m_LastPosForStuck = m_pOwner->GetPosition();
+        return;
+    }
+
+    Vector3 nowPos = m_pOwner->GetPosition();
+    float movedSq = (nowPos - m_LastPosForStuck).LengthSquared();
+
+    float speed = m_Char->GetHorizontalSpeed(); // CharacterVirtual から水平速度取得
+
+    // ある程度動いていればスタックではない
+    const float MOVE_EPS_SQ = 1.0f;   // 1unit^2 くらい
+    const float SPEED_EPS = 5.0f;   // 5unit/s 以上なら移動している扱い
+
+    if (movedSq > MOVE_EPS_SQ || speed > SPEED_EPS)
+    {
+        m_StuckTimer = 0.0f;
+        m_IsStuck = false;
+        m_LastPosForStuck = nowPos;
+        return;
+    }
+
+    // ほとんど動いていない → タイマー加算
+    m_StuckTimer += dt;
+    m_LastPosForStuck = nowPos;
+
+    const float STUCK_TIME = 1.0f; // 1秒以上動けなければスタック扱い
+    if (m_StuckTimer > STUCK_TIME)
+    {
+        m_IsStuck = true;
+        ResolveStuck();
+        m_StuckTimer = 0.0f;
+    }
+}
+
 
 void EnemyAIComponent::FaceMoveDir(const Vector3& moveDir)
 {
@@ -346,12 +431,14 @@ void EnemyAIComponent::UpdateSight(const float dt)
     if (!m_pPlayer || !m_Physics || !m_pOwner)
         return;
 
+    // 現在の視線・視界距離・視野角（天候＋時間込み）で判定
     if (CanSeePlayer())
     {
         m_IsFound = true;
-        m_LastHeardPosition = m_pPlayer->GetPosition(); // 視覚でも最後に見た位置を覚えておく
+        // 視覚で見つけた場合も「最後に確認した位置」として覚えておく
+        m_LastHeardPosition = m_pPlayer->GetPosition();
 
-        // 追跡ステートに移るならここ
+        // ここで追跡ステートへ移行させるならこの辺り
         // m_State = Chase;
     }
 }
@@ -390,21 +477,35 @@ bool EnemyAIComponent::IsInViewCone(
     const Vector3& eyePos,
     const Vector3& targetPos) const
 {
+    // 目からターゲットへのベクトル
     Vector3 toTarget = targetPos - eyePos;
     float   dist = toTarget.Length();
-    if (dist <= 0.0001f || dist > m_ViewDistance)
+
+    // 距離が 0 に近い or 視界距離を超えているなら見えない
+    if (dist <= 0.0001f || dist > m_CurrentViewDistance)
         return false;
 
+    // 方向ベクトルに正規化
     Vector3 dir = toTarget / dist;
 
+    // 現在の視線方向（Caution 中は m_ViewForward、それ以外は Update で身体向きから設定済み）
     Vector3 forward = GetViewForward();
+    if (forward.LengthSquared() < 1e-6f)
+    {
+        forward = Vector3::Forward;
+    }
     forward.Normalize();
 
+    // forward と dir のなす角の cos 値を計算
     float cosAngle = forward.Dot(dir);
-    float cosHalfFov = std::cos(m_ViewAngle * 0.5f * DEG2RAD);
 
+    // 現在の視野角（ラジアン）の半分を使って cos(θ/2) を求める
+    float cosHalfFov = std::cos(m_CurrentFOV * 0.5f);
+
+    // cos(angle) が cos(fov/2) 以上なら視野円錐の中にある
     return cosAngle >= cosHalfFov;
 }
+
 
 bool EnemyAIComponent::CanSeePoint(const Vector3& eyePos, const Vector3& targetPos) const
 {
@@ -469,6 +570,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
         return Vector3::Zero;
     }
 
+    // 目標に向かう基準の前方向
     Vector3 forward = toTarget / distToTarget;
 
     Vector3 origin3 = pos;
@@ -476,16 +578,19 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 
     float rayLen = m_RayLength;
     float maxCheckDist = std::min(rayLen, distToTarget);
-    //float blockThreshold = maxCheckDist * 0.5f;
-    float blockThreshold = maxCheckDist;
+
+    // ここより手前に障害物があったら「そろそろ回避開始」
+    // 0.8 を 0.5 ～ 0.9 の範囲で調整すると「早め／ギリギリ回避」が変えられる
+    float blockThreshold = maxCheckDist * 0.8f;
 
     // レイの持ち主は「キャラ」なので CHARACTER を渡す
     auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
     auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
 
-    // キャラ／トリガー（必要なら MOVING も）を無視する BodyFilter
+    // キャラ／トリガーを無視するフィルタ
     AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
+    // dir 方向にどこまで進めるかを返す関数
     auto castDist = [&](const Vector3& dir3) -> float
         {
             Vector3 d = dir3;
@@ -495,7 +600,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
             RVec3 origin(origin3.x, origin3.y, origin3.z);
             Vec3  jdir(d.x, d.y, d.z);
 
-            RRayCast ray(origin, jdir * maxCheckDist);
+            RRayCast      ray(origin, jdir * maxCheckDist);
             RayCastResult hit;
 
             if (npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
@@ -505,29 +610,52 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
             return maxCheckDist;
         };
 
+    // 左右方向ベクトル
     Vector3 side(-forward.z, 0.0f, forward.x);
     if (side.LengthSquared() < 0.0001f)
         side = Vector3(1, 0, 0);
 
+    // 正面・左前・右前の「空き距離」
     float centerFree = castDist(forward);
-    float leftFree = castDist(forward + side);
-    float rightFree = castDist(forward - side);
+    float leftFree = castDist(forward + side * 0.5f);
+    float rightFree = castDist(forward - side * 0.5f);
 
+    // 正面方向に blockThreshold 以上の空きがあれば、まだ回避しない
     bool frontBlocked = centerFree < blockThreshold;
 
     if (!frontBlocked)
     {
         m_IsAvoidingWall = false;
-        return forward;
+        return forward; // まだ普通に前進
     }
 
+    // ここから「回避モード」
+
+    // 障害物への近さを 0～1 に正規化
+    // centerFree が blockThreshold に近い → 0
+    // centerFree が 0 に近い               → 1
+    float nearFactor = 1.0f - (centerFree / blockThreshold);
+    nearFactor = std::clamp(nearFactor, 0.0f, 1.0f);
+
+    // 初めて回避に入ったタイミングでだけ、左右どちらに避けるか決める
     if (!m_IsAvoidingWall)
     {
         m_IsAvoidingWall = true;
         m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
     }
 
-    Vector3 moveDir = side * m_AvoidSideSign;
+    // 左右どちらに切るか
+    Vector3 sideDir = side * m_AvoidSideSign;
+    sideDir.y = 0.0f;
+    if (sideDir.LengthSquared() > 0.0f)
+        sideDir.Normalize();
+
+    // 横成分の強さ：障害物に近いほど大きく、m_AvoidWeight で全体の重みを調整
+    float sideScale = m_AvoidWeight * nearFactor;      // 近いほど大きく曲がる
+    float forwardScale = 1.0f - 0.5f * nearFactor;        // 近いほど前成分を少し減らす
+
+    // 「前」＋「横」を混ぜた 斜め前方向 に進む → 結果として軌跡が曲線に近づく
+    Vector3 moveDir = forward * forwardScale + sideDir * sideScale;
     moveDir.y = 0.0f;
 
     if (moveDir.LengthSquared() < 0.0001f)
@@ -536,7 +664,10 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     }
 
     moveDir.Normalize();
-    return moveDir;
+    // 前フレーム方向と今回の方向を少しだけ混ぜる
+    // 第3引数(0.2f)を 0.1～0.3 の範囲で調整して滑らかさを変えられる
+    m_LastMoveDir = LerpDir(m_LastMoveDir, moveDir, 0.2f);
+    return m_LastMoveDir;
 }
 
 
@@ -592,3 +723,64 @@ void EnemyAIComponent::UpdateCaution(const float dt)
         m_InvestigateTimer = 0.0f;
     }
 }
+
+// スタック状態の解消処理
+// 少しだけ後ろに下がって避けモードをリセット
+void EnemyAIComponent::ResolveStuck()
+{
+    if (!m_pOwner || !m_Char) return;
+
+    // 1) 今向いている方向の反対に少し押し戻す
+    Vector3 forward = m_pOwner->GetForward();
+    forward.y = 0.0f;
+    if (forward.LengthSquared() < 1e-4f)
+        forward = Vector3::Forward;
+
+    forward.Normalize();
+
+    Vector3 back = -forward;
+    const float BACK_DIST = 50.0f; // 50ユニット後ろに下げる（調整用）
+
+    Vector3 pos = m_pOwner->GetPosition();
+    pos += back * BACK_DIST;
+    m_pOwner->SetPosition(pos);
+
+    // 2) 速度を一度ゼロクリア
+    m_Char->Stop();
+
+    // 3) 壁回避状態をリセットして再探索
+    m_IsAvoidingWall = false;
+}
+
+// スタック状態の解消処理
+// 一番近いウェイポイントに戻す少しワープ感は出るが、「絶対にハマらない」
+//void EnemyAIComponent::ResolveStuck()
+//{
+//    if (!m_pOwner) return;
+//    if (m_WayPoints.empty()) return;
+//
+//    Vector3 pos = m_pOwner->GetPosition();
+//
+//    // 一番近いウェイポイントを探す
+//    int   nearestIndex = 0;
+//    float nearestDistSq = std::numeric_limits<float>::max();
+//
+//    for (int i = 0; i < static_cast<int>(m_WayPoints.size()); ++i)
+//    {
+//        float d2 = (m_WayPoints[i] - pos).LengthSquared();
+//        if (d2 < nearestDistSq)
+//        {
+//            nearestDistSq = d2;
+//            nearestIndex = i;
+//        }
+//    }
+//
+//    // その地点にワープ
+//    m_pOwner->SetPosition(m_WayPoints[nearestIndex]);
+//    m_CurrentIndex = nearestIndex;
+//
+//    if (m_Char)
+//        m_Char->Stop();
+//
+//    m_IsAvoidingWall = false;
+//}

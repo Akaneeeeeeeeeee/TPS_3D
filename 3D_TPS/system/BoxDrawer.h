@@ -9,3 +9,18 @@ void BoxDrawerDraw(
 void BoxDrawerDraw(SRT rts, Color col);
 void BoxDrawerDraw(Matrix4x4 mtx, Color col);
 
+// ---- インスタンシング版 ----
+
+// 1 インスタンス分の情報
+struct BoxInstance
+{
+    Matrix4x4 world; // スケール・回転・平行移動込み
+};
+
+// view/proj と、world 行列の配列を渡してまとめ描き
+void BoxInstancedDrawerInit();
+void BoxInstancedDrawerDraw(
+    const Matrix4x4& view,
+    const Matrix4x4& proj,
+    const std::vector<BoxInstance>& instances,
+    Color col);

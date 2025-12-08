@@ -5,6 +5,7 @@
 class Player;
 class CharacterVirtualComponent;
 class EnemyAIComponent;
+class Terrain;
 
 /*
 * @brief	敵クラス
@@ -28,10 +29,27 @@ public:
 	void Uninit(void) override;
 
 	void SetPlayer(Player* player) { m_pPlayer = player; }
+	void SetTerrain(Terrain* terrain) { m_pTerrain = terrain; }
+
 	bool CanSeePlayer(const Vector3& playerPos) const;
 	void DebugImGui(void);
 private:
+	void InitAnimation(AssetManager& am);
+	void InitPatrolPoints(RandomEngine& rng);
+	void InitComponents(void);
+
+	bool TryStartSurpriseTurn(const Vector3& soundPos);
+	void OnFoundPlayer(void);
+
 	Player* m_pPlayer = nullptr;
+	Terrain* m_pTerrain = nullptr;
+	CharacterVirtualComponent* m_CharComp = nullptr;
+	EnemyAIComponent* m_AIComp = nullptr;
+
+	bool       m_TurnRight = false; // 右向きアニメかどうか
+	// 巡回点
+	Vector3 m_StartPos{};
+	Vector3 m_EndPos{};
 
 	// ==== 驚きターン用 ====
 	enum class FacingState
@@ -39,22 +57,8 @@ private:
 		Normal,
 		SurprisedTurn,
 	};
-
 	FacingState m_FacingState = FacingState::Normal;
-
-	bool       m_TurnRight = false; // 右向きアニメかどうか
-	bool TryStartSurpriseTurn(const Vector3& soundPos);
-
-	// 「前の実装で使っていた巡回用情報」はここでは使わず、
-	// コンポーネントに渡すための一時データとしてだけ使ってもOK
-	Vector3 m_StartPos{};
-	Vector3 m_EndPos{};
-
-	// 便利のためにコンポーネントへのポインタを握っておく（なくても動く）
-	CharacterVirtualComponent* m_CharComp = nullptr;
-	EnemyAIComponent* m_AIComp = nullptr;
-
 	// すでにゲームオーバー処理を走らせたかどうか
-	bool m_GameOverTriggered = false;
+	bool        m_GameOverTriggered = false;
 };
 

@@ -5,6 +5,7 @@
 // 前方宣言
 class EnemyAIComponent;
 class PhysicsManager;
+class WeatherSystem;
 
 /*
 * @brief    敵聴覚コンポーネント
@@ -53,4 +54,5 @@ private:
 
 	EnemyAIComponent* m_pEnemyAI = nullptr;
 	PhysicsManager* m_pPhysics = nullptr;
+	WeatherSystem* m_pWeather = nullptr;
 };

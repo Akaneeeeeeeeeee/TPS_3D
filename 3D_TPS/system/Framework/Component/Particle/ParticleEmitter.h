@@ -59,6 +59,20 @@ public:
     {
         m_SpawnHeight = height;
     }
+    // u‚‚³ƒŒƒ“ƒWv”Å
+    void SetSpawnHeightRange(float minY, float maxY)
+    {
+        if (minY <= maxY)
+        {
+            m_SpawnMinY = minY;
+            m_SpawnMaxY = maxY;
+        }
+        else
+        {
+            m_SpawnMinY = maxY;
+            m_SpawnMaxY = minY;
+        }
+    }
 
 private:
     void SpawnParticles(float dt);
@@ -78,7 +92,9 @@ private:
     // ”­¶”ÍˆÍ
     float m_SpawnHalfWidth = 0.0f;  // X
     float m_SpawnHalfDepth = 0.0f;  // Z
-    float m_SpawnHeight = 0.0f;  // Y
+    float m_SpawnHeight = 0.0f;     // Y
+    float m_SpawnMinY = 0.0f;
+    float m_SpawnMaxY = 0.0f;
 
     std::vector<ParticleInstance> m_Particles;
 

@@ -69,6 +69,8 @@ public:
     const JPH::BodyID& GetInnerBodyID(void) const { return m_InnerBodyID; }
 	// 地面接地判定
     bool IsOnGround(void) const;
+    // 完全停止用
+    void Stop(void);
 
 private:
     // 姿勢ごとの係数

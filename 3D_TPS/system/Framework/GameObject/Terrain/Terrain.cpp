@@ -6,6 +6,7 @@
 #include "CStaticMeshRenderer.h"
 #include "system/CShader.h"
 #include "system/Framework/Component/Physic/StaticMeshCollider.h"
+#include "system/Framework/PhysicsSystem/PhysicsManager.h"
 
 #include "system/DebugUI.h"
 
@@ -30,6 +31,7 @@ void Terrain::Init()
         m_collider = col;
     }
 
+    GameObject::Init();
 
     // 必要ならデバッグ UI 登録
     //DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
@@ -99,4 +101,14 @@ void Terrain::DebugImGui()
     }
 
     ImGui::End();
+}
+
+bool Terrain::GetWorldXZBounds(Vector3& outMin, Vector3& outMax) const
+{
+    return m_collider ? m_collider->GetWorldXZBounds(outMin, outMax) : false;
+}
+
+bool Terrain::SampleHeight(float x, float z, float& outY) const
+{
+    return m_collider ? m_collider->SampleHeight(x, z, outY) : false;
 }

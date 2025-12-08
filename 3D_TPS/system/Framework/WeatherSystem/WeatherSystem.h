@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include "system/commontypes.h"
+#include "system/RandomEngine.h"
+#include <array>
+#include <span>
 
 // 天候タイプ
 enum class WeatherType {
@@ -12,6 +15,13 @@ enum class WeatherType {
 	Weather_MAX
 };
 
+// 知覚影響パラメータ
+struct PerceptionEnv
+{
+    float visibility = 1.0f; // 視認性 (0～1)
+    float hearing = 1.0f; // 聴こえやすさ (0～1)
+};
+
 // ==============================
 // 天候タイプ・天候パラメータ
 // （ここは既存そのままでOK）
@@ -20,12 +30,12 @@ enum class WeatherType {
 struct WeatherParticleParams
 {
     // --- 雨用 ---
-    float             rainEmitRate = 0.0f;
-    float             rainMinLife = 0.0f;
-    float             rainMaxLife = 0.0f;
-    float             rainMinSpeed = 0.0f;
-    float             rainMaxSpeed = 0.0f;
-    DirectX::XMFLOAT3 rainDir = { 0.0f, -1.0f, 0.0f };
+	float             rainEmitRate = 0.0f;              // 1 秒あたりの放出数
+	float             rainMinLife = 0.0f;               // 最小寿命
+	float             rainMaxLife = 0.0f;               // 最大寿命
+	float             rainMinSpeed = 0.0f;              // 最小速度
+	float             rainMaxSpeed = 0.0f;              // 最大速度
+	DirectX::XMFLOAT3 rainDir = { 0.0f, -1.0f, 0.0f };  // 進行方向（単位ベクトル）
 
     // --- 砂嵐用 ---
     float             sandEmitRate = 0.0f;
@@ -34,6 +44,9 @@ struct WeatherParticleParams
     float             sandMinSpeed = 0.0f;
     float             sandMaxSpeed = 0.0f;
     DirectX::XMFLOAT3 sandDir = { 1.0f, 0.0f, 0.0f };
+    // 砂嵐の発生高さレンジ（Emitter ローカル Y）
+    float             sandMinHeight = 0.0f;
+    float             sandMaxHeight = 0.0f;
 
     // --- 霧・空などに広げるためのパラメータ ---
     float             fogDensity = 0.0f;
@@ -111,12 +124,15 @@ inline WeatherParticleParams MakePreset(WeatherType type)
     case WeatherType::Sandstorm:
         p.rainEmitRate = 0.0f;
 
-        p.sandEmitRate = 600.0f;
-        p.sandMinLife = 3.0f;
-        p.sandMaxLife = 5.0f;
-        p.sandMinSpeed = 20.0f;
-        p.sandMaxSpeed = 40.0f;
+        p.sandEmitRate = 5000.0f;
+        p.sandMinLife = 5.0f;
+        p.sandMaxLife = 8.0f;
+        p.sandMinSpeed = 500.0f;
+        p.sandMaxSpeed = 1000.0f;
         p.sandDir = XMFLOAT3(1.0f, 0.2f, 0.0f); // 斜め方向
+        // Y = [0, 300] の範囲に出す
+        p.sandMinHeight = 0.0f;
+        p.sandMaxHeight = 300.0f;
 
         p.fogDensity = 0.01f;
         p.fogColor = XMFLOAT3(0.8f, 0.7f, 0.4f);
@@ -167,6 +183,8 @@ public:
     void DebugDrawParticles(void) const;
     void DebugDrawSun(void) const;
     void DebugImGui(void);    // ImGui用
+    void DebugDrawRain(void) const;
+    void DebugDrawSand(void) const;
 
     // DebugDrawParticles 用のカメラ行列
     void SetViewProjMatrices(Matrix4x4& viewMatrix, Matrix4x4& projMatrix)
@@ -174,6 +192,10 @@ public:
         view = viewMatrix;
         proj = projMatrix;
     }
+
+    PerceptionEnv GetPerceptionEnv() const { return m_Perception; }
+    float GetVisibilityFactor() const { return m_Perception.visibility; }
+    float GetHearingFactor() const { return m_Perception.hearing; }
 
 private:
     // ---- 天候補間（既存ロジック） ----
@@ -184,7 +206,10 @@ private:
     );
     void ApplyToParticles();
 
-    // ---- 太陽ロジック（ここが今回整理した部分） ----
+	// ---- 知覚影響更新 ----
+    void UpdatePerception(void);
+
+    // ---- 太陽ロジック ----
     // 1) 時刻を進める
     void UpdateSunTime(float dt);
     // 2) 時刻から方向を求める
@@ -195,9 +220,11 @@ private:
     // 4) SunState から LIGHT 構造体へ詰める
     void ApplyToLight();
 
-    // ---- メンバ ----
+    // 1日経過時の処理と次の天候決定
+    void OnNewDay(void);                 // 1日経った瞬間に呼ぶ
+    WeatherType ChooseNextWeather(void); // RandomEngine で次の天候を決める
 
-    // 天候状態
+    // ---- メンバ ----
     WeatherType           m_CurrentWeather = WeatherType::Clear;
     WeatherParticleParams m_CurrentParams{};
     WeatherParticleParams m_SrcParams{};
@@ -205,13 +232,14 @@ private:
     float                 m_TransitionTime = 1.0f;
     float                 m_TransitionT = 1.0f;
 
-    // 登録されたパーティクルコンポーネント
     std::vector<ParticleComponent*> m_ParticleComponents;
 
-    // 太陽・時間・ライト
-    SunState m_Sun;
+    SunState      m_Sun;
+    PerceptionEnv m_Perception{};
 
-    // DebugDrawParticles 用
     Matrix4x4 view = Matrix4x4::Identity;
     Matrix4x4 proj = Matrix4x4::Identity;
+
+    // 天候専用の乱数
+    RandomEngine m_Rng;
 };

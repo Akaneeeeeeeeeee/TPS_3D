@@ -103,6 +103,21 @@ void CharacterVirtualComponent::BuildStanceShapes()
 	m_ProneOffset = CalcFeetOffset(m_ProneHalfHeight, m_Radius);
 }
 
+void CharacterVirtualComponent::Stop(void)
+{
+	// 入力方向を消す
+	m_MoveDir = Vector3::Zero;
+
+	// 物理側の速度も 0 にする
+	if (m_Character)
+	{
+		m_Character->SetLinearVelocity(JPH::Vec3::sZero());
+	}
+
+	// ジャンプ要求も消しておく
+	m_WantsJump = false;
+}
+
 void CharacterVirtualComponent::Init(void)
 {
 	if (!m_Physics) { return; }
