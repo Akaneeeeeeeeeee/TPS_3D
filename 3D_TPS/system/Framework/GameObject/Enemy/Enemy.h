@@ -6,6 +6,7 @@ class Player;
 class CharacterVirtualComponent;
 class EnemyAIComponent;
 class Terrain;
+class StaticMeshCollider;
 
 /*
 * @brief	“GƒNƒ‰ƒX
@@ -43,6 +44,7 @@ private:
 
 	Player* m_pPlayer = nullptr;
 	Terrain* m_pTerrain = nullptr;
+	StaticMeshCollider* m_pTerrainCollider;
 	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
 

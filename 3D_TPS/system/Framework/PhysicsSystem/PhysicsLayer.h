@@ -161,3 +161,36 @@ public:
 private:
     JPH::PhysicsSystem& m_System;
 };
+
+
+class EscapeBodyFilter : public JPH::BodyFilter
+{
+public:
+    EscapeBodyFilter(const JPH::PhysicsSystem& system)
+        : mSystem(system) {
+    }
+
+    bool ShouldCollide(const JPH::BodyID& body_id) const override
+    {
+        JPH::BodyLockRead lock(mSystem.GetBodyLockInterface(), body_id);
+        if (!lock.Succeeded()) return false;
+
+        const JPH::Body& body = lock.GetBody();
+        auto layer = body.GetObjectLayer();
+
+        // 自キャラとトリガーは従来通り無視
+        if (layer == Layers::CHARACTER || layer == Layers::TRIGGER)
+            return false;
+
+        // Terrain レイヤはスタック解除の判定から除外する
+        if (layer == Layers::TERRAIN)   // ← ここを layer=4 に対応させる
+            return false;
+
+        // それ以外（壁・岩・障害物）は判定対象
+        return true;
+    }
+
+private:
+    const JPH::PhysicsSystem& mSystem;
+};
+

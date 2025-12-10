@@ -193,8 +193,7 @@ void CharacterVirtualComponent::Update(const float dt)
 	}
 	else
 	{
-		// 入力が無いときはピタっと止める
-		// （慣性を残したいなら: horizontal = (vel - vertical) * 0.8f; みたいにしてもOK）
+		// 入力が無いときその場で停止
 		horizontal = Vec3::sZero();
 	}
 
@@ -370,4 +369,40 @@ float CharacterVirtualComponent::GetFootstepLoudnessCoeff(void) const
 	case Stance::Prone:  return ProneCoeff.footstepLoudness;
 	}
 	return 1.0f;
+}
+
+void CharacterVirtualComponent::Teleport(const Vector3& worldPos)
+{
+	if(m_pOwner)
+	{
+		m_pOwner->SetPosition(worldPos);
+	}
+
+	if (!m_Character) { return; }
+
+	// Jolt側のキャラ位置も強制的に変更
+	m_Character->SetPosition(ToJPH(worldPos));
+
+	// ついでに速度も止めておくと安全
+	m_Character->SetLinearVelocity(JPH::Vec3::sZero());
+	m_WantsJump = false;
+}
+
+const JPH::Shape* CharacterVirtualComponent::GetCurrentShape(void) const
+{
+	switch (m_Stance)
+	{
+	case CharacterVirtualComponent::Stance::Stand:
+		return m_StandShape.GetPtr();
+		break;
+	case CharacterVirtualComponent::Stance::Crouch:
+		return m_CrouchShape.GetPtr();
+		break;
+	case CharacterVirtualComponent::Stance::Prone:
+		return m_ProneShape.GetPtr();
+		break;
+	default:
+		break;
+	}
+	return nullptr;
 }

@@ -2,12 +2,31 @@
 #include "Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "Framework/GameObject/GameObject.h"
 #include "Framework/GameObject/Player/Player.h"
+#include "Framework/Component/Physic/StaticMeshCollider.h"
 
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/ShapeCast.h>
+#include <Jolt/Physics/Collision/CollideShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/CollisionCollector.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+
+namespace {
+    // Y軸回転: 指定したベクトルをY軸（上方向）でradラジアン回転するユーティリティ関数
+    static Vector3 RotateY(const Vector3& v, float rad)
+    {
+        float cosA = std::cos(rad);
+        float sinA = std::sin(rad);
+        return Vector3(
+            v.x * cosA - v.z * sinA,
+            v.y,
+            v.x * sinA + v.z * cosA
+        );
+    }
+}
 
 
 void EnemyAIComponent::Attach(EngineContext& ctx)
@@ -290,47 +309,75 @@ void EnemyAIComponent::UpdateChase(const float deltatime)
 {
 }
 
-// スタック状態の更新
+/*
+* @brief	スタック状態の解消処理
+*/
 void EnemyAIComponent::UpdateStuck(float dt, const Vector3& desiredDir)
 {
     if (!m_pOwner || !m_Char) return;
 
-    // 動く意図がほぼないなら、スタック判定はリセット
-    if (desiredDir.LengthSquared() < 1.0f) // しきい値は適宜調整
+    // ほぼ「移動する意図」が無いときは、スタック判定しない
+    if (desiredDir.LengthSquared() < 1.0f)
     {
         m_StuckTimer = 0.0f;
         m_IsStuck = false;
         m_LastPosForStuck = m_pOwner->GetPosition();
+        m_HasLastDistToTarget = false; // 距離履歴もリセット
         return;
     }
 
     Vector3 nowPos = m_pOwner->GetPosition();
     float movedSq = (nowPos - m_LastPosForStuck).LengthSquared();
 
-    float speed = m_Char->GetHorizontalSpeed(); // CharacterVirtual から水平速度取得
+    // 今フレームの「目標までの距離」
+    float distToTarget = desiredDir.Length();
 
-    // ある程度動いていればスタックではない
-    const float MOVE_EPS_SQ = 1.0f;   // 1unit^2 くらい
-    const float SPEED_EPS = 5.0f;   // 5unit/s 以上なら移動している扱い
-
-    if (movedSq > MOVE_EPS_SQ || speed > SPEED_EPS)
+    // 初回は履歴がないので、ここで保存して終わる
+    if (!m_HasLastDistToTarget)
     {
+        m_HasLastDistToTarget = true;
+        m_LastDistToTarget = distToTarget;
         m_StuckTimer = 0.0f;
-        m_IsStuck = false;
         m_LastPosForStuck = nowPos;
         return;
     }
 
-    // ほとんど動いていない → タイマー加算
-    m_StuckTimer += dt;
-    m_LastPosForStuck = nowPos;
+    // しきい値
+    const float MOVE_EPS_SQ = 1.0f; // ほとんど動いていない距離
+    const float TARGET_EPS = 5.0f;  // 目標までの距離が「縮んだ」とみなす量
+    const float STUCK_TIME = 1.0f;  // 何秒続いたらスタックとみなすか
 
-    const float STUCK_TIME = 1.0f; // 1秒以上動けなければスタック扱い
+    // 位置としては動いているか
+    bool movingPos = (movedSq > MOVE_EPS_SQ);
+
+    // 目標への距離がちゃんと縮んでいるか
+    // 「前フレームより TARGET_EPS 以上近くなっている」なら progress とみなす
+    bool closingTarget = (distToTarget < m_LastDistToTarget - TARGET_EPS);
+
+    // 位置がほとんど動いていない か 目標への距離がほとんど縮んでいない場合
+    if (!movingPos || !closingTarget)
+    {
+        m_StuckTimer += dt;
+    }
+    else
+    {
+        // ちゃんと前進できているのでリセット
+        m_StuckTimer = 0.0f;
+        m_IsStuck = false;
+    }
+
+    // 状態更新
+    m_LastPosForStuck = nowPos;
+    m_LastDistToTarget = distToTarget;
+
     if (m_StuckTimer > STUCK_TIME)
     {
         m_IsStuck = true;
         ResolveStuck();
         m_StuckTimer = 0.0f;
+
+        // 次回のために距離履歴をリセットしておく
+        m_HasLastDistToTarget = false;
     }
 }
 
@@ -622,10 +669,13 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 
     // 正面方向に blockThreshold 以上の空きがあれば、まだ回避しない
     bool frontBlocked = centerFree < blockThreshold;
+    bool just_started_avoid = false;
 
     if (!frontBlocked)
     {
         m_IsAvoidingWall = false;
+        // 正面に余裕ができたら基準もリセットしておくと次の回避が安定する
+        m_LastMoveDir = forward;
         return forward; // まだ普通に前進
     }
 
@@ -633,7 +683,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 
     // 障害物への近さを 0～1 に正規化
     // centerFree が blockThreshold に近い → 0
-    // centerFree が 0 に近い               → 1
+    // centerFree が 0 に近い              → 1
     float nearFactor = 1.0f - (centerFree / blockThreshold);
     nearFactor = std::clamp(nearFactor, 0.0f, 1.0f);
 
@@ -641,6 +691,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     if (!m_IsAvoidingWall)
     {
         m_IsAvoidingWall = true;
+        just_started_avoid = true;
         m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
     }
 
@@ -664,6 +715,13 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     }
 
     moveDir.Normalize();
+
+    // ★ 回避開始フレームは補間しない
+    if (just_started_avoid)
+    {
+        m_LastMoveDir = moveDir;
+        return moveDir;
+    }
     // 前フレーム方向と今回の方向を少しだけ混ぜる
     // 第3引数(0.2f)を 0.1～0.3 の範囲で調整して滑らかさを変えられる
     m_LastMoveDir = LerpDir(m_LastMoveDir, moveDir, 0.2f);
@@ -692,8 +750,10 @@ void EnemyAIComponent::UpdateCaution(const float dt)
     {
         m_CautionTurnTime += dt;
         float t = m_CautionTurnTime / m_CautionTurnDuration;
-        if (t > 1.0f) t = 1.0f;
-
+        if (t > 1.0f)
+        {
+            t = 1.0f;
+        }
         // 視線だけ補間
         m_ViewForward = LerpDir(m_CautionStartViewDir, m_CautionTargetViewDir, t);
 
@@ -725,32 +785,47 @@ void EnemyAIComponent::UpdateCaution(const float dt)
 }
 
 // スタック状態の解消処理
-// 少しだけ後ろに下がって避けモードをリセット
-void EnemyAIComponent::ResolveStuck()
+void EnemyAIComponent::ResolveStuck(void)
 {
     if (!m_pOwner || !m_Char) return;
 
-    // 1) 今向いている方向の反対に少し押し戻す
-    Vector3 forward = m_pOwner->GetForward();
-    forward.y = 0.0f;
-    if (forward.LengthSquared() < 1e-4f)
-        forward = Vector3::Forward;
+    // キャラの半径を基準に最大探索半径を決める
+    float charRadius = m_Char ? m_Char->GetRadius() : 50.0f;
 
-    forward.Normalize();
+    // ベース半径: キャラ半径の 20 倍
+    const float BASE_MAX_R = charRadius * 20.0f;
+    // 上限半径: キャラ半径の 50 倍
+    const float MAX_MAX_R = charRadius * 50.0f;
+    // 1 回失敗するごとに少しだけ広げる倍率
+    const float GROW_FACTOR = 1.3f;
 
-    Vector3 back = -forward;
-    const float BACK_DIST = 50.0f; // 50ユニット後ろに下げる（調整用）
+    float dynamicMaxR =
+        BASE_MAX_R * std::pow(GROW_FACTOR,
+            static_cast<float>(m_StuckResolveCount));
+    if (dynamicMaxR > MAX_MAX_R)
+        dynamicMaxR = MAX_MAX_R;
 
-    Vector3 pos = m_pOwner->GetPosition();
-    pos += back * BACK_DIST;
-    m_pOwner->SetPosition(pos);
+    Vector3 escapePos;
+    if (FindLocalEscape(escapePos, dynamicMaxR))
+    {
+        // 見つかったらテレポート
+        m_Char->Teleport(escapePos);
 
-    // 2) 速度を一度ゼロクリア
-    m_Char->Stop();
+        m_IsAvoidingWall = false;
+        m_StuckTimer = 0.0f;
+        m_LastPosForStuck = escapePos;
+        m_StuckResolveCount = 0;      // 成功したのでリセット
+        m_HasLastDistToTarget = false;
+        return;
+    }
 
-    // 3) 壁回避状態をリセットして再探索
-    m_IsAvoidingWall = false;
+    // 見つからなかった場合は次回探索時に半径を広げる
+    ++m_StuckResolveCount;
+
+    // 必要ならここでウェイポイントワープのフォールバックを呼ぶ
+    // ResolveStuckFallback();
 }
+
 
 // スタック状態の解消処理
 // 一番近いウェイポイントに戻す少しワープ感は出るが、「絶対にハマらない」
@@ -784,3 +859,108 @@ void EnemyAIComponent::ResolveStuck()
 //
 //    m_IsAvoidingWall = false;
 //}
+
+// ローカル範囲での脱出地点探索
+bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
+{
+    if (!m_Physics || !m_pOwner) { return false; }
+    if (!m_TerrainCol) { return false; }
+
+    Vector3 center = m_pOwner->GetPosition();
+    Vector3 forward = m_pOwner->GetForward();
+    forward.y = 0.0f;
+    if (forward.LengthSquared() < 1e-4f)
+    {
+        forward = Vector3::Forward;
+    }
+    forward.Normalize();
+
+    // チェックする角度の一覧（度）
+    static const float anglesDeg[] =
+    { 0.0f, 45.0f, -45.0f, 90.0f, -90.0f, 135.0f, -135.0f, 180.0f };
+
+    // キャラの直径を使う
+    float radius = m_Char ? m_Char->GetRadius() : 50.0f;
+    float charDiameter = radius * 2.0f;
+
+    // 半径の刻み
+    const float stepR = charDiameter; // 「キャラ1人分ずつ」外側へ
+    const float footOffset = 2.0f;
+
+    for (float r = stepR; r <= maxR; r += stepR)
+    {
+        for (float deg : anglesDeg)
+        {
+            float rad = deg * DEG2RAD;
+            Vector3 dir = RotateY(forward, rad);
+            dir.y = 0.0f;
+            if (dir.LengthSquared() < 1e-6f) continue;
+            dir.Normalize();
+
+            Vector3 xz = center + dir * r;
+
+            float groundY;
+            if (!m_TerrainCol->SampleHeight(xz.x, xz.z, groundY))
+                continue;
+
+            Vector3 candidate(xz.x, groundY + footOffset, xz.z);
+
+            if (IsCapsuleFree(candidate))
+            {
+                outPos = candidate;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// 指定位置にキャラクターカプセルを置いたときに衝突がないか調べる
+bool EnemyAIComponent::IsCapsuleFree(const Vector3& feetPos) const
+{
+    using namespace JPH;
+
+    if (!m_Physics || !m_Char) { return false; }
+
+    auto& system = m_Physics->GetSystem();
+    auto& npq = system.GetNarrowPhaseQuery();
+
+    float halfHeight = m_Char->GetCurrentHalfHeight();
+    float radius = m_Char->GetRadius();
+
+    // CharacterVirtualComponent 側から Shape をもらう
+    const Shape* capsule = m_Char->GetCurrentShape();
+    if (!capsule) { return false; }
+
+    RVec3 center(feetPos.x,
+        feetPos.y + halfHeight + radius,
+        feetPos.z);
+    RMat44 transform = RMat44::sTranslation(center);
+
+    CollideShapeSettings settings;
+    RVec3 baseOffset = RVec3::sZero();
+    Vec3  scale = Vec3::sReplicate(1.0f);
+
+    auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
+    auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
+    EscapeBodyFilter bodyFilter(system);
+    ShapeFilter shapeFilter;
+
+    ClosestHitCollisionCollector<CollideShapeCollector> collector;
+
+    npq.CollideShape(
+        capsule,
+        scale,
+        transform,
+        settings,
+        baseOffset,
+        collector,
+        bpFilter,
+        objFilter,
+        bodyFilter,
+        shapeFilter
+    );
+
+    // 何も当たっていなければ「この位置は安全」
+    return !collector.HadHit();
+}

@@ -506,7 +506,7 @@ void WeatherSystem::DebugDrawParticles(void) const
 void WeatherSystem::DebugDrawRain() const
 {
     // 半径（太さ）と色は調整用
-    constexpr float RAIN_RADIUS = 0.5f;
+    constexpr float RAIN_RADIUS = 0.25f;
     Color rainColor(0.6f, 0.6f, 1.0f, 1.0f);
 
     std::vector<RainInstance> instances;

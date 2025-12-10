@@ -101,8 +101,8 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//}
 
 	//// StaticMeshCollider ‚©‚ç AABB ‚Æ‚‚³ƒTƒ“ƒvƒ‹‚ðŽæ‚é
-	//StaticMeshCollider* terrainCol = m_pTerrain->GetComponent<StaticMeshCollider>();
-	//if (!terrainCol)
+	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
+	//if (!m_pTerrainCollider)
 	//{
 	//	SetDefaultPatrol();
 	//	m_Transform.SetPosition(m_StartPos);
@@ -110,7 +110,7 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//}
 
 	//Vector3 xzMin, xzMax;
-	//if (!terrainCol->GetWorldXZBounds(xzMin, xzMax))
+	//if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
 	//{
 	//	SetDefaultPatrol();
 	//	m_Transform.SetPosition(m_StartPos);
@@ -134,8 +134,8 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//	Vector3 p1 = RandXZInTerrain();
 
 	//	float y0, y1;
-	//	if (terrainCol->SampleHeight(p0.x, p0.z, y0) &&
-	//		terrainCol->SampleHeight(p1.x, p1.z, y1))
+	//	if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
+	//		m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
 	//	{
 	//		m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
 	//		m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
@@ -180,6 +180,7 @@ void Enemy::InitComponents()
 		m_AIComp->SetAvoidWeight(1.5f);
 		m_AIComp->SetEyeHeight(80.0f);
 		m_AIComp->SetPlayer(m_pPlayer);
+		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
 	}
 
 	// EnemyHearingComponent
