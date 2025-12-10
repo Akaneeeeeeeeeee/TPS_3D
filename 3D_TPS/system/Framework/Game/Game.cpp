@@ -49,18 +49,25 @@ void Game::Init(void)
 	// アセット管理クラスの初期化
 	AssetManager::GetInstance().Init();
 
+	//m_CameraManager.Init();
+
 
 	// レンダーマネージャの初期化
 	m_RenderManager.Init(&m_GraphicsDevice);
 	// 物理マネージャの初期化
 	m_PhysicsManager.Init();
+	m_WeatherSystem.Init();
 
 
 	m_pContext = std::make_unique<EngineContext>(
 		m_RenderManager,
 		ShaderManager::GetInstance(),
 		AssetManager::GetInstance(),
-		m_PhysicsManager);
+		m_PhysicsManager,
+		m_WeatherSystem,
+		m_CameraManager);
+
+	m_WeatherSystem.SetWeather(WeatherType::HeavyRain, 0.0f);
 
 	m_ComponentFactory.Init(m_pContext.get());
 	m_ObjectFactory.Init(&m_ComponentFactory);
@@ -72,6 +79,7 @@ void Game::Init(void)
 	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
+	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);
 
 	// デバッグ時のみ、デバッグUIの初期化
 #ifdef _DEBUG
@@ -122,7 +130,11 @@ void Game::Draw()
 	// 物理デバッグ描画
 	//m_PhysicsManager.DebugDraw();
 
+
+	// todo:ここは後から描画機能に責任を持たせる
 	SoundWaveVisualizer::GetInstance().DrawWorld();
+	m_pContext->weatherSystem.DebugDrawParticles();
+	m_pContext->weatherSystem.DebugDrawSun();
 
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/

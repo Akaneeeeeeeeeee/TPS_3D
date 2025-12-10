@@ -8,11 +8,13 @@
 void EnemyHearingComponent::Attach(EngineContext& context)
 {
 	m_pPhysics = &context.joltPhysicsManager;
+	m_pWeather = &context.weatherSystem;
 }
 
 void EnemyHearingComponent::Detach(void)
 {
 	m_pPhysics = nullptr;
+	m_pWeather = nullptr;
 }
 
 static JPH::Vec3 ToJPH(const Vector3& v)
@@ -30,7 +32,24 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 	if (!m_pOwner || !m_pPhysics)
 		return 0.0f;
 
-	// 耳の位置
+	// ---- 1) 天候＋時間による聴覚係数 ----
+	float hearingFactor = 1.0f;
+	if (m_pWeather)
+	{
+		hearingFactor = m_pWeather->GetHearingFactor();
+	}
+
+	// 「実効的な聴取半径」 = イベント半径 × 天候係数 × 自分の基準半径比
+	float effectiveRadius = ev.Radius * hearingFactor;
+
+	// さらに、敵ごとの個性を出したい場合：
+	// m_BaseHearingRadius を「晴れの日の標準半径」とみなして、
+	// ev.Radius がその標準に対してどれくらいの音かを見る形もあり。
+	// ここではシンプルに ev.Radius をそのまま使うのでコメントアウト。
+	// float enemyScale = m_BaseHearingRadius / 20.0f;  // 好みで基準を決める
+	// effectiveRadius *= enemyScale;
+
+	// ---- 2) 耳の位置と距離減衰 ----
 	Vector3 earPos = m_pOwner->GetPosition();
 	earPos.y += m_EarHeight;
 
@@ -38,21 +57,24 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 	float   dist = toSound.Length();
 	if (dist <= 0.0001f) dist = 0.0001f;
 
-	// 距離外ならそもそも聞こえない
-	if (dist > ev.Radius)
+	// 実効半径の外なら聞こえない
+	if (dist > effectiveRadius)
 		return 0.0f;
 
-	float distFactor = 1.0f - (dist / ev.Radius);
+	float distFactor = 1.0f - (dist / effectiveRadius);
 	distFactor = std::clamp(distFactor, 0.0f, 1.0f);
 
-	// 遮蔽物「なし」での基準音量
+	// 遮蔽なしでの基準音量
 	float baseLoudness = ev.Loudness * distFactor;
 
-	// ここで「遮蔽物なしで聞こえるか」を判定
+	// 天候でさらに減衰させる（豪雨などで全体の音量が落ちるイメージ）
+	baseLoudness *= hearingFactor;
+
+	// ここで「遮蔽なしで聞こえるか」を判定
 	if (baseLoudness < m_Threshold)
 		return 0.0f;
 
-	// ここから遮蔽物による減衰
+	// ---- 3) 遮蔽物による減衰 ----
 	using namespace JPH;
 
 	auto& system = m_pPhysics->GetSystem();

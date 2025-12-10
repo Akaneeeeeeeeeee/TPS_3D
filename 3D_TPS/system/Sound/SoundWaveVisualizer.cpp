@@ -1,5 +1,6 @@
 ﻿#include "SoundWaveVisualizer.h"
 #include "system/LineDrawer.h"
+#include "system/Framework/WeatherSystem/WeatherSystem.h"
 
 void SoundWaveVisualizer::OnEmit(const WorldSoundEvent& ev)
 {
@@ -7,20 +8,48 @@ void SoundWaveVisualizer::OnEmit(const WorldSoundEvent& ev)
     if (ev.Type != SoundType::Footstep)
         return;
 
+    // ---- 天候・時間による聴覚係数 ----
+    float hearingFactor = 1.0f;
+    if (m_pWeather)
+    {
+        hearingFactor = m_pWeather->GetHearingFactor();
+    }
+
     Wave w{};
     w.center = ev.Position;
-    w.maxRadius = ev.Radius;     // 敵が聞こえる範囲と同じにしておくと分かりやすい
-    w.currentRadius = 0.0f;
-    w.lifeTime = 0.5f;         // 0.5秒で消える波（好みで調整）
-    w.elapsed = 0.0f;
-    w.loudness = ev.Loudness;
 
-    // loudness に応じて色を変えたいならここで決める
-    // 例：常に白
-    w.baseColor = Color(1.0f, 1.0f, 1.0f, 1.0f);
+    // 敵が「実際に聞こえる範囲」と同じにしたければ EnemyHearing と整合させる
+    // → ev.Radius * hearingFactor にしておく
+    w.maxRadius = ev.Radius * hearingFactor;
+
+    w.currentRadius = 0.0f;
+    w.lifeTime = 0.5f;
+    w.elapsed = 0.0f;
+
+    // 音量も天候で減衰させた値を可視化に使う
+    w.loudness = ev.Loudness * hearingFactor;
+
+    // 色は天候で少し変えてもよい（例として HeavyRain で少し青くする）
+    Color base = Color(1.0f, 1.0f, 1.0f, 1.0f);
+    if (m_pWeather)
+    {
+        switch (m_pWeather->GetWeather())
+        {
+        case WeatherType::HeavyRain:
+            base = Color(0.7f, 0.7f, 1.0f, 1.0f);
+            break;
+        case WeatherType::Sandstorm:
+            base = Color(1.0f, 0.9f, 0.6f, 1.0f);
+            break;
+        default:
+            break;
+        }
+    }
+    w.baseColor = base;
 
     m_Waves.push_back(w);
 }
+
 
 void SoundWaveVisualizer::Update(float dt)
 {
@@ -75,7 +104,7 @@ void SoundWaveVisualizer::DrawWorld(void)
 
         // 円を SEGMENT 個の線分に分けて描画
         const float r = w.currentRadius;
-        const float y = w.center.y + 5.0f; // 地面から少し浮かせる
+        const float y = w.center.y + 50.0f; // 地面から少し浮かせる
 
         for (int i = 0; i < SEGMENT; ++i)
         {

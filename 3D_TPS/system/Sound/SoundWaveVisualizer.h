@@ -4,6 +4,8 @@
 #include "system/Framework/NonCopyable/Singleton_Template.h"
 #include "system/Sound/WorldSoundEvent.h"
 
+class WeatherSystem;
+
 class SoundWaveVisualizer : public Singleton<SoundWaveVisualizer>
 {
 public:
@@ -23,6 +25,9 @@ public:
 
     // loudness の最大値（正規化用）を設定
     void SetMaxLoudness(float v) { m_MaxLoudness = v; }
+
+    // WeatherSystem をセットする
+    void SetWeatherSystem(WeatherSystem* ws) { m_pWeather = ws; }
 
 private:
     SoundWaveVisualizer() = default;
@@ -45,6 +50,8 @@ private:
     int   m_WriteIndex = 0;
     float m_MaxLoudness = 1.0f;
     float m_DecayPerSec = 1.5f;
+
+    WeatherSystem* m_pWeather = nullptr;
 
     //void PushSample(float loudness);
 };

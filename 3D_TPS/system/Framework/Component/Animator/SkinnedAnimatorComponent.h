@@ -70,5 +70,4 @@ private:
     std::unique_ptr<CAnimationObject> m_AnimObject;    // 1‘Ìê—p
     Animator m_Animator;                // 1‘Ìê—p
     CShader* m_pShader = nullptr;
-	bool m_CurrentLoop = true;
 };

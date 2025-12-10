@@ -9,6 +9,7 @@
 #include "system/Sound/WorldSoundEvent.h"
 #include "system/Framework/SoundManager/SoundManager.h"
 #include "system/meshmanager.h"
+#include "system/Framework/Component/Camera/CameraComponent.h"
 
 namespace {
 	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f;	// プレイヤーカプセルコライダーの高さ(半分)
@@ -68,6 +69,15 @@ void Player::Init(void)
 	{
 		m_pCharaVirtualComp = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
 		m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALFHEIGHT, PLAYER_CAPSULE_RADIUS);
+	}
+	// TPS カメラコンポーネント追加
+	{
+		m_pCamera = this->AddComponent<CameraComponent>(m_Name + "_CameraComponent");
+
+		// 必要なら初期パラメータを調整
+		m_pCamera->SetRadius(800.0f);
+		// m_pCamera->SetElevation();
+		// m_pCamera->SetAzimuth();
 	}
 }
 
@@ -222,7 +232,8 @@ void Player::Update(const float deltatime)
 			float   vy = v.y;
 			float   impact = std::max(0.0f, -vy); // 下向き速度
 
-			if (impact > 200.0f) // そこそこ高いところから落ちたときだけ
+			// そこそこ高いところから落ちたときだけ
+			if (impact > 200.0f)
 			{
 				WorldSoundEvent ev{};
 				ev.Position = GetPosition();
@@ -266,12 +277,10 @@ void Player::Update(const float deltatime)
 		m_pCamera->SetAzimuth(azimuth);
 		m_pCamera->SetElevation(elevation);
 
-		// カメラ位置更新
-		// TPSなのでカメラはプレイヤーから一定距離離れる
+		// TPS なのでカメラはプレイヤーから一定距離離れる
 		Vector3 lookAt = pos;
-		lookAt.y += 100.0f;			// 注視点を少し上にずらす
-		m_pCamera->SetLookat(lookAt);
-		m_pCamera->CalcCameraPositionTranslate(lookAt);
+		lookAt.y += 100.0f;  // 注視点を少し上にずらす
+		m_pCamera->SetLookAt(lookAt);
 	}
 }
 
@@ -280,7 +289,8 @@ void Player::Draw(void) const
 {
 	if (m_pCamera)
 	{
-		this->m_pCamera->Draw();
+		// カメラ行列計算＋Renderer へのセット
+		m_pCamera->ApplyCamera();
 	}
 
 	Character::Draw();
@@ -323,7 +333,7 @@ void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector
 	viewDir.Normalize();
 
 	Vector3 up(0.0f, 1.0f, 0.0f);
-	Vector3 side = viewDir.Cross(up); // SimpleMath ならこう
+	Vector3 side = viewDir.Cross(up);
 	if (side.LengthSquared() < 1e-6f)
 	{
 		side = Vector3(1.0f, 0.0f, 0.0f);

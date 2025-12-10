@@ -1,11 +1,11 @@
 #pragma once
-#ifndef _DEBUG
+#ifdef _DEBUG
 #define JPH_DEBUG_RENDERER
 #define JPH_PROFILE_ENABLED
-#endif
-
 #define JPH_FLOATING_POINT_EXCEPTIONS_ENABLED
 #define JPH_OBJECT_STREAM
+#endif
+
 // ===== サードパーティ =====
 #include <Jolt/Core/Core.h>
 

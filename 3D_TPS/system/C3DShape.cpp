@@ -14,10 +14,13 @@ C3DShape::C3DShape() {
 
     if (m_first) {
           SphereDrawerInit();
+		  SphereInstancedDrawerInit();
           BoxDrawerInit();
           CylinderDrawerInit();
           ConeDrawerInit(true);
+          RainInstancedDrawerInit();
           LineDrawerInit();
+		  LineInstancedDrawerInit();
           CapsuleDrawerInit();
           m_first = false;
     }

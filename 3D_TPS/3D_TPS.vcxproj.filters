@@ -85,9 +85,6 @@
     <Filter Include="ソース ファイル\MyFramework\EngineContext">
       <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Time">
-      <UniqueIdentifier>{c8c1bc89-3915-410e-9378-dcc40e5d6a05}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\Buffer">
       <UniqueIdentifier>{377c53f3-5ee4-48a7-91d7-5e1609a47091}</UniqueIdentifier>
     </Filter>
@@ -156,6 +153,21 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\Component\SoundVisualizer">
       <UniqueIdentifier>{695a774f-c6d5-4cf2-8573-9cad44ecb2dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\WeatherSystem">
+      <UniqueIdentifier>{a66599ab-5ad2-4653-85be-f58354782981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Particle">
+      <UniqueIdentifier>{68e13fa3-fd71-4be5-b83c-250e4fa8c632}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Camera">
+      <UniqueIdentifier>{3a237f2b-9810-4d67-81e2-b7364dae2c93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Manager\CameraManager">
+      <UniqueIdentifier>{0d80cd81-a541-45a6-b1be-eedbcf2f3f61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\WeatherController">
+      <UniqueIdentifier>{85ac46a1-df06-44e2-88e5-865a1b8eea89}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -519,6 +531,24 @@
     <ClInclude Include="system\Sound\SoundWaveVisualizer.h">
       <Filter>ソース ファイル\MyFramework\Component\SoundVisualizer</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h">
+      <Filter>ソース ファイル\MyFramework\WeatherSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Particle\ParticleComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Particle\ParticleEmitter.h">
+      <Filter>ソース ファイル\MyFramework\Component\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Camera\CameraComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\CameraManager\CameraManager.h">
+      <Filter>ソース ファイル\MyFramework\Manager\CameraManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -788,6 +818,21 @@
     <ClCompile Include="system\Sound\SoundWaveVisualizer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\SoundVisualizer</Filter>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Particle\ParticleEmitter.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Particle\ParticleComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Camera\CameraComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp">
+      <Filter>ソース ファイル\MyFramework\WeatherSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\common.hlsl">
@@ -815,6 +860,15 @@
       <Filter>リソース ファイル</Filter>
     </FxCompile>
     <FxCompile Include="shader\litTextureVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\instancedSphereVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\instancedSpherePS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\instancedLineVS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
   </ItemGroup>

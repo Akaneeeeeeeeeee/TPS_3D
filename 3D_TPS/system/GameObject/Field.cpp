@@ -118,7 +118,7 @@ void Field::Init() {
 	bool sts = m_Texture.Load("assets/texture/field000.jpg");
 	assert(sts == true);
 
-	m_Transform.SetPosition(Vector3::Zero);
+	m_Transform.SetPosition(Vector3(0.0f,-500.0f,0.0f));
 	m_Transform.SetScale(Vector3(1, 1, 1));
 	m_Transform.SetRotation(Quaternion::Identity);
 

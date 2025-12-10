@@ -1,5 +1,6 @@
 #include	<iostream>
 
+#include	"LineDrawer.h"
 #include	"CommonTypes.h"
 #include	"CMeshRenderer.h"
 #include	"CMaterial.h"
@@ -85,4 +86,111 @@ void LineDrawerDraw(
 	g_shader.SetGPU();
 	g_material.SetGPU();
 	g_renderer.Draw(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+}
+
+// ------------------------
+// インスタンシング用
+// ------------------------
+static CLineMesh        g_instMesh;
+static CMeshRenderer    g_instRenderer;
+static CMaterial        g_instMaterial;
+static CShader          g_instShader;
+static ComPtr<ID3D11Buffer> g_cbInstance;
+
+static const UINT LINE_MAX_INSTANCE = 256;
+
+// HLSL の LineInstance と対応させる定数バッファ
+struct LineInstanceGPU
+{
+    Vector3 start;
+    float   _pad0;
+    Vector3 end;
+    float   _pad1;
+    Color   color;   // 16byte
+};
+
+struct CBLineInstance
+{
+    LineInstanceGPU inst[LINE_MAX_INSTANCE];
+};
+
+void LineInstancedDrawerInit()
+{
+    ID3D11Device* dev = Renderer::GetDevice();
+
+    // ベースとなる線メッシュ: (0,0,0) → (0,0,1) の 1 本
+    g_instMesh.Init(Vector3(0, 0, 0), Vector3(0, 0, 1), 1.0f);
+    g_instRenderer.Init(g_instMesh);
+
+    // マテリアルは一旦白。色はインスタンス側で持つ
+    MATERIAL mtrl{};
+    mtrl.Ambient = Color(0, 0, 0, 0);
+    mtrl.Diffuse = Color(1, 1, 1, 1);
+    mtrl.Emission = Color(0, 0, 0, 0);
+    mtrl.Specular = Color(0, 0, 0, 0);
+    mtrl.Shiness = 0;
+    mtrl.TextureEnable = FALSE;
+    g_instMaterial.Create(mtrl);
+
+    // VS: instancedLineVS.hlsl / PS: unlitTexturePS.hlsl / GS: GeometryShader.hlsl
+    g_instShader.Create(
+        "shader/instancedLineVS.hlsl",
+        "shader/unlitTexturePS.hlsl",
+        "shader/GeometryShader.hlsl");
+
+    // インスタンス用 cbuffer (b8)
+    bool sts = CreateConstantBuffer(
+        dev,
+        sizeof(CBLineInstance),
+        g_cbInstance.GetAddressOf());
+    assert(sts);
+}
+
+void LineInstancedDrawerDraw(
+    const std::vector<LineInstanceParam>& lines)
+{
+    if (lines.empty()) return;
+
+    ID3D11DeviceContext* ctx = Renderer::GetDeviceContext();
+
+    // マテリアル更新（色はインスタンス側で持つが、他の情報を GPU に送るため）
+    g_instMaterial.Update();
+
+    size_t total = lines.size();
+    size_t offset = 0;
+
+    while (offset < total)
+    {
+        size_t batchCount = std::min<size_t>(LINE_MAX_INSTANCE, total - offset);
+
+        CBLineInstance cb{};
+        for (size_t i = 0; i < batchCount; ++i)
+        {
+            const auto& src = lines[offset + i];
+            auto& dst = cb.inst[i];
+
+            dst.start = src.start;
+            dst.end = src.end;
+            dst.color = src.color;
+        }
+
+        ctx->UpdateSubresource(
+            g_cbInstance.Get(),
+            0,
+            nullptr,
+            &cb,
+            0,
+            0);
+
+        // b8 にセット
+        ctx->VSSetConstantBuffers(8, 1, g_cbInstance.GetAddressOf());
+
+        g_instShader.SetGPU();
+        g_instMaterial.SetGPU();
+
+        // CLineMesh は 1 本ぶんの 2 頂点を持っている前提
+        g_instRenderer.DrawInstanced(static_cast<UINT>(batchCount));
+
+        offset += batchCount;
+    }
 }

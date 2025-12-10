@@ -4,6 +4,9 @@
 #include "system/Framework/Graphics/RenderManager.h"
 //#include "system/Framework/ColliderManager/ColliderManager.h"
 #include "Framework/PhysicsSystem/PhysicsManager.h"
+#include "Framework/WeatherSystem/WeatherSystem.h"
+#include "Framework/CameraManager/CameraManager.h"
+#include "Framework/Component/Camera/CameraComponent.h"
 
 
 /*
@@ -21,12 +24,41 @@ struct EngineContext
 	AssetManager& assetManager;
 	//ColliderManager& colliderManager;
 	PhysicsManager& joltPhysicsManager;
-	
-	void Update(const float deltaTime) {
+	WeatherSystem& weatherSystem;
+	CameraManager& cameraManager;
+
+	void Update(const float deltaTime)
+	{
 		joltPhysicsManager.Update(deltaTime);
+		weatherSystem.Update(deltaTime);
+
+		CameraComponent* cam = cameraManager.GetMain();
+		Matrix4x4 view;
+		Matrix4x4 proj;
+		if (!cam) {
+			view = Matrix4x4::Identity;
+			proj = Matrix4x4::Identity;
+		}
+		else {
+			view = cam->GetViewMatrix();
+			proj = cam->GetProjMatrix();
+		}
+		weatherSystem.SetViewProjMatrices(view, proj);
 	}
 
-	EngineContext(RenderManager& rm, ShaderManager& sm, AssetManager& am, PhysicsManager& pm)
-		: renderManager(rm), shaderManager(sm), assetManager(am), joltPhysicsManager(pm) {
+	EngineContext(
+		RenderManager& rm,
+		ShaderManager& sm,
+		AssetManager& am,
+		PhysicsManager& pm,
+		WeatherSystem& ws,
+		CameraManager& cm)
+		: renderManager(rm),
+		shaderManager(sm),
+		assetManager(am),
+		joltPhysicsManager(pm),
+		weatherSystem(ws),
+		cameraManager(cm)
+	{
 	}
 };

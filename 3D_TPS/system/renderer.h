@@ -164,6 +164,9 @@ private:
     static ComPtr<ID3D11BlendState> m_BlendStateATC;
 
     static LIGHT m_Light;
+    // 最後にセットされた View / Proj 行列を保持する
+    static Matrix4x4 m_CurrentView;
+    static Matrix4x4 m_CurrentProjection;
 public:
     static void Init();
     static void Uninit();
@@ -173,9 +176,9 @@ public:
     static void SetDepthAllwaysWrite();
     static void SetATCEnable(bool Enable);
     static void SetWorldViewProjection2D();
-    static void SetWorldMatrix(Matrix4x4* WorldMatrix);
-    static void SetViewMatrix(Matrix4x4* ViewMatrix);
-    static void SetProjectionMatrix(Matrix4x4* ProjectionMatrix);
+    static void SetWorldMatrix(Matrix4x4* WorldMatrix, UINT slot = 0);
+    static void SetViewMatrix(Matrix4x4* ViewMatrix, UINT slot = 1);
+    static void SetProjectionMatrix(Matrix4x4* ProjectionMatrix, UINT slot = 2);
     static void SetMaterial(MATERIAL Material);
     static void SetLight(LIGHT Light);
     static ID3D11Device* GetDevice(void) { return m_Device.Get(); }
@@ -189,4 +192,6 @@ public:
     static void SetFillMode(D3D11_FILL_MODE FillMode);
 
     static LIGHT GetLight();
+    static const Matrix4x4& GetViewMatrix() { return m_CurrentView; }
+    static const Matrix4x4& GetProjectionMatrix() { return m_CurrentProjection; }
 };

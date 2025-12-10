@@ -1,6 +1,7 @@
 #pragma once
 #include "commontypes.h"
 #include "Framework/NonCopyable/Singleton_Template.h"
+#include "system/DebugUI.h"
 
 /*
 * @brief	TimeƒNƒ‰ƒX
@@ -13,7 +14,21 @@ class Time : public Singleton<Time>
 {
     friend class Singleton<Time>;
 public:
+#ifdef _DEBUG
+    Time()
+    {
+        DebugUI::RedistDebugFunction(std::bind(&Time::DebugUI, this));
+	}
+    float GetTimeScale() const { return m_TimeScale; }
+    void DebugUI(void)
+    {
+        ImGui::Begin("Time Settings");
+        ImGui::SliderFloat("Time Scale", &m_TimeScale, 0.0f, 5.0f);
+        ImGui::End();
+    }
+#else
     Time() = default;
+#endif
 	~Time() = default;
 
     void Update(const uint64_t deltaMicroSec)
@@ -37,6 +52,7 @@ public:
     void SetTimeScale(float scale) {
         m_TimeScale = std::max(scale, 0.0f);
     }
+
 private:
     float m_TimeScale = 1.0f;
 

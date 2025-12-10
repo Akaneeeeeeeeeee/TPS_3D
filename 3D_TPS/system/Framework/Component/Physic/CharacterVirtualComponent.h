@@ -67,8 +67,14 @@ public:
     
 	// Inner Body ID 取得
     const JPH::BodyID& GetInnerBodyID(void) const { return m_InnerBodyID; }
+    
+    const JPH::Shape* GetCurrentShape(void) const;
 	// 地面接地判定
     bool IsOnGround(void) const;
+    // 完全停止用
+    void Stop(void);
+	// テレポート(スタック解消用)
+	void Teleport(const Vector3& worldPos);
 
 private:
     // 姿勢ごとの係数

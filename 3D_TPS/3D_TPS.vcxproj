@@ -125,6 +125,7 @@
     </Link>
     <FxCompile>
       <ObjectFileOutput>$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel>5.0</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,25 +134,35 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;JPH_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;JPH_RELEASE;NOMINMAX;JPH_DEBUG_RENDERER;JPH_PROFILE_ENABLED;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED;JPH_OBJECT_STREAM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)system;$(ProjectDir)External\Jolt\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>jolt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)External\Jolt\Releace;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.0</ShaderModel>
+      <ObjectFileOutput>$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="fpscontrol.h" />
     <ClInclude Include="scene\CollisionTestScene.h" />
-    <ClInclude Include="scene\ResultScene.h" />
+    <ClInclude Include="scene\ResultScene.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="scene\SkeltalmeshScene.h" />
     <ClInclude Include="scene\TestScene.h" />
-    <ClInclude Include="scene\TitleScene.h" />
+    <ClInclude Include="scene\TitleScene.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\AimOrientation.h" />
     <ClInclude Include="system\AssimpPerse.h" />
     <ClInclude Include="system\Billboard\Billboard.h" />
@@ -171,6 +182,7 @@
     <ClInclude Include="system\CPlane.h" />
     <ClInclude Include="system\Cube\Cube.h" />
     <ClInclude Include="system\CVertexBuffer.h" />
+    <ClInclude Include="system\Framework\CameraManager\CameraManager.h" />
     <ClInclude Include="system\Framework\ColliderManager\collision.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -178,6 +190,9 @@
     <ClInclude Include="system\Framework\Component\AI\EnemyHearingComponent.h" />
     <ClInclude Include="system\Framework\Component\Animator\Animator.h" />
     <ClInclude Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.h" />
+    <ClInclude Include="system\Framework\Component\Camera\CameraComponent.h" />
+    <ClInclude Include="system\Framework\Component\Particle\ParticleComponent.h" />
+    <ClInclude Include="system\Framework\Component\Particle\ParticleEmitter.h" />
     <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -196,14 +211,18 @@
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
+    <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
-    <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
     <ClInclude Include="system\Framework\SoundManager\SoundManager.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
+    <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
     <ClInclude Include="system\GameObject\Skydome.h" />
@@ -313,10 +332,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene\CollisionTestScene.cpp" />
-    <ClCompile Include="scene\ResultScene.cpp" />
+    <ClCompile Include="scene\ResultScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="scene\SkeltalmeshScene.cpp" />
     <ClCompile Include="scene\TestScene.cpp" />
-    <ClCompile Include="scene\TitleScene.cpp" />
+    <ClCompile Include="scene\TitleScene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\AssimpPerse.cpp" />
     <ClCompile Include="system\Billboard\Billboard.cpp" />
     <ClCompile Include="system\BoneCombMatrix.cpp" />
@@ -352,9 +375,12 @@
     <ClCompile Include="system\Framework\Component\AI\EnemyHearingComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Animator\Animator.cpp" />
     <ClCompile Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\Camera\CameraComponent.cpp" />
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Particle\ParticleComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\Particle\ParticleEmitter.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\BoxCollider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -382,6 +408,7 @@
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
+    <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -395,7 +422,9 @@
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\ObjectContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />
-    <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp" />
+    <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\Framework\SceneManager\SceneManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -413,6 +442,7 @@
     <ClCompile Include="system\Framework\Shader\Shaders\VertexShader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp" />
     <ClCompile Include="system\Framework\Window\Window.cpp" />
     <ClCompile Include="system\GameObject\obstacle.cpp" />
     <ClCompile Include="system\GameObject\Rock.cpp" />
@@ -440,12 +470,36 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\GeometryShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shader\instancedLineVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shader\instancedSpherePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shader\instancedSphereVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\litTexturePS.hlsl">

@@ -12,6 +12,7 @@
 //! オブジェクト管理用タグ
 enum class Tag {
 	None,			//! タグなし
+	Camera,			//! カメラ
 	Player,			//! プレイヤー
 	Field,			//! フィールド
 	Skydome,		//! スカイドーム
@@ -129,17 +130,17 @@ protected:
 	//! タグ（オブジェクトの種類を示す）
 	Tag m_Tag = Tag::None;
 
-	//! オブジェクトの名前
-	std::string m_Name;
-
-	//! シェーダーマネージャー
-	//ShaderManager* m_pShaderManager;
-
 	//! オブジェクトがアクティブかどうか（trueなら更新・描画する）
 	bool m_IsActive = true;
 
 	// オブジェクトが削除されているかどうか（trueなら削除済み）
 	bool m_IsDestroy = false;
+	
+	//! オブジェクトの名前
+	std::string m_Name;
+
+	//! シェーダーマネージャー
+	//ShaderManager* m_pShaderManager;
 
 	//! コンポーネントのマップ(コンポーネントが多数になる場合はunordered_mapとの併用も検討)
 	std::unordered_map<std::string, std::unique_ptr<IComponent>> m_Components;

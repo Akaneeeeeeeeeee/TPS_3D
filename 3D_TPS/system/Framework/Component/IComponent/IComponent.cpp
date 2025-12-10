@@ -21,5 +21,3 @@ GameObject* IComponent::GetOwner(void) const
 {
 	return m_pOwner;
 }
-
-

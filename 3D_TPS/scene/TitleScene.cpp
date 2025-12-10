@@ -178,8 +178,6 @@ void TitleScene::Draw(void)
 	// 描画時に使用する行列にまとめる
 	m_mtxWorld = Matrix4x4::Identity;
 
-	m_camera.Draw();
-
 	Renderer::SetWorldMatrix(&m_mtxWorld);
 
 	// タイトル画像の描画
