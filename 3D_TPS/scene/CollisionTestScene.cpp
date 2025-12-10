@@ -9,6 +9,7 @@
 #include "system/LineDrawer.h"
 #include "GameObject/Skydome.h"
 #include "GameObject/Rock.h"
+#include "Framework/GameObject/Goal/Goal.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
 #include "Framework/GameObject/WeatherController/WeatherController.h"
 
@@ -284,6 +285,15 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		terrainrenderer->Init(*terrainmesh);
 		MeshManager::RegisterMesh<CStaticMesh>("terrainmesh", std::move(terrainmesh));
 		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("terrainmesh", std::move(terrainrenderer));
+
+		// ゴール用
+		std::unique_ptr<CStaticMesh> goalmesh = std::make_unique<CStaticMesh>();
+		goalmesh->Load("assets/model/obj/cylinder.obj", "assets/model/obj");
+		std::unique_ptr<CStaticMeshRenderer> goalrenderer = std::make_unique<CStaticMeshRenderer>();
+		goalrenderer->Init(*goalmesh);
+		MeshManager::RegisterMesh<CStaticMesh>("goalmesh", std::move(goalmesh));
+		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("goalmesh", std::move(goalrenderer));
+
 	}
 
 	// フィールド初期化
@@ -305,6 +315,14 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	// 天候オブジェクト
 	auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
 	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	// ゴール
+	auto goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
+	goal->SetPosition(Vector3(0.0f, 0.0f, -800.0f));
+
+	// 岩
+	/*auto rock = m_pObjectManager->Instantiate<Rock>("obstacleRock1", Tag::Object);
+	rock->Init();*/
+
 
 	// --- 衝突テスト用障害物 ---
 	{

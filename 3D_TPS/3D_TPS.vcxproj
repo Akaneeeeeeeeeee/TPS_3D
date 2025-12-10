@@ -210,6 +210,9 @@
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
+    <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
@@ -227,6 +230,7 @@
     <ClInclude Include="system\GameObject\Rock.h" />
     <ClInclude Include="system\GameObject\Skydome.h" />
     <ClInclude Include="system\GameObject\Field.h" />
+    <ClInclude Include="system\meshmanager.h" />
     <ClInclude Include="system\MyIndexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -406,6 +410,9 @@
     <ClCompile Include="system\Framework\GameObject\Character\Character.cpp" />
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
+    <ClCompile Include="system\Framework\GameObject\Goal\Goal.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
     <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp" />
@@ -456,6 +463,7 @@
     <ClCompile Include="system\imgui\imgui_tables.cpp" />
     <ClCompile Include="system\imgui\imgui_widgets.cpp" />
     <ClCompile Include="system\LineDrawer.cpp" />
+    <ClCompile Include="system\meshmanager.cpp" />
     <ClCompile Include="system\renderer.cpp" />
     <ClCompile Include="system\Sound\SoundWaveVisualizer.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />

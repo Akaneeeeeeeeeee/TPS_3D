@@ -19,6 +19,7 @@ enum class Tag {
 	Enemy,			//! 敵
 	Object,			//! オブジェクト
 	Item,			//! アイテム
+	Goal,           //! ゴール
 	Light,			//! ライト
 	UI,				//! UI
 	Effect,			//! エフェクト
