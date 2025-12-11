@@ -1,13 +1,19 @@
 #pragma once
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
-#include "PhysicsLayer.h"
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <memory>
 #include <vector>
+#include "PhysicsLayer.h"
 #include "JoltDebugRendererDX11.h"
+#include "Framework/PhysicsSystem/ObjectContactListener.h"
+#include "Framework/PhysicsSystem/CharacterContactListener.h"
 
-class PhysicsComponent; // å‰æ–¹å®£è¨€
+
+// ‘O•ûéŒ¾
+class PhysicsComponent;
+class GameObject;
+
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
 class JoltDebugRendererDX11;
 #endif
@@ -17,10 +23,13 @@ class JoltDebugRendererDX11;
 * @detail   Jolt Physics‚Ì•¨—‰‰ZƒVƒXƒeƒ€‚ğŠÇ—‚·‚éƒNƒ‰ƒX
 * @remark   PhysicsComponent‚Ì”h¶ƒNƒ‰ƒX(Rigidbody,ColliderŒn)‚ª“o˜^‚³‚ê‚Ä‚¢‚é
 * @remark   •¨—ƒIƒuƒWƒFƒNƒg‚ğŠÇ—‚µA•¨—‰‰Z‚Ì‰Šú‰»‚ÆXV‚ğs‚¤
+* @auther   Ôª ˜a÷
+* @date     2025/11/XX(Œã‚ÅŠm”F)
 */
 class PhysicsManager
 {
 public:
+	PhysicsManager();
     ~PhysicsManager();
     void Init(void);
     void Update(const float deltaTime);
@@ -28,25 +37,44 @@ public:
 #ifdef _DEBUG
     void DebugDraw(void);
 #endif
-    //void DebugDraw(const DirectX::XMMATRIX& vp);
 
     void Register(PhysicsComponent* rb);
     void UnRegister(PhysicsComponent* rb);
 
-    JPH::PhysicsSystem& GetSystem() { return m_System; }
-    JPH::BodyInterface& GetBodyInterface() { return m_System.GetBodyInterface(); }
+    JPH::PhysicsSystem& GetSystem(void) { return m_System; }
+    JPH::BodyInterface& GetBodyInterface(void) { return m_System.GetBodyInterface(); }
 
     // Jolt Physics‚ÌTempAllocator‚ğ•Ô‚·ƒƒ\ƒbƒh‚ğ’Ç‰Á
-    JPH::TempAllocator* GetTempAllocator()
+    JPH::TempAllocator* GetTempAllocator(void)
     {
         return m_TempAllocator.get();
     }
+    // CharacterVirtual ‚É“n‚·‚½‚ß‚ÌƒŠƒXƒi[æ“¾ŠÖ”
+    JPH::CharacterContactListener* GetCharacterContactListener(void)
+    {
+        return &m_CharacterContactListener;
+    }
+
+	// “–‚½‚è”»’èƒCƒxƒ“ƒg
+    void OnCollisionEnter(GameObject& a, GameObject& b);
+    void OnCollisionStay(GameObject& a, GameObject& b);
+    void OnCollisionExit(GameObject& a, GameObject& b);
+
+    void OnTriggerEnter(GameObject& trigger, GameObject& other);
+    void OnTriggerStay(GameObject& trigger, GameObject& other);
+    void OnTriggerExit(GameObject& trigger, GameObject& other);
+
+    // ƒLƒƒƒ‰—pƒCƒxƒ“ƒg(Õ“Ë‚¾‚¯)
+	void OnCharacterCollisionEnter(GameObject& a, GameObject& b);
 
 private:
     JPH::PhysicsSystem m_System;
     std::unique_ptr<JPH::TempAllocatorImpl> m_TempAllocator;
     std::unique_ptr<JPH::JobSystemThreadPool> m_JobSystem;
     std::vector<PhysicsComponent*> m_PhysicsObjects;
+    ObjectContactListener m_ObjectContactListener;
+    CharacterContactListenerImpl m_CharacterContactListener;
+
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     std::unique_ptr<JoltDebugRendererDX11> m_DebugRenderer;
 #endif

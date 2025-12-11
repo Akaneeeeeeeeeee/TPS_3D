@@ -41,11 +41,6 @@ public:
 
 
 protected:
-	//CAnimationData* m_pAnimationData;
-	//CAnimationMesh* m_pAnimationMesh;
-	//std::unique_ptr<CAnimationObject> m_pAnimationObject;
-	//CShader m_Shader;
-
 	aiAnimation* m_pCurrentAnimation = nullptr;
 	AnimationState m_AnimState = AnimationState::Idle;
 

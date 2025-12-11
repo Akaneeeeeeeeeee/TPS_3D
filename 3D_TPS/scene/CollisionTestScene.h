@@ -14,6 +14,7 @@
 #include "Framework/GameObject/Player/Player.h"
 #include "Framework/GameObject/Enemy/Enemy.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
+#include "Framework/GameObject/Goal/Goal.h"
 #include "GameObject/obstacle.h"
 
 /**
@@ -123,6 +124,8 @@ private:
 	* @brief プレイヤ
 	*/
 	Player* m_player;		// プレイヤ
+
+	Goal* m_Goal;
 
 	/**
 	* @brief 敵群

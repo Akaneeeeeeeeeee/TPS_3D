@@ -248,6 +248,8 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
         Layers::TERRAIN
     );
 
+	settings.mUserData = reinterpret_cast<uint64>(m_pOwner);
+
     m_BodyID = bi.CreateAndAddBody(settings, EActivation::Activate);
 }
 

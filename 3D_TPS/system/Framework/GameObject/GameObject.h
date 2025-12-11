@@ -25,6 +25,16 @@ enum class Tag {
 	Effect,			//! エフェクト
 };
 
+inline uint64_t ToUserData(GameObject* go)
+{
+	return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(go));
+}
+
+inline GameObject* FromUserData(uint64_t data)
+{
+	return reinterpret_cast<GameObject*>(static_cast<uintptr_t>(data));
+}
+
 /*
 * @brief	ゲームオブジェクトクラス
 * @detail	ゲーム内の全てのオブジェクトはこのクラスを継承して作成する
@@ -56,10 +66,20 @@ public:
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
-	//virtual EngineContext& GetContext(void) { return m_Context; }
+
+	// 当たり判定イベント
+	virtual void OnCollisionEnter(GameObject& other) {}
+	virtual void OnCollisionStay(GameObject& other) {}
+	virtual void OnCollisionExit(GameObject& other) {}
+
+	virtual void OnTriggerEnter(GameObject& other) {}
+	virtual void OnTriggerStay(GameObject& other) {}
+	virtual void OnTriggerExit(GameObject& other) {}
+
+	virtual void OnCollisionCharacterEnter(GameObject& other) {}
 
 	//////////////////////////////////////////
-	//			コンポーネントの取り外し			//
+	//			コンポーネントの取り外し		//
 	//////////////////////////////////////////
 	template<typename T, typename ...Args>
 		requires std::derived_from<T, IComponent>

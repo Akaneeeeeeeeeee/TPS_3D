@@ -1,6 +1,6 @@
 #pragma once
 #include "system/Framework/Component/IComponent/IComponent.h"
-#include "Framework/PhysicsSystem/Physics.h"    // Jolt
+#include "Framework/PhysicsSystem/Physics.h"
 #include "renderer.h"
 
 // ‘O•ûéŒ¾

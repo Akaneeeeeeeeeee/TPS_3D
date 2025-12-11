@@ -6,6 +6,7 @@
 #define JPH_OBJECT_STREAM
 #endif
 
+// 注)Jolt系のファイルはまずこのファイルをインクルードすること
 // ===== サードパーティ =====
 #include <Jolt/Core/Core.h>
 

@@ -108,9 +108,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;JPH_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED=1
-;JPH_PROFILE_ENABLED=1;JPH_DEBUG_RENDERER=1
-;JPH_OBJECT_STREAM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;JPH_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED=1;JPH_PROFILE_ENABLED=1;JPH_DEBUG_RENDERER=1;JPH_OBJECT_STREAM=1;JPH_NAMESPACE_BEGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -211,11 +209,12 @@
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\Framework\PhysicsSystem\CharacterContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.h">
@@ -411,7 +410,7 @@
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
     <ClCompile Include="system\Framework\GameObject\Goal\Goal.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
@@ -427,6 +426,7 @@
     <ClCompile Include="system\Framework\ObjectManager\ObjectManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\PhysicsSystem\CharacterContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\ObjectContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\JoltDebugRendererDX11.cpp">

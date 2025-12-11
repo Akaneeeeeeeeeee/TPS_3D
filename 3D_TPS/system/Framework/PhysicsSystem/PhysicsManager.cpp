@@ -1,6 +1,7 @@
 #include "PhysicsManager.h"
 #include <Jolt/RegisterTypes.h>
 #include "Framework/Component/Physic/PhysicsComponent.h"
+#include "Framework/GameObject/GameObject.h"
 #ifdef JPH_DEBUG_RENDERER
 #include "Framework/PhysicsSystem/JoltDebugRendererDX11.h"
 #include <Jolt/Renderer/DebugRenderer.h>
@@ -41,6 +42,12 @@ static bool MyJoltAssertFailedImpl(const char* inExpression,
 }
 #endif
 
+PhysicsManager::PhysicsManager()
+    : m_ObjectContactListener(*this),
+	m_CharacterContactListener(*this)
+{
+}
+
 PhysicsManager::~PhysicsManager()
 {
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
@@ -48,7 +55,7 @@ PhysicsManager::~PhysicsManager()
 #endif
 }
 
-void PhysicsManager::Init()
+void PhysicsManager::Init(void)
 {
     JPH::RegisterDefaultAllocator();
     // ★ここで差し替える
@@ -70,6 +77,8 @@ void PhysicsManager::Init()
 
     m_TempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
     m_JobSystem = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers);
+	// 衝突検知リスナーの登録
+    m_System.SetContactListener(&m_ObjectContactListener);
 
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     m_DebugRenderer = std::make_unique<JoltDebugRendererDX11>();
@@ -136,3 +145,45 @@ void PhysicsManager::UnRegister(PhysicsComponent* component)
     component->DestroyBody(m_System.GetBodyInterface());
 }
 
+
+void PhysicsManager::OnCollisionEnter(GameObject& a, GameObject& b)
+{
+    a.OnCollisionEnter(b);
+    b.OnCollisionEnter(a);
+}
+
+void PhysicsManager::OnCollisionStay(GameObject& a, GameObject& b)
+{
+    a.OnCollisionStay(b);
+    b.OnCollisionStay(a);
+}
+
+void PhysicsManager::OnCollisionExit(GameObject& a, GameObject& b)
+{
+    a.OnCollisionExit(b);
+    b.OnCollisionExit(a);
+}
+
+void PhysicsManager::OnTriggerEnter(GameObject& trigger, GameObject& other)
+{
+    trigger.OnTriggerEnter(other);
+    other.OnTriggerEnter(trigger);
+}
+
+void PhysicsManager::OnTriggerStay(GameObject& trigger, GameObject& other)
+{
+    trigger.OnTriggerStay(other);
+    other.OnTriggerStay(trigger);
+}
+
+void PhysicsManager::OnTriggerExit(GameObject& trigger, GameObject& other)
+{
+    trigger.OnTriggerExit(other);
+    other.OnTriggerExit(trigger);
+}
+
+void PhysicsManager::OnCharacterCollisionEnter(GameObject& character, GameObject& other)
+{
+    character.OnCollisionCharacterEnter(other);
+    other.OnCollisionCharacterEnter(character);
+}

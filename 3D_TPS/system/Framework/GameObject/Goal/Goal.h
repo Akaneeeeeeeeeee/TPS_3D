@@ -24,11 +24,14 @@ public:
 	}
 	~Goal() = default;
 
-
 	void Init(void) override;
 	void Update(const float delta) override;
 	void Draw(void) const override;
 	void Uninit(void) override;
+	bool IsReached(void) const { return m_Reached; }
+
+	void OnCollisionCharacterEnter(GameObject& other) override;
+
 	void DebugImGui(void);
 
 private:
@@ -36,5 +39,6 @@ private:
 	CStaticMeshRenderer* m_meshrenderer{};
 	CShader* m_shader{};
 
+	bool m_Reached = false;
 };
 

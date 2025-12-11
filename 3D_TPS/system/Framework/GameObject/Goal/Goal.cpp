@@ -44,3 +44,9 @@ void Goal::Uninit(void)
 {
 	GameObject::Uninit();
 }
+
+void Goal::OnCollisionCharacterEnter(GameObject& other)
+{
+	m_Reached = true;
+
+}

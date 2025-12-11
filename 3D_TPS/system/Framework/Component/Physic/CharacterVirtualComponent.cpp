@@ -159,12 +159,25 @@ void CharacterVirtualComponent::Init(void)
 		system
 	);
 
-	// InnerBodyID ‚ğT‚¦‚é
+	// InnerBodyID ‚ğ•Û‘¶
 	m_InnerBodyID = m_Character->GetInnerBodyID();
+
+	// InnerBody ‚É‚à GameObject* ‚ğ UserData ‚Æ‚µ‚Äİ’è
+	{
+		auto& bi = m_Physics->GetBodyInterface();
+		bi.SetUserData(
+			m_InnerBodyID,
+			reinterpret_cast<JPH::uint64>(m_pOwner)
+		);
+	}
+
+	// PhysicsManager ‚ª•Û‚µ‚Ä‚¢‚é CharacterContactListenerImpl ‚ğ“n‚·
+	m_Character->SetListener(
+		m_Physics->GetCharacterContactListener()
+	);
 
 	// p¨‚É‰‚¶‚ÄˆÚ“®‘¬“x‚ğİ’è
 	m_MoveSpeed = m_BaseMoveSpeed * GetMoveSpeedCoeff();
-
 }
 
 void CharacterVirtualComponent::Update(const float dt)
