@@ -57,8 +57,13 @@ public:
 	void Draw(void) const;
 	void Uninit(void);
 
-	void FlushInitQueue(void);
-	void FlushDestroyQueue(void);
+	void FlushInitQueue(void);		// 新しく追加されたオブジェクトの初期化キューの消化
+	void FlushDestroyQueue(void);	// 削除キューの消化
+
+	void SetCurrentSceneName(const std::string& name) { m_CurrentSceneName = name; }
+	const std::string& GetCurrentSceneName(void) const { return m_CurrentSceneName; }
+
+	void DestroySceneObjects(const std::string& sceneName);
 
 	//! DI
 	//void SetComponentFactory(ComponentFactory* _factory) { m_pComponentFactory = _factory; }
@@ -70,6 +75,7 @@ private:
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
 	
 	GameObjectFactory* m_ObjectFactory;
+	std::string m_CurrentSceneName;		// 「今のシーン名」
 	//ComponentFactory* m_pComponentFactory = nullptr;	//! コンポーネントファクトリーへのポインタ
 	//RenderManager* m_pRenderManager = nullptr;			//! レンダーマネージャーへのポインタ
 	//ShaderManager* m_pShaderManager;			//! シェーダーマネージャーへのポインタ
@@ -91,10 +97,17 @@ inline T* ObjectManager::Instantiate(const std::string& _Name, const Tag _Tag, A
 {
 	// SnowfrakeIDを付与
 	uint64_t id = this->m_IDGenerator.next_id();
-	// ★ ファクトリ経由で生成
+	
+	// ファクトリ経由で生成
 	auto obj = m_ObjectFactory->Create<T>(id, _Name, _Tag, std::forward<Args>(args)...);
+	
 	// オブジェクトの生ポインタを取得
 	GameObject* rawPtr = obj.get();
+	
+	// 所有シーンと寿命を設定
+	rawPtr->SetOwnerScene(m_CurrentSceneName);
+	rawPtr->SetLifetime(GameObject::Lifetime::Scene); // デフォルトはシーン限定
+	
 	// 各コンテナに追加
 	m_pObjects.push_back(std::move(obj));
 	m_ObjectsByTag[_Tag].push_back(rawPtr);

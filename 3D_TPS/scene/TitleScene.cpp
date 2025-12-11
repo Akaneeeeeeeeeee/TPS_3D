@@ -146,7 +146,7 @@ void TitleScene::debugSRT()
  */
 TitleScene::TitleScene() : IScene()
 {
-	m_NextSceneName = "SkeltalmeshScene";
+	m_NextSceneName = "CollisionTestScene";
 }
 //TitleScene::TitleScene(ObjectManager& _Mgr) : IScene(_Mgr)
 //{

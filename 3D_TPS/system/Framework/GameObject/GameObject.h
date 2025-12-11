@@ -62,6 +62,12 @@ public:
 
 	virtual ~GameObject() = default;		//! デストラクタ
 
+	enum class Lifetime
+	{
+		Scene,   // シーン切り替え時に消す
+		Global   // シーンをまたいで残す
+	};
+
 	virtual void Init(void);
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
@@ -77,6 +83,12 @@ public:
 	virtual void OnTriggerExit(GameObject& other) {}
 
 	virtual void OnCollisionCharacterEnter(GameObject& other) {}
+
+	void SetLifetime(Lifetime lt) { m_Lifetime = lt; }
+	Lifetime GetLifetime() const { return m_Lifetime; }
+
+	void SetOwnerScene(const std::string& name) { m_OwnerSceneName = name; }
+	const std::string& GetOwnerScene() const { return m_OwnerSceneName; }
 
 	//////////////////////////////////////////
 	//			コンポーネントの取り外し		//
@@ -150,6 +162,12 @@ protected:
 
 	//! タグ（オブジェクトの種類を示す）
 	Tag m_Tag = Tag::None;
+
+	// デフォルトは「シーン限定」
+	Lifetime    m_Lifetime = Lifetime::Scene;
+
+	// どのシーンが作ったか
+	std::string m_OwnerSceneName;
 
 	//! オブジェクトがアクティブかどうか（trueなら更新・描画する）
 	bool m_IsActive = true;

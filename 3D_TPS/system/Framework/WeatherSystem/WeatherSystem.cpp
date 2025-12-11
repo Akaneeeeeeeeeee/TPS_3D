@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "DebugUI.h"
 #include "CylinderDrawer.h"
+#include "C3DShape.h"
 
 using DirectX::XMFLOAT3;
 
@@ -412,6 +413,7 @@ void WeatherSystem::ApplyToLight()
 
 void WeatherSystem::Init(void)
 {
+	Box box(1.0f, 1.0f, 1.0f);
 	DebugUI::RedistDebugFunction([this]() { this->DebugImGui(); });
 }
 

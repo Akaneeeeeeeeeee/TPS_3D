@@ -13,7 +13,6 @@ FadeTransition::FadeTransition(float duration_sec, Mode mode)
 	, m_Duration(duration_sec)
 	, m_Box(SCREEN_WIDTH, SCREEN_HEIGHT, 0)
 {
-	//BoxDrawerInit();
 }
 
 /**

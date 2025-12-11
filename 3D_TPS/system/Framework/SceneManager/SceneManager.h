@@ -51,6 +51,9 @@ private:
 	// 重いロード処理を非同期にしたくなったらこの中だけに手を入れればよい
 	std::unique_ptr<IScene> CreateScene(const std::string& scene_name);
 
+	// 実際の切り替え本体（旧シーン Uninit → 新シーン Init）をまとめた関数
+	// ・フラグはここでは触らない
+	void SwitchSceneCore(const std::string& next_scene_name);
 private:
 	ObjectManager* m_pObjectManager = nullptr;
 
@@ -58,11 +61,10 @@ private:
 	std::string m_CurrentSceneName;
 
 	// 遷移制御
-	bool m_IsSceneChanging = false;
 	std::string m_NextSceneName;
 	std::unique_ptr<SceneTransition> m_Transition = nullptr;
+	bool m_IsSceneChanging = false;
 
 	bool m_IsQuit = false;
 	bool m_SceneChangedInTransition = false; // 今のトランジション中で一度だけ切り替えたか
 };
-

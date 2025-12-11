@@ -76,7 +76,8 @@ void Game::Init(void)
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーンマネージャの初期化
-	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	m_SceneManager.Init(&m_ObjectManager, "TitleScene");
+	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);
@@ -158,6 +159,8 @@ void Game::Uninit(void)
 
 	// シーンマネージャの終了処理
 	m_SceneManager.Uninit();
+	// オブジェクトマネージャの終了処理
+	m_ObjectManager.Uninit();
 
 	// レンダラの終了処理
 	//m_RenderManager.Uninit();

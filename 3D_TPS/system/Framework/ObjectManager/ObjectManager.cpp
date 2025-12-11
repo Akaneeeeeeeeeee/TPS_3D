@@ -212,3 +212,56 @@ void ObjectManager::FlushDestroyQueue()
 		}
 	}
 }
+
+/**
+ * @brief シーン所有オブジェクト削除関数
+ * @param sceneName シーン名
+ * @remark シーン切り替え時にのみ呼ばれ、シーン所有オブジェクトを削除するための関数
+*/
+void ObjectManager::DestroySceneObjects(const std::string& sceneName)
+{
+	for (auto it = m_pObjects.begin(); it != m_pObjects.end(); )
+	{
+		GameObject* obj = it->get();
+		if (!obj)
+		{
+			++it;
+			continue;
+		}
+
+		// 削除対象条件：シーン所有 + シーン寿命
+		if (obj->GetLifetime() == GameObject::Lifetime::Scene &&
+			obj->GetOwnerScene() == sceneName)
+		{
+			Tag objTag = obj->GetTag();
+
+			// タグリストから削除
+			auto& tagList = m_ObjectsByTag[objTag];
+			tagList.erase(std::remove(tagList.begin(), tagList.end(), obj), tagList.end());
+
+			// 名前リストから削除
+			auto nameIt = m_ObjectsByName.find(obj->GetName());
+			if (nameIt != m_ObjectsByName.end())
+			{
+				m_ObjectsByName.erase(nameIt);
+			}
+
+			// IDリストから削除
+			auto idIt = m_ObjectsByID.find(obj->GetID());
+			if (idIt != m_ObjectsByID.end())
+			{
+				m_ObjectsByID.erase(idIt);
+			}
+
+			// オブジェクト終了処理
+			obj->Uninit();
+
+			// コンテナから削除
+			it = m_pObjects.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}

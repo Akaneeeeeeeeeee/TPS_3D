@@ -185,6 +185,10 @@ CollisionTestScene::CollisionTestScene()
 void CollisionTestScene::Update(const float deltatime)
 {
 	m_pObjectManager->Update(deltatime);
+	if(m_Goal->IsReached()){
+		SetChangeScene(true);
+		SetNextSceneName("ResultScene");
+	}
 }
 
 
@@ -363,6 +367,8 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		m_enemies[0] = enemyObj;
 		
 	}
+
+	m_pObjectManager->FlushInitQueue();
 
 	// デバッグ Free Camera
 	DebugUI::RedistDebugFunction([this]() {

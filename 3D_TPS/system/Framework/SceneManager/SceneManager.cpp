@@ -53,20 +53,28 @@ std::unique_ptr<IScene> SceneManager::CreateScene(const std::string& scene_name)
 	return scene;
 }
 
-/*
-* @brief シーン即時切り替え
-* @param next_scene_name 切り替え先シーン名
-* @remarks 遷移演出なしで即時にシーンを切り替える
-*/
-void SceneManager::ChangeSceneImmediate(const std::string& next_scene_name)
+// 切り替え本体（旧シーン Uninit → 新シーン Init）
+// ・この関数は「フラグをいじらない」ことがポイント
+void SceneManager::SwitchSceneCore(const std::string& next_scene_name)
 {
 	// 旧シーン終了
 	if (m_CurrentScene)
 	{
 		m_CurrentScene->Uninit();
+		// 旧シーンのオブジェクトをここで削除
+		if (m_pObjectManager)
+		{
+			m_pObjectManager->DestroySceneObjects(m_CurrentSceneName);
+		}
 		m_CurrentScene.reset();
 	}
 
+	// 新しいシーン名を ObjectManager に教えておく
+	if (m_pObjectManager)
+	{
+		m_pObjectManager->SetCurrentSceneName(next_scene_name);
+	}
+	
 	// 新シーン生成
 	auto new_scene = CreateScene(next_scene_name);
 	if (!new_scene)
@@ -77,9 +85,22 @@ void SceneManager::ChangeSceneImmediate(const std::string& next_scene_name)
 
 	m_CurrentSceneName = next_scene_name;
 	m_CurrentScene = std::move(new_scene);
+}
 
-	// 遷移中フラグはここで下げておく
+/*
+* @brief シーン即時切り替え
+* @param next_scene_name 切り替え先シーン名
+* @remarks 遷移演出なしで即時にシーンを切り替える
+*/
+// 「演出なし」の即時切り替え専用
+void SceneManager::ChangeSceneImmediate(const std::string& next_scene_name)
+{
+	SwitchSceneCore(next_scene_name);
+
+	// 即時切り替えなので遷移状態はリセット
 	m_IsSceneChanging = false;
+	m_SceneChangedInTransition = false;
+	m_Transition.reset();
 }
 
 /*
@@ -117,47 +138,51 @@ void SceneManager::Update(float delta_time)
 {
 	if (m_IsQuit) { return; }
 
-	// 遷移中
+	// 1. 遷移演出中
 	if (m_IsSceneChanging && m_Transition)
 	{
 		m_Transition->Update(delta_time);
 
-		// 「ここでシーン切り替えてほしい」という合図が来たら一度だけ切り替え
+		// フェードアウト完了など「今切り替えてほしい」タイミング
 		if (!m_SceneChangedInTransition && m_Transition->NeedsSceneChange())
 		{
-			ChangeSceneImmediate(m_NextSceneName);
+			// 真っ黒のタイミングでシーン切り替え
+			SwitchSceneCore(m_NextSceneName);
+
+			// トランジションに「切り替え済み」を伝える
 			m_Transition->OnSceneChanged();
 			m_SceneChangedInTransition = true;
 		}
 
-		// トランジションが完全に終わったら終了
+		// フェードインまで含めて演出が完全に終わったらリセット
 		if (m_Transition->IsFinished())
 		{
 			m_Transition.reset();
 			m_IsSceneChanging = false;
 			m_SceneChangedInTransition = false;
 		}
-		return;
+
+		return; // 遷移中は旧 or 新シーンの Update をここでは進めないなら return
 	}
 
-	 // 通常更新
-    if (m_CurrentScene)
-    {
-        m_CurrentScene->Update(delta_time);
+	// 2. 通常更新
+	if (m_CurrentScene)
+	{
+		m_CurrentScene->Update(delta_time);
 
-        if (m_CurrentScene->GetChangeScene())
-        {
-            const std::string next = m_CurrentScene->GetNextSceneName();
+		// シーン側が「切り替えたい」と言ってきたら、ここでリクエストを投げる
+		if (m_CurrentScene->GetChangeScene())
+		{
+			const std::string next = m_CurrentScene->GetNextSceneName();
 
-            auto fade = std::make_unique<FadeTransition>(
-				2500.0f,  // 2.5 秒
-                FadeTransition::Mode::FadeInOut
-            );
-            RequestChangeScene(next, std::move(fade));
-        }
-    }
+			auto fade = std::make_unique<FadeTransition>(
+				2.5f,  // 秒
+				FadeTransition::Mode::FadeInOut
+			);
+			RequestChangeScene(next, std::move(fade));
+		}
+	}
 }
-
 void SceneManager::Draw()
 {
 	// シーン描画
@@ -190,76 +215,3 @@ void SceneManager::Uninit()
 	m_IsQuit = false;
 	m_pObjectManager = nullptr;
 }
-
-/// <summary>
-/// 指定されたシーン名に対応するシーンインスタンスを作成し、オブジェクト管理クラスを設定する
-/// </summary>
-/// <param name="_NewScene">作成するシーンの種類を示す SceneName 型の値</param>
-//void SceneManager::SetCurrentScene(const std::string& scenename, std::unique_ptr<SceneTransition> transition)
-//{
-//	//this->m_CurrentSceneName = scenename;
-//	//auto obj = SceneClassFactory::getInstance().create(scenename);
-//	//obj->Init(this->m_pObjectManager);
-//	//// ここで所有権がなくなるので自動で解放される
-//	//m_pScenes[m_CurrentSceneName] = std::move(obj);
-//
-//	// 遷移演出が指定されている場合は演出から開始
-//	if (transition) {
-//		m_Transition = std::move(transition);
-//		m_Transition->start(scenename);
-//		IsSceneChanging = true;
-//		//m_pScenes[m_CurrentSceneName]->SetNextSceneName(scenename);
-//	}
-//	else {
-//		this->ChangeScene(scenename);
-//	}
-//}
-//
-///// <summary>
-///// 指定されたシーン名に基づいて現在のシーンを変更を行う
-///// </summary>
-///// <param name="scenename">切り替え先のシーン名</param>
-//void SceneManager::ChangeScene(const std::string& nextscenename)
-//{
-//	// 指定されたシーン名が存在する(初期化時にAddSceneされている)場合にのみ切り替え
-//	if (m_pScenes.count(nextscenename))
-//	{
-//		// 現在のシーンがゲームシーンである場合、結果が必要なためキャストする
-//		bool isClear = false;
-//		if (m_CurrentSceneName == "SkeltalmeshScene")
-//		{
-//			SkeltalmeshScene* gameScene = static_cast<SkeltalmeshScene*>(m_pScenes[m_CurrentSceneName].get());
-//			isClear = gameScene->GetIsClear();
-//		}
-//
-//		// 現在のシーンを終了
-//		if (!m_CurrentSceneName.empty())
-//		{
-//			m_pScenes[m_CurrentSceneName]->Uninit();
-//			// 現在のシーン名を変更
-//			m_CurrentSceneName = nextscenename;
-//			//m_pScenes[m_CurrentSceneName]->Init(m_pObjectManager);
-//		}
-//
-//		// ゲームをクリアしていた場合
-//		if (isClear)
-//		{
-//			// リザルトシーンの画像を変更
-//			ResultScene* scene = static_cast<ResultScene*>(m_pScenes["ResultScene"].get());
-//			scene->SetTexture(std::make_unique<CSprite>
-//				(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameClear.jpg")
-//			);
-//		}
-//	}
-//}
-//
-//void SceneManager::SetSceneFactory(SceneClassFactory* factory)
-//{
-//	//m_pSceneFactory = factory;
-//}
-//
-//void SceneManager::SetObjectManager(ObjectManager* manager)
-//{
-//	m_pObjectManager = manager;
-//}
-//
