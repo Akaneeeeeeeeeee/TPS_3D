@@ -185,9 +185,21 @@ CollisionTestScene::CollisionTestScene()
 void CollisionTestScene::Update(const float deltatime)
 {
 	m_pObjectManager->Update(deltatime);
-	if(m_Goal->IsReached()){
+
+	if (m_Goal->IsReached())
+	{
 		SetChangeScene(true);
 		SetNextSceneName("ResultScene");
+	}
+
+	for(auto& enemy : m_enemies) 
+	{
+		if (enemy && enemy->IsGameOverTriggered())
+		{
+			SetChangeScene(true);
+			SetNextSceneName("ResultScene");
+			break;
+		}
 	}
 }
 

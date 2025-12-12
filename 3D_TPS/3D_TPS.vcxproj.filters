@@ -363,9 +363,6 @@
     <ClInclude Include="system\Framework\SceneManager\Transition\FadeTransition.h">
       <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
-      <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Enemy\Enemy.h">
       <Filter>ソース ファイル\MyFramework\GameObject\Enemy</Filter>
     </ClInclude>
@@ -557,6 +554,9 @@
     </ClInclude>
     <ClInclude Include="system\Framework\PhysicsSystem\CharacterContactListener.h">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
+      <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

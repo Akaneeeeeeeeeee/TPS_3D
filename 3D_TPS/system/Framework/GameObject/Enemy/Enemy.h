@@ -33,6 +33,7 @@ public:
 	void SetTerrain(Terrain* terrain) { m_pTerrain = terrain; }
 
 	bool CanSeePlayer(const Vector3& playerPos) const;
+	bool IsGameOverTriggered() const { return m_GameOverTriggered; }
 	void DebugImGui(void);
 private:
 	void InitAnimation(AssetManager& am);

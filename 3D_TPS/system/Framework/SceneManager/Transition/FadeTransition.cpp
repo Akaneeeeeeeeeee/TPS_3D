@@ -2,6 +2,7 @@
 #include    "system/Framework/SceneManager/SceneManager.h"
 #include    "FadeTransition.h"
 #include    "system/BoxDrawer.h"
+#include	"system/renderer.h"
 
 /**
 * @brief コンストラクタ
@@ -122,6 +123,8 @@ void FadeTransition::Draw(void)
 {
 	if (m_Phase != Phase::None)
 	{
+		// 2D描画モードに設定
+		Renderer::SetWorldViewProjection2D();
 		//BoxDrawerDraw(
 		//	SCREEN_WIDTH, SCREEN_HEIGHT, 0,
 		//	Color(0, 0, 0, m_Alpha),
@@ -152,7 +155,6 @@ bool FadeTransition::NeedsSceneChange(void) const
 	// フェードアウト完了後、黒画面になって SceneManager に切り替えを依頼したい瞬間
 	return m_Phase == Phase::WaitSceneChange;
 }
-
 
 
 void FadeTransition::OnSceneChanged(void)

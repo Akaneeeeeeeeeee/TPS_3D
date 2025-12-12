@@ -11,16 +11,9 @@
 
 class CAnimationMesh : public CStaticMesh
 {
-	// ボーン辞書
-	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DX化
-
-	// assimp ノード名ツリー（親子関係がわかる）
-	CTreeNode<std::string>	m_AssimpNodeNameTree{};
-
-	// レンダラ
-	CStaticMeshRenderer m_StaticMeshRenderer{};
-
 public:
+	CAnimationMesh() = default;
+	~CAnimationMesh() = default;
 
 	void Load(std::string filename, std::string texturedirectory = "");
 
@@ -53,5 +46,15 @@ public:
 
 	// 描画
 	void Draw();
+	
+private:
+	// ボーン辞書
+	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DX化
+
+	// assimp ノード名ツリー（親子関係がわかる）
+	CTreeNode<std::string>	m_AssimpNodeNameTree{};
+
+	// レンダラ
+	CStaticMeshRenderer m_StaticMeshRenderer{};
 };
 
