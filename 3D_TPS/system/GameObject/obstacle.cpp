@@ -10,9 +10,13 @@
 
 void obstacle::Init()
 {
-	m_mesh = MeshManager::getMesh<CStaticMesh>("obstaclebox");
-	m_shader = MeshManager::getShader<CShader>("unlightshader");
-	m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
+	auto& am = AssetManager::GetInstance();
+	m_mesh = am.GetMesh<CStaticMesh>("obstaclebox");
+	m_shader = am.GetShader<CShader>("unlightshader");
+	m_meshrenderer = am.GetMeshRenderer<CStaticMeshRenderer>("obstaclebox");
+	//m_mesh = MeshManager::getMesh<CStaticMesh>("obstaclebox");
+	//m_shader = MeshManager::getShader<CShader>("unlightshader");
+	//m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
 
 	auto boxcollider = AddComponent<BoxCollider>("fallingboxcollider");
     boxcollider->SetHalfSize(Vector3(GetScale().x, GetScale().y, GetScale().z));

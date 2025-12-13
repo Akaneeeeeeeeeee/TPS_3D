@@ -1,6 +1,7 @@
 #pragma once
 #define DIRECTINPUT_VERSION 0x0800
 #include	<dinput.h>
+#include	<Xinput.h>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")	
@@ -18,6 +19,9 @@ private:
 	int						m_width{};				// マウスのＸ座標最大
 	int						m_height{};				// マウスのＹ座標最大
 	HWND					m_hwnd{};
+	XINPUT_STATE			m_pad{};				// コントローラの状態
+	XINPUT_STATE			m_padOld{};				// 前回のコントローラの状態
+	bool					m_padConnected = false;	// コントローラ接続状態
 	CDirectInput() :m_dinput(nullptr), m_dikeyboard(nullptr), m_dimouse(nullptr) {
 	}
 public:

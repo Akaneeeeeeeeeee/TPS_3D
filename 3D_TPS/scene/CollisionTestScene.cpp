@@ -268,49 +268,49 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	m_playersegment[0] = std::make_unique<Segment>(Vector3(0, -100, 0), Vector3(0, 100, 0));
 
 	// 光源計算なしシェーダー
-	std::unique_ptr<CShader> shader = std::make_unique<CShader>();
-	shader->Create("shader/vertexLightingVS.hlsl", "shader/vertexLightingPS.hlsl");
-	MeshManager::RegisterShader<CShader>("unlightshader", std::move(shader));
+	//std::unique_ptr<CShader> shader = std::make_unique<CShader>();
+	//shader->Create("shader/vertexLightingVS.hlsl", "shader/vertexLightingPS.hlsl");
+	//MeshManager::RegisterShader<CShader>("unlightshader", std::move(shader));
 
-	// アニメーション用シェーダー
-	std::unique_ptr<CShader> animshader = std::make_unique<CShader>();
-	animshader->Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
-	MeshManager::RegisterShader<CShader>("animshader", std::move(animshader));
+	//// アニメーション用シェーダー
+	//std::unique_ptr<CShader> animshader = std::make_unique<CShader>();
+	//animshader->Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
+	//MeshManager::RegisterShader<CShader>("animshader", std::move(animshader));
 
-	// メッシュデータ読み込み
-	{
-		std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
-		smesh->Load("assets/model/obj/box.obj", "assets/model/obj/");
+	//// メッシュデータ読み込み
+	//{
+	//	std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
+	//	smesh->Load("assets/model/obj/box.obj", "assets/model/obj/");
 
-		std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
-		srenderer->Init(*smesh);
+	//	std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
+	//	srenderer->Init(*smesh);
 
-		MeshManager::RegisterMesh<CStaticMesh>("obstaclebox", std::move(smesh));
-		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclebox", std::move(srenderer));
+	//	MeshManager::RegisterMesh<CStaticMesh>("obstaclebox", std::move(smesh));
+	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclebox", std::move(srenderer));
 
-		// 岩用
-		CStaticMesh* rockmesh = AssetManager::GetInstance().GetStaticMesh("Rock");
-		std::unique_ptr<CStaticMeshRenderer> rockrenderer = std::make_unique<CStaticMeshRenderer>();
-		rockrenderer->Init(*rockmesh);
-		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclerock", std::move(rockrenderer));
+	//	// 岩用
+	//	CStaticMesh* rockmesh = AssetManager::GetInstance().GetStaticMesh("Rock");
+	//	std::unique_ptr<CStaticMeshRenderer> rockrenderer = std::make_unique<CStaticMeshRenderer>();
+	//	rockrenderer->Init(*rockmesh);
+	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclerock", std::move(rockrenderer));
 
-		// 地形用
-		std::unique_ptr<CStaticMesh> terrainmesh = std::make_unique<CStaticMesh>();
-		terrainmesh->Load("assets/model/factory/factoryterrainmesh.fbx", "assets/model/factory");
-		std::unique_ptr<CStaticMeshRenderer> terrainrenderer = std::make_unique<CStaticMeshRenderer>();
-		terrainrenderer->Init(*terrainmesh);
-		MeshManager::RegisterMesh<CStaticMesh>("terrainmesh", std::move(terrainmesh));
-		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("terrainmesh", std::move(terrainrenderer));
+	//	// 地形用
+	//	std::unique_ptr<CStaticMesh> terrainmesh = std::make_unique<CStaticMesh>();
+	//	terrainmesh->Load("assets/model/factory/factoryterrainmesh.fbx", "assets/model/factory");
+	//	std::unique_ptr<CStaticMeshRenderer> terrainrenderer = std::make_unique<CStaticMeshRenderer>();
+	//	terrainrenderer->Init(*terrainmesh);
+	//	MeshManager::RegisterMesh<CStaticMesh>("terrainmesh", std::move(terrainmesh));
+	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("terrainmesh", std::move(terrainrenderer));
 
-		// ゴール用
-		std::unique_ptr<CStaticMesh> goalmesh = std::make_unique<CStaticMesh>();
-		goalmesh->Load("assets/model/obj/cylinder.obj", "assets/model/obj");
-		std::unique_ptr<CStaticMeshRenderer> goalrenderer = std::make_unique<CStaticMeshRenderer>();
-		goalrenderer->Init(*goalmesh);
-		MeshManager::RegisterMesh<CStaticMesh>("goalmesh", std::move(goalmesh));
-		MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("goalmesh", std::move(goalrenderer));
+	//	// ゴール用
+	//	std::unique_ptr<CStaticMesh> goalmesh = std::make_unique<CStaticMesh>();
+	//	goalmesh->Load("assets/model/obj/cylinder.obj", "assets/model/obj");
+	//	std::unique_ptr<CStaticMeshRenderer> goalrenderer = std::make_unique<CStaticMeshRenderer>();
+	//	goalrenderer->Init(*goalmesh);
+	//	MeshManager::RegisterMesh<CStaticMesh>("goalmesh", std::move(goalmesh));
+	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("goalmesh", std::move(goalrenderer));
 
-	}
+	//}
 
 	// フィールド初期化
 	//m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);

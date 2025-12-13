@@ -7,9 +7,13 @@
 
 void Goal::Init(void)
 {
-	m_mesh = MeshManager::getMesh<CStaticMesh>("goalmesh");
-	m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("goalmesh");
-	m_shader = MeshManager::getShader<CShader>("unlightshader");
+	auto& am = AssetManager::GetInstance();
+	m_mesh = am.GetMesh<CStaticMesh>("goalmesh");
+	m_meshrenderer = am.GetMeshRenderer<CStaticMeshRenderer>("goalmesh");
+	m_shader = am.GetShader<CShader>("unlightshader");
+	//m_mesh = MeshManager::getMesh<CStaticMesh>("goalmesh");
+	//m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("goalmesh");
+	//m_shader = MeshManager::getShader<CShader>("unlightshader");
 
 	// コライダー
 	{

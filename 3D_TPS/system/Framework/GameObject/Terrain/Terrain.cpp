@@ -13,9 +13,13 @@
 void Terrain::Init()
 {
     // メッシュ／レンダラー／シェーダー取得
-    m_mesh = MeshManager::getMesh<CStaticMesh>("terrainmesh");
-    m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("terrainmesh");
-    m_shader = MeshManager::getShader<CShader>("unlightshader"); // 実際のキー名に合わせる
+	auto& am = AssetManager::GetInstance();
+    m_mesh = am.GetMesh<CStaticMesh>("terrainmesh");
+    m_meshrenderer = am.GetMeshRenderer<CStaticMeshRenderer>("terrainmesh");
+    m_shader = am.GetShader<CShader>("unlightshader"); // 実際のキー名に合わせる
+    //m_mesh = MeshManager::getMesh<CStaticMesh>("terrainmesh");
+    //m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("terrainmesh");
+    //m_shader = MeshManager::getShader<CShader>("unlightshader"); // 実際のキー名に合わせる
 
     // 物理メッシュコライダを追加
     if (m_mesh)

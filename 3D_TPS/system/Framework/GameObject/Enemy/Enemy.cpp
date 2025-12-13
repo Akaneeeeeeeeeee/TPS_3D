@@ -61,18 +61,28 @@ void Enemy::InitAnimation(AssetManager& am)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	// メッシュ・シェーダ設定
-	CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
 	m_pAnimComp->SetMesh(mesh);
 
-	CShader* shader = MeshManager::getShader<CShader>("animshader");
+	CShader* shader = am.GetShader<CShader>("animshader");
 	m_pAnimComp->SetShader(shader);
+	//CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	//m_pAnimComp->SetMesh(mesh);
+
+	//CShader* shader = MeshManager::getShader<CShader>("animshader");
+	//m_pAnimComp->SetShader(shader);
 
 	// クリップ取得
-	auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
-	auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
+	auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
+	auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
+	auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
+	auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
+	//auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	//auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+	//auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
+	//auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
+	//auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
 
 	// 種類ごとに登録
 	m_pAnimComp->SetClip(AnimType::Idle, idle);
@@ -243,7 +253,7 @@ void Enemy::Update(const float deltatime)
 	// ==============================
 	if (m_AIComp && m_AIComp->IsFound())
 	{
-		OnFoundPlayer();      // ★ ここで m_GameOverTriggered が true になる
+		OnFoundPlayer();      // ここで m_GameOverTriggered が true になる
 		// このフレームの残り処理はそのまま進むが、
 		// 次フレームからは上の if(m_GameOverTriggered) で止まる
 	}

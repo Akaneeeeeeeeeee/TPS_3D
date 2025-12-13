@@ -607,6 +607,8 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
     auto& npq = system.GetNarrowPhaseQuery();
 
     Vector3 pos = m_pOwner->GetPosition();
+
+    // 目標へのベクトル（XZだけ）
     Vector3 toTarget = target - pos;
     toTarget.y = 0.0f;
 
@@ -617,30 +619,28 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
         return Vector3::Zero;
     }
 
-    // 目標に向かう基準の前方向
+    // 本来の進行方向（基準）
     Vector3 forward = toTarget / distToTarget;
 
+    // レイの始点（目の高さ）
     Vector3 origin3 = pos;
     origin3.y += m_EyeHeight;
 
     float rayLen = m_RayLength;
     float maxCheckDist = std::min(rayLen, distToTarget);
 
-    // ここより手前に障害物があったら「そろそろ回避開始」
-    // 0.8 を 0.5 ～ 0.9 の範囲で調整すると「早め／ギリギリ回避」が変えられる
+    // この距離より手前で当たるなら「正面が詰まってる」
     float blockThreshold = maxCheckDist * 0.8f;
 
-    // レイの持ち主は「キャラ」なので CHARACTER を渡す
     auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
     auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
-
-    // キャラ／トリガーを無視するフィルタ
     AvoidCharAndTriggerBodyFilter bodyFilter(system);
 
-    // dir 方向にどこまで進めるかを返す関数
+    // dir 方向にどこまで進めるか（当たったらそこまで / 当たらなければ maxCheckDist）
     auto castDist = [&](const Vector3& dir3) -> float
         {
             Vector3 d = dir3;
+            d.y = 0.0f;
             if (d.LengthSquared() < 0.0001f) { return maxCheckDist; }
             d.Normalize();
 
@@ -657,73 +657,79 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
             return maxCheckDist;
         };
 
-    // 左右方向ベクトル
-    Vector3 side(-forward.z, 0.0f, forward.x);
-    if (side.LengthSquared() < 0.0001f)
-        side = Vector3(1, 0, 0);
-
-    // 正面・左前・右前の「空き距離」
+    // まず正面が空いてるなら回避しない
     float centerFree = castDist(forward);
-    float leftFree = castDist(forward + side * 0.5f);
-    float rightFree = castDist(forward - side * 0.5f);
-
-    // 正面方向に blockThreshold 以上の空きがあれば、まだ回避しない
-    bool frontBlocked = centerFree < blockThreshold;
-    bool just_started_avoid = false;
+    bool  frontBlocked = (centerFree < blockThreshold);
 
     if (!frontBlocked)
     {
         m_IsAvoidingWall = false;
-        // 正面に余裕ができたら基準もリセットしておくと次の回避が安定する
         m_LastMoveDir = forward;
-        return forward; // まだ普通に前進
+        return forward;
     }
 
-    // ここから「回避モード」
-
-    // 障害物への近さを 0～1 に正規化
-    // centerFree が blockThreshold に近い → 0
-    // centerFree が 0 に近い              → 1
-    float nearFactor = 1.0f - (centerFree / blockThreshold);
-    nearFactor = std::clamp(nearFactor, 0.0f, 1.0f);
-
-    // 初めて回避に入ったタイミングでだけ、左右どちらに避けるか決める
+    // ここから回避モード
+    bool just_started_avoid = false;
     if (!m_IsAvoidingWall)
     {
         m_IsAvoidingWall = true;
         just_started_avoid = true;
-        m_AvoidSideSign = (rightFree > leftFree) ? -1.0f : 1.0f;
     }
 
-    // 左右どちらに切るか
-    Vector3 sideDir = side * m_AvoidSideSign;
-    sideDir.y = 0.0f;
-    if (sideDir.LengthSquared() > 0.0f)
-        sideDir.Normalize();
+    // 障害物が近いほど 0→1 に上がる係数（回避の強さに使う）
+    float nearFactor = 1.0f - (centerFree / blockThreshold);
+    nearFactor = std::clamp(nearFactor, 0.0f, 1.0f);
 
-    // 横成分の強さ：障害物に近いほど大きく、m_AvoidWeight で全体の重みを調整
-    float sideScale = m_AvoidWeight * nearFactor;      // 近いほど大きく曲がる
-    float forwardScale = 1.0f - 0.5f * nearFactor;        // 近いほど前成分を少し減らす
+    // --- 回避方向の選び方（ここが変更点）---
+    // 「曲がりが小さい順」に候補を試す
+    // その候補が blockThreshold 以上空いてたら採用（＝最小のハンドル量で抜ける）
+    constexpr float DEG2RAD_LOCAL = PI / 180.0f;
+    const float anglesDeg[] = { 10.0f, -10.0f, 20.0f, -20.0f, 30.0f, -30.0f, 45.0f, -45.0f, 60.0f, -60.0f, 90.0f, -90.0f };
 
-    // 「前」＋「横」を混ぜた 斜め前方向 に進む → 結果として軌跡が曲線に近づく
-    Vector3 moveDir = forward * forwardScale + sideDir * sideScale;
-    moveDir.y = 0.0f;
+    Vector3 bestDir = forward;
+    float   bestFree = centerFree; // どれもダメだった時の保険（最大空きで決める）
 
-    if (moveDir.LengthSquared() < 0.0001f)
+    bool foundGood = false;
+
+    for (float deg : anglesDeg)
     {
-        moveDir = forward;
+        Vector3 cand = RotateY(forward, deg * DEG2RAD_LOCAL);
+        float freeD = castDist(cand);
+
+        // 「曲がり最小」を優先：閾値を満たした最初の候補を採用
+        if (freeD >= blockThreshold)
+        {
+            bestDir = cand;
+            foundGood = true;
+            break;
+        }
+
+        // どれも閾値を満たさない場合に備えて「一番空いてる方向」を覚える
+        if (freeD > bestFree)
+        {
+            bestFree = freeD;
+            bestDir = cand;
+        }
     }
 
+    // 回避量（障害物が近いほど回避方向へ寄せる）
+    // m_AvoidWeight を「寄せやすさ」として使う（0.0～1.0推奨、1超えるなら clamp）
+    float steer = std::clamp(nearFactor * m_AvoidWeight, 0.0f, 1.0f);
+
+    // forward → bestDir へ、近いほど寄せる（急ハンドル防止）
+    Vector3 moveDir = LerpDir(forward, bestDir, steer);
+    moveDir.y = 0.0f;
+    if (moveDir.LengthSquared() < 0.0001f) moveDir = forward;
     moveDir.Normalize();
 
-    // ★ 回避開始フレームは補間しない
+    // 回避開始フレームは補間しない（反応遅れ防止）
     if (just_started_avoid)
     {
         m_LastMoveDir = moveDir;
         return moveDir;
     }
-    // 前フレーム方向と今回の方向を少しだけ混ぜる
-    // 第3引数(0.2f)を 0.1～0.3 の範囲で調整して滑らかさを変えられる
+
+    // 前フレームと少し混ぜて、さらに滑らかに
     m_LastMoveDir = LerpDir(m_LastMoveDir, moveDir, 0.2f);
     return m_LastMoveDir;
 }

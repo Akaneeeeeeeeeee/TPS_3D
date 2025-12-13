@@ -42,17 +42,25 @@ void Player::Init(void)
 	// 2) メッシュとシェーダ設定
 	//CAnimationMesh* mesh = am.GetAnimationMesh("maincharacter");
 	//CAnimationMesh* mesh = am.GetAnimationMesh("character");
-	CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	//CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
+
 	m_pAnimComp->SetMesh(mesh);
-	CShader* shader = MeshManager::getShader<CShader>("animshader");
+	//CShader* shader = MeshManager::getShader<CShader>("animshader");
+	CShader* shader = am.GetShader<CShader>("animshader");
 	m_pAnimComp->SetShader(shader);
 
 	// 3) アニメーションデータを全部キャッシュ
-	auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	auto* crouch = am.GetAnimationData("Crouching_Idle")->GetAnimation("Crouching_Idle", 0);
-	auto* crouchwalk = am.GetAnimationData("Crouched_Walking")->GetAnimation("Crouched_Walking", 0);
+	auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
+	auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
+	auto* crouch = am.GetAnimationData<CAnimationData>("Crouching_Idle")->GetAnimation("Crouching_Idle", 0);
+	auto* crouchwalk = am.GetAnimationData<CAnimationData>("Crouched_Walking")->GetAnimation("Crouched_Walking", 0);
+	//auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	//auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
+	//auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+	//auto* crouch = am.GetAnimationData("Crouching_Idle")->GetAnimation("Crouching_Idle", 0);
+	//auto* crouchwalk = am.GetAnimationData("Crouched_Walking")->GetAnimation("Crouched_Walking", 0);
 
 	m_pAnimComp->SetClip(AnimType::Idle, idle);
 	m_pAnimComp->SetClip(AnimType::Crouch, crouch);
