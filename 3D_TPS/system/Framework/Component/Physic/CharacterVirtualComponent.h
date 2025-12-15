@@ -24,7 +24,7 @@ public:
         , m_InnerBodyID(JPH::BodyID())   // 無効 ID
     {
     }
-    ~CharacterVirtualComponent() noexcept override; // デストラクタの例外指定を親クラスと一致させるため、noexceptを追加
+    ~CharacterVirtualComponent() noexcept override; // デストラクタの例外指定を親クラスと一致させるため、noexcept
 
 	// 姿勢
     enum class Stance
@@ -75,6 +75,12 @@ public:
     void Stop(void);
 	// テレポート(スタック解消用)
 	void Teleport(const Vector3& worldPos);
+    void SetMoveInput(const Vector3& dir, float amount)
+    {
+        m_MoveDir = dir;
+        m_MoveAmount = std::clamp(amount, 0.0f, 1.0f);
+    }
+
 
 private:
     // 姿勢ごとの係数
@@ -122,6 +128,7 @@ private:
 	// 移動制御用パラメータ
     Vector3 m_MoveDir = Vector3::Zero;
     bool    m_WantsJump = false;
+	float   m_MoveAmount = 0.0f; // 0.0 ～ 1.0
 
     // チューニング用
     float m_BaseMoveSpeed = 500.0f; // 立ち状態を基準にした最高速度

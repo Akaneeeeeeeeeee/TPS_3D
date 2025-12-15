@@ -99,8 +99,7 @@ void Game::Update(const float deltatime)
 	SoundManager::GetInstance().BeginFrame();
 	m_pContext->Update(deltatime);
 
-	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
-	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
+	CDirectInput::GetInstance().Update();		// 入力状態を更新
 
 	// ゲーム終了フラグが立っていない場合
 	if (!m_SceneManager.GetIsQuit())

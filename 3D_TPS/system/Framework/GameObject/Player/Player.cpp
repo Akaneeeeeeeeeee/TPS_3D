@@ -92,17 +92,25 @@ void Player::Init(void)
 // プレイヤー更新
 void Player::Update(const float deltatime)
 {
-	CDirectInput& input = CDirectInput::GetInstance();
+	auto& input = CDirectInput::GetInstance();
+
+	Vector3 input_dir = Vector3::Zero;
 
 	// ---- 1) 入力から移動方向を作る ----
-	Vector3 input_dir(0, 0, 0);
 	if (input.CheckKeyBuffer(DIK_W)) { input_dir.z += 1.0f; }
 	if (input.CheckKeyBuffer(DIK_S)) { input_dir.z -= 1.0f; }
 	if (input.CheckKeyBuffer(DIK_A)) { input_dir.x -= 1.0f; }
 	if (input.CheckKeyBuffer(DIK_D)) { input_dir.x += 1.0f; }
 
-	// しゃがみキー（Cキー）押下中かどうか
-	bool isCrouching = input.CheckKeyBuffer(DIK_C);
+	// パッド
+	Vector2 stick = input.GetLeftStick();
+	input_dir.x += stick.x;
+	input_dir.z += stick.y;
+
+	// 倒し具合（0..1） ※キーの斜め(sqrt2)もここで1に丸める
+	const float len = std::sqrt(input_dir.x * input_dir.x + input_dir.z * input_dir.z);
+	const float amount = std::clamp(len, 0.0f, 1.0f);
+
 
 #ifdef _DEBUG
 	if (input.CheckKeyBuffer(DIK_K)) {
@@ -124,66 +132,66 @@ void Player::Update(const float deltatime)
 	bool wants_jump = input.CheckKeyBuffer(DIK_SPACE);
 
 	Vector3 move_dir = Vector3::Zero;
-
-	// ----- アニメーションと移動方向の決定 -----
-	if (input_dir.LengthSquared() > 0.0f)
+	if (amount > 1e-4f)
 	{
-		move_dir = input_dir;
-		move_dir.Normalize();
+		// 方向だけ正規化
+		move_dir = Vector3(input_dir.x / len, 0.0f, input_dir.z / len);
 
-		// ---- 2) 進行方向を向く（回転だけ）----
+		// 向き（回転だけ）
 		float targetYaw = std::atan2(-move_dir.x, -move_dir.z);
-		// Y軸回転をクォータニオンで適用
-		Quaternion q = Quaternion::CreateFromAxisAngle(Vector3(0, 1, 0), targetYaw);
-		m_Transform.SetRotation(q);
+		m_Transform.SetRotation(Quaternion::CreateFromAxisAngle(Vector3(0, 1, 0), targetYaw));
 	}
 
-	// ---- 3) アニメーション選択 ----
-	float mag = input_dir.Length();
+	// --- 2) 姿勢（しゃがみ） ---
+	const bool isCrouching = input.CheckKeyBuffer(DIK_C);
+	if (m_pCharaVirtualComp)
+	{
+		m_pCharaVirtualComp->SetStance(
+			isCrouching ? CharacterVirtualComponent::Stance::Crouch
+			: CharacterVirtualComponent::Stance::Stand
+		);
+	}
+
+	// --- 3) CharacterVirtual に「方向 + 量」を渡す ---
+	if (m_pCharaVirtualComp)
+	{
+		// しゃがみ時は移動速度を落とす
+		m_pCharaVirtualComp->SetMoveInput(move_dir, amount);
+		if (input.CheckKeyBuffer(DIK_SPACE))
+			m_pCharaVirtualComp->RequestJump();
+	}
+
+	// --- 4) アニメ（量に応じて速度を変える） ---
 	if (m_pAnimComp)
 	{
-		if (isCrouching)
+		// 立ちの場合: amount 小→歩き、大→走り にしたいなら閾値で切替
+		// 連続にしたいなら同じクリップで speed を変えるほうが実装が簡単
+		if (amount < 0.05f)
 		{
-			// しゃがみ姿勢に設定
-			m_pCharaVirtualComp->SetStance(CharacterVirtualComponent::Stance::Crouch);
-
-			if (mag < 0.1f)
-			{
-				// しゃがみ＋入力なし → しゃがみ待機
-				m_pAnimComp->Play(AnimType::Crouch, 0.1f);
-			}
-			else
-			{
-				// しゃがみ＋入力あり → しゃがみ歩き
-				m_pAnimComp->Play(AnimType::CrouchWalk, 0.1f);
-			}
+			m_pAnimComp->Play(isCrouching ? AnimType::Crouch : AnimType::Idle, 0.1f);
+			m_pAnimComp->SetPlaybackSpeed(1.0f);  // ★後述の追加API
 		}
 		else
 		{
-			// 立ち姿勢に設定
-			m_pCharaVirtualComp->SetStance(CharacterVirtualComponent::Stance::Stand);
-
-			if (mag < 0.1f)
+			if (isCrouching)
 			{
-				// 立ち＋入力なし → 通常待機
-				m_pAnimComp->Play(AnimType::Idle, 0.1f);
+				m_pAnimComp->Play(AnimType::CrouchWalk, 0.1f);
+
+				// しゃがみは控えめに
+				float speed = std::lerp(0.6f, 1.1f, amount);
+				m_pAnimComp->SetPlaybackSpeed(speed);
 			}
 			else
 			{
-				// 立ち＋入力あり → 走り
-				m_pAnimComp->Play(AnimType::Run, 0.1f);
+				// 「歩きクリップを使う」場合は amount に応じて切り替え
+				// 例: amount < 0.6 なら Walk、それ以上は Run
+				if (amount < 0.6f) m_pAnimComp->Play(AnimType::Walk, 0.1f);
+				else               m_pAnimComp->Play(AnimType::Run, 0.1f);
+
+				float speed = std::lerp(0.8f, 1.5f, amount);
+				m_pAnimComp->SetPlaybackSpeed(speed);
 			}
 		}
-	}
-
-	// ---- 4) CharacterVirtual に入力を渡す ----
-	if (m_pCharaVirtualComp)
-	{
-		// 方向だけ渡す（速さは CharVirtual 側の m_MoveAccel で調整）
-		m_pCharaVirtualComp->SetMoveDir(move_dir);
-
-		if (wants_jump)
-			m_pCharaVirtualComp->RequestJump();
 	}
 
 	// ---- 5) コンポーネント更新（ここで位置が決まる）----

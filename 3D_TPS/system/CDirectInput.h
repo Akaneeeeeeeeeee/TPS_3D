@@ -3,8 +3,9 @@
 #include	<dinput.h>
 #include	<Xinput.h>
 
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")	
+#pragma comment(lib, "dinput8.lib")
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "xinput.lib")
 
 class CDirectInput{
 private:
@@ -38,6 +39,14 @@ public:
 
 	~CDirectInput(){
 		Dispose();
+	}
+
+	// すべての入力状態を更新
+	void Update(void)
+	{
+		GetKeyBuffer();
+		GetMouseState();
+		GetPadState();
 	}
 
 	//----------------------------------
@@ -317,5 +326,73 @@ public:
 		SetActiveWindow(m_hwnd);
 		SetFocus(m_hwnd);
 		SetCursorPos(x/2, y/2);
+	}
+
+	//----------------------------------
+	// コントローラ状態取得処理
+	//----------------------------------
+	void GetPadState(void)
+	{
+		m_padOld = m_pad;
+		ZeroMemory(&m_pad, sizeof(m_pad));
+
+		DWORD res = XInputGetState(0, &m_pad);
+		m_padConnected = (res == ERROR_SUCCESS);
+		if (!m_padConnected)
+		{
+			ZeroMemory(&m_pad, sizeof(m_pad));
+			ZeroMemory(&m_padOld, sizeof(m_padOld));
+		}
+	}
+
+	// コントローラ接続状態取得
+	bool IsPadConnected(void) const { return m_padConnected; }
+
+	// 左スティック（-1～1、デッドゾーン処理つき）
+	DirectX::XMFLOAT2 GetLeftStick(void) const
+	{
+		if (!m_padConnected) { return DirectX::XMFLOAT2(0, 0); }
+
+		float x = (float)m_pad.Gamepad.sThumbLX / 32767.0f;
+		float y = (float)m_pad.Gamepad.sThumbLY / 32767.0f;
+
+		// デッドゾーン
+		constexpr float dz = 0.2f;
+		float len = std::sqrt(x * x + y * y);
+		if (len < dz) { return DirectX::XMFLOAT2(0, 0); }
+
+		// 0～1に再正規化（倒し具合を滑らかに）
+		float t = (len - dz) / (1.0f - dz);
+		if (t > 1.0f) t = 1.0f;
+
+		x /= len; y /= len;
+		return DirectX::XMFLOAT2(x * t, y * t);
+	}
+
+	// 右スティック（-1～1、デッドゾーン処理つき）
+	bool GetButtonPress(WORD btn) const
+	{
+		return m_padConnected && ((m_pad.Gamepad.wButtons & btn) != 0);
+	}
+
+	// ボタンのトリガー取得
+	bool GetButtonTrigger(WORD btn) const
+	{
+		if (!m_padConnected) return false;
+		bool now = (m_pad.Gamepad.wButtons & btn) != 0;
+		bool old = (m_padOld.Gamepad.wButtons & btn) != 0;
+		return now && !old;
+	}
+
+	// トリガーの倒し具合取得（0.0～1.0）
+	float GetLeftTrigger(void) const
+	{
+		if (!m_padConnected) return 0.0f;
+		return m_pad.Gamepad.bLeftTrigger / 255.0f;
+	}
+	float GetRightTrigger(void) const
+	{
+		if (!m_padConnected) return 0.0f;
+		return m_pad.Gamepad.bRightTrigger / 255.0f;
 	}
 };

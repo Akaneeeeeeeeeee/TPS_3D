@@ -53,6 +53,9 @@ public:
     // アニメ遷移（Player / Enemy から呼ぶ用）
     void Play(AnimType type, float blendTimeSec);
 
+	// 再生速度設定
+    void SetPlaybackSpeed(float s) { m_PlaybackSpeed = std::max(0.0f, s); }
+
     // 描画（GameObject::Draw から呼ぶ）
     void Draw() const;
     void DebugImGui();
@@ -62,6 +65,9 @@ private:
         aiAnimation* clip = nullptr;
         float        speed = 1.0f;
     };
+
+	// 再生速度倍率
+    float m_PlaybackSpeed = 1.0f;
 
     // どの AnimType にどの aiAnimation* を割り当てるか
     ClipInfo m_Clips[static_cast<int>(AnimType::Max)]{};

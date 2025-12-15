@@ -182,7 +182,7 @@ void CharacterVirtualComponent::Init(void)
 
 void CharacterVirtualComponent::Update(const float dt)
 {
-	if (!m_Physics || !m_Character) return;
+	if (!m_Physics || !m_Character) { return; }
 
 	using namespace JPH;
 
@@ -202,7 +202,9 @@ void CharacterVirtualComponent::Update(const float dt)
 	{
 		// ”O‚Ì‚½‚ß³‹K‰»
 		move_dir = move_dir.Normalized();
-		horizontal = move_dir * m_MoveSpeed;
+		// “|‚µ‹ï‡‚Å‘¬“x‚ğ•Ï‚¦‚é
+		const float targetSpeed = m_MoveSpeed * m_MoveAmount;
+		horizontal = move_dir * targetSpeed;
 	}
 	else
 	{
