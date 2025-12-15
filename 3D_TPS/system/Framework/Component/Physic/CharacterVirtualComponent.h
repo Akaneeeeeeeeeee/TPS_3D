@@ -77,8 +77,19 @@ public:
 	void Teleport(const Vector3& worldPos);
     void SetMoveInput(const Vector3& dir, float amount)
     {
+        // 入力方向（水平のみ使う：坂や段差のYで遅く見える/ガタつくのを避ける）
         m_MoveDir = dir;
+        m_MoveDir.y = 0.0f;
+
+        // 倒し具合（0..1）
         m_MoveAmount = std::clamp(amount, 0.0f, 1.0f);
+
+        // 方向がほぼ無いなら量も0扱い（ゼロ割/不安定防止）
+        if (m_MoveDir.LengthSquared() < 1e-6f)
+        {
+            m_MoveAmount = 0.0f;
+            m_MoveDir = Vector3::Zero;
+        }
     }
 
 

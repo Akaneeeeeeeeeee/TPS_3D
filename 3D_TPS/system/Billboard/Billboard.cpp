@@ -1,12 +1,12 @@
 #include "Billboard.h"
 
 
-void Billboard::Init(void)
+void Billboard::Awake(void)
 {
 	// “Á‚É‚È‚µB•K—v‚È‚ç‰Šú‰»ˆ—
 }
 
-void Billboard::Init(int width, int height, const std::string& texfilename, FreeCamera* cam)
+void Billboard::Awake(int width, int height, const std::string& texfilename, FreeCamera* cam)
 {
 	m_Sprite.Init(width, height, texfilename);
 	m_pCamera = cam;

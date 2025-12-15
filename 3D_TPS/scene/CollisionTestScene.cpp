@@ -19,6 +19,7 @@
 #include "Framework/Component/Physic/Rigidbody.h"
 #include "Framework/Component/Physic/BoxCollider.h"
 #include "Framework/Component/Physic/CapsuleCollider.h"
+#include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "commontypes.h"
 
 namespace {
@@ -131,7 +132,7 @@ void CollisionTestScene::debugFieldRemake() {
 		m_field->setdividex(dividex);
 		m_field->setdividez(dividez);
 
-		m_field->Init();
+		m_field->Awake();
 	}
 
 	ImGui::End();
@@ -185,6 +186,12 @@ CollisionTestScene::CollisionTestScene()
 void CollisionTestScene::Update(const float deltatime)
 {
 	m_pObjectManager->Update(deltatime);
+
+	if (m_RequestRebuildEnemies)
+	{
+		m_RequestRebuildEnemies = false;
+		RebuildEnemies();
+	}
 
 	if (m_Goal->IsReached())
 	{
@@ -267,50 +274,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
 	m_playersegment[0] = std::make_unique<Segment>(Vector3(0, -100, 0), Vector3(0, 100, 0));
 
-	// 光源計算なしシェーダー
-	//std::unique_ptr<CShader> shader = std::make_unique<CShader>();
-	//shader->Create("shader/vertexLightingVS.hlsl", "shader/vertexLightingPS.hlsl");
-	//MeshManager::RegisterShader<CShader>("unlightshader", std::move(shader));
-
-	//// アニメーション用シェーダー
-	//std::unique_ptr<CShader> animshader = std::make_unique<CShader>();
-	//animshader->Create("shader/vertexLightingOneSkinVS.hlsl", "shader/vertexLightingPS.hlsl");
-	//MeshManager::RegisterShader<CShader>("animshader", std::move(animshader));
-
-	//// メッシュデータ読み込み
-	//{
-	//	std::unique_ptr<CStaticMesh> smesh = std::make_unique<CStaticMesh>();
-	//	smesh->Load("assets/model/obj/box.obj", "assets/model/obj/");
-
-	//	std::unique_ptr<CStaticMeshRenderer> srenderer = std::make_unique<CStaticMeshRenderer>();
-	//	srenderer->Init(*smesh);
-
-	//	MeshManager::RegisterMesh<CStaticMesh>("obstaclebox", std::move(smesh));
-	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclebox", std::move(srenderer));
-
-	//	// 岩用
-	//	CStaticMesh* rockmesh = AssetManager::GetInstance().GetStaticMesh("Rock");
-	//	std::unique_ptr<CStaticMeshRenderer> rockrenderer = std::make_unique<CStaticMeshRenderer>();
-	//	rockrenderer->Init(*rockmesh);
-	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("obstaclerock", std::move(rockrenderer));
-
-	//	// 地形用
-	//	std::unique_ptr<CStaticMesh> terrainmesh = std::make_unique<CStaticMesh>();
-	//	terrainmesh->Load("assets/model/factory/factoryterrainmesh.fbx", "assets/model/factory");
-	//	std::unique_ptr<CStaticMeshRenderer> terrainrenderer = std::make_unique<CStaticMeshRenderer>();
-	//	terrainrenderer->Init(*terrainmesh);
-	//	MeshManager::RegisterMesh<CStaticMesh>("terrainmesh", std::move(terrainmesh));
-	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("terrainmesh", std::move(terrainrenderer));
-
-	//	// ゴール用
-	//	std::unique_ptr<CStaticMesh> goalmesh = std::make_unique<CStaticMesh>();
-	//	goalmesh->Load("assets/model/obj/cylinder.obj", "assets/model/obj");
-	//	std::unique_ptr<CStaticMeshRenderer> goalrenderer = std::make_unique<CStaticMeshRenderer>();
-	//	goalrenderer->Init(*goalmesh);
-	//	MeshManager::RegisterMesh<CStaticMesh>("goalmesh", std::move(goalmesh));
-	//	MeshManager::RegisterMeshRenderer<CStaticMeshRenderer>("goalmesh", std::move(goalrenderer));
-
-	//}
 
 	// フィールド初期化
 	//m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
@@ -318,6 +281,8 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
 	m_terrain->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
+
+	//m_TerrainCol = m_terrain->GetComponent<StaticMeshCollider>(); // 取れる前提
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
@@ -335,10 +300,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
 	m_Goal->SetScale(Vector3(50.0f, 100.0f, 50.0f));
 	m_Goal->SetPosition(Vector3(-300.0f, 250.0f, -800.0f));
-
-	// 岩
-	/*auto rock = m_pObjectManager->Instantiate<Rock>("obstacleRock1", Tag::Object);
-	rock->Init();*/
 
 
 	// --- 衝突テスト用障害物 ---
@@ -371,13 +332,14 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		m_obstacles[0] = obstacleObj;
 
 		// 敵
-		auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
-		enemyObj->SetPosition(Vector3(-300.0f, 210.0f, 750.0f));
-		enemyObj->SetPlayer(m_player);
-		enemyObj->SetTerrain(m_terrain);
-		// 配列に保持
-		m_enemies[0] = enemyObj;
-		
+		//auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
+		//enemyObj->SetPosition(Vector3(-300.0f, 210.0f, 750.0f));
+		//enemyObj->SetPlayer(m_player);
+		//enemyObj->SetTerrain(m_terrain);
+		//// 配列に保持
+		//m_enemies[0] = enemyObj;
+
+		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
 	}
 
 	m_pObjectManager->FlushInitQueue();
@@ -409,4 +371,99 @@ void CollisionTestScene::Init(ObjectManager* mgr)
  */
 void CollisionTestScene::Uninit()
 {
+}
+
+void CollisionTestScene::ClearEnemies()
+{
+	for (int i = 0; i < m_EnemyAliveCount; ++i)
+	{
+		if (!m_enemies[i]) continue;
+		m_pObjectManager->DeleteObject("Enemy_" + std::to_string(i));
+		m_enemies[i] = nullptr;
+	}
+	m_EnemyAliveCount = 0;
+}
+
+bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used) const
+{
+	if (!m_TerrainCol) return false;
+
+	Vector3 xzMin, xzMax;
+	if (!m_TerrainCol->GetWorldXZBounds(xzMin, xzMax)) return false; // 既存前提（なければ固定範囲で代用）
+
+	auto rng = RandomEngine::tls().stream("EnemySpawn");
+
+	constexpr int   MAX_TRY = 32;
+	constexpr float HEIGHT_OFFSET = 5.0f;
+	constexpr float MIN_SEP = 200.0f; // 敵同士の最低距離（好み）
+
+	for (int t = 0; t < MAX_TRY; ++t)
+	{
+		float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
+		float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
+
+		float y;
+		if (!m_TerrainCol->SampleHeight(x, z, y)) continue;
+
+		Vector3 p(x, y + HEIGHT_OFFSET, z);
+
+		bool ok = true;
+		for (auto& u : used)
+		{
+			if ((p - u).LengthSquared() < (MIN_SEP * MIN_SEP)) { ok = false; break; }
+		}
+		if (!ok) continue;
+
+		outPos = p;
+		return true;
+	}
+	return false;
+}
+
+void CollisionTestScene::SpawnEnemies(int count)
+{
+	count = std::clamp(count, 1, static_cast<int>(ENEMYMAX));
+
+	std::vector<Vector3> used;
+	used.reserve(count);
+
+	for (int i = 0; i < count; ++i)
+	{
+		auto enemyObj = m_pObjectManager->Instantiate<Enemy>(
+			"Enemy_" + std::to_string(i), Tag::Enemy);
+
+		Vector3 spawnPos = m_SingleEnemyPos;
+
+		if (count == 1)
+		{
+			// 1体モード：元の座標
+			spawnPos = m_SingleEnemyPos;
+		}
+		else
+		{
+			// 複数モード：ランダム
+			if (!MakeRandomSpawnPos(spawnPos, used))
+			{
+				// ランダム失敗時の保険（推測です）：プレイヤー近く等に置かないなら別条件も足す
+				spawnPos = m_SingleEnemyPos + Vector3(0, 0, 300.0f * i);
+			}
+		}
+
+		enemyObj->SetPosition(spawnPos);
+		enemyObj->SetPlayer(m_player);
+		enemyObj->SetTerrain(m_terrain);
+
+		used.push_back(spawnPos);
+		m_enemies[i] = enemyObj;
+	}
+
+	m_EnemyAliveCount = count;
+}
+
+void CollisionTestScene::RebuildEnemies()
+{
+	ClearEnemies();
+	int spawnCount = m_MultiEnemy ? m_MultiCount : 1;
+	SpawnEnemies(spawnCount);
+	m_pObjectManager->FlushInitQueue();
 }

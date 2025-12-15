@@ -43,6 +43,9 @@ public:
 	// 演出なしで即切り替え
 	void ChangeSceneImmediate(const std::string& next_scene_name);
 
+	// Draw 後に呼んで、保留中のシーン切り替えを実行する
+	void CommitSceneChange(void);
+
 	bool GetIsQuit(void) const { return m_IsQuit; }
 	void SetIsQuit(bool value) { m_IsQuit = value; }
 
@@ -67,4 +70,5 @@ private:
 
 	bool m_IsQuit = false;
 	bool m_SceneChangedInTransition = false; // 今のトランジション中で一度だけ切り替えたか
+	bool m_PendingCommit = false; // Draw後に切り替える必要がある
 };

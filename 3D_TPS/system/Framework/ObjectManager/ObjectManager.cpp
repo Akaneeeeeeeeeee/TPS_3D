@@ -110,13 +110,17 @@ void ObjectManager::Init(GameObjectFactory* factory)
 	m_ObjectsByID.clear();
 	m_ObjectsByName.clear();
 	m_ObjectsByTag.clear();
-	m_PendingInitObjects.clear();
+	m_PendingAwake.clear();
+	m_PendingStart.clear();
 }
 
 void ObjectManager::Update(const float deltatime)
 {
-	// フレーム頭で一括初期化
-	this->FlushInitQueue();
+	// 1) Awakeを全消化（Awake中に増えた分も処理）
+	this->FlushAwakeQueue();
+
+	// 2) Startを全消化（Start中に増えた分は次フレームでもOK）
+	this->FlushStartQueue();
 
 	for (auto& obj : m_pObjects)
 	{
@@ -162,19 +166,40 @@ void ObjectManager::Uninit(void) {
 	m_ObjectsByID.clear();
 	m_ObjectsByName.clear();
 	m_ObjectsByTag.clear();
+	m_PendingAwake.clear();
+	m_PendingStart.clear();
 	//m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
 }
 
-void ObjectManager::FlushInitQueue()
+// FlushAwakeQueue: Awakeキューを消化する関数
+void ObjectManager::FlushAwakeQueue(void)
 {
-	// Init 中に新しいオブジェクトが Instantiate されても安全にするため swap しておく
-	std::vector<GameObject*> current;
-	current.swap(m_PendingInitObjects);
-
-	for (GameObject* obj : current)
+	for (;;)
 	{
-		if (!obj) { continue; }
-		obj->Init();
+		std::vector<GameObject*> batch;
+		batch.swap(m_PendingAwake);
+		if (batch.empty()) { break; }
+
+		for (auto* obj : batch)
+		{
+			if (!obj || obj->IsDestroy()) { continue; }
+			obj->AwakeOnce();
+			// Awake完了したらStart対象へ
+			m_PendingStart.push_back(obj);
+		}
+	}
+}
+
+// FlushStartQueue: Startキューを消化する関数(Awakeキュー消化後に呼び出し)
+void ObjectManager::FlushStartQueue()
+{
+	std::vector<GameObject*> batch;
+	batch.swap(m_PendingStart);
+
+	for (auto* obj : batch)
+	{
+		if (!obj || obj->IsDestroy()) { continue; }
+		obj->StartOnce();
 	}
 }
 

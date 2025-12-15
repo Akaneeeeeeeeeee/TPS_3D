@@ -111,7 +111,7 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//}
 
 	//// StaticMeshCollider ‚©‚ç AABB ‚Æ‚‚³ƒTƒ“ƒvƒ‹‚ðŽæ‚é
-	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
+	//m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
 	//if (!m_pTerrainCollider)
 	//{
 	//	SetDefaultPatrol();
@@ -135,7 +135,7 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//	};
 
 	//constexpr int   MAX_TRY = 16;
-	//constexpr float HEIGHT_OFFSET = 5.0f;
+	//constexpr float HEIGHT_OFFSET = 75.0f;
 
 	//bool ok = false;
 	//for (int i = 0; i < MAX_TRY && !ok; ++i)
@@ -169,13 +169,6 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 // ----------------------------------------
 void Enemy::InitComponents()
 {
-	// CharacterVirtualComponent
-	{
-		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
-		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
-		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
-	}
-
 	// EnemyAIComponent
 	{
 		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
@@ -193,6 +186,13 @@ void Enemy::InitComponents()
 		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
 	}
 
+	// CharacterVirtualComponent
+	{
+		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
+		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
+		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
+	}
+	
 	// EnemyHearingComponent
 	{
 		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");

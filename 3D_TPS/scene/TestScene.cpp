@@ -169,7 +169,7 @@ void TestScene::debugFieldRemake() {
         m_field->setdividex(dividex);
         m_field->setdividez(dividez);
 
-        m_field->Init();
+        m_field->Awake();
     }
 
     ImGui::End();
@@ -483,15 +483,12 @@ void TestScene::Init(ObjectManager* mgr)
 
     // フィールド初期化
     m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
-    m_field->Init();
 
     // プレイヤ
     m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-    m_player->Init();
 
     // スカイドーム
     auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
-    skydome->Init();
     skydome->SetTexture("assets/texture/haikei.jpg");
 
     // 敵群初期化
@@ -532,7 +529,7 @@ void TestScene::Init(ObjectManager* mgr)
         for (int cnt = 0; cnt < OBSTACLEMAX; cnt++) {
 
             m_obstacles[cnt] = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(cnt), Tag::Object, this);
-            m_obstacles[cnt]->Init();
+            m_obstacles[cnt]->Awake();
 
             Transform tf = m_obstacles[cnt]->GetTransform();
 

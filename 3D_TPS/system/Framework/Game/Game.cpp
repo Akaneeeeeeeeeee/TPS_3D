@@ -144,6 +144,9 @@ void Game::Draw()
 	DebugUI::Render();
 #endif // _DEBUG
 
+	// 描画しきった後に切り替え確定
+	m_SceneManager.CommitSceneChange();
+	
 	// レンダリング後処理
 	//m_RenderManager.EndRender();
 	Renderer::End();

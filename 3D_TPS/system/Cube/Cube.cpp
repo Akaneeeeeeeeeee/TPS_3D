@@ -16,7 +16,7 @@ Cube::~Cube()
 {
 }
 
-void Cube::Init(void)
+void Cube::Awake(void)
 {
 	// ボックスメッシュの初期化(スケール準拠)
 	Vector3 scale = Vector3(100.0f, 100.0f, 100.0f);

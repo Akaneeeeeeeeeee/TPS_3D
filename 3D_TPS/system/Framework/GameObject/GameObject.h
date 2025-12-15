@@ -68,7 +68,10 @@ public:
 		Global   // シーンをまたいで残す
 	};
 
-	virtual void Init(void);
+	void AwakeOnce(void);
+	virtual void Awake(void);	// オブジェクト“単体”の準備。コンポーネント追加、メモリ確保、デフォルト値セットなど
+	void StartOnce(void);
+	virtual void Start(void);	// 他オブジェクト参照の解決、GetComponent / Find / 相互リンク、初回だけ行いたいセットアップ
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
@@ -114,7 +117,6 @@ public:
 		requires std::derived_from<T, IComponent>
 	bool RemoveComponent(T* component);
 
-	IComponent* GetComponent(const std::string& name) const;
 	void RemoveComponent(const std::string& name);
 	void FlushInitializeQueue(void);
 	void FlushDestroyComponents(void);
@@ -174,6 +176,11 @@ protected:
 
 	// オブジェクトが削除されているかどうか（trueなら削除済み）
 	bool m_IsDestroy = false;
+
+	// 初期化済みフラグ
+	bool m_AwakeDone = false;
+	// 開始処理済みフラグ
+	bool m_StartDone = false;
 	
 	//! オブジェクトの名前
 	std::string m_Name;

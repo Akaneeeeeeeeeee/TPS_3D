@@ -319,16 +319,15 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 
 	// メッシュを生成
 	auto terrain = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
-	terrain->Init();
 	//terrain->SetImage("assets/texture/Hole1.png");
+	
 	// スカイドーム生成
 	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Skydome);
-	skydome->Init();
 	skydome->SetTexture("assets/texture/haikei.jpg");
 
 	// ビルボード生成
 	auto billboard = m_pObjectManager->Instantiate<Billboard>("billboard", Tag::Item);
-	billboard->Init(300, 300, "assets/texture/emblem.png", &m_camera);
+	billboard->Awake(300, 300, "assets/texture/emblem.png", &m_camera);
 	billboard->SetPosition(Vector3(0, 150, 3000));
 
 	// Cube生成

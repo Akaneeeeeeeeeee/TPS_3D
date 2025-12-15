@@ -24,22 +24,6 @@ GameObject::GameObject(ComponentFactory* factory,
 
 }
 
-/*
-* @brief	コンポーネント取得
-* @detail	名前でコンポーネントを取得する
-* @param	name	コンポーネント名
-*/
-IComponent* GameObject::GetComponent(const std::string& name) const
-{
-	// コンポーネント探索
-	auto it = m_Components.find(name);
-	// 見つかったらポインタを返す
-	if (it != m_Components.end())
-	{
-		return it->second.get();
-	}
-	return nullptr;
-}
 
 void GameObject::RemoveComponent(const std::string& name)
 {
@@ -56,8 +40,8 @@ void GameObject::RemoveComponent(const std::string& name)
 		m_InitializeQueue.end()
 	);
 
-	comp->Detach();
 	comp->Uninit();
+	comp->Detach();
 	m_Components.erase(it);
 }
 
@@ -104,11 +88,26 @@ void GameObject::FlushDestroyComponents(void)
 	);
 }
 
-void GameObject::Init(void)
+void GameObject::AwakeOnce(void)
 {
-	// コンポーネントの初期化
-	FlushInitializeQueue();
+	if (m_AwakeDone) { return; }
+	m_AwakeDone = true;
+
+	Awake();                 // 派生の処理
+	FlushInitializeQueue();   // Awake中にAddComponentした分を必ずInitする
 }
+
+void GameObject::StartOnce(void)
+{
+	// Awake前にStartさせない
+	if (!m_AwakeDone) { return; }
+	if (m_StartDone) { return; }
+	m_StartDone = true;
+
+	Start();                 // 派生の処理
+	FlushInitializeQueue();  // Start中にAddComponentした分のInitも保証
+}
+
 
 void GameObject::Update(const float deltatime)
 {

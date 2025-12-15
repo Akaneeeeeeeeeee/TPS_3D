@@ -107,6 +107,8 @@ void CharacterVirtualComponent::Stop(void)
 {
 	// “ü—Í•ûŒü‚ğÁ‚·
 	m_MoveDir = Vector3::Zero;
+	// ˆÚ“®—Ê‚à 0 ‚É‚·‚é
+	m_MoveAmount = 0.0f;
 
 	// •¨—‘¤‚Ì‘¬“x‚à 0 ‚É‚·‚é
 	if (m_Character)

@@ -24,7 +24,7 @@ public:
 	}
 	~Goal() = default;
 
-	void Init(void) override;
+	void Awake(void) override;
 	void Update(const float delta) override;
 	void Draw(void) const override;
 	void Uninit(void) override;

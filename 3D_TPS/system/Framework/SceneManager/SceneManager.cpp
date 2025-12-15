@@ -95,6 +95,7 @@ void SceneManager::SwitchSceneCore(const std::string& next_scene_name)
 // 「演出なし」の即時切り替え専用
 void SceneManager::ChangeSceneImmediate(const std::string& next_scene_name)
 {
+	m_PendingCommit = false;
 	SwitchSceneCore(next_scene_name);
 
 	// 即時切り替えなので遷移状態はリセット
@@ -121,7 +122,7 @@ void SceneManager::RequestChangeScene(const std::string& next_scene_name,
 	// 演出がないなら即切り替え
 	if (!transition)
 	{
-		ChangeSceneImmediate(m_NextSceneName);
+		m_PendingCommit = true;
 		return;
 	}
 
@@ -146,12 +147,8 @@ void SceneManager::Update(float delta_time)
 		// フェードアウト完了など「今切り替えてほしい」タイミング
 		if (!m_SceneChangedInTransition && m_Transition->NeedsSceneChange())
 		{
-			// 真っ黒のタイミングでシーン切り替え
-			SwitchSceneCore(m_NextSceneName);
-
-			// トランジションに「切り替え済み」を伝える
-			m_Transition->OnSceneChanged();
-			m_SceneChangedInTransition = true;
+			// まだ切り替えず、Draw 後に切り替えるフラグを立てる
+			m_PendingCommit = true;
 		}
 
 		// フェードインまで含めて演出が完全に終わったらリセット
@@ -160,6 +157,7 @@ void SceneManager::Update(float delta_time)
 			m_Transition.reset();
 			m_IsSceneChanging = false;
 			m_SceneChangedInTransition = false;
+			m_PendingCommit = false;
 		}
 
 		return; // 遷移中は旧 or 新シーンの Update をここでは進めないなら return
@@ -214,4 +212,28 @@ void SceneManager::Uninit()
 	m_IsSceneChanging = false;
 	m_IsQuit = false;
 	m_pObjectManager = nullptr;
+}
+
+void SceneManager::CommitSceneChange(void)
+{
+	if (!m_IsSceneChanging) return;
+	if (!m_PendingCommit) return;
+
+	// ここで初めて切り替える（Draw後）
+	SwitchSceneCore(m_NextSceneName);
+
+	if (m_Transition)
+	{
+		m_Transition->OnSceneChanged();
+		m_SceneChangedInTransition = true;
+	}
+
+	// 演出なしの場合はここで遷移状態を終わらせる
+	if (!m_Transition)
+	{
+		m_IsSceneChanging = false;
+		m_SceneChangedInTransition = false;
+	}
+
+	m_PendingCommit = false;
 }

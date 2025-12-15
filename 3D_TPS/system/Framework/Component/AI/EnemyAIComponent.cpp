@@ -240,69 +240,65 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
 
     if (moveDir.LengthSquared() > 0.0001f)
     {
-        m_Char->SetMoveDir(moveDir);
+        // 正規化してセット
+        moveDir.Normalize();
+        m_Char->SetMoveInput(moveDir, 1.0f);
+        // キャラの向きも合わせる
         FaceMoveDir(moveDir);
     }
     else
     {
-        m_Char->SetMoveDir(Vector3::Zero);
+        m_Char->SetMoveInput(Vector3::Zero, 0.0f);
     }
 }
 
 void EnemyAIComponent::UpdateInvestigate(const float dt)
 {
     Vector3 pos = m_pOwner->GetPosition();
-    Vector3 toTarget = m_LastHeardPosition - pos;
-    float distSq = toTarget.LengthSquared();
 
-    // 1) まだ音源位置に到達していない → そこに向かって移動
+    // 未正規化：目標までの「距離」と「方向」を持ったまま
+    Vector3 desired = m_LastHeardPosition - pos;
+    float distSq = desired.LengthSquared();
+
+    // 1) まだ到達してない → 移動
     if (distSq > m_ArriveRadius * m_ArriveRadius)
     {
-        m_InvestigateTimer = 0.0f; // 移動中はタイマーリセット
+        m_InvestigateTimer = 0.0f;
 
-        toTarget.Normalize();
+        // ★追加：調査中でもスタック監視・解決
+        UpdateStuck(dt, desired);
 
-        Vector3 desiredDir = toTarget;
-        
         Vector3 moveDir = ComputeMoveDirToTarget(m_LastHeardPosition);
 
         if (moveDir.LengthSquared() > 0.0001f)
         {
-			// 正規化してセット
             moveDir.Normalize();
-            m_Char->SetMoveDir(moveDir);
-			// キャラの向きも合わせる
+            m_Char->SetMoveInput(moveDir, 1.0f);
             FaceMoveDir(moveDir);
         }
         else
         {
-            m_Char->SetMoveDir(Vector3::Zero);
+            m_Char->SetMoveInput(Vector3::Zero, 0.0f);
         }
-
         return;
     }
 
-    // 2) 音源位置付近に着いた → しばらく様子を見る
-    m_Char->SetMoveDir(Vector3::Zero);
-    m_InvestigateTimer += dt;
+    // 2) 到達した → 待機
+    m_Char->SetMoveInput(Vector3::Zero, 0.0f);
 
+    // 到達中はスタック扱いしない（距離履歴をリセット）
+    m_StuckTimer = 0.0f;
+    m_IsStuck = false;
+    m_HasLastDistToTarget = false;
+
+    m_InvestigateTimer += dt;
     if (m_InvestigateTimer >= m_InvestigateWaitTime)
     {
-        // 一定時間経過したら巡回に戻る
         m_InvestigateTimer = 0.0f;
-
-        if (!m_WayPoints.empty())
-        {
-            // 近いウェイポイントを探してそこから再開してもいいし、
-            // 今のインデックスのまま戻ってもいい
-            m_State = Patrol;
-        }
-        else
-        {
-            m_State = Idle;
-        }
+        m_State = m_WayPoints.empty() ? Idle : Patrol;
     }
 }
+
 
 // 追跡状態の更新(現状発見されたらゲームオーバーなので、追跡が必要になったら実装)
 void EnemyAIComponent::UpdateChase(const float deltatime)

@@ -5,7 +5,7 @@
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Physic/Rigidbody.h"
 
-void Goal::Init(void)
+void Goal::Awake(void)
 {
 	auto& am = AssetManager::GetInstance();
 	m_mesh = am.GetMesh<CStaticMesh>("goalmesh");

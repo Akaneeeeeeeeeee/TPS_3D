@@ -50,14 +50,13 @@ public:
 	*/
 	bool ChangeTag(const uint64_t _id, const Tag _newTag);
 
-	//void Init(ComponentFactory* _factory);
-	//void Init(ShaderManager* shaderMgr);
 	void Init(GameObjectFactory* factory);
 	void Update(const float deltatime);
 	void Draw(void) const;
 	void Uninit(void);
 
-	void FlushInitQueue(void);		// 新しく追加されたオブジェクトの初期化キューの消化
+	void FlushAwakeQueue(void);		// Awakeキューの消化
+	void FlushStartQueue(void);		// Startキューの消化
 	void FlushDestroyQueue(void);	// 削除キューの消化
 
 	void SetCurrentSceneName(const std::string& name) { m_CurrentSceneName = name; }
@@ -65,28 +64,18 @@ public:
 
 	void DestroySceneObjects(const std::string& sceneName);
 
-	//! DI
-	//void SetComponentFactory(ComponentFactory* _factory) { m_pComponentFactory = _factory; }
-	//void SetRenderManager(RenderManager* _renderManager) { m_pRenderManager = _renderManager; }
-	//void SetAssetManager(AssetManager* _assetManager) { m_pAssetManager = _assetManager; }
-
 private:
-	//EngineContext* m_Context;	//! エンジンコンテキストのポインタ(参照での保持にするとさらに一階層必要なためポインタで保持)
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
 	
 	GameObjectFactory* m_ObjectFactory;
-	std::string m_CurrentSceneName;		// 「今のシーン名」
-	//ComponentFactory* m_pComponentFactory = nullptr;	//! コンポーネントファクトリーへのポインタ
-	//RenderManager* m_pRenderManager = nullptr;			//! レンダーマネージャーへのポインタ
-	//ShaderManager* m_pShaderManager;			//! シェーダーマネージャーへのポインタ
-	//AssetManager* m_pAssetManager;				//! アセットマネージャーへのポインタ
-	
+	std::string m_CurrentSceneName;		// 「今のシーン名」	
 
 	std::vector<std::unique_ptr<GameObject>> m_pObjects;				//! オブジェクトのコンテナ(ここが所有権を持つ)
 	std::unordered_map<Tag, std::vector<GameObject*>> m_ObjectsByTag;	//! タグごとにオブジェクトを管理するためのmap
 	std::unordered_map<uint64_t, GameObject*> m_ObjectsByID;			//! IDごとにオブジェクトを管理するためのmap
 	std::unordered_map<std::string, GameObject*> m_ObjectsByName;		//! 名前ごとにオブジェクトを管理するためのmap
-	std::vector<GameObject*> m_PendingInitObjects;						//! 初期化待ちオブジェクトのコンテナ
+	std::vector<GameObject*> m_PendingAwake;							//! Awake待ちオブジェクトのコンテナ
+	std::vector<GameObject*> m_PendingStart;							//! Start待ちオブジェクトのコンテナ
 };
 
 
@@ -115,7 +104,7 @@ inline T* ObjectManager::Instantiate(const std::string& _Name, const Tag _Tag, A
 	m_ObjectsByName[_Name] = rawPtr;
 
 	// 初期化キューに積む
-	m_PendingInitObjects.push_back(rawPtr);
+	m_PendingAwake.push_back(rawPtr);
 
 	return static_cast<T*>(rawPtr);
 }

@@ -10,7 +10,7 @@
 
 #include "system/DebugUI.h"
 
-void Terrain::Init()
+void Terrain::Awake()
 {
     // メッシュ／レンダラー／シェーダー取得
 	auto& am = AssetManager::GetInstance();
@@ -34,8 +34,6 @@ void Terrain::Init()
 		col->SetMesh(*m_mesh);
         m_collider = col;
     }
-
-    GameObject::Init();
 
     // 必要ならデバッグ UI 登録
     //DebugUI::RedistDebugFunction([this]() { DebugImGui(); });

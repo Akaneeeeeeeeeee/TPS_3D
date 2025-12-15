@@ -8,7 +8,7 @@
 #include	"Framework/Component/Physic/Rigidbody.h"
 #include "system/DebugUI.h"
 
-void obstacle::Init()
+void obstacle::Awake()
 {
 	auto& am = AssetManager::GetInstance();
 	m_mesh = am.GetMesh<CStaticMesh>("obstaclebox");
@@ -25,8 +25,6 @@ void obstacle::Init()
     auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);
 	rb->SetBodyType(Rigidbody::Type::Static);
 	rb->SetObjectLayer(Layers::NON_MOVING);
-
-	GameObject::Init();
 
 	//DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
 }

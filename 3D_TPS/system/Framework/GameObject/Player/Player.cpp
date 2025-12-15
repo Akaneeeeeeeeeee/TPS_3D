@@ -11,6 +11,9 @@
 #include "system/meshmanager.h"
 #include "system/Framework/Component/Camera/CameraComponent.h"
 
+#include <algorithm> // std::clamp
+#include <cmath>     // std::sqrt, std::atan2, std::lerp
+
 namespace
 {
 	//============================
@@ -18,15 +21,15 @@ namespace
 	//============================
 
 	// プレイヤーカプセル（単位はあなたのワールド単位）
-	constexpr float PLAYER_CAPSULE_HALFHEIGHT = 60.0f; // カプセル高さ(半分)
-	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f; // カプセル半径
+	constexpr float PLAYER_CAPSULE_HALF_HEIGHT = 60.0f; // カプセル高さ(半分)
+	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f;      // カプセル半径
 
 	// 足元基準にしたい場合のコライダー起点オフセット（現状未使用なら消してOK）
 	constexpr Vector3 PLAYER_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
 
 	// 姿勢ごとの移動速度係数（現状 CharacterVirtualComponent 側で係数管理しているなら未使用）
-	constexpr float CROUCH_MOVESPEED_FACTOR = 0.5f;
-	constexpr float PRONE_MOVESPEED_FACTOR = 0.25f;
+	constexpr float CROUCH_MOVE_SPEED_FACTOR = 0.5f;
+	constexpr float PRONE_MOVE_SPEED_FACTOR = 0.25f;
 
 	// よく使うベクトル
 	constexpr Vector3 WORLD_UP = Vector3(0.0f, 1.0f, 0.0f);
@@ -42,14 +45,14 @@ namespace
 	constexpr float MOVE_AMOUNT_TO_IDLE = 0.05f;
 
 	// Walk / Run の切替閾値（0..1）
-	constexpr float MOVE_AMOUNT_WALK_TO_RUN = 0.60f;
+	constexpr float MOVE_AMOUNT_WALK_TO_RUN = 0.9f;
 
 	//============================
 	// Player: アニメ遷移 / 再生速度
 	//============================
 
 	// クリップ切替時の補間時間（秒）
-	constexpr float ANIM_BLEND_TIME_SEC = 0.10f;
+	constexpr float ANIM_BLEND_TIME_SEC = 0.15f;
 
 	// 待機時の再生速度
 	constexpr float ANIM_SPEED_IDLE = 1.0f;
@@ -86,6 +89,29 @@ namespace
 	constexpr float LANDING_LOUDNESS_MIN = 0.50f;
 	constexpr float LANDING_LOUDNESS_MAX = 2.00f;
 
+	// ---- 速度に応じて足音の「強さ/届く範囲」を変えるためのパラメータ ----
+	// ※ここは実測値に合わせて調整する。初期値は仮（推測です）
+	// horizontalSpeed が FOOTSTEP_SPEED_MIN のとき最小、FOOTSTEP_SPEED_MAX で最大になる。
+	constexpr float FOOTSTEP_SPEED_MIN = 60.0f;   // (推測です) 歩き時の水平速度の目安
+	constexpr float FOOTSTEP_SPEED_MAX = 250.0f;  // (推測です) 走り時の水平速度の目安
+
+	// 速度が遅い時/速い時の Loudness 係数（AIに聞こえる強さ & 実再生音量に使う）
+	constexpr float FOOTSTEP_SPEED_LOUDNESS_SCALE_MIN = 0.60f;
+	constexpr float FOOTSTEP_SPEED_LOUDNESS_SCALE_MAX = 1.60f;
+
+	// 速度で半径も変えたい場合
+	constexpr float FOOTSTEP_SPEED_RADIUS_SCALE_MIN = 0.80f;
+	constexpr float FOOTSTEP_SPEED_RADIUS_SCALE_MAX = 1.30f;
+
+	// 0..1 に正規化（範囲外はクランプ）
+	inline float REMAP_01_CLAMP(float v, float inMin, float inMax)
+	{
+		const float denom = (inMax - inMin);
+		if (denom <= 1e-6f) return 0.0f;
+		const float t = (v - inMin) / denom;
+		return std::clamp(t, 0.0f, 1.0f);
+	}
+
 	//============================
 	// Player: TPS カメラ
 	//============================
@@ -94,7 +120,7 @@ namespace
 	constexpr float CAMERA_RADIUS = 800.0f;
 
 	// 注視点をプレイヤー位置からどれだけ上にずらすか（ユニット）
-	constexpr float CAMERA_LOOKAT_HEIGHT = 100.0f;
+	constexpr float CAMERA_LOOK_AT_HEIGHT = 100.0f;
 
 	// マウス感度（ラジアン/マウス移動量）
 	constexpr float CAMERA_MOUSE_SENSITIVITY = 0.005f;
@@ -184,12 +210,12 @@ void Player::Init(void)
 	this->m_MoveSpeed = 10.0f;
 	this->m_AnimationSpeed = 1.0f;
 
-
 	// 移動制御用コンポーネントを追加
 	{
 		m_pCharaVirtualComp = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
-		m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALFHEIGHT, PLAYER_CAPSULE_RADIUS);
+		m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALF_HEIGHT, PLAYER_CAPSULE_RADIUS);
 	}
+
 	// TPS カメラコンポーネント追加
 	{
 		m_pCamera = this->AddComponent<CameraComponent>(m_Name + "_CameraComponent");
@@ -274,7 +300,6 @@ void Player::Update(const float deltatime)
 
 	// ---- 4) CharacterVirtual に入力を渡す ----
 	// 方向 + 量を渡すことで「スティック倒し具合に応じた速度」が作れる
-	// ※ CharacterVirtualComponent 側に SetMoveInput(dir, amount) を追加する必要あり
 	if (m_pCharaVirtualComp)
 	{
 		m_pCharaVirtualComp->SetMoveInput(move_dir, amount);
@@ -352,12 +377,32 @@ void Player::Update(const float deltatime)
 			{
 				m_FootstepTimer = 0.0f;
 
-				// 足音の WorldSoundEvent を飛ばす
+				// ---- 速度から「音の大きさ/届く範囲係数」を作る ----
+				// horizontalSpeed: CharacterVirtual から取った実測の水平速度
+				// speed01: FOOTSTEP_SPEED_MIN～MAX を 0..1 に押し込める
+				const float speed01 = REMAP_01_CLAMP(horizontalSpeed, FOOTSTEP_SPEED_MIN, FOOTSTEP_SPEED_MAX);
+
+				// 速度が遅いほど小さく、速いほど大きく
+				const float speedLoudnessScale =
+					std::lerp(FOOTSTEP_SPEED_LOUDNESS_SCALE_MIN, FOOTSTEP_SPEED_LOUDNESS_SCALE_MAX, speed01);
+
+				// 半径も速度で変える
+				const float speedRadiusScale =
+					std::lerp(FOOTSTEP_SPEED_RADIUS_SCALE_MIN, FOOTSTEP_SPEED_RADIUS_SCALE_MAX, speed01);
+
+				// ---- 足音の WorldSoundEvent を飛ばす ----
 				WorldSoundEvent ev{};
 				ev.Position = GetPosition();
-				ev.Radius = FOOTSTEP_BASE_RADIUS * kRadius;
-				ev.Loudness = FOOTSTEP_BASE_LOUDNESS * kLoudness;
-				ev.Volume = 1.0f;
+
+				// 届く範囲：基準 * 姿勢係数 * 速度係数
+				ev.Radius = FOOTSTEP_BASE_RADIUS * kRadius * speedRadiusScale;
+
+				// AIが感じる強さ：基準 * 姿勢係数 * 速度係数
+				ev.Loudness = FOOTSTEP_BASE_LOUDNESS * kLoudness * speedLoudnessScale;
+
+				// 実際の再生音量も連動（不要なら固定 1.0f でもよい）
+				ev.Volume = 1.0f * speedLoudnessScale;
+
 				ev.Type = SoundType::Footstep;
 				SoundManager::GetInstance().EmitSound(ev);
 			}
@@ -389,7 +434,7 @@ void Player::Update(const float deltatime)
 					LANDING_LOUDNESS_MIN,
 					LANDING_LOUDNESS_MAX
 				);
-				ev.Type = SoundType::Footstep; // 着地専用種別を作ってもいい
+				ev.Type = SoundType::Footstep;
 
 				SoundManager::GetInstance().EmitSound(ev);
 			}
@@ -435,7 +480,7 @@ void Player::Update(const float deltatime)
 
 		// TPS なのでカメラはプレイヤーから一定距離離れる
 		Vector3 lookAt = pos;
-		lookAt.y += CAMERA_LOOKAT_HEIGHT;  // 注視点を少し上にずらす
+		lookAt.y += CAMERA_LOOK_AT_HEIGHT;  // 注視点を少し上にずらす
 		m_pCamera->SetLookAt(lookAt);
 	}
 }
