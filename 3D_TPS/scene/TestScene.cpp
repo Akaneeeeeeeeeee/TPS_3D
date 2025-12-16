@@ -500,7 +500,6 @@ void TestScene::Init(ObjectManager* mgr)
             auto player = m_pObjectManager->GetObjectByName<Player>("player");
 
             m_enemies[cnt] = m_pObjectManager->Instantiate<Enemy>("Enemy" + std::to_string(cnt), Tag::Enemy, player);
-            m_enemies[cnt]->Init();
 
             Transform tf = m_enemies[cnt]->GetTransform();
 

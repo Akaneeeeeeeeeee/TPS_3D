@@ -131,12 +131,9 @@ void CollisionTestScene::debugFieldRemake() {
 		m_field->setwidth(width);
 		m_field->setdividex(dividex);
 		m_field->setdividez(dividez);
-
-		m_field->Awake();
 	}
 
 	ImGui::End();
-
 }
 
 // フィールドに凸凹にする
@@ -342,8 +339,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
 	}
 
-	m_pObjectManager->FlushInitQueue();
-
 	// デバッグ Free Camera
 	DebugUI::RedistDebugFunction([this]() {
 		debugFreeCamera();
@@ -465,5 +460,4 @@ void CollisionTestScene::RebuildEnemies()
 	ClearEnemies();
 	int spawnCount = m_MultiEnemy ? m_MultiCount : 1;
 	SpawnEnemies(spawnCount);
-	m_pObjectManager->FlushInitQueue();
 }

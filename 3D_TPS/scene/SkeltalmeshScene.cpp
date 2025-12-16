@@ -306,13 +306,11 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
 
 	// ƒvƒŒƒCƒ„[¶¬
 	auto player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	player->Init();
 
 	// “G¶¬
 	for (size_t i = 0; i < m_pEnemies.size(); i++)
 	{
 		auto enemy = m_pObjectManager->Instantiate<Enemy>("enemy" + std::to_string(i), Tag::Enemy);
-		enemy->Init();
 	}
 
 	//m_pObjectManager->CreateObject<Character>("testcharacter");

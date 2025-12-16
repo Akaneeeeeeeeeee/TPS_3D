@@ -24,7 +24,8 @@ public:
 		const Transform& transform = Transform::One());
 	~Enemy();
 
-	void Init(void) override;
+	void Awake(void) override;
+	void Start(void) override;
 	void Update(const float deltatime) override;
 	void Draw(void) const override;
 	void Uninit(void) override;

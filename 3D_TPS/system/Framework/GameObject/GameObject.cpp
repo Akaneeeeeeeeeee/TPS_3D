@@ -105,7 +105,6 @@ void GameObject::StartOnce(void)
 	m_StartDone = true;
 
 	Start();                 // 派生の処理
-	FlushInitializeQueue();  // Start中にAddComponentした分のInitも保証
 }
 
 

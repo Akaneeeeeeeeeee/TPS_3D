@@ -55,9 +55,10 @@ public:
 	void Draw(void) const;
 	void Uninit(void);
 
-	void FlushAwakeQueue(void);		// Awakeキューの消化
-	void FlushStartQueue(void);		// Startキューの消化
-	void FlushDestroyQueue(void);	// 削除キューの消化
+	void FlushAwakeQueue(void);				// Awakeキューの消化
+	void FlushStartQueue(void);				// Startキューの消化
+	void FlushDestroyQueue(void);			// 削除キューの消化(ここでのみ破棄を行う)
+	void RequestDestroy(GameObject* obj);	// オブジェクト破棄リクエスト
 
 	void SetCurrentSceneName(const std::string& name) { m_CurrentSceneName = name; }
 	const std::string& GetCurrentSceneName(void) const { return m_CurrentSceneName; }

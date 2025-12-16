@@ -170,7 +170,7 @@ Player::~Player()
 {
 }
 
-void Player::Init(void)
+void Player::Awake(void)
 {
 	auto& am = AssetManager::GetInstance();
 
@@ -178,9 +178,6 @@ void Player::Init(void)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	// 2) メッシュとシェーダ設定
-	//CAnimationMesh* mesh = am.GetAnimationMesh("maincharacter");
-	//CAnimationMesh* mesh = am.GetAnimationMesh("character");
-	//CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
 	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
 
 	m_pAnimComp->SetMesh(mesh);
@@ -223,6 +220,20 @@ void Player::Init(void)
 		// 必要なら初期パラメータを調整
 		m_pCamera->SetRadius(CAMERA_RADIUS);
 	}
+}
+
+void Player::Start(void)
+{
+	// 初期アニメを確定
+	if (m_pAnimComp)
+	{
+		m_pAnimComp->Play(AnimType::Idle, ANIM_BLEND_TIME_SEC);
+		m_pAnimComp->SetPlaybackSpeed(ANIM_SPEED_IDLE);
+	}
+
+	// 足音系の初期化（Updateで使う状態）
+	m_FootstepTimer = 0.0f;
+	m_WasOnGround = (m_pCharaVirtualComp) ? m_pCharaVirtualComp->IsOnGround() : false;
 }
 
 // プレイヤー更新

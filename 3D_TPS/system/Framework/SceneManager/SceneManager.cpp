@@ -98,6 +98,12 @@ void SceneManager::ChangeSceneImmediate(const std::string& next_scene_name)
 	m_PendingCommit = false;
 	SwitchSceneCore(next_scene_name);
 
+	if(m_pObjectManager)
+	{
+		m_pObjectManager->FlushAwakeQueue();
+		m_pObjectManager->FlushStartQueue();
+	}
+
 	// 即時切り替えなので遷移状態はリセット
 	m_IsSceneChanging = false;
 	m_SceneChangedInTransition = false;
@@ -221,6 +227,13 @@ void SceneManager::CommitSceneChange(void)
 
 	// ここで初めて切り替える（Draw後）
 	SwitchSceneCore(m_NextSceneName);
+
+	// 新シーンのオブジェクト初期化キューを消化
+	if (m_pObjectManager)
+	{
+		m_pObjectManager->FlushAwakeQueue();
+		m_pObjectManager->FlushStartQueue();
+	}
 
 	if (m_Transition)
 	{

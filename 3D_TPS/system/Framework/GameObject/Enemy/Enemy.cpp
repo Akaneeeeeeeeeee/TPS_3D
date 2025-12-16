@@ -33,7 +33,7 @@ Enemy::~Enemy()
 }
 
 
-void Enemy::Init(void)
+void Enemy::Awake(void)
 {
 	auto& am = AssetManager::GetInstance();
 	auto& rng = RandomEngine::tls();
@@ -41,15 +41,32 @@ void Enemy::Init(void)
 	// 1) 見た目・アニメ周りの初期化
 	InitAnimation(am);
 
-	// 2) 地形に沿った巡回点の決定
-	InitPatrolPoints(rng);
-
-	// 3) 物理・AI・聴覚コンポーネントの初期化
+	// 2) 物理・AI・聴覚コンポーネントの初期化
 	InitComponents();
 
 	DebugUI::RedistDebugFunction([this]() {
 		DebugImGui();
 		});
+}
+
+void Enemy::Start(void)
+{
+	// 3) 巡回点の初期化
+	auto& rng = RandomEngine::tls();
+	InitPatrolPoints(rng);
+
+	// AIに巡回点を反映
+	if (m_AIComp)
+	{
+		std::vector<Vector3> waypoints;
+		waypoints.reserve(2);
+		waypoints.push_back(m_StartPos);
+		waypoints.push_back(m_EndPos);
+		m_AIComp->SetWayPoints(waypoints);
+
+		// TerrainCollider が Start 時点で取れるならここで再設定してもいい
+		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
+	}
 }
 
 // ----------------------------------------
@@ -66,11 +83,6 @@ void Enemy::InitAnimation(AssetManager& am)
 
 	CShader* shader = am.GetShader<CShader>("animshader");
 	m_pAnimComp->SetShader(shader);
-	//CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
-	//m_pAnimComp->SetMesh(mesh);
-
-	//CShader* shader = MeshManager::getShader<CShader>("animshader");
-	//m_pAnimComp->SetShader(shader);
 
 	// クリップ取得
 	auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
@@ -110,14 +122,14 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//	return;
 	//}
 
-	//// StaticMeshCollider から AABB と高さサンプルを取る
-	//m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
-	//if (!m_pTerrainCollider)
-	//{
-	//	SetDefaultPatrol();
-	//	m_Transform.SetPosition(m_StartPos);
-	//	return;
-	//}
+	// StaticMeshCollider から AABB と高さサンプルを取る
+	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
+	if (!m_pTerrainCollider)
+	{
+		SetDefaultPatrol();
+		m_Transform.SetPosition(m_StartPos);
+		return;
+	}
 
 	//Vector3 xzMin, xzMax;
 	//if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))

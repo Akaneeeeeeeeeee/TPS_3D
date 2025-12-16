@@ -34,7 +34,7 @@ public:
 	};
 	virtual ~Character() {};
 
-	virtual void Init(void);
+	virtual void Awake(void);
 	virtual void Update(const float deltatime) override;
 	virtual void Draw(void) const override;
 	virtual void Uninit(void);

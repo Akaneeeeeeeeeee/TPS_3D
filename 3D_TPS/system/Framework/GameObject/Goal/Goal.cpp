@@ -27,8 +27,6 @@ void Goal::Awake(void)
 		rb->SetBodyType(Rigidbody::Static);
 		rb->SetObjectLayer(Layers::NON_MOVING);
 	}
-
-	GameObject::Init();
 }
 
 void Goal::Update(const float delta)

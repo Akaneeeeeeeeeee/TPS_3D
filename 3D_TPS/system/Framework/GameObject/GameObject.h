@@ -69,9 +69,9 @@ public:
 	};
 
 	void AwakeOnce(void);
-	virtual void Awake(void);	// オブジェクト“単体”の準備。コンポーネント追加、メモリ確保、デフォルト値セットなど
+	virtual void Awake(void) {};	// オブジェクト“単体”の準備。コンポーネント追加、メモリ確保、デフォルト値セットなど
 	void StartOnce(void);
-	virtual void Start(void);	// 他オブジェクト参照の解決、GetComponent / Find / 相互リンク、初回だけ行いたいセットアップ
+	virtual void Start(void) {};	// 他オブジェクト参照の解決、GetComponent / Find / 相互リンク、初回だけ行いたいセットアップ
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
@@ -142,6 +142,7 @@ public:
 	void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
 	uint64_t GetID(void) const { return m_ID; }
 	std::string GetName(void) const { return m_Name; }
+
 	bool IsActive(void) const { return m_IsActive; }
 	void SetActive(const bool isActive) { m_IsActive = isActive; }
 	bool IsDestroy(void) const { return m_IsDestroy; }
