@@ -135,7 +135,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 
 	// プレイヤー追加
 	m_Player = m_pObjectManager->Instantiate<TitlePlayerActor>("PlayerActor", Tag::Player);
-	m_Player->SetPosition(Vector3(-300.0f, 10.0f, -100.0f));
+	m_Player->SetPosition(Vector3(1920.0f, 148.0f, -3500.0f));
 
 	// スカイドーム
 	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
@@ -143,7 +143,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 
 	// 天候オブジェクト
 	m_Weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
-	m_Weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	m_Weather->SetPosition(Vector3(1920.0f, 750.0f, -3500.0f));
 
 	// 敵追加
 	m_Enemy = m_pObjectManager->Instantiate<Enemy>("Enemy", Tag::Enemy);

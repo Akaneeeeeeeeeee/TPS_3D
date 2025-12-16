@@ -76,9 +76,9 @@ void Game::Init(void)
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーンマネージャの初期化
-	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
 	//m_SceneManager.Init(&m_ObjectManager, "TitleScene");
-	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);

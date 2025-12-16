@@ -65,24 +65,23 @@ void TitlePlayerActor::Awake(void)
 	// カメラ追加
 	m_pCamera = this->AddComponent<CameraComponent>("TitleCameraComponent");
 	m_pCamera->SetPosition(Vector3(500.0f, 100.0f, -750.0f));
-	m_pCamera->SetLookAt(Vector3::Zero);
+	m_pCamera->SetLookAt(this->GetPosition());
 
-	// タイトル用プレイヤー位置（例）
-	Vector3 p = Vector3::Zero;
 
 	// どこを見るか：プレイヤーより少し高い（頭より上）
-	Vector3 look = p + Vector3(0.0f, 225.0f, 0.0f);
+	Vector3 look = this->GetPosition();
+	look.y = 275.0f;
 
 	// 低い位置から、少し離れて見上げる
 	m_pCamera->SetLookAt(look);
-	m_pCamera->SetRadius(900.0f);
+	m_pCamera->SetRadius(1000.0f);
 
 	// 重要：-110° など「-90°より下」にする（見上げが作れる）
 	m_pCamera->SetElevation(DirectX::XMConvertToRadians(-105.0f));
 
 	// 方位角：後ろから撮る → 90° 
 	// zがマイナス側に出る
-	m_pCamera->SetAzimuth(DirectX::XMConvertToRadians(90.0f));
+	m_pCamera->SetAzimuth(DirectX::XMConvertToRadians(25.0f));
 
 	// CharacterVirtual 必須（地形当たり判定のため）
 	m_pCharaVirtualComp = AddComponent<CharacterVirtualComponent>("TitleCharacterVirtualComponent");
