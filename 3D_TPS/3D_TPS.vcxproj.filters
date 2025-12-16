@@ -558,6 +558,12 @@
     <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
       <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
     </ClInclude>
+    <ClInclude Include="scene\AnimatedTitleScene.h">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Player\TitlePlayerActor.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -850,6 +856,12 @@
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\CharacterContactListener.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\AnimatedTitleScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Player\TitlePlayerActor.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

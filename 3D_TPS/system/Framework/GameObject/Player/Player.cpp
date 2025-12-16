@@ -20,7 +20,7 @@ namespace
 	// Player: 形状 / 初期設定
 	//============================
 
-	// プレイヤーカプセル（単位はあなたのワールド単位）
+	// プレイヤーカプセル
 	constexpr float PLAYER_CAPSULE_HALF_HEIGHT = 60.0f; // カプセル高さ(半分)
 	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f;      // カプセル半径
 

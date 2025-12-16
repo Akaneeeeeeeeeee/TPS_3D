@@ -29,7 +29,7 @@ protected:
 	//IScene(ObjectManager& _Mgr) : m_ObjectManagerRef(_Mgr){};
 	//ObjectManager& m_ObjectManagerRef;		// オブジェクト管理クラスへのポインタ
 	ObjectManager* m_pObjectManager = nullptr;	// オブジェクト管理クラスへのポインタ
-	std::string m_NextSceneName;
-	bool ChangeScene = false;						// シーン切り替えフラグ
+	std::string m_NextSceneName;				// 次シーンの名前
+	bool ChangeScene = false;					// シーン切り替えフラグ
 };
 

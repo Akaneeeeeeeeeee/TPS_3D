@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="fpscontrol.h" />
+    <ClInclude Include="scene\AnimatedTitleScene.h" />
     <ClInclude Include="scene\CollisionTestScene.h" />
     <ClInclude Include="scene\ResultScene.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -211,6 +212,7 @@
     <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Player\TitlePlayerActor.h" />
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
@@ -334,6 +336,7 @@
     <ClInclude Include="system\utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="scene\AnimatedTitleScene.cpp" />
     <ClCompile Include="scene\CollisionTestScene.cpp" />
     <ClCompile Include="scene\ResultScene.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -413,6 +416,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
+    <ClCompile Include="system\Framework\GameObject\Player\TitlePlayerActor.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
     <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
