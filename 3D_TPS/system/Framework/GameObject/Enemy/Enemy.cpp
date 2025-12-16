@@ -33,7 +33,7 @@ Enemy::~Enemy()
 }
 
 
-void Enemy::Init(void)
+void Enemy::Awake(void)
 {
 	auto& am = AssetManager::GetInstance();
 	auto& rng = RandomEngine::tls();
@@ -41,15 +41,32 @@ void Enemy::Init(void)
 	// 1) 見た目・アニメ周りの初期化
 	InitAnimation(am);
 
-	// 2) 地形に沿った巡回点の決定
-	InitPatrolPoints(rng);
-
-	// 3) 物理・AI・聴覚コンポーネントの初期化
+	// 2) 物理・AI・聴覚コンポーネントの初期化
 	InitComponents();
 
 	DebugUI::RedistDebugFunction([this]() {
 		DebugImGui();
 		});
+}
+
+void Enemy::Start(void)
+{
+	// 3) 巡回点の初期化
+	auto& rng = RandomEngine::tls();
+	InitPatrolPoints(rng);
+
+	// AIに巡回点を反映
+	if (m_AIComp)
+	{
+		std::vector<Vector3> waypoints;
+		waypoints.reserve(2);
+		waypoints.push_back(m_StartPos);
+		waypoints.push_back(m_EndPos);
+		m_AIComp->SetWayPoints(waypoints);
+
+		// TerrainCollider が Start 時点で取れるならここで再設定してもいい
+		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
+	}
 }
 
 // ----------------------------------------
@@ -61,18 +78,23 @@ void Enemy::InitAnimation(AssetManager& am)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	// メッシュ・シェーダ設定
-	CAnimationMesh* mesh = am.GetAnimationMesh("Akai");
+	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
 	m_pAnimComp->SetMesh(mesh);
 
-	CShader* shader = MeshManager::getShader<CShader>("animshader");
+	CShader* shader = am.GetShader<CShader>("animshader");
 	m_pAnimComp->SetShader(shader);
 
 	// クリップ取得
-	auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
-	auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
+	auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
+	auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
+	auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
+	auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
+	//auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	//auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+	//auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
+	//auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
+	//auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
 
 	// 種類ごとに登録
 	m_pAnimComp->SetClip(AnimType::Idle, idle);
@@ -100,14 +122,14 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//	return;
 	//}
 
-	//// StaticMeshCollider から AABB と高さサンプルを取る
+	// StaticMeshCollider から AABB と高さサンプルを取る
 	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
-	//if (!m_pTerrainCollider)
-	//{
-	//	SetDefaultPatrol();
-	//	m_Transform.SetPosition(m_StartPos);
-	//	return;
-	//}
+	if (!m_pTerrainCollider)
+	{
+		SetDefaultPatrol();
+		m_Transform.SetPosition(m_StartPos);
+		return;
+	}
 
 	//Vector3 xzMin, xzMax;
 	//if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
@@ -125,7 +147,7 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	//	};
 
 	//constexpr int   MAX_TRY = 16;
-	//constexpr float HEIGHT_OFFSET = 5.0f;
+	//constexpr float HEIGHT_OFFSET = 75.0f;
 
 	//bool ok = false;
 	//for (int i = 0; i < MAX_TRY && !ok; ++i)
@@ -159,13 +181,6 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 // ----------------------------------------
 void Enemy::InitComponents()
 {
-	// CharacterVirtualComponent
-	{
-		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
-		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
-		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
-	}
-
 	// EnemyAIComponent
 	{
 		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
@@ -183,6 +198,13 @@ void Enemy::InitComponents()
 		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
 	}
 
+	// CharacterVirtualComponent
+	{
+		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
+		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
+		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
+	}
+	
 	// EnemyHearingComponent
 	{
 		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
@@ -243,7 +265,7 @@ void Enemy::Update(const float deltatime)
 	// ==============================
 	if (m_AIComp && m_AIComp->IsFound())
 	{
-		OnFoundPlayer();      // ★ ここで m_GameOverTriggered が true になる
+		OnFoundPlayer();      // ここで m_GameOverTriggered が true になる
 		// このフレームの残り処理はそのまま進むが、
 		// 次フレームからは上の if(m_GameOverTriggered) で止まる
 	}

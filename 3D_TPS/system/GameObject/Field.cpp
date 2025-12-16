@@ -88,7 +88,7 @@ void Field::CreateIndexCW() {
 	}
 }
 
-void Field::Init() {
+void Field::Awake() {
 
 	// 頂点データ作成
 	CreateVertexXZ();

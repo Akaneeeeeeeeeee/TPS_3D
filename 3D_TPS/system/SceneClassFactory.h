@@ -3,9 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
-
-// 前方宣言
-class IScene;
+#include "Framework/Scene/IScene.h"
 
 /**
  * @brief シーンのクラスを名前で登録・生成するためのファクトリクラス

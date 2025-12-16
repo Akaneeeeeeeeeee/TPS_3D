@@ -8,11 +8,15 @@
 #include	"Framework/Component/Physic/Rigidbody.h"
 #include "system/DebugUI.h"
 
-void obstacle::Init()
+void obstacle::Awake()
 {
-	m_mesh = MeshManager::getMesh<CStaticMesh>("obstaclebox");
-	m_shader = MeshManager::getShader<CShader>("unlightshader");
-	m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
+	auto& am = AssetManager::GetInstance();
+	m_mesh = am.GetMesh<CStaticMesh>("obstaclebox");
+	m_shader = am.GetShader<CShader>("unlightshader");
+	m_meshrenderer = am.GetMeshRenderer<CStaticMeshRenderer>("obstaclebox");
+	//m_mesh = MeshManager::getMesh<CStaticMesh>("obstaclebox");
+	//m_shader = MeshManager::getShader<CShader>("unlightshader");
+	//m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
 
 	auto boxcollider = AddComponent<BoxCollider>("fallingboxcollider");
     boxcollider->SetHalfSize(Vector3(GetScale().x, GetScale().y, GetScale().z));
@@ -21,8 +25,6 @@ void obstacle::Init()
     auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);
 	rb->SetBodyType(Rigidbody::Type::Static);
 	rb->SetObjectLayer(Layers::NON_MOVING);
-
-	GameObject::Init();
 
 	//DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
 }

@@ -12,7 +12,7 @@ WeatherController::~WeatherController()
 {
 }
 
-void WeatherController::Init(void)
+void WeatherController::Awake(void)
 {
 	m_ParticleComp = AddComponent<ParticleComponent>("WeatherParticle");
 }

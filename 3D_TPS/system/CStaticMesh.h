@@ -12,6 +12,9 @@
 /// </summary>
 class CStaticMesh : public CMesh {
 public:
+	CStaticMesh() = default;
+	virtual ~CStaticMesh() = default;
+
 	void Load(std::string filename, std::string texturedirectory="");
 
 	const std::vector<MATERIAL>& GetMaterials() {

@@ -24,7 +24,8 @@ public:
 		const Transform& transform = Transform::One());
 	~Enemy();
 
-	void Init(void) override;
+	void Awake(void) override;
+	void Start(void) override;
 	void Update(const float deltatime) override;
 	void Draw(void) const override;
 	void Uninit(void) override;
@@ -33,6 +34,7 @@ public:
 	void SetTerrain(Terrain* terrain) { m_pTerrain = terrain; }
 
 	bool CanSeePlayer(const Vector3& playerPos) const;
+	bool IsGameOverTriggered(void) const { return m_GameOverTriggered; }
 	void DebugImGui(void);
 private:
 	void InitAnimation(AssetManager& am);

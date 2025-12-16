@@ -19,10 +19,6 @@ ResultScene::ResultScene() : IScene()
 {
 	m_NextSceneName = "TitleScene";
 }
-//ResultScene::ResultScene(ObjectManager& _Mgr) : IScene(_Mgr)
-//{
-//	m_NextSceneName = "TitleScene";
-//}
 
 /**
  * @brief クリアシーンの更新処理

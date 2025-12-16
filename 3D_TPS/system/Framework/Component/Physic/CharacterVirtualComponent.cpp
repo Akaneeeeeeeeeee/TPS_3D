@@ -107,6 +107,8 @@ void CharacterVirtualComponent::Stop(void)
 {
 	// “ü—Í•ûŒü‚ğÁ‚·
 	m_MoveDir = Vector3::Zero;
+	// ˆÚ“®—Ê‚à 0 ‚É‚·‚é
+	m_MoveAmount = 0.0f;
 
 	// •¨—‘¤‚Ì‘¬“x‚à 0 ‚É‚·‚é
 	if (m_Character)
@@ -159,17 +161,30 @@ void CharacterVirtualComponent::Init(void)
 		system
 	);
 
-	// InnerBodyID ‚ğT‚¦‚é
+	// InnerBodyID ‚ğ•Û‘¶
 	m_InnerBodyID = m_Character->GetInnerBodyID();
+
+	// InnerBody ‚É‚à GameObject* ‚ğ UserData ‚Æ‚µ‚Äİ’è
+	{
+		auto& bi = m_Physics->GetBodyInterface();
+		bi.SetUserData(
+			m_InnerBodyID,
+			reinterpret_cast<JPH::uint64>(m_pOwner)
+		);
+	}
+
+	// PhysicsManager ‚ª•Û‚µ‚Ä‚¢‚é CharacterContactListenerImpl ‚ğ“n‚·
+	m_Character->SetListener(
+		m_Physics->GetCharacterContactListener()
+	);
 
 	// p¨‚É‰‚¶‚ÄˆÚ“®‘¬“x‚ğİ’è
 	m_MoveSpeed = m_BaseMoveSpeed * GetMoveSpeedCoeff();
-
 }
 
 void CharacterVirtualComponent::Update(const float dt)
 {
-	if (!m_Physics || !m_Character) return;
+	if (!m_Physics || !m_Character) { return; }
 
 	using namespace JPH;
 
@@ -189,7 +204,9 @@ void CharacterVirtualComponent::Update(const float dt)
 	{
 		// ”O‚Ì‚½‚ß³‹K‰»
 		move_dir = move_dir.Normalized();
-		horizontal = move_dir * m_MoveSpeed;
+		// “|‚µ‹ï‡‚Å‘¬“x‚ğ•Ï‚¦‚é
+		const float targetSpeed = m_MoveSpeed * m_MoveAmount;
+		horizontal = move_dir * targetSpeed;
 	}
 	else
 	{

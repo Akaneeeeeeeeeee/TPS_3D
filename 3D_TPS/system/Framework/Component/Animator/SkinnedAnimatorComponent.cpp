@@ -59,7 +59,7 @@ void SkinnedAnimationComponent::Uninit(void)
 
 void SkinnedAnimationComponent::Draw() const
 {
-    if (!m_AnimObject) return;
+    if (!m_AnimObject) { return; }
 
     // シェーダセット
     m_pShader->SetGPU();

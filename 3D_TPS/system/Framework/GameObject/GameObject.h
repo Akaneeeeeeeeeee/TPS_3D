@@ -19,10 +19,21 @@ enum class Tag {
 	Enemy,			//! 敵
 	Object,			//! オブジェクト
 	Item,			//! アイテム
+	Goal,           //! ゴール
 	Light,			//! ライト
 	UI,				//! UI
 	Effect,			//! エフェクト
 };
+
+inline uint64_t ToUserData(GameObject* go)
+{
+	return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(go));
+}
+
+inline GameObject* FromUserData(uint64_t data)
+{
+	return reinterpret_cast<GameObject*>(static_cast<uintptr_t>(data));
+}
 
 /*
 * @brief	ゲームオブジェクトクラス
@@ -51,14 +62,39 @@ public:
 
 	virtual ~GameObject() = default;		//! デストラクタ
 
-	virtual void Init(void);
+	enum class Lifetime
+	{
+		Scene,   // シーン切り替え時に消す
+		Global   // シーンをまたいで残す
+	};
+
+	void AwakeOnce(void);
+	virtual void Awake(void) {};	// オブジェクト“単体”の準備。コンポーネント追加、メモリ確保、デフォルト値セットなど
+	void StartOnce(void);
+	virtual void Start(void) {};	// 他オブジェクト参照の解決、GetComponent / Find / 相互リンク、初回だけ行いたいセットアップ
 	virtual void Update(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
-	//virtual EngineContext& GetContext(void) { return m_Context; }
+
+	// 当たり判定イベント
+	virtual void OnCollisionEnter(GameObject& other) {}
+	virtual void OnCollisionStay(GameObject& other) {}
+	virtual void OnCollisionExit(GameObject& other) {}
+
+	virtual void OnTriggerEnter(GameObject& other) {}
+	virtual void OnTriggerStay(GameObject& other) {}
+	virtual void OnTriggerExit(GameObject& other) {}
+
+	virtual void OnCollisionCharacterEnter(GameObject& other) {}
+
+	void SetLifetime(Lifetime lt) { m_Lifetime = lt; }
+	Lifetime GetLifetime() const { return m_Lifetime; }
+
+	void SetOwnerScene(const std::string& name) { m_OwnerSceneName = name; }
+	const std::string& GetOwnerScene() const { return m_OwnerSceneName; }
 
 	//////////////////////////////////////////
-	//			コンポーネントの取り外し			//
+	//			コンポーネントの取り外し		//
 	//////////////////////////////////////////
 	template<typename T, typename ...Args>
 		requires std::derived_from<T, IComponent>
@@ -81,7 +117,6 @@ public:
 		requires std::derived_from<T, IComponent>
 	bool RemoveComponent(T* component);
 
-	IComponent* GetComponent(const std::string& name) const;
 	void RemoveComponent(const std::string& name);
 	void FlushInitializeQueue(void);
 	void FlushDestroyComponents(void);
@@ -107,6 +142,7 @@ public:
 	void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
 	uint64_t GetID(void) const { return m_ID; }
 	std::string GetName(void) const { return m_Name; }
+
 	bool IsActive(void) const { return m_IsActive; }
 	void SetActive(const bool isActive) { m_IsActive = isActive; }
 	bool IsDestroy(void) const { return m_IsDestroy; }
@@ -130,11 +166,22 @@ protected:
 	//! タグ（オブジェクトの種類を示す）
 	Tag m_Tag = Tag::None;
 
+	// デフォルトは「シーン限定」
+	Lifetime    m_Lifetime = Lifetime::Scene;
+
+	// どのシーンが作ったか
+	std::string m_OwnerSceneName;
+
 	//! オブジェクトがアクティブかどうか（trueなら更新・描画する）
 	bool m_IsActive = true;
 
 	// オブジェクトが削除されているかどうか（trueなら削除済み）
 	bool m_IsDestroy = false;
+
+	// 初期化済みフラグ
+	bool m_AwakeDone = false;
+	// 開始処理済みフラグ
+	bool m_StartDone = false;
 	
 	//! オブジェクトの名前
 	std::string m_Name;

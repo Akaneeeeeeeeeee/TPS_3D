@@ -22,8 +22,8 @@ public:
 
 	virtual ~Billboard() { m_Sprite.Dispose(); }
 
-	void Init(void) override;
-	void Init(int width, int height, const std::string& texfilename, FreeCamera* cam);
+	void Awake(void) override;
+	void Awake(int width, int height, const std::string& texfilename, FreeCamera* cam);
 
 	void Update(const float deltatime) override;
 

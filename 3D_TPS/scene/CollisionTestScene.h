@@ -14,6 +14,7 @@
 #include "Framework/GameObject/Player/Player.h"
 #include "Framework/GameObject/Enemy/Enemy.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
+#include "Framework/GameObject/Goal/Goal.h"
 #include "GameObject/obstacle.h"
 
 /**
@@ -99,6 +100,11 @@ public:
 		return m_player;
 	}
 
+	void ClearEnemies(void);
+	bool MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used);
+	void RebuildEnemies(void);
+	void SpawnEnemies(int count);
+
 private:
 
 	/**
@@ -124,6 +130,8 @@ private:
 	*/
 	Player* m_player;		// プレイヤ
 
+	Goal* m_Goal;
+
 	/**
 	* @brief 敵群
 	*/
@@ -134,6 +142,17 @@ private:
 	*/
 	std::array<obstacle*, OBSTACLEMAX>	m_obstacles;	// 障害物
 
+	// CollisionTestScene.h 側
+	StaticMeshCollider* m_TerrainCol = nullptr;
+
+	bool m_MultiEnemy = false;
+	int  m_MultiCount = 4;
+	bool m_RequestRebuildEnemies = false;
+
+	int m_EnemyAliveCount = 0;
+
+	// 1体モードで出したい「元の座標」
+	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 210.0f, 750.0f);
 };
 
 REGISTER_SCENE(CollisionTestScene)

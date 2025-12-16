@@ -76,7 +76,8 @@ void Game::Init(void)
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーンマネージャの初期化
-	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	m_SceneManager.Init(&m_ObjectManager, "TitleScene");
+	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);
@@ -98,8 +99,7 @@ void Game::Update(const float deltatime)
 	SoundManager::GetInstance().BeginFrame();
 	m_pContext->Update(deltatime);
 
-	CDirectInput::GetInstance().GetKeyBuffer();		// キーボードの状態を取得
-	CDirectInput::GetInstance().GetMouseState();	// マウスの状態を取得
+	CDirectInput::GetInstance().Update();		// 入力状態を更新
 
 	// ゲーム終了フラグが立っていない場合
 	if (!m_SceneManager.GetIsQuit())
@@ -144,6 +144,9 @@ void Game::Draw()
 	DebugUI::Render();
 #endif // _DEBUG
 
+	// 描画しきった後に切り替え確定
+	m_SceneManager.CommitSceneChange();
+	
 	// レンダリング後処理
 	//m_RenderManager.EndRender();
 	Renderer::End();
@@ -158,6 +161,8 @@ void Game::Uninit(void)
 
 	// シーンマネージャの終了処理
 	m_SceneManager.Uninit();
+	// オブジェクトマネージャの終了処理
+	m_ObjectManager.Uninit();
 
 	// レンダラの終了処理
 	//m_RenderManager.Uninit();

@@ -67,7 +67,7 @@ private:
     // 投影パラメータ
     float m_FovY = DirectX::XMConvertToRadians(45.0f);
     float m_Near = 1.0f;
-    float m_Far = 10000.0f;
+    float m_Far = 100.0f;
     // カメラの基本情報
     Vector3 m_Position = Vector3::Zero; // カメラ位置
     Vector3 m_LookAt = Vector3::Zero;   // 注視点

@@ -21,7 +21,7 @@ public:
 		const Transform& transform = Transform::One());
 	~Rock();
 
-	void Init(void) override;
+	void Awake(void) override;
 	void Update(const float deltatime) override;
 	void Draw(void) const override;
 	void Uninit(void) override;

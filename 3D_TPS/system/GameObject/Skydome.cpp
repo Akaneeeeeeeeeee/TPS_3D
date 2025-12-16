@@ -11,7 +11,7 @@ Skydome::~Skydome()
 {
 }
 
-void Skydome::Init(void)
+void Skydome::Awake(void)
 {
     // ”¼Œa‘å‚«‚ß‚Ì‹…‘Ì‚ğì¬ (—á: ”¼Œa1000.0f)
     m_SphereMesh.Init(7500.0f, Color(1.0f, 1.0f, 1.0f, 1.0f), 320, 160);

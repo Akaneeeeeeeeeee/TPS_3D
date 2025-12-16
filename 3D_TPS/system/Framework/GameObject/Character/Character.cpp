@@ -2,7 +2,7 @@
 #include "system/Framework/AssetManager/AssetManager.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 
-void Character::Init(void)
+void Character::Awake(void)
 {
 	// キャラクターの初期化処理
 	// 例: モデルの読み込み、アニメーションの設定など

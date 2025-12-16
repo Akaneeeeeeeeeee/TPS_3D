@@ -34,18 +34,13 @@ public:
 	};
 	virtual ~Character() {};
 
-	virtual void Init(void);
+	virtual void Awake(void);
 	virtual void Update(const float deltatime) override;
 	virtual void Draw(void) const override;
 	virtual void Uninit(void);
 
 
 protected:
-	//CAnimationData* m_pAnimationData;
-	//CAnimationMesh* m_pAnimationMesh;
-	//std::unique_ptr<CAnimationObject> m_pAnimationObject;
-	//CShader m_Shader;
-
 	aiAnimation* m_pCurrentAnimation = nullptr;
 	AnimationState m_AnimState = AnimationState::Idle;
 

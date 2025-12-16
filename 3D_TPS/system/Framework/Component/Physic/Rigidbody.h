@@ -13,7 +13,7 @@
 class Rigidbody final : public PhysicsComponent
 {
 public:
-    Rigidbody(const float mass);
+    Rigidbody(const float mass = 1.0f);
     ~Rigidbody() override = default;
 
     enum Type {
@@ -44,6 +44,10 @@ public:
     void Update(const float dt) override;
     void Uninit(void) override;
 
+    // トリガー設定
+    void SetAsTrigger(bool flg) { m_IsTrigger = flg; }
+    bool IsTrigger(void) const { return m_IsTrigger; }
+
 	void SetBodyType(const Type type) { m_BodyType = type; }
 
 private:
@@ -51,4 +55,5 @@ private:
     float m_Mass = 1.0f;
     JPH::RefConst<JPH::Shape> mCompoundShape; // 最終Shapeの参照（単体でもCompoundでも）
     JPH::ObjectLayer m_ObjectLayer = Layers::MOVING; // デフォルトは MOVING
+    bool m_IsTrigger = false;
 };

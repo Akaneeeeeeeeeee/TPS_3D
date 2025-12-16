@@ -12,8 +12,8 @@
 using namespace JPH;
 
 Rigidbody::Rigidbody(const float mass)
-    : PhysicsComponent()
-    , m_Mass(mass)
+    : PhysicsComponent(),
+    m_Mass(mass)
 {
 }
 
@@ -71,99 +71,6 @@ void Rigidbody::Detach(void)
 {
     PhysicsComponent::Detach();
 }
-
-
-// Rigidbody
-//void Rigidbody::CreateBody(JPH::BodyInterface& bi)
-//{
-//    using namespace JPH;
-//
-//    // 1) コライダー収集（自分とコライダー以外は無視）
-//    std::vector<PhysicsComponent*> pcs;
-//    m_pOwner->GetComponents(pcs);
-//
-//    struct Part { RefConst<Shape> shape; RMat44 pose; };
-//    std::vector<Part> parts;
-//    parts.reserve(pcs.size());
-//
-//    for (auto* pc : pcs)
-//    {
-//        if (pc == this) continue;
-//        if (!pc->IsCollider()) continue;
-//
-//        if (auto s = pc->GetShape())
-//        {
-//            parts.push_back(Part{ s, pc->GetLocalPose() }); // local pose は Owner ローカル基準
-//        }
-//    }
-//
-//    if (parts.empty()) { OutputDebugStringA("No colliders.\n"); return; }
-//
-//    // 2) 最終 Shape を決定（単品 or コンパウンド）
-//    RefConst<Shape> final_shape;
-//    if (parts.size() == 1)
-//    {
-//        final_shape = parts[0].shape;
-//    }
-//    else
-//    {
-//        // パフォ重視：StaticCompound（子の追加削除は再構築で対応）
-//        StaticCompoundShapeSettings comp;
-//        for (auto& p : parts)
-//            comp.AddShape(p.pose.GetTranslation(), p.pose.GetQuaternion(), p.shape);
-//
-//        final_shape = comp.Create().Get();
-//    }
-//
-//    // 3) Body を新規作成 or 形状差し替え
-//    if (m_BodyID.IsInvalid())
-//    {
-//        BodyCreationSettings set(
-//            final_shape,
-//            RVec3(m_pOwner->GetPosition().x, m_pOwner->GetPosition().y, m_pOwner->GetPosition().z),
-//            Quat(m_pOwner->GetRotation().x, m_pOwner->GetRotation().y,
-//                m_pOwner->GetRotation().z, m_pOwner->GetRotation().w),
-//            ToJPHMotionType(m_BodyType),    // Static / Kinematic / Dynamic 変換関数
-//            Layers::MOVING                  // レイヤーは適宜
-//        );
-//
-//        if (m_BodyType == Type::Dynamic)
-//        {
-//            set.mOverrideMassProperties = EOverrideMassProperties::CalculateInertia;
-//            set.mMassPropertiesOverride.mMass = m_Mass; // ← 質量
-//        }
-//
-//        if (Body* body = bi.CreateBody(set))
-//        {
-//            m_BodyID = body->GetID();
-//            bi.AddBody(m_BodyID, EActivation::Activate);
-//        }
-//    }
-//    else
-//    {
-//        // 既存ボディ：形状を差し替えて活性化
-//        bi.SetShape(m_BodyID, final_shape, /*inUpdateMassProperties=*/true, EActivation::Activate);
-//
-//        // Dynamic のとき、質量を指定値に合わせ直す（任意だが実務では安定）
-//        if (m_BodyType == Type::Dynamic)
-//        {
-//            auto mp = final_shape->GetMassProperties();
-//            mp.ScaleToMass(m_Mass);
-//
-//            JPH::BodyLockWrite lock(m_Physics->GetSystem().GetBodyLockInterface(), m_BodyID);
-//            if (lock.Succeeded())
-//            {
-//                lock.GetBody().GetMotionProperties()
-//                    ->SetMassProperties(JPH::EAllowedDOFs::All, mp);
-//            }
-//        }
-//
-//        bi.ActivateBody(m_BodyID);
-//    }
-//
-//    // 4) 参照保持（寿命管理）
-//    mCompoundShape = final_shape;
-//}
 
 
 void Rigidbody::CreateBody(JPH::BodyInterface& bi)
@@ -255,6 +162,15 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
             set.mMassPropertiesOverride.mMass = m_Mass; // ← 質量
         }
 
+        // トリガーならセンサーに
+        if (m_IsTrigger)
+        {
+            set.mIsSensor = true;
+        }
+
+        // GameObject* を UserData に入れる
+        set.mUserData = reinterpret_cast<JPH::uint64>(m_pOwner);
+        
         if (Body* body = bi.CreateBody(set))
         {
             m_BodyID = body->GetID();
@@ -266,7 +182,7 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
         // 既存ボディ：形状差し替え
         bi.SetShape(m_BodyID, final_shape, true, EActivation::Activate);
 
-        // Dynamic のとき、質量を指定値に合わせ直す（任意だが実務では安定）
+        // Dynamic のとき、質量を指定値に合わせ直す
         if (m_BodyType == Type::Dynamic)
         {
             auto mp = final_shape->GetMassProperties();
@@ -275,8 +191,7 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
             BodyLockWrite lock(m_Physics->GetSystem().GetBodyLockInterface(), m_BodyID);
             if (lock.Succeeded())
             {
-                lock.GetBody().GetMotionProperties()
-                    ->SetMassProperties(EAllowedDOFs::All, mp);
+                lock.GetBody().GetMotionProperties()->SetMassProperties(EAllowedDOFs::All, mp);
             }
         }
 

@@ -363,9 +363,6 @@
     <ClInclude Include="system\Framework\SceneManager\Transition\FadeTransition.h">
       <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
-      <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Enemy\Enemy.h">
       <Filter>ソース ファイル\MyFramework\GameObject\Enemy</Filter>
     </ClInclude>
@@ -548,6 +545,18 @@
     </ClInclude>
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h">
       <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
+    </ClInclude>
+    <ClInclude Include="system\meshmanager.h">
+      <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\PhysicsSystem\CharacterContactListener.h">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
+      <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -832,6 +841,15 @@
     </ClCompile>
     <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
+    </ClCompile>
+    <ClCompile Include="system\meshmanager.cpp">
+      <Filter>ソース ファイル\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Goal\Goal.cpp">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\PhysicsSystem\CharacterContactListener.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

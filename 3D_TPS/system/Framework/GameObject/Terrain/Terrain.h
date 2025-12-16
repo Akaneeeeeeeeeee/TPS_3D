@@ -25,7 +25,7 @@ public:
     {
     }
 
-    void Init() override;
+    void Awake() override;
     void Update(const float delta) override;
     void Draw() const override;
     void Uninit() override;

@@ -9,14 +9,12 @@ using namespace DirectX;
 CameraComponent::CameraComponent()
     : m_Position(0.0f, 10.0f, -100.0f)
     , m_LookAt(0.0f, 10.0f, 0.0f)
-    , m_Up(0.0f, 1.0f, 0.0f)
-    // FreeCamera ÇÃèâä˙ílÇ…çáÇÌÇπÇÈ
     , m_Elevation(-90.0f * PI / 180.0f)
     , m_Azimuth(PI / 2.0f)
     , m_Radius(100.0f)
     , m_FovY(DirectX::XMConvertToRadians(45.0f))
     , m_Near(1.0f)
-    , m_Far(10000.0f)
+    , m_Far(100000.0f)
 {
     m_View = Matrix4x4::Identity;
     m_Proj = Matrix4x4::Identity;

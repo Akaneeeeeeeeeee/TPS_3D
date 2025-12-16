@@ -18,7 +18,7 @@ Rock::~Rock()
 	Uninit();
 }
 
-void Rock::Init(void)
+void Rock::Awake(void)
 {
 	m_Mesh = AssetManager::GetInstance().GetStaticMesh("Rock");
 	m_MeshRenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclerock");
