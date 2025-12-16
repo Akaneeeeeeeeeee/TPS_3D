@@ -413,7 +413,7 @@ void WeatherSystem::ApplyToLight()
 
 void WeatherSystem::Init(void)
 {
-	Box box(1.0f, 1.0f, 1.0f);
+	C3DShape::Init();
 	DebugUI::RedistDebugFunction([this]() { this->DebugImGui(); });
 }
 

@@ -10,6 +10,22 @@
 
 bool C3DShape::m_first = true;
 
+void C3DShape::Init()
+{
+    if (m_first) {
+        SphereDrawerInit();
+        SphereInstancedDrawerInit();
+        BoxDrawerInit();
+        CylinderDrawerInit();
+        ConeDrawerInit(true);
+        RainInstancedDrawerInit();
+        LineDrawerInit();
+        LineInstancedDrawerInit();
+        CapsuleDrawerInit();
+        m_first = false;
+    }
+}
+
 C3DShape::C3DShape() {
 
     if (m_first) {

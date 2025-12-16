@@ -279,7 +279,6 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 	m_terrain->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
 
-	//m_TerrainCol = m_terrain->GetComponent<StaticMeshCollider>(); // 取れる前提
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
@@ -379,9 +378,21 @@ void CollisionTestScene::ClearEnemies()
 	m_EnemyAliveCount = 0;
 }
 
-bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used) const
+bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used)
 {
-	if (!m_TerrainCol) return false;
+	// 地形コライダ取得
+	if (!m_TerrainCol)
+	{
+		auto terrainCol = m_terrain->GetComponent<StaticMeshCollider>();
+		if (terrainCol)
+		{
+			m_TerrainCol = terrainCol;
+		}
+		else
+		{
+			return false;
+		}
+	}
 
 	Vector3 xzMin, xzMax;
 	if (!m_TerrainCol->GetWorldXZBounds(xzMin, xzMax)) return false; // 既存前提（なければ固定範囲で代用）

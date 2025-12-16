@@ -101,7 +101,7 @@ public:
 	}
 
 	void ClearEnemies(void);
-	bool MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used) const;
+	bool MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used);
 	void RebuildEnemies(void);
 	void SpawnEnemies(int count);
 

@@ -98,6 +98,12 @@ void ObjectContactListener::OnContactRemoved(const JPH::SubShapeIDPair& pair)
     JPH::BodyLockRead lock1(system.GetBodyLockInterfaceNoLock(), pair.GetBody1ID());
     JPH::BodyLockRead lock2(system.GetBodyLockInterfaceNoLock(), pair.GetBody2ID());
 
+	// ê¨å˜ämîF
+    if(lock1.Succeeded() == false || lock2.Succeeded() == false)
+    {
+        return;
+	}
+
     const JPH::Body* body1 = &lock1.GetBody();
     const JPH::Body* body2 = &lock2.GetBody();
 
