@@ -45,6 +45,7 @@ public:
 	State GetState(void) const { return m_State; }
 
     void SetWayPoints(const std::vector<Vector3>& waypoints) { m_WayPoints = waypoints; }
+	const std::vector<Vector3>& GetWayPoints() const { return m_WayPoints; }
     void SetArriveRadius(float radius) { m_ArriveRadius = radius; }
     void SetRayLength(float length) { m_RayLength = length; }
     void SetAvoidWeight(float weight) { m_AvoidWeight = weight; }

@@ -3,6 +3,7 @@
 
 // 前方宣言
 class CharacterVirtualComponent;
+class Terrain;
 
 /*
 * @brief	タイトル用プレイヤークラス
@@ -52,12 +53,32 @@ public:
         Idle,
         Walk,
         Run,
+        CheckOverWall,
+        ThrowStone,
+    };
+
+    enum class FaceMode
+    {
+        FaceMoveDir,     // 移動方向に向く（従来）
+        FaceManualDir,   // m_FaceDir を使う
+        FaceTargetPos    // m_FaceTargetPos を見る
     };
 
     void SetAnim(TitleAnim a) { m_TargetAnim = a; }
 
     // 台本用：向きを進行方向へ向けたい/固定したい
-    void SetFaceMoveDir(bool v) { m_FaceMoveDir = v; }
+    //void SetFaceMoveDir(bool v) { m_FaceMoveDir = v; }
+
+	void SetTerrain(Terrain* terrain) { m_Terrain = terrain; }
+
+    // TitlePlayerActor.h
+    void SetMove(const Vector3& dir, float amount) { m_MoveDir = dir; m_MoveAmount = amount; }
+    void SetFaceMode(FaceMode m) { m_FaceMode = m; }
+    void SetFaceDir(const Vector3& dir) { m_FaceDir = dir; }
+    void SetFaceTargetPos(const Vector3& p) { m_FaceTargetPos = p; }
+    void SetTargetAnim(TitleAnim a) { m_TargetAnim = a; }
+    void SetSidewaysRight(bool v) { m_SidewaysRight = v; }
+
 
 private:
     // ---- 台本入力 ----
@@ -69,9 +90,17 @@ private:
     Quaternion m_TargetRot = Quaternion::Identity;
 
     CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
+    //Vector3  m_MoveDir = Vector3(0, 0, 1);   // 移動方向（ワールド）
+    //float    m_MoveAmount = 0.0f;             // 0..1
 
-    bool    m_FaceMoveDir = true;
+    FaceMode m_FaceMode = FaceMode::FaceMoveDir;
+    Vector3  m_FaceDir = Vector3(0, 0, 1);   // 体の向き（ワールド）
+    Vector3  m_FaceTargetPos = Vector3::Zero; // 見る位置（ワールド）
+
+    Vector3  m_LastMoveDir = Vector3(0, 0, 1);   // 停止中に向きが壊れないよう保持
+
     bool    m_IsCrouching = false;
+	bool    m_SidewaysRight = false;
 
     // ---- アニメ状態 ----
     TitleAnim m_TargetAnim = TitleAnim::Idle;
@@ -80,12 +109,16 @@ private:
     // 型はあなたの実装に合わせて（例：CAnimationData / aiAnimation 等）
     aiAnimation* m_Idle = nullptr;
     aiAnimation* m_CrouchWalk = nullptr;
-    aiAnimation* m_Walk = nullptr;
+    aiAnimation* m_CheckOverWall = nullptr;
     aiAnimation* m_Run = nullptr;
+    aiAnimation* m_CoveredCrouchWalk = nullptr;
+    aiAnimation* m_ThrowStone = nullptr;
 
 	CameraComponent* m_pCamera = nullptr;
+    Terrain* m_Terrain = nullptr;
 
 private:
     void ApplyAnimation(float dt);
     void ApplyMovement(float dt);
+    void SetupFixedTitleCamera(void);
 };

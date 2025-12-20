@@ -24,7 +24,6 @@ struct PerceptionEnv
 
 // ==============================
 // 天候タイプ・天候パラメータ
-// （ここは既存そのままでOK）
 // ==============================
 
 struct WeatherParticleParams

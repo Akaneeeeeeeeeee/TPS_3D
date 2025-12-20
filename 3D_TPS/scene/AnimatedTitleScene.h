@@ -19,6 +19,70 @@ namespace {
 	static constexpr uint32_t OBSTACLEMAX = 10;
 }
 
+
+
+// AnimatedTitleScene.h か .cpp 内に置いてOK（まずは）
+class TitleScript
+{
+public:
+	void Setup(TitlePlayerActor* player, Enemy* enemy, obstacle* cover);
+	void Tick(float dt);
+
+	bool IsFinished() const { return m_Finished; }
+
+private:
+	enum class State { 
+		EnterMove,
+		HideIdle,
+		LookAround,
+		ThrowRock,
+		ExitMove,
+		ReEnter,
+	};
+
+	TitlePlayerActor* m_Player = nullptr;
+	Enemy* m_Enemy = nullptr;
+	obstacle* m_Cover = nullptr;
+
+	State	m_State = State::EnterMove;
+	float	m_Timer = 0.0f;
+	bool	m_Finished = false;
+	bool	m_Thrown = false;
+	bool	m_Scanned = false;
+
+	Vector3 m_EnterPos{};
+	Vector3 m_HidePos{};
+	Vector3 m_ExitPos{};
+	Vector3 m_RockLandPos{};
+	Vector3 m_ReEnterSpawnPos = Vector3(1000.0f, 100.0f, -3350.0f);
+
+
+	void Enter(State next);
+
+	static Vector3 DirXZ(const Vector3& from, const Vector3& to);
+
+	bool ArrivedXZ(const Vector3& target, float r) const;
+
+	void MoveTo(const Vector3& target, bool run, bool sideways);
+
+	void StopIdle();
+
+	void FaceTo(const Vector3& targetPos);
+
+	void LookLeftRight(float dt);
+
+	bool IsEnemyNear(float dist) const;
+
+	void EmitRockSound(const Vector3& landPos);
+
+	void StopAndCheckOverWall(void);
+};
+
+
+
+
+
+
 /**
  * @brief スケルタルメッシュを表示する
  */
@@ -158,6 +222,9 @@ private:
 	Terrain* m_Terrain = nullptr;
 	StaticMeshCollider* m_TerrainCol = nullptr;
 
+	// ワールド変換行列
+	Matrix4x4 m_mtxWorld{};
+	
 	/**
 	* @brief 敵群
 	*/
@@ -169,6 +236,7 @@ private:
 	std::array<obstacle*, OBSTACLEMAX>	m_Obstacles;	// 障害物
 
 	bool m_WeatherChanged = false; // そのループで天候切替を実行したか
+	TitleScript m_TitleScript;          // 台本制御
 };
 
 REGISTER_SCENE(AnimatedTitleScene)

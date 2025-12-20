@@ -12,6 +12,11 @@ class CameraManager;
 class CameraComponent : public IComponent
 {
 public:
+    enum class Mode
+    {
+        Orbit,   // 今のやつ（LookAt + Radius/Elevation/Azimuth）
+        Direct   // Position/LookAt/Up をそのまま使う
+    };
     CameraComponent();
     ~CameraComponent() override = default;
 
@@ -39,6 +44,7 @@ public:
     float GetAzimuth()   const { return m_Azimuth; }    // 方位角[rad]
     float GetRadius()    const { return m_Radius; }     // 半径
 
+    void SetMode(Mode m) { m_Mode = m; }
     void SetElevation(float elevation) { m_Elevation = elevation; }
     void SetAzimuth(float azimuth) { m_Azimuth = azimuth; }
     void SetRadius(float radius) { m_Radius = radius; }
@@ -54,6 +60,7 @@ public:
     void ApplyCamera(void);
 
 private:
+    Mode m_Mode = Mode::Orbit;
     CameraManager* m_CameraManager = nullptr;
     
     // メインカメラか？

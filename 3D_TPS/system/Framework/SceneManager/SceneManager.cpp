@@ -65,6 +65,7 @@ void SceneManager::SwitchSceneCore(const std::string& next_scene_name)
 		if (m_pObjectManager)
 		{
 			m_pObjectManager->DestroySceneObjects(m_CurrentSceneName);
+			m_pObjectManager->FlushDestroyQueue();
 		}
 		m_CurrentScene.reset();
 	}

@@ -32,6 +32,12 @@ public:
 
 	void SetPlayer(Player* player) { m_pPlayer = player; }
 	void SetTerrain(Terrain* terrain) { m_pTerrain = terrain; }
+	void SetWayPoints(const Vector3& start, const Vector3& end)
+	{
+		m_StartPos = start;
+		m_EndPos = end;
+	}
+	void SetWayPoints(const std::vector<Vector3>& points);
 
 	bool CanSeePlayer(const Vector3& playerPos) const;
 	bool IsGameOverTriggered(void) const { return m_GameOverTriggered; }

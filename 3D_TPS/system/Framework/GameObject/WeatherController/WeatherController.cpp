@@ -12,9 +12,18 @@ WeatherController::~WeatherController()
 {
 }
 
+void WeatherController::SetSpawnAreaXZ(float halfWidth, float halfDepth)
+{
+	if (m_ParticleComp)
+	{
+		m_ParticleComp->SetSpawnAreaXZ(halfWidth, halfDepth);
+	}
+}
+
 void WeatherController::Awake(void)
 {
 	m_ParticleComp = AddComponent<ParticleComponent>("WeatherParticle");
+	//m_ParticleComp->SetSpawnAreaXZ(200000.0f, 200000.0f); // L‚¢”ÍˆÍ‚É¶¬
 }
 
 void WeatherController::Update(const float dt)

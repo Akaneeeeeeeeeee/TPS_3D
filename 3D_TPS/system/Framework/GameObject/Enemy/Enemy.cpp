@@ -32,6 +32,14 @@ Enemy::~Enemy()
 {
 }
 
+void Enemy::SetWayPoints(const std::vector<Vector3>& points)
+{
+	if (m_AIComp)
+	{
+		m_AIComp->SetWayPoints(points);
+	}
+}
+
 
 void Enemy::Awake(void)
 {
@@ -51,6 +59,13 @@ void Enemy::Awake(void)
 
 void Enemy::Start(void)
 {
+	// AIコンポーネントにプレイヤー・地形コライダをセット
+	m_AIComp->SetPlayer(m_pPlayer);
+	m_AIComp->SetTerrainCollider(m_pTerrainCollider);
+
+	// すでに巡回点が設定されている場合はスキップ
+	if (!m_AIComp->GetWayPoints().empty()) { return; }
+
 	// 3) 巡回点の初期化
 	auto& rng = RandomEngine::tls();
 	InitPatrolPoints(rng);
@@ -63,9 +78,6 @@ void Enemy::Start(void)
 		waypoints.push_back(m_StartPos);
 		waypoints.push_back(m_EndPos);
 		m_AIComp->SetWayPoints(waypoints);
-
-		// TerrainCollider が Start 時点で取れるならここで再設定してもいい
-		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
 	}
 }
 
@@ -185,6 +197,9 @@ void Enemy::InitComponents()
 	{
 		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
 
+		// すでに巡回点が設定されている場合はスキップ
+		if (!m_AIComp->GetWayPoints().empty()) { return; }
+
 		std::vector<Vector3> waypoints;
 		waypoints.reserve(2);
 		waypoints.push_back(m_StartPos);
@@ -194,8 +209,6 @@ void Enemy::InitComponents()
 		m_AIComp->SetRayLength(900.0f);
 		m_AIComp->SetAvoidWeight(1.5f);
 		m_AIComp->SetEyeHeight(80.0f);
-		m_AIComp->SetPlayer(m_pPlayer);
-		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
 	}
 
 	// CharacterVirtualComponent

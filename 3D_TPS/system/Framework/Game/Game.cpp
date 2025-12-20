@@ -80,7 +80,6 @@ void Game::Init(void)
 	//m_SceneManager.Init(&m_ObjectManager, "TitleScene");
 	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
-	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);
 
 	// デバッグ時のみ、デバッグUIの初期化

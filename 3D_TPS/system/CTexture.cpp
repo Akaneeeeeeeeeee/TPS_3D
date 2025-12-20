@@ -72,7 +72,7 @@ bool CTexture::Load(const std::string& filename)
 //	if (pixels == nullptr) {
 //		std::cout << filename.c_str() << " Load error " << std::endl;
 
-		// u8•¶Žš•¶Žš—ñ‚É@2025/7/12 by suzuki.tomoki
+		// u8•¶Žš•¶Žš—ñ‚É
 		std::u8string u8s(filename.begin(),filename.end());
 		sts = Load(u8s);
 		if (sts == false) {
