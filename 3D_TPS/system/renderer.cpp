@@ -9,6 +9,45 @@
 #include <stdexcept>
 #include "renderer.h"
 #include "system/Framework/Application/Application.h"
+#ifdef _DEBUG
+#include <d3d11sdklayers.h> // ID3D11InfoQueue, ID3D11Debug
+#pragma comment(lib, "dxguid.lib") // IID類で必要になることがある
+
+
+static void SetupD3D11InfoQueue(ID3D11Device* device)
+{
+	if (!device) return;
+
+	ID3D11InfoQueue* q = nullptr;
+	HRESULT hr = device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&q);
+	if (FAILED(hr) || !q) return;
+
+	// まず「壊れてる/エラー」は常に止める
+	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+
+	// 目的：Index buffer が足りない瞬間に止める
+	q->SetBreakOnID(D3D11_MESSAGE_ID_DEVICE_DRAW_INDEX_BUFFER_TOO_SMALL, TRUE);
+
+	// 任意：警告でも止めたいなら
+	// q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
+
+	q->Release();
+}
+
+static void ReportLiveD3DObjects(ID3D11Device* device)
+{
+	if (!device) return;
+
+	ID3D11Debug* dbg = nullptr;
+	if (SUCCEEDED(device->QueryInterface(__uuidof(ID3D11Debug), (void**)&dbg)) && dbg)
+	{
+		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+		dbg->Release();
+	}
+}
+#endif
+
 
  //------------------------------------------------------------------------------
  // スタティックメンバ変数の初期化
@@ -262,6 +301,11 @@ void Renderer::Init()
 	// 初期状態（0個）をGPUへ
 	m_SpotLightCB.Count = 0;
 	m_DeviceContext->UpdateSubresource(m_SpotLightBuffer.Get(), 0, nullptr, &m_SpotLightCB, 0, 0);
+
+	// デバッグ用情報キューのセットアップ
+#ifdef _DEBUG
+	SetupD3D11InfoQueue(Renderer::GetDevice());
+#endif
 }
 
 /**
@@ -273,6 +317,10 @@ void Renderer::Init()
  */
 void Renderer::Uninit()
 {
+#if _DEBUG
+	ReportLiveD3DObjects(Renderer::GetDevice());
+#endif
+
 	for (auto& bs : m_BlendState) {
 		bs.Reset();
 	}
@@ -563,3 +611,4 @@ void Renderer::SetSpotLights(const SpotLightGPU* lights, int count)
 	m_DeviceContext->VSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
 	m_DeviceContext->PSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
 }
+
