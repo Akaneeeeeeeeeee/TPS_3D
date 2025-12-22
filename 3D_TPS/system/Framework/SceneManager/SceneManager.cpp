@@ -3,6 +3,7 @@
 #include "system/Framework/Scene/IScene.h"
 #include "system/Framework/SceneManager/Transition/FadeTransition.h"
 #include "system/SceneClassFactory.h"
+#include "system/DebugUI.h"
 
 SceneManager::SceneManager()
 	: m_pObjectManager(nullptr),
@@ -29,6 +30,11 @@ void SceneManager::Init(ObjectManager* object_manager, const std::string& first_
 
 	// 最初の1シーンだけ作成
 	ChangeSceneImmediate(first_scene_name);
+
+#ifdef _DEBUG
+	DebugUI::RedistDebugFunction([this]() { this->DebugImGui(); });
+#endif
+
 }
 
 /*
@@ -251,3 +257,72 @@ void SceneManager::CommitSceneChange(void)
 
 	m_PendingCommit = false;
 }
+
+#ifdef _DEBUG
+
+void SceneManager::DebugImGui()
+{
+	if (!ImGui::Begin("Scene Manager"))
+	{
+		ImGui::End();
+		return;
+	}
+
+	ImGui::Text("Current: %s", m_CurrentSceneName.c_str());
+	ImGui::Text("Changing: %s", m_IsSceneChanging ? "true" : "false");
+
+	const auto& names = SceneClassFactory::GetInstance().GetRegisteredSceneNames();
+	if (names.empty())
+	{
+		ImGui::Text("No registered scenes.");
+		ImGui::End();
+		return;
+	}
+
+	// 現在シーンをデフォルト選択にする
+	static std::string selected;
+	if (selected.empty())
+		selected = m_CurrentSceneName.empty() ? names[0] : m_CurrentSceneName;
+
+	// 現在名が変わったら追従
+	if (!m_CurrentSceneName.empty() && selected != m_CurrentSceneName && !m_IsSceneChanging)
+	{
+		// 「ユーザーが選んだまま保持したい」ならこの if は消してOK
+	}
+
+	if (ImGui::BeginCombo("Next Scene", selected.c_str()))
+	{
+		for (const auto& n : names)
+		{
+			const bool isSelected = (selected == n);
+			if (ImGui::Selectable(n.c_str(), isSelected))
+				selected = n;
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
+	// 演出なし切替（Draw後に Commit で実行）
+	if (ImGui::Button("Change (No Transition)"))
+	{
+		if (!m_IsSceneChanging && !selected.empty() && selected != m_CurrentSceneName)
+		{
+			RequestChangeScene(selected, nullptr);
+		}
+	}
+
+	ImGui::SameLine();
+
+	// 同じシーンを作り直したい（リロード）
+	if (ImGui::Button("Reload"))
+	{
+		if (!m_IsSceneChanging && !m_CurrentSceneName.empty())
+		{
+			RequestChangeScene(m_CurrentSceneName, nullptr);
+		}
+	}
+
+	ImGui::End();
+}
+#endif

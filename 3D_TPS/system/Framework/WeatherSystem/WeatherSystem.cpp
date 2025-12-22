@@ -443,6 +443,8 @@ void WeatherSystem::Update(float dt)
 	// ---- 3) 知覚影響更新 ----
 	UpdatePerception();
 
+	UpdateDayNightState();
+
     // 将来的に Fog / Sky / PBR 用定数バッファもここで更新
 }
 
@@ -544,6 +546,55 @@ void WeatherSystem::DebugDrawRain() const
         rainColor);
 }
 
+
+void WeatherSystem::RegisterDayNightListener(IDayNightListener* l)
+{
+    if (!l) return;
+    for (auto* p : m_DayNightListeners)
+        if (p == l) return; // 二重登録防止
+    m_DayNightListeners.push_back(l);
+
+    // 登録直後に現状態を通知（初期状態が揃う）
+    l->OnDayNightChanged(m_IsNight);
+}
+
+void WeatherSystem::UnregisterDayNightListener(IDayNightListener* l)
+{
+    if (!l) return;
+    for (size_t i = 0; i < m_DayNightListeners.size(); ++i)
+    {
+        if (m_DayNightListeners[i] == l)
+        {
+            m_DayNightListeners[i] = m_DayNightListeners.back();
+            m_DayNightListeners.pop_back();
+            return;
+        }
+    }
+}
+
+bool WeatherSystem::ComputeIsNightByHour(float h) const
+{
+    const float on = m_NightOnHour;
+    const float off = m_NightOffHour;
+
+    // 例: 18 -> 6（日付またぎ）
+    if (on < off)
+        return (h >= on && h < off);
+    return (h >= on || h < off);
+}
+
+void WeatherSystem::UpdateDayNightState()
+{
+    const bool newIsNight = ComputeIsNightByHour(m_Sun.timeOfDayHours);
+    if (newIsNight == m_IsNight) return;
+
+    m_IsNight = newIsNight;
+
+    // 変化した瞬間だけ通知
+    for (auto* l : m_DayNightListeners)
+        if (l) l->OnDayNightChanged(m_IsNight);
+}
+
 // ==============================
 // デバッグ：太陽の可視化
 // ==============================
@@ -630,6 +681,14 @@ void WeatherSystem::DebugImGui()
     {
         // スライダーから直接変更したい場合
         m_Sun.timeOfDayHours = hours;
+
+        // ついでに太陽も即更新（見た目のズレ防止）
+        UpdateSunDirection();
+        UpdateSunColorAndIntensity();
+        ApplyToLight();
+
+        // ★街灯へ即通知
+        UpdateDayNightState();
     }
 
     // 1日の長さ（秒）

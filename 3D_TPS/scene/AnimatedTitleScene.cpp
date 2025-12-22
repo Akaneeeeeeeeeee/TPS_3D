@@ -17,6 +17,7 @@
 #include "system/GameObject/Skydome.h"
 #include "Framework/SoundManager/SoundManager.h"
 #include "Framework/WeatherSystem/WeatherSystem.h"
+#include "Framework/GameObject/StreetLight/StreetLight.h"
 
 // 指定方向ベクトルから Yaw 回転を求める（XZ平面投影、正規化済み前提）
 static Quaternion YawQuatFromDirXZ(const Vector3& dir)
@@ -184,6 +185,16 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	m_Obstacles[0]->SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Up, 0.75f));
 	m_Obstacles[0]->SetScale(Vector3(175.0f, 65.0f, 25.0f));
 
+	auto* lightObj = m_pObjectManager->Instantiate<StreetLight>("StreetLight", Tag::Light, Transform::One());
+	lightObj->SetPosition(Vector3(1900.0f, 100.0f, -3650.0f));
+	// 地面の明るい円半径を直接指定
+	lightObj->SetGroundCircle(
+		/*groundRadius=*/600.0f,
+		/*groundY=*/0.0f,
+		/*topRadiusMin=*/80.0f,   // 上面の“口径”を確保
+		/*innerRatio=*/0.6f       // 中心が強い範囲
+	);
+
 	// 台本セットアップ
 	m_TitleScript.Setup(m_Player, m_Enemy, m_Obstacles[0]);
 
@@ -205,12 +216,13 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 void AnimatedTitleScene::Uninit()
 {
 	//m_pObjectManager->DestroySceneObjects(m_CurrentSceneName);
-	this->ChangeScene = false;
+	this->SetChangeScene(false);
 }
 
 
-/////////////////////////////////////////////
-
+/*
+* @brief タイトル演出台本セットアップ
+*/
 void TitleScript::Setup(TitlePlayerActor* player, Enemy* enemy, obstacle* cover)
 {
 	m_Player = player;

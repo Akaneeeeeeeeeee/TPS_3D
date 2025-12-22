@@ -7,32 +7,37 @@
 class SoundManager : public Singleton<SoundManager>
 {
 public:
-	friend class Singleton<SoundManager>;
+    void BeginFrame()
+    {
+        m_Buffer.events.clear();
+    }
 
-	// フレーム頭で呼ぶ。今フレの音一覧をクリア
-	void BeginFrame()
-	{
-		m_Events.clear();
-	}
+    void EmitSound(const WorldSoundEvent& ev)
+    {
+        // 1) 知覚用に積む
+        m_Buffer.events.push_back(ev);
 
-	// 音イベントの追加
-	void EmitSound(const WorldSoundEvent& ev)
-	{
-		m_Events.push_back(ev);
+        // 2) 出力/演出
+        m_Output.OnEmit(ev);
+    }
 
-		// ここで実際のサウンド再生に繋いでもよい（必要なら）
-		// AudioSystem::Get().Play3DSound(ev.type, ev.position, ev.loudness);
-
-		// 波エフェクトへ通知
-		SoundWaveVisualizer::GetInstance().OnEmit(ev);
-	}
-
-	// 今フレーム発生した音の一覧
-	const std::vector<WorldSoundEvent>& GetEvents() const
-	{
-		return m_Events;
-	}
+    const std::vector<WorldSoundEvent>& GetEvents() const
+    {
+        return m_Buffer.events;
+    }
 
 private:
-	std::vector<WorldSoundEvent> m_Events;
+    struct Buffer
+    {
+        std::vector<WorldSoundEvent> events;
+    } m_Buffer;
+
+    struct Output
+    {
+        void OnEmit(const WorldSoundEvent& ev)
+        {
+            // AudioSystem::Get().Play3DSound(...);  // 必要なら
+            SoundWaveVisualizer::GetInstance().OnEmit(ev);
+        }
+    } m_Output;
 };

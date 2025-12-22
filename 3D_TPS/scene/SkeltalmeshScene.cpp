@@ -167,7 +167,7 @@ void SkeltalmeshScene::Update(const float deltatime)
 	// 入力確認
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
 	{
-		this->ChangeScene = true;
+		this->ChangeScene();
 	}
 
 	Matrix4x4 mtxscale = Matrix4x4::CreateScale(scale);
@@ -200,7 +200,7 @@ void SkeltalmeshScene::Update(const float deltatime)
 		// 見つかったらクリア状態に変更し、シーン遷移フラグを立てる
 		if(enemies[i]->CanSeePlayer(player->GetPosition()))
 		{
-			this->ChangeScene = true;
+			this->ChangeScene();
 			this->IsClear = false;
 		}
 	}
@@ -211,7 +211,7 @@ void SkeltalmeshScene::Update(const float deltatime)
 	// ビルボードの中心から一定範囲内にいればクリア
 	if((charaPos - billPos).Length() < 300.0f)
 	{
-		this->ChangeScene = true;
+		this->ChangeScene();
 		this->IsClear = true;
 	}
 }
@@ -367,5 +367,5 @@ void SkeltalmeshScene::Init(ObjectManager* _Mgr)
  */
 void SkeltalmeshScene::Uninit()
 {
-	this->ChangeScene = false;
+	this->SetChangeScene(false);
 }

@@ -29,7 +29,7 @@ public:
         auto comp = std::make_unique<T>(std::forward<Args>(args)...);
 
         comp->SetOwner(&owner);
-        comp->Attach(*m_pContext);   // ★ ここでコンテキストを渡す
+        comp->Attach(*m_pContext);   // ここでコンテキストを渡す
 
         return comp;
     }

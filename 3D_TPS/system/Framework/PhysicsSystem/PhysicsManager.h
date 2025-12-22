@@ -67,6 +67,16 @@ public:
     // キャラ用イベント(衝突時だけ)
 	void OnCharacterCollisionEnter(GameObject& a, GameObject& b);
 
+    // ignoreBody は不要なら省略できるようにしておく
+    bool RaycastClosest(
+        const Vector3& from, const Vector3& to,
+        JPH::RayCastResult& outHit,
+        const JPH::BodyID& ignoreBody = JPH::BodyID()) const;
+
+    bool IsOccluded(
+        const Vector3& from, const Vector3& to,
+        const JPH::BodyID& ignoreBody = JPH::BodyID()) const;
+
 private:
     JPH::PhysicsSystem m_System;
     std::unique_ptr<JPH::TempAllocatorImpl> m_TempAllocator;

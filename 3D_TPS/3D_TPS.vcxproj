@@ -190,6 +190,8 @@
     <ClInclude Include="system\Framework\Component\Animator\Animator.h" />
     <ClInclude Include="system\Framework\Component\Animator\SkinnedAnimatorComponent.h" />
     <ClInclude Include="system\Framework\Component\Camera\CameraComponent.h" />
+    <ClInclude Include="system\Framework\Component\DayNightObserver\DayNightObserver.h" />
+    <ClInclude Include="system\Framework\Component\Light\SpotLightComponent.h" />
     <ClInclude Include="system\Framework\Component\Particle\ParticleComponent.h" />
     <ClInclude Include="system\Framework\Component\Particle\ParticleEmitter.h" />
     <ClInclude Include="system\Framework\Component\Physic\BoxCollider.h">
@@ -207,15 +209,19 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Player\TitlePlayerActor.h" />
+    <ClInclude Include="system\Framework\GameObject\StreetLight\StreetLight.h" />
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
+    <ClInclude Include="system\Framework\LightSystem\LightSystem.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
+    <ClInclude Include="system\Framework\PerceptionManager\PerceptionManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\CharacterContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
@@ -385,6 +391,7 @@
     <ClCompile Include="system\Framework\Component\IComponent\IComponent.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Light\SpotLightComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Particle\ParticleComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Particle\ParticleEmitter.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\BoxCollider.cpp">
@@ -408,6 +415,7 @@
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Transform\Transform.cpp" />
     <ClCompile Include="system\Framework\GameObject\Character\Character.cpp" />
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
@@ -417,6 +425,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\GameObject\Player\Player.cpp" />
     <ClCompile Include="system\Framework\GameObject\Player\TitlePlayerActor.cpp" />
+    <ClCompile Include="system\Framework\GameObject\StreetLight\StreetLight.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
     <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
@@ -426,10 +435,12 @@
     <ClCompile Include="system\Framework\Graphics\RenderManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\LightSystem\LightSystem.cpp" />
     <ClCompile Include="system\Framework\Material\MyMaterial.cpp" />
     <ClCompile Include="system\Framework\ObjectManager\ObjectManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\PerceptionManager\PerceptionManager.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\CharacterContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\ObjectContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />

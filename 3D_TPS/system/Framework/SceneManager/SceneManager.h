@@ -49,6 +49,10 @@ public:
 	bool GetIsQuit(void) const { return m_IsQuit; }
 	void SetIsQuit(bool value) { m_IsQuit = value; }
 
+#if _DEBUG
+	// デバッグ用 ImGui 表示(シーン遷移など)
+	void DebugImGui(void);
+#endif // _DEBUG
 private:
 	// Factory を使ってシーンを生成して Init まで行う
 	// 重いロード処理を非同期にしたくなったらこの中だけに手を入れればよい

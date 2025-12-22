@@ -38,6 +38,11 @@ public:
      */
     void RegisterScene(const std::string& name, SceneCreatorFunc func)
     {
+        // 既に登録済みか確認（重複防止）
+        if (m_Registry.find(name) == m_Registry.end())
+        {
+            m_Names.push_back(name);
+        }
         m_Registry[name] = std::move(func);
     }
 
@@ -57,12 +62,25 @@ public:
         return it->second();
     }
 
+    /*
+	* @brief 登録されているシーン名の一覧を取得する
+    */
+    const std::vector<std::string>& GetRegisteredSceneNames() const
+    {
+        return m_Names;
+    }
+
 private:
 	SceneClassFactory() = default;
     /**
      * @brief クラス名と生成関数のマッピングテーブル
      */
     std::unordered_map<std::string, SceneCreatorFunc> m_Registry;
+
+    /**
+     * @brief 登録されたシーン名の一覧
+	 */
+    std::vector<std::string> m_Names;
 };
 
 /**

@@ -47,6 +47,26 @@ cbuffer BoneMatrixBuffer : register(b5)
     matrix BoneMatrix[MAX_BONE];
 }
 
+// スポットライト
+#define MAX_SPOT_LIGHT 8
+
+struct SpotLightGPU
+{
+    float4 Position;    // xyz: 位置, w: 1
+    float4 Direction;   // xyz: 向き(正規化), w: 0   ※ライトが向く方向
+    float4 Color;       // rgb: 色, a: 未使用
+    float4 Params1;     // x: range, y: innerCos, z: outerCos, w: intensity
+    float4 Params2;     // x: enabled(1/0), yzw: 予備
+};
+
+cbuffer SpotLightBuffer : register(b6)
+{
+    SpotLightGPU SpotLights[MAX_SPOT_LIGHT];
+    int SpotCount;
+    float3 _SpotPad; // 16byte合わせ
+}
+
+
 struct VS_IN
 {
 	float4 Position		: POSITION0;
@@ -70,6 +90,9 @@ struct PS_IN
 	float4 Position		: SV_POSITION;
 	float4 Diffuse		: COLOR0;
 	float2 TexCoord		: TEXCOORD0;
+    
+    float3 WorldPos : TEXCOORD1;
+    float3 NormalW : TEXCOORD2;
 };
 
 // 3x3 逆行列を計算する関数

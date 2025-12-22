@@ -16,10 +16,10 @@ enum class WeatherType {
 };
 
 // 知覚影響パラメータ
-struct PerceptionEnv
+struct PerceptionFactors
 {
-    float visibility = 1.0f; // 視認性 (0～1)
-    float hearing = 1.0f; // 聴こえやすさ (0～1)
+    float visibility = 1.0f;    // 視認性 (0～1)
+    float hearing = 1.0f;       // 聴こえやすさ (0～1)
 };
 
 // ==============================
@@ -141,6 +141,15 @@ inline WeatherParticleParams MakePreset(WeatherType type)
     return p;
 }
 
+// ==============================
+// 昼夜変化リスナーインターフェース
+// ==============================
+struct IDayNightListener
+{
+    virtual ~IDayNightListener() = default;
+    virtual void OnDayNightChanged(bool isNight) = 0;
+};
+
 // 前方宣言
 class ParticleComponent;
 
@@ -160,6 +169,18 @@ public:
     void Register(ParticleComponent* comp);
     void Unregister(ParticleComponent* comp);
 
+	// ---- 昼夜変化リスナー登録 ----
+    void RegisterDayNightListener(IDayNightListener* l);
+    void UnregisterDayNightListener(IDayNightListener* l);
+
+    bool IsNight() const { return m_IsNight; }
+
+    void SetNightHours(float onHour, float offHour)
+    {
+        m_NightOnHour = onHour;
+        m_NightOffHour = offHour;
+    }
+
     // ---- 天候指定（transitionSec 秒かけて補間） ----
     void SetWeather(WeatherType type, float transitionSec);
     WeatherType GetWeather() const { return m_CurrentWeather; }
@@ -172,6 +193,7 @@ public:
 
     // 1 日の長さを変更（秒）
     void SetDayLength(float sec) { m_Sun.dayLengthSec = sec; }
+	float GetDayLength() const { return m_Sun.dayLengthSec; }
 
     void Init(void);
 
@@ -192,7 +214,7 @@ public:
         proj = projMatrix;
     }
 
-    PerceptionEnv GetPerceptionEnv() const { return m_Perception; }
+    const PerceptionFactors& GetPerceptionFactors(void) const { return m_Perception; }
     float GetVisibilityFactor() const { return m_Perception.visibility; }
     float GetHearingFactor() const { return m_Perception.hearing; }
 
@@ -234,11 +256,20 @@ private:
     std::vector<ParticleComponent*> m_ParticleComponents;
 
     SunState      m_Sun;
-    PerceptionEnv m_Perception{};
+    PerceptionFactors m_Perception{};
 
     Matrix4x4 view = Matrix4x4::Identity;
     Matrix4x4 proj = Matrix4x4::Identity;
 
     // 天候専用の乱数
     RandomEngine m_Rng;
+
+    bool  m_IsNight = false;
+    float m_NightOnHour = 18.0f;
+    float m_NightOffHour = 6.0f;
+
+    std::vector<IDayNightListener*> m_DayNightListeners;
+
+    bool ComputeIsNightByHour(float hours) const;
+    void UpdateDayNightState(); // Update内で呼ぶ
 };
