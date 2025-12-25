@@ -127,8 +127,6 @@ void AnimatedTitleScene::Draw(void)
 		Color(0, 1, 1, 1)
 	};
 
-	
-
 	Vector3 sp;
 	sp = m_Player->GetTransform().GetPosition();
 	sp.y -= 500.0f;

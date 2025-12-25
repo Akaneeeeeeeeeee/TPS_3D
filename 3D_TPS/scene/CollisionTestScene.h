@@ -152,7 +152,7 @@ private:
 	int m_EnemyAliveCount = 0;
 
 	// 1体モードで出したい「元の座標」
-	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 210.0f, 750.0f);
+	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 210.0f, 1750.0f);
 };
 
 REGISTER_SCENE(CollisionTestScene)

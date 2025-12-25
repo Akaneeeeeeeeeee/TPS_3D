@@ -21,6 +21,8 @@
 #include "Framework/Component/Physic/CapsuleCollider.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "commontypes.h"
+#include "Framework/Time/Time.h"
+#include "Framework/GameObject/StreetLight/StreetLight.h"
 
 namespace {
 	// worldTime（0..24） / dayLengthSeconds（現実何秒で1日回すか）/ timeScale（ゲーム内全体倍率）
@@ -319,23 +321,27 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		}
 		
 		// 障害物
-		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
-		// 落下テスト用
-		//obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
-		//obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
-		obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
-		obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
-		m_obstacles[0] = obstacleObj;
+		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
+		//// 落下テスト用
+		////obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
+		////obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
+		//obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
+		//obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
+		//m_obstacles[0] = obstacleObj;
 
 		// 敵
-		//auto enemyObj = m_pObjectManager->Instantiate<Enemy>("Enemy_" + std::to_string(0), Tag::Enemy);
-		//enemyObj->SetPosition(Vector3(-300.0f, 210.0f, 750.0f));
-		//enemyObj->SetPlayer(m_player);
-		//enemyObj->SetTerrain(m_terrain);
-		//// 配列に保持
-		//m_enemies[0] = enemyObj;
-
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
+
+		// 街灯
+		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight1", Tag::Object);
+		streetLight->SetPosition(Vector3(-300.0f, 400.0f, -100.0f));
+		// 地面の明るい円半径を直接指定
+		streetLight->SetGroundCircle(
+			/*groundRadius=*/600.0f,
+			/*groundY=*/0.0f,
+			/*topRadiusMin=*/80.0f,   // 上面の“口径”を確保
+			/*innerRatio=*/0.6f       // 中心が強い範囲
+		);
 	}
 
 	// デバッグ Free Camera
@@ -365,6 +371,7 @@ void CollisionTestScene::Init(ObjectManager* mgr)
  */
 void CollisionTestScene::Uninit()
 {
+	Time::GetInstance().SetTimeScale(1.0f);
 }
 
 void CollisionTestScene::ClearEnemies()
@@ -401,7 +408,7 @@ bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<V
 
 	constexpr int   MAX_TRY = 32;
 	constexpr float HEIGHT_OFFSET = 5.0f;
-	constexpr float MIN_SEP = 200.0f; // 敵同士の最低距離（好み）
+	constexpr float MIN_SEP = 200.0f; // 敵同士の最低距離
 
 	for (int t = 0; t < MAX_TRY; ++t)
 	{

@@ -199,7 +199,7 @@ bool PhysicsManager::RaycastClosest(
     const float lenSq = d.LengthSquared();
     if (lenSq < 1e-6f) return false;
 
-    // ★RRayCast の origin は RVec3 にしておく（Joltの想定）
+    // RRayCast の origin は RVec3 にしておく（Joltの想定）
     const JPH::RVec3 origin(from.x, from.y, from.z);
     const JPH::Vec3  direction(d.x, d.y, d.z); // 長さ込み（from->to）
 

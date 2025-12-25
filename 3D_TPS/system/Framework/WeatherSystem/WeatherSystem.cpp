@@ -618,9 +618,9 @@ void WeatherSystem::DebugDrawSun() const
     // 太陽の色は SunState の色・強さを使用
     Color sunColor = m_Sun.lightColor * m_Sun.lightIntensity;
 
-    Renderer::SetDepthEnable(false);
+    //Renderer::SetDepthEnable(false);
     SphereDrawerDraw(world, sunColor);
-    Renderer::SetDepthEnable(true);
+    //Renderer::SetDepthEnable(true);
 }
 
 void WeatherSystem::DebugDrawSand() const

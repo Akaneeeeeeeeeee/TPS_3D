@@ -4,6 +4,7 @@
 #include "system/Framework/SceneManager/Transition/FadeTransition.h"
 #include "system/SceneClassFactory.h"
 #include "system/DebugUI.h"
+#include "Framework/Time/Time.h"
 
 SceneManager::SceneManager()
 	: m_pObjectManager(nullptr),
@@ -229,8 +230,8 @@ void SceneManager::Uninit()
 
 void SceneManager::CommitSceneChange(void)
 {
-	if (!m_IsSceneChanging) return;
-	if (!m_PendingCommit) return;
+	if (!m_IsSceneChanging) { return; }
+	if (!m_PendingCommit) { return; }
 
 	// ここで初めて切り替える（Draw後）
 	SwitchSceneCore(m_NextSceneName);
@@ -308,6 +309,7 @@ void SceneManager::DebugImGui()
 	{
 		if (!m_IsSceneChanging && !selected.empty() && selected != m_CurrentSceneName)
 		{
+			Time::GetInstance().SetTimeScale(1.0f);
 			RequestChangeScene(selected, nullptr);
 		}
 	}

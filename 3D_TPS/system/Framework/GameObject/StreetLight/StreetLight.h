@@ -24,17 +24,6 @@ public:
     {
     }
 
-    StreetLight(ComponentFactory* factory,
-        const uint64_t id,
-        const std::string& name = "",
-        const Tag tag = Tag::Light,
-        const Vector3& pos = Vector3::Zero,
-        const Quaternion& rot = Quaternion::Identity,
-        const Vector3& scale = Vector3::One)
-        : GameObject(factory, id, name, tag, pos, rot, scale)
-    {
-    }
-
     // GameObjectライフサイクル
     void Awake() override;
     void Start() override;
