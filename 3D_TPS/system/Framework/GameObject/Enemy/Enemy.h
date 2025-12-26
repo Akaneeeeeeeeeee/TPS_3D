@@ -1,5 +1,6 @@
 #pragma once
 #include "system/Framework/GameObject/Character/Character.h"
+#include "Framework/Component/AI/EnemyAIComponent.h"
 
 // 前方宣言
 class Player;
@@ -68,6 +69,8 @@ private:
 		SurprisedTurn,
 	};
 	FacingState m_FacingState = FacingState::Normal;
+	EnemyAIComponent::State m_PrevAIState;
+
 	// すでにゲームオーバー処理を走らせたかどうか
 	bool        m_GameOverTriggered = false;
 };

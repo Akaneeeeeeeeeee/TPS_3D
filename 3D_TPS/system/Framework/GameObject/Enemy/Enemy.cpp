@@ -103,6 +103,7 @@ void Enemy::InitAnimation(AssetManager& am)
 	auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
 	auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
 	auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
+	auto* lookaround = am.GetAnimationData<CAnimationData>("LookAround")->GetAnimation("LookAround", 0);
 	//auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
 	//auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
 	//auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
@@ -115,6 +116,7 @@ void Enemy::InitAnimation(AssetManager& am)
 	m_pAnimComp->SetClip(AnimType::Run, run);
 	m_pAnimComp->SetClip(AnimType::Surprise_RightTurn, right);
 	m_pAnimComp->SetClip(AnimType::Surprise_LeftTurn, left);
+	m_pAnimComp->SetClip(AnimType::LookAround, lookaround);
 }
 
 // ----------------------------------------
@@ -252,12 +254,13 @@ void Enemy::Update(const float deltatime)
 	GameObject::Update(deltatime);
 
 	// 2) 今フレーム「音を聞いた」通知が AI に入っていれば、驚きアニメ開始
+	bool startedSoundTurn = false;
 	if (m_AIComp)
 	{
 		Vector3 heardPos;
 		if (m_AIComp->ConsumeHeardSoundPosition(heardPos))
 		{
-			TryStartSurpriseTurn(heardPos);
+			startedSoundTurn = TryStartSurpriseTurn(heardPos);
 		}
 	}
 
@@ -283,17 +286,30 @@ void Enemy::Update(const float deltatime)
 	// ==============================
 	if (m_pAnimComp)
 	{
-		if (aiState == EnemyAIComponent::State::Caution && m_AIComp)
+		// ---- Caution（怪しんでる） ----
+		if (aiState == EnemyAIComponent::State::Caution)
 		{
+			// ★Cautionに入った瞬間（視覚の可能性が高い）に LookAround を開始
+			if (m_PrevAIState != EnemyAIComponent::State::Caution)
+			{
+				if (!startedSoundTurn)
+				{
+					m_pAnimComp->Play(AnimType::LookAround, 0.1f);
+				}
+			}
+
 			if (m_AIComp->IsInCautionTurnPhase())
 			{
-				// 振り向きアニメを維持
+				// 音なら Surprise_* を維持
+				// 視覚なら ↑で LookAround を開始してるのでそれが維持される
 			}
 			else
 			{
-				// 待機フェーズは Idle
-				m_pAnimComp->Play(AnimType::Idle, 0.1f);
+				// 待機フェーズは LookAround
+				m_pAnimComp->Play(AnimType::LookAround, 0.1f);
 			}
+
+			m_PrevAIState = aiState;
 			return;
 		}
 
@@ -322,6 +338,7 @@ void Enemy::Update(const float deltatime)
 		{
 			m_pAnimComp->Play(AnimType::Run, 0.1f);
 		}
+		m_PrevAIState = aiState;
 	}
 }
 

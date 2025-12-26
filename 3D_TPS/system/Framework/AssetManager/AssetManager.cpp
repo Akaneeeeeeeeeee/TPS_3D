@@ -153,6 +153,11 @@ void AssetManager::Init()
         coverIdle->LoadAnimation("assets/model/akai/Cover_Idle.fbx",
 			"Cover_Idle");
 		RegisterAnimationData("Cover_Idle", std::move(coverIdle));
+
+        auto lookaround = std::make_unique<CAnimationData>();
+        lookaround->LoadAnimation("assets/model/akai/Looking.fbx",
+			"LookAround");
+		RegisterAnimationData("LookAround", std::move(lookaround));
     }
 }
 

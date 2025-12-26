@@ -549,7 +549,7 @@ void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector
 	side.Normalize();
 
 	// ’†Sü
-	out.push_back(centerMid);
+	//out.push_back(centerMid);
 	out.push_back(top);
 	out.push_back(bottom);
 

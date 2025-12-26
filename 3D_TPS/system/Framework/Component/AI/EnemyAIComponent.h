@@ -1,6 +1,8 @@
 #pragma once
 #include "Framework/Component/IComponent/IComponent.h"
 #include "commontypes.h"
+#include <vector>
+#include <array>
 
 // 前方宣言
 class PhysicsManager;
@@ -8,10 +10,12 @@ class CharacterVirtualComponent;
 class Player;
 class WeatherSystem;
 class StaticMeshCollider;
+class LightSystem;
 
 namespace
 {
     constexpr float DEG2RAD = PI / 180.0f;
+	constexpr int SamplePointCount = 4; // 視線サンプリング点数
 }
 
 /*
@@ -84,6 +88,7 @@ public:
         return v;
     }
 
+    float GetSuspicion01() const { return m_Suspicion; } // デバッグ用
 
 private:
     PhysicsManager* m_Physics = nullptr;
@@ -91,6 +96,7 @@ private:
     Player* m_pPlayer = nullptr;
     WeatherSystem* m_Weather = nullptr;
     StaticMeshCollider* m_TerrainCol = nullptr;
+    LightSystem* m_Light = nullptr;
 
     // ---------- 経路・視線などのベクトル系 ----------
     std::vector<Vector3> m_WayPoints;
@@ -134,7 +140,7 @@ private:
     float m_AvoidSideSign = 1.0f;   // +1 = 左方向、-1 = 右方向
 
 	int   m_CurrentIndex = 0;       // 現在の巡回地点インデックス
-	float m_ArriveRadius = 75.0f;   // 到着判定半径
+	float m_ArriveRadius = 100.0f;   // 到着判定半径
 	float m_RayLength = 800.0f;     // 障害物回避用のRay長さ
 	float m_AvoidWeight = 1.5f;     // 障害物回避の重み付け
 	float m_EyeHeight = 80.0f;      // Rayの発射位置（敵の目の高さ）
@@ -175,4 +181,45 @@ private:
     int     m_StuckResolveCount = 0;
 
     bool  m_IsFound = false;
+
+
+	// ===== 不審度関連 =====
+    // 不審度(0..1)
+    float m_Suspicion = 0.0f;
+
+    // 各点の「連続で見えていた秒数」
+    std::array<float, SamplePointCount> m_SeenSec{};
+
+    // 今フレーム「レイが1本でも通ったか」（後で音ブーストに使える）
+    bool m_CanSeeAnyPointThisFrame = false;
+
+    // ===== 調整パラメータ=====
+    float m_SusGainPerSec = 0.9f;    // 見えてる時の基本増加
+    float m_SusLosePerSec = 0.3f;    // 見えない時の減少
+
+    // 「見え続けた」判定の必要秒数（近いほど短い）
+    float m_HoldNearSec = 0.15f;
+    float m_HoldFarSec = 1.00f;
+
+    // 見えが途切れた時の減衰（0だと“厳密に連続”）
+    float m_SeenDecayPerSec = 4.0f;  // 途切れたら素早く0へ
+
+    // ライト倍率：1 + light01 * m_LightBoost
+    float m_LightBoost = 1.5f;
+
+    // 見えてる点数(0..4)による倍率（0点は0）
+    std::array<float, 5> m_PointCountMul = { 0.0f, 0.7f, 1.0f, 1.6f, 2.3f };
+
+    // 調査で向かうべき地点（音でも視覚でもここに入れる）
+    Vector3 m_InvestigateTarget = Vector3::Zero;
+    bool    m_HasInvestigateTarget = false;
+
+    // 視覚で最後に見えた地点（失見後の調査に使う）
+    Vector3 m_LastSeenPos = Vector3::Zero;
+    bool    m_HasLastSeenPos = false;
+
+
+private:
+    float HoldTimeByDistance(float dist) const;
+    void  UpdateSuspicionFromSight(float dt);
 };

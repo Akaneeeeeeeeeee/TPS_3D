@@ -105,6 +105,33 @@ void AnimatedTitleScene::Update(const float deltatime)
 	m_TitleScript.Tick(deltatime);      // 先に台本で MoveDir/Face/Anim を決める
 	m_pObjectManager->Update(deltatime);
 
+#ifdef _DEBUG
+	// ImGui操作中に「何か入力」で開始してしまうのを防ぐ
+	if (ImGui::GetCurrentContext())
+	{
+		const auto& io = ImGui::GetIO();
+		if (io.WantCaptureKeyboard || io.WantCaptureMouse)
+			return;
+	}
+	
+	// デバッグ中はEnterキーで次シーンへ
+	if(CDirectInput::GetInstance().CheckKeyBufferTrigger(DIK_RETURN))
+	{
+		SetChangeScene(true);
+		SetNextSceneName(m_NextSceneName);
+		return;
+	}
+#endif
+
+	// 何か入力されたら即ゲーム開始（次シーンへ）
+	if (CDirectInput::GetInstance().AnyInputTriggered())
+	{
+		SetChangeScene(true);
+		SetNextSceneName(m_NextSceneName);
+		return;
+	}
+
+	// 入力が無い場合は、演出が終わったら自動遷移
 	if (m_TitleScript.IsFinished())
 	{
 		SetChangeScene(true);

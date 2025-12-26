@@ -321,13 +321,13 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 		}
 		
 		// áŠQ•¨
-		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
+		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
 		//// —Ž‰ºƒeƒXƒg—p
 		////obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
 		////obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
-		//obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
-		//obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
-		//m_obstacles[0] = obstacleObj;
+		obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
+		obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
+		m_obstacles[0] = obstacleObj;
 
 		// “G
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);

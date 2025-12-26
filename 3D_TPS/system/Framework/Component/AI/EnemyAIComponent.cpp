@@ -3,6 +3,7 @@
 #include "Framework/GameObject/GameObject.h"
 #include "Framework/GameObject/Player/Player.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
+#include "Framework/LightSystem/LightSystem.h"
 
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/RayCast.h>
@@ -37,6 +38,9 @@ void EnemyAIComponent::Attach(EngineContext& ctx)
 
     // 天候・時間管理（視界パラメータの補正に使う）
     m_Weather = &ctx.weatherSystem;
+
+	// ライトシステム（視界判定に使う）
+	m_Light = &ctx.lightSystem;
 }
 
 void EnemyAIComponent::Detach(void)
@@ -72,21 +76,25 @@ void EnemyAIComponent::Update(const float dt)
     // ------------------------------------------------------------
     // 1) 天候・時間に応じて「視界距離」「視野角」を更新する
     // ------------------------------------------------------------
-    float visibilityFactor = 1.0f;
+    //float visibilityFactor = 1.0f;
 
-    // WeatherSystem 側で計算済みの「視認性係数」をもらう（0.0 ～ 1.0 想定）
-    float envVis = m_Weather ? m_Weather->GetVisibilityFactor() : 1.0f;
+    //// WeatherSystem 側で計算済みの「視認性係数」をもらう（0.0 ～ 1.0 想定）
+    //float envVis = m_Weather ? m_Weather->GetVisibilityFactor() : 1.0f;
 
-    // envVis (0.1～1.0) を 0.7～1.0 に圧縮する
-    float f = 0.7f + 0.3f * envVis; // envVis=1 → f=1, envVis=0.1 → f=0.73
-    // 視界距離を係数でスケーリング
-    // 例: visibilityFactor = 0.5 → 視界距離 半分
-    m_CurrentViewDistance = m_BaseViewDistance * f;
+    //// envVis (0.1～1.0) を 0.7～1.0 に圧縮する
+    //float f = 0.7f + 0.3f * envVis; // envVis=1 → f=1, envVis=0.1 → f=0.73
+    //// 視界距離を係数でスケーリング
+    //// 例: visibilityFactor = 0.5 → 視界距離 半分
+    //m_CurrentViewDistance = m_BaseViewDistance * f;
 
-    // 視野角も暗いほど少し狭くする（好みで調整）
-    // visibilityFactor = 1.0 → fovScale = 1.0（昼は基準そのまま）
-    // visibilityFactor = 0.0 → fovScale = 0.7（真っ暗なら 70% 程度）
-    m_CurrentFOV = m_BaseFOV * f;
+    //// 視野角も暗いほど少し狭くする（好みで調整）
+    //// visibilityFactor = 1.0 → fovScale = 1.0（昼は基準そのまま）
+    //// visibilityFactor = 0.0 → fovScale = 0.7（真っ暗なら 70% 程度）
+    //m_CurrentFOV = m_BaseFOV * f;
+
+    m_CurrentViewDistance = m_BaseViewDistance;
+    m_CurrentFOV = m_BaseFOV;
+
 
     // ------------------------------------------------------------
     // 2) 状態ごとの処理（移動や内部状態更新）
@@ -254,10 +262,17 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
 
 void EnemyAIComponent::UpdateInvestigate(const float dt)
 {
+    if (!m_HasInvestigateTarget)
+    {
+        // 目的地が無いなら巡回へ戻すなど
+        m_State = m_WayPoints.empty() ? Idle : Patrol;
+        return;
+    }
+
     Vector3 pos = m_pOwner->GetPosition();
 
     // 未正規化：目標までの「距離」と「方向」を持ったまま
-    Vector3 desired = m_LastHeardPosition - pos;
+	Vector3 desired = m_InvestigateTarget - pos;    // 調査対象の位置
     float distSq = desired.LengthSquared();
 
     // 1) まだ到達してない → 移動
@@ -265,10 +280,10 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
     {
         m_InvestigateTimer = 0.0f;
 
-        // ★追加：調査中でもスタック監視・解決
+        // 調査中でもスタック監視・解決
         UpdateStuck(dt, desired);
 
-        Vector3 moveDir = ComputeMoveDirToTarget(m_LastHeardPosition);
+        Vector3 moveDir = ComputeMoveDirToTarget(m_InvestigateTarget);
 
         if (moveDir.LengthSquared() > 0.0001f)
         {
@@ -406,7 +421,12 @@ void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
     // 「新しい驚き」として扱う
     m_LastHeardPosition = pos;
     m_HeardThisFrame = true;   // Enemy が驚きアニメを再生するトリガ
-    if (!m_pOwner) return;
+
+    // 調査で向かう地点を「音源」にする
+    m_InvestigateTarget = pos;
+    m_HasInvestigateTarget = true;
+
+    if (!m_pOwner) { return; }
 
     // 角度チェックは必要なら残す（正面ほぼ一致なら直接 Investigate へ）
     Vector3 selfPos = m_pOwner->GetPosition();
@@ -471,20 +491,134 @@ Vector3 EnemyAIComponent::GetEyePosition(void) const
 
 void EnemyAIComponent::UpdateSight(const float dt)
 {
-    if (!m_pPlayer || !m_Physics || !m_pOwner)
-        return;
+    if (!m_pPlayer || !m_Physics || !m_pOwner) { return; }
+    UpdateSuspicionFromSight(dt);
 
-    // 現在の視線・視界距離・視野角（天候＋時間込み）で判定
-    if (CanSeePlayer())
+    // 一点でも“見えてる扱い”なら警戒へ（音の警戒と混ぜたくないなら分岐を作る）
+    if (m_CanSeeAnyPointThisFrame)
     {
-        m_IsFound = true;
-        // 視覚で見つけた場合も「最後に確認した位置」として覚えておく
-        m_LastHeardPosition = m_pPlayer->GetPosition();
+        if (m_State == State::Idle || m_State == State::Patrol || m_State == State::Investigate)
+        {
+            // 既存の Caution を使うなら、視線ターゲットだけプレイヤー方向に差し替える
+            Vector3 eyePos = GetEyePosition();
+            Vector3 targetPos = m_HasLastSeenPos ? m_LastSeenPos : m_pPlayer->GetPosition();
+            Vector3 to = targetPos - eyePos;
+            //to.y = 0.0f;
+            if (to.LengthSquared() > 1e-6f)
+            {
+                to.Normalize();
+                m_CautionTurnTime = 0.0f;
+                m_CautionWaitTime = 0.0f;
+                m_CautionStartViewDir = GetViewForward();
+                m_CautionTargetViewDir = to;
+                m_HasLookedAtHeard = false;
+                m_State = State::Caution;
+            }
+        }
+    }
 
-        // ここで追跡ステートへ移行させるならこの辺り
-        // m_State = Chase;
+    // 不審度MAXで発見
+    if (m_Suspicion >= 1.0f)
+    {
+        m_Suspicion = 1.0f;
+        m_IsFound = true;
     }
 }
+
+void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
+{
+    Vector3 eyePos = GetEyePosition();
+
+    std::vector<Vector3> samples;
+    m_pPlayer->GetVisibilitySamplePoints(eyePos, samples);
+    int n = std::min<int>((int)samples.size(), SamplePointCount);
+
+    m_CanSeeAnyPointThisFrame = false;
+
+    int   visibleNowCount = 0;
+    float sumContribution = 0.0f;
+
+    // 環境の基本見えやすさ（昼=1, 夜=小さい）
+    float env01 = m_Weather ? m_Weather->GetVisibilityFactor() : 1.0f;
+    env01 = std::clamp(env01, 0.0f, 1.0f);
+
+    // 「暗い＆遠い」は“見えてる扱いにしない”ためのしきい値
+    constexpr float VISIBLE_MIN = 0.15f; // 調整用
+
+    float bestC = -1.0f;
+    Vector3 bestP = Vector3::Zero;
+
+    for (int i = 0; i < n; ++i)
+    {
+        const Vector3& p = samples[i];
+
+        bool inCone = IsInViewCone(eyePos, p);
+        bool los = inCone ? CanSeePoint(eyePos, p) : false;
+
+        float dist = (p - eyePos).Length();
+        // 距離の減衰（0..1）
+        float distMul = 1.0f - std::clamp(dist / std::max(1.0f, m_BaseViewDistance), 0.0f, 1.0f);
+
+        float light01 = (m_Light) ? std::clamp(m_Light->GetLightVisibility01(p), 0.0f, 1.0f) : 0.0f;
+
+        // 夜の暗さをライトが押し上げる
+        float bright01 = env01 + light01 * (1.0f - env01); // 0..1
+
+        // 暗すぎる＆遠すぎる点は “見えてる扱い” にしない
+        bool visibleNow = (inCone && los && (distMul * bright01 >= VISIBLE_MIN));
+
+        if (visibleNow)
+        {
+            m_SeenSec[i] += dt;
+            ++visibleNowCount;
+            m_CanSeeAnyPointThisFrame = true;
+        }
+        else
+        {
+            m_SeenSec[i] = std::max(0.0f, m_SeenSec[i] - dt * m_SeenDecayPerSec);
+        }
+
+        if (!visibleNow)
+            continue; // 見えてる扱いの点だけ寄与
+
+        float hold = HoldTimeByDistance(dist);
+        float conf = (hold > 1e-6f) ? (m_SeenSec[i] / hold) : 1.0f;
+        conf = std::clamp(conf, 0.0f, 1.0f);
+
+        float contribution = conf * distMul * bright01;
+        sumContribution += contribution;
+
+        // 一番寄与が大きい点を「最後に見えた点」にする候補
+        if (contribution > bestC)
+        {
+            bestC = contribution;
+            bestP = p;
+        }
+    }
+
+    // 見えてるなら last seen を更新し、調査目標もそれにする
+    if (m_CanSeeAnyPointThisFrame)
+    {
+        m_LastSeenPos = bestP;
+        m_HasLastSeenPos = true;
+
+        m_InvestigateTarget = m_LastSeenPos;
+        m_HasInvestigateTarget = true;
+    }
+
+    // 4点平均（n で割る）
+    float sight01 = (n > 0) ? (sumContribution / (float)n) : 0.0f;
+
+    float countMul = m_PointCountMul[std::clamp(visibleNowCount, 0, 4)];
+
+    if (sight01 > 0.0f)
+        m_Suspicion += dt * m_SusGainPerSec * sight01 * countMul;
+    else
+        m_Suspicion -= dt * m_SusLosePerSec;
+
+    m_Suspicion = std::clamp(m_Suspicion, 0.0f, 1.0f);
+}
+
 
 /*
 * @brief	プレイヤーが見えているかを判定する
@@ -829,39 +963,6 @@ void EnemyAIComponent::ResolveStuck(void)
 }
 
 
-// スタック状態の解消処理
-// 一番近いウェイポイントに戻す少しワープ感は出るが、「絶対にハマらない」
-//void EnemyAIComponent::ResolveStuck()
-//{
-//    if (!m_pOwner) return;
-//    if (m_WayPoints.empty()) return;
-//
-//    Vector3 pos = m_pOwner->GetPosition();
-//
-//    // 一番近いウェイポイントを探す
-//    int   nearestIndex = 0;
-//    float nearestDistSq = std::numeric_limits<float>::max();
-//
-//    for (int i = 0; i < static_cast<int>(m_WayPoints.size()); ++i)
-//    {
-//        float d2 = (m_WayPoints[i] - pos).LengthSquared();
-//        if (d2 < nearestDistSq)
-//        {
-//            nearestDistSq = d2;
-//            nearestIndex = i;
-//        }
-//    }
-//
-//    // その地点にワープ
-//    m_pOwner->SetPosition(m_WayPoints[nearestIndex]);
-//    m_CurrentIndex = nearestIndex;
-//
-//    if (m_Char)
-//        m_Char->Stop();
-//
-//    m_IsAvoidingWall = false;
-//}
-
 // ローカル範囲での脱出地点探索
 bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 {
@@ -916,6 +1017,14 @@ bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
     }
     return false;
 }
+
+float EnemyAIComponent::HoldTimeByDistance(float dist) const
+{
+    float view = std::max(1.0f, m_CurrentViewDistance);
+    float t = std::clamp(dist / view, 0.0f, 1.0f);
+    return m_HoldNearSec + (m_HoldFarSec - m_HoldNearSec) * t;
+}
+
 
 // 指定位置にキャラクターカプセルを置いたときに衝突がないか調べる
 bool EnemyAIComponent::IsCapsuleFree(const Vector3& feetPos) const
