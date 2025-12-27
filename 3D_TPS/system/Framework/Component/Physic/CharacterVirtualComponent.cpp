@@ -261,8 +261,35 @@ void CharacterVirtualComponent::Update(const float dt)
 
 void CharacterVirtualComponent::Uninit()
 {
+	// 二重呼び出し安全
+	if (!m_Character)
+	{
+		m_InnerBodyID = JPH::BodyID();
+		return;
+	}
+
+	// 1) 先に接触通知を止める
+	m_Character->SetListener(nullptr);
+
+	// 2) UserData を消す（残骸参照を防ぐ）
+	if (m_Physics && !m_InnerBodyID.IsInvalid())
+	{
+		auto& bi = m_Physics->GetBodyInterface();
+		bi.SetUserData(m_InnerBodyID, 0);
+	}
+
+	// 3) CharacterVirtual を破棄（内部の InnerBody もここで掃除される想定）
+	delete m_Character;
 	m_Character = nullptr;
+
+	m_InnerBodyID = JPH::BodyID();
+
+	// 4) 姿勢Shapeも解放（RefConstなので nullptr 代入でOK）
+	m_StandShape = nullptr;
+	m_CrouchShape = nullptr;
+	m_ProneShape = nullptr;
 }
+
 
 /*
 * @brief	姿勢を設定する

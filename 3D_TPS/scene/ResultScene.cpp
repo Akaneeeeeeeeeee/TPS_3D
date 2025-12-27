@@ -30,7 +30,7 @@ void ResultScene::Update(const float deltatime)
 	// キーボードの状態を取得
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
 	{
-		this->ChangeScene = true;
+		this->ChangeScene();
 	}
 }
 
@@ -70,7 +70,7 @@ void ResultScene::Init(ObjectManager* _Mgr)
  */
 void ResultScene::Uninit()
 {
-	this->ChangeScene = false;
+	this->SetChangeScene(false);
 }
 
 void ResultScene::SetTexture(std::unique_ptr<CSprite> _sprite)

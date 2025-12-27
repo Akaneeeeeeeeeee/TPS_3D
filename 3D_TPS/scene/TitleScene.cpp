@@ -163,7 +163,7 @@ void TitleScene::Update(const float deltatime)
 	// キーボードの状態を取得
 	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_RETURN))
 	{
-		this->ChangeScene = true;
+		this->ChangeScene();
 	}
 }
 
@@ -208,5 +208,5 @@ void TitleScene::Init(ObjectManager* _Mgr)
  */
 void TitleScene::Uninit()
 {
-	this->ChangeScene = false;
+	this->SetChangeScene(false);
 }

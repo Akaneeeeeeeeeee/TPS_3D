@@ -9,6 +9,8 @@ cbuffer LineWidthCB : register(b6)
 void main(line PS_IN input[2], inout TriangleStream<PS_IN> OutputStream)
 {
     PS_IN output;
+    output.WorldPos = float4(0.0, 0.0, 0.0, 1.0);
+    output.NormalW = float3(0.0, 0.0, 1.0);
     float thickness = gLineWidth.x; // Р№В╠С╛В│БAУKЛXТ▓Ро
 
     // Р№В╠Х√М№ВЁМvОZ

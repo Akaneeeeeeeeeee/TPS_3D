@@ -224,14 +224,14 @@ void WeatherSystem::ApplyToParticles()
         dir = m_CurrentParams.rainDir;
         gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
 
-        spawnHalfWidth = 800.0f;
+        spawnHalfWidth = 200000.0f;
         spawnHalfDepth = 800.0f;
         spawnHeight = 0.0f;
 
         // 雨はエミッタの真上あたりにまとめて出すイメージなら 0〜0 でもよい
         spawnMinY = 0.0f;
         spawnMaxY = 0.0f;
-        maxParticles = 15000;
+        maxParticles = 3000000;
     }
     // 砂嵐が有効
     else if (m_CurrentParams.sandEmitRate > 0.0f)
@@ -257,7 +257,7 @@ void WeatherSystem::ApplyToParticles()
         spawnHeight = 300.0f;    // 0 → 300（推測です）
 
         // 最大粒子数も増やして間引かれないように
-        maxParticles = 300000;     // 12000 → 30000
+        maxParticles = 3000000;     // 12000 → 30000
     }
 
     for (auto* comp : m_ParticleComponents)
@@ -443,6 +443,8 @@ void WeatherSystem::Update(float dt)
 	// ---- 3) 知覚影響更新 ----
 	UpdatePerception();
 
+	UpdateDayNightState();
+
     // 将来的に Fog / Sky / PBR 用定数バッファもここで更新
 }
 
@@ -544,6 +546,55 @@ void WeatherSystem::DebugDrawRain() const
         rainColor);
 }
 
+
+void WeatherSystem::RegisterDayNightListener(IDayNightListener* l)
+{
+    if (!l) return;
+    for (auto* p : m_DayNightListeners)
+        if (p == l) return; // 二重登録防止
+    m_DayNightListeners.push_back(l);
+
+    // 登録直後に現状態を通知（初期状態が揃う）
+    l->OnDayNightChanged(m_IsNight);
+}
+
+void WeatherSystem::UnregisterDayNightListener(IDayNightListener* l)
+{
+    if (!l) return;
+    for (size_t i = 0; i < m_DayNightListeners.size(); ++i)
+    {
+        if (m_DayNightListeners[i] == l)
+        {
+            m_DayNightListeners[i] = m_DayNightListeners.back();
+            m_DayNightListeners.pop_back();
+            return;
+        }
+    }
+}
+
+bool WeatherSystem::ComputeIsNightByHour(float h) const
+{
+    const float on = m_NightOnHour;
+    const float off = m_NightOffHour;
+
+    // 例: 18 -> 6（日付またぎ）
+    if (on < off)
+        return (h >= on && h < off);
+    return (h >= on || h < off);
+}
+
+void WeatherSystem::UpdateDayNightState()
+{
+    const bool newIsNight = ComputeIsNightByHour(m_Sun.timeOfDayHours);
+    if (newIsNight == m_IsNight) return;
+
+    m_IsNight = newIsNight;
+
+    // 変化した瞬間だけ通知
+    for (auto* l : m_DayNightListeners)
+        if (l) l->OnDayNightChanged(m_IsNight);
+}
+
 // ==============================
 // デバッグ：太陽の可視化
 // ==============================
@@ -567,9 +618,9 @@ void WeatherSystem::DebugDrawSun() const
     // 太陽の色は SunState の色・強さを使用
     Color sunColor = m_Sun.lightColor * m_Sun.lightIntensity;
 
-    Renderer::SetDepthEnable(false);
+    //Renderer::SetDepthEnable(false);
     SphereDrawerDraw(world, sunColor);
-    Renderer::SetDepthEnable(true);
+    //Renderer::SetDepthEnable(true);
 }
 
 void WeatherSystem::DebugDrawSand() const
@@ -630,6 +681,14 @@ void WeatherSystem::DebugImGui()
     {
         // スライダーから直接変更したい場合
         m_Sun.timeOfDayHours = hours;
+
+        // ついでに太陽も即更新（見た目のズレ防止）
+        UpdateSunDirection();
+        UpdateSunColorAndIntensity();
+        ApplyToLight();
+
+        // ★街灯へ即通知
+        UpdateDayNightState();
     }
 
     // 1日の長さ（秒）

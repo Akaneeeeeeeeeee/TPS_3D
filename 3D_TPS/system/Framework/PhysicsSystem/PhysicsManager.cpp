@@ -2,6 +2,8 @@
 #include <Jolt/RegisterTypes.h>
 #include "Framework/Component/Physic/PhysicsComponent.h"
 #include "Framework/GameObject/GameObject.h"
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
 #ifdef JPH_DEBUG_RENDERER
 #include "Framework/PhysicsSystem/JoltDebugRendererDX11.h"
 #include <Jolt/Renderer/DebugRenderer.h>
@@ -186,4 +188,43 @@ void PhysicsManager::OnCharacterCollisionEnter(GameObject& character, GameObject
 {
     character.OnCollisionCharacterEnter(other);
     other.OnCollisionCharacterEnter(character);
+}
+
+bool PhysicsManager::RaycastClosest(
+    const Vector3& from, const Vector3& to,
+    JPH::RayCastResult& outHit,
+    const JPH::BodyID& ignoreBody) const
+{
+    const Vector3 d = to - from;
+    const float lenSq = d.LengthSquared();
+    if (lenSq < 1e-6f) return false;
+
+    // RRayCast の origin は RVec3 にしておく（Joltの想定）
+    const JPH::RVec3 origin(from.x, from.y, from.z);
+    const JPH::Vec3  direction(d.x, d.y, d.z); // 長さ込み（from->to）
+
+    const JPH::RRayCast ray(origin, direction);
+
+    // Body フィルタ
+    const JPH::IgnoreSingleBodyFilter bodyFilter(ignoreBody);
+
+    const auto& npq = m_System.GetNarrowPhaseQuery();
+
+    // ここは “遮蔽物レイ” 用にレイヤを合わせる（暫定で CHARACTER のままでも動く）
+    auto bpFilter = m_System.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
+    auto objFilter = m_System.GetDefaultLayerFilter(Layers::CHARACTER);
+
+    return npq.CastRay(ray, outHit, bpFilter, objFilter, bodyFilter);
+}
+
+bool PhysicsManager::IsOccluded(
+    const Vector3& from, const Vector3& to,
+    const JPH::BodyID& ignoreBody) const
+{
+    JPH::RayCastResult hit{};
+    if (!RaycastClosest(from, to, hit, ignoreBody))
+        return false;
+
+    // 終点より手前で当たったら遮蔽
+    return hit.mFraction < 0.999f;
 }

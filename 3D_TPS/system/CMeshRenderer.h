@@ -70,9 +70,13 @@ public:
 		BeforeDraw(primtype);								// 描画前処理
 
 		Renderer::GetDeviceContext()->DrawIndexed(
-			m_IndexNum * 2,								// 描画するインデックス数（面数×３）
+			m_IndexNum,								// 描画するインデックス数（面数×３）
 			0,										// 最初のインデックスバッファの位置
 			0);										// 頂点バッファの最初から使う
+		//Renderer::GetDeviceContext()->DrawIndexed(
+		//	m_IndexNum * 2,								// 描画するインデックス数（面数×３）
+		//	0,										// 最初のインデックスバッファの位置
+		//	0);										// 頂点バッファの最初から使う
 	}
 
 	// インスタンシング描画

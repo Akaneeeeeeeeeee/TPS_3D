@@ -25,6 +25,11 @@ public:
 
     // 必要に応じて外から設定できるようにする
     void SetLocalOffset(const DirectX::XMFLOAT3& offset) { m_LocalOffset = offset; }
+	// 生成範囲の設定（XZ 平面、中心は Owner の位置 + オフセット）
+    void SetSpawnAreaXZ(float halfWidth, float halfDepth)
+    {
+        m_Emitter.SetSpawnAreaXZ(halfWidth, halfDepth);
+	}
 
 private:
     WeatherSystem* m_WeatherSystem;

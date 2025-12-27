@@ -20,7 +20,7 @@ namespace
 	// Player: 形状 / 初期設定
 	//============================
 
-	// プレイヤーカプセル（単位はあなたのワールド単位）
+	// プレイヤーカプセル
 	constexpr float PLAYER_CAPSULE_HALF_HEIGHT = 60.0f; // カプセル高さ(半分)
 	constexpr float PLAYER_CAPSULE_RADIUS = 35.0f;      // カプセル半径
 
@@ -178,6 +178,7 @@ void Player::Awake(void)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	// 2) メッシュとシェーダ設定
+	//CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("test");
 	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
 
 	m_pAnimComp->SetMesh(mesh);
@@ -191,11 +192,6 @@ void Player::Awake(void)
 	auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
 	auto* crouch = am.GetAnimationData<CAnimationData>("Crouching_Idle")->GetAnimation("Crouching_Idle", 0);
 	auto* crouchwalk = am.GetAnimationData<CAnimationData>("Crouched_Walking")->GetAnimation("Crouched_Walking", 0);
-	//auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	//auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	//auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	//auto* crouch = am.GetAnimationData("Crouching_Idle")->GetAnimation("Crouching_Idle", 0);
-	//auto* crouchwalk = am.GetAnimationData("Crouched_Walking")->GetAnimation("Crouched_Walking", 0);
 
 	m_pAnimComp->SetClip(AnimType::Idle, idle);
 	m_pAnimComp->SetClip(AnimType::Crouch, crouch);
@@ -553,7 +549,7 @@ void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector
 	side.Normalize();
 
 	// 中心線
-	out.push_back(centerMid);
+	//out.push_back(centerMid);
 	out.push_back(top);
 	out.push_back(bottom);
 

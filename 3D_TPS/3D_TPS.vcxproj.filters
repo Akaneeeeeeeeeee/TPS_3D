@@ -169,6 +169,21 @@
     <Filter Include="ソース ファイル\MyFramework\GameObject\WeatherController">
       <UniqueIdentifier>{85ac46a1-df06-44e2-88e5-865a1b8eea89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Light">
+      <UniqueIdentifier>{0e04e6ab-038e-48d0-a8a3-f79f82ec8e75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\LightSystem">
+      <UniqueIdentifier>{47c29391-6af4-473c-8fc4-7fcdd8d41dae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\GameObject\StreetLight">
+      <UniqueIdentifier>{4978a403-809b-4112-b9a7-f44f46743f3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Manager\PerceptionManager">
+      <UniqueIdentifier>{84010bb5-2ad5-4662-8bee-b2309f19e5e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\DayNightObserver">
+      <UniqueIdentifier>{6b640f6c-b836-430e-a5e7-b3273c1b8581}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -558,6 +573,30 @@
     <ClInclude Include="system\Framework\SceneManager\Transition\SceneTransition.h">
       <Filter>ソース ファイル\MyFramework\Manager\SceneManager\Transition</Filter>
     </ClInclude>
+    <ClInclude Include="scene\AnimatedTitleScene.h">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\Player\TitlePlayerActor.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Light\SpotLightComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\LightSystem\LightSystem.h">
+      <Filter>ソース ファイル\MyFramework\LightSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\StreetLight\StreetLight.h">
+      <Filter>ソース ファイル\MyFramework\GameObject\StreetLight</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\PerceptionManager\PerceptionManager.h">
+      <Filter>ソース ファイル\MyFramework\Manager\PerceptionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\DayNightObserver\DayNightObserver.h">
+      <Filter>ソース ファイル\MyFramework\Component\DayNightObserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -850,6 +889,27 @@
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\CharacterContactListener.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
+    </ClCompile>
+    <ClCompile Include="scene\AnimatedTitleScene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\Player\TitlePlayerActor.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Light\SpotLightComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\LightSystem\LightSystem.cpp">
+      <Filter>ソース ファイル\MyFramework\LightSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\StreetLight\StreetLight.cpp">
+      <Filter>ソース ファイル\MyFramework\GameObject\StreetLight</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\PerceptionManager\PerceptionManager.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\PerceptionManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

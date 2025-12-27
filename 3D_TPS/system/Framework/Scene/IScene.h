@@ -18,18 +18,18 @@ public:
 	virtual void Draw(void) = 0;
 	virtual void Uninit(void) = 0;
 
-	virtual void SetChangeScene(bool _Flg) { ChangeScene = _Flg; }
-	virtual bool GetChangeScene(void) const { return ChangeScene; };
+	void SetChangeScene(bool _Flg) { m_ChangeScene = _Flg; }
+	bool GetChangeScene(void) const { return m_ChangeScene; };
+	void ChangeScene(void) { m_ChangeScene = true; }
 
-	virtual const std::string& GetNextSceneName(void) { return m_NextSceneName; }
-	virtual void SetNextSceneName(const std::string& name) { m_NextSceneName = name; }
+	const std::string& GetNextSceneName(void) { return m_NextSceneName; }
+	void SetNextSceneName(const std::string& name) { m_NextSceneName = name; }
 
 protected:
 	IScene() = default;
-	//IScene(ObjectManager& _Mgr) : m_ObjectManagerRef(_Mgr){};
-	//ObjectManager& m_ObjectManagerRef;		// オブジェクト管理クラスへのポインタ
 	ObjectManager* m_pObjectManager = nullptr;	// オブジェクト管理クラスへのポインタ
-	std::string m_NextSceneName;
-	bool ChangeScene = false;						// シーン切り替えフラグ
+	//std::string m_SceneName;					// このシーンの名前
+	std::string m_NextSceneName;				// 次シーンの名前
+	bool m_ChangeScene = false;					// シーン切り替えフラグ
 };
 

@@ -99,6 +99,19 @@ struct LIGHT
 };
 
 /**
+ * @struct SpotLightGPU
+ * @brief スポットライトの情報をGPU用に保持する構造体
+ */
+struct SpotLightGPU
+{
+    Vector4 Position;     // xyz: 位置, w: 1
+    Vector4 Direction;    // xyz: 向き(正規化), w: 0
+    Vector4 Color;        // rgb: 色, a: 未使用 or 強さ
+    Vector4 Params1;      // x: range, y: innerCos, z: outerCos, w: intensity
+    Vector4 Params2;      // x: enabled(1/0), yzw: 予備
+};
+
+/**
  * @struct SUBSET
  * @brief メッシュのサブセット（マテリアル毎）情報を保持する構造体
  */
@@ -131,6 +144,16 @@ enum EBlendState {
 constexpr int MAX_BONE = 400;
 struct CBBoneCombMatrix {
     DirectX::XMFLOAT4X4 BoneCombMtx[MAX_BONE];  ///< ボーンコンビネーション行列の配列
+};
+
+constexpr int MAX_SPOT_LIGHT = 8;
+
+// 定数バッファ用（16byte境界を守る）
+struct CBSpotLights
+{
+    SpotLightGPU Lights[MAX_SPOT_LIGHT];
+    int Count = 0;
+    float Dummy[3]{}; // 16byte合わせ
 };
 
 /**
@@ -167,6 +190,9 @@ private:
     // 最後にセットされた View / Proj 行列を保持する
     static Matrix4x4 m_CurrentView;
     static Matrix4x4 m_CurrentProjection;
+
+    static ComPtr<ID3D11Buffer> m_SpotLightBuffer;
+    static CBSpotLights m_SpotLightCB;
 public:
     static void Init();
     static void Uninit();
@@ -190,6 +216,8 @@ public:
     }
     static void DisableCulling(bool cullflag = false);
     static void SetFillMode(D3D11_FILL_MODE FillMode);
+
+    static void SetSpotLights(const SpotLightGPU* lights, int count);
 
     static LIGHT GetLight();
     static const Matrix4x4& GetViewMatrix() { return m_CurrentView; }

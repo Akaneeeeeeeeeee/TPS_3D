@@ -7,6 +7,7 @@
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/CameraManager/CameraManager.h"
 #include "Framework/Component/Camera/CameraComponent.h"
+#include "Framework/LightSystem/LightSystem.h"
 
 
 /*
@@ -26,9 +27,11 @@ struct EngineContext
 	PhysicsManager& joltPhysicsManager;
 	WeatherSystem& weatherSystem;
 	CameraManager& cameraManager;
+	LightSystem& lightSystem;
 
 	void Update(const float deltaTime)
 	{
+		// 物理、天候のシミュレーション
 		joltPhysicsManager.Update(deltaTime);
 		weatherSystem.Update(deltaTime);
 
@@ -44,6 +47,10 @@ struct EngineContext
 			proj = cam->GetProjMatrix();
 		}
 		weatherSystem.SetViewProjMatrices(view, proj);
+
+		// ライト：GPUアップロード前にキャッシュ更新
+		lightSystem.UpdateCache();
+		lightSystem.UploadToGPU();
 	}
 
 	EngineContext(
@@ -52,13 +59,20 @@ struct EngineContext
 		AssetManager& am,
 		PhysicsManager& pm,
 		WeatherSystem& ws,
-		CameraManager& cm)
+		CameraManager& cm,
+		LightSystem& ls)
 		: renderManager(rm),
 		shaderManager(sm),
 		assetManager(am),
 		joltPhysicsManager(pm),
 		weatherSystem(ws),
-		cameraManager(cm)
+		cameraManager(cm),
+		lightSystem(ls)
 	{
+		// ここで一回だけ配線
+		lightSystem.SetPhysics(&joltPhysicsManager);
+
+		// 遮蔽をやる/やらないの初期値（好み）
+		lightSystem.SetOcclusionEnabled(false);
 	}
 };

@@ -395,4 +395,49 @@ public:
 		if (!m_padConnected) return 0.0f;
 		return m_pad.Gamepad.bRightTrigger / 255.0f;
 	}
+
+	// 何かしらの入力が今フレームトリガーされたか？
+	bool AnyInputTriggered(void)
+	{
+		auto& in = CDirectInput::GetInstance();
+
+		// キーボード：どれか1つでも「今フレーム押した」なら true
+		for (int k = 0; k < 256; ++k)
+		{
+			if (in.CheckKeyBufferTrigger(k)) { return true; }
+		}
+
+		// マウス：主要3ボタン（必要なら増やす）
+		if (in.GetMouseLButtonTrigger()) { return true; }
+		if (in.GetMouseRButtonTrigger()) { return true; }
+		if (in.GetMouseCButtonTrigger()) { return true; }
+
+		// パッド：主要ボタン＋スティック＋トリガー
+		if (in.IsPadConnected())
+		{
+			constexpr WORD buttons[] = {
+				XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
+				XINPUT_GAMEPAD_START, XINPUT_GAMEPAD_BACK,
+				XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER,
+				XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN,
+				XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT
+			};
+
+			// すべての主要ボタンをチェック
+			for (WORD b : buttons)
+			{
+				if (in.GetButtonTrigger(b)) { return true; }
+			}
+
+			auto ls = in.GetLeftStick();
+			// スティック倒し検出
+			if (std::fabs(ls.x) > 0.2f || std::fabs(ls.y) > 0.2f) { return true; }
+
+			if (in.GetLeftTrigger() > 0.2f) { return true; }
+			if (in.GetRightTrigger() > 0.2f) { return true; }
+		}
+
+		return false;
+	}
+
 };

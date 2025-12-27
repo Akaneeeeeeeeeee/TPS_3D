@@ -10,11 +10,15 @@
 enum class AnimType
 {
     Idle = 0,
+    Covered_Idle,
 	Crouch,
 	CrouchWalk,
     Walk,
+	LookAround,         // üˆÍŠm”F
 	Surprise_RightTurn, // ‰EU‚èŒü‚«
 	Surprise_LeftTurn,  // ¶U‚èŒü‚«
+	Check_OverWall,
+	StoneThrow,
     Run,
     Max,
 };

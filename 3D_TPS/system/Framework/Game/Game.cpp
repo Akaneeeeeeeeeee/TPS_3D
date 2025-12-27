@@ -57,6 +57,8 @@ void Game::Init(void)
 	// 物理マネージャの初期化
 	m_PhysicsManager.Init();
 	m_WeatherSystem.Init();
+	// ライトシステムの初期化
+	//m_LightSystem.Init();
 
 
 	m_pContext = std::make_unique<EngineContext>(
@@ -65,7 +67,8 @@ void Game::Init(void)
 		AssetManager::GetInstance(),
 		m_PhysicsManager,
 		m_WeatherSystem,
-		m_CameraManager);
+		m_CameraManager,
+		m_LightSystem);
 
 	m_WeatherSystem.SetWeather(WeatherType::HeavyRain, 0.0f);
 
@@ -76,10 +79,10 @@ void Game::Init(void)
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーンマネージャの初期化
-	m_SceneManager.Init(&m_ObjectManager, "TitleScene");
-	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	//m_SceneManager.Init(&m_ObjectManager, "TitleScene");
+	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
-	SoundWaveVisualizer::GetInstance().SetMaxLoudness(1.0f); // 走り足音の loudness に合わせる
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);
 
 	// デバッグ時のみ、デバッグUIの初期化

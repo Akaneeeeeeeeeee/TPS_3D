@@ -29,6 +29,7 @@ private:
 	CameraManager m_CameraManager;				// カメラマネージャー
 	WeatherSystem m_WeatherSystem;				// 天候システム
 	PhysicsManager m_PhysicsManager;			// 物理マネージャー
+	LightSystem m_LightSystem;				// ライトシステム
 	std::unique_ptr<EngineContext> m_pContext;	// エンジンコンテキスト(Init後に生成したいためunique_ptr)
 	
 	GameObjectFactory m_ObjectFactory;		// オブジェクトファクトリー

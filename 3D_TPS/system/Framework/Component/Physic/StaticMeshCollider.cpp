@@ -253,13 +253,25 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
     m_BodyID = bi.CreateAndAddBody(settings, EActivation::Activate);
 }
 
-void StaticMeshCollider::Uninit(void)
+void StaticMeshCollider::Uninit()
 {
-    if (m_Physics && m_Physics->GetBodyInterface().IsAdded(m_BodyID))
+    if (m_Physics && !m_BodyID.IsInvalid())
     {
-        m_Physics->GetBodyInterface().RemoveBody(m_BodyID);
+        auto& bi = m_Physics->GetBodyInterface();
+
+        if (bi.IsAdded(m_BodyID))
+            bi.RemoveBody(m_BodyID);
+
+        bi.SetUserData(m_BodyID, 0);
+        bi.DestroyBody(m_BodyID);
+
+        m_BodyID = JPH::BodyID();
     }
+
+    m_Shape = nullptr; // Žg‚Á‚Ä‚é‚È‚ç
+    m_Physics = nullptr;
 }
+
 
 void StaticMeshCollider::Detach(void)
 {

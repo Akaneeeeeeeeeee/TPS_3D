@@ -1,5 +1,6 @@
 #pragma once
 #include "system/Framework/GameObject/Character/Character.h"
+#include "Framework/Component/AI/EnemyAIComponent.h"
 
 // 前方宣言
 class Player;
@@ -32,6 +33,12 @@ public:
 
 	void SetPlayer(Player* player) { m_pPlayer = player; }
 	void SetTerrain(Terrain* terrain) { m_pTerrain = terrain; }
+	void SetWayPoints(const Vector3& start, const Vector3& end)
+	{
+		m_StartPos = start;
+		m_EndPos = end;
+	}
+	void SetWayPoints(const std::vector<Vector3>& points);
 
 	bool CanSeePlayer(const Vector3& playerPos) const;
 	bool IsGameOverTriggered(void) const { return m_GameOverTriggered; }
@@ -62,6 +69,8 @@ private:
 		SurprisedTurn,
 	};
 	FacingState m_FacingState = FacingState::Normal;
+	EnemyAIComponent::State m_PrevAIState;
+
 	// すでにゲームオーバー処理を走らせたかどうか
 	bool        m_GameOverTriggered = false;
 };
