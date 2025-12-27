@@ -219,6 +219,11 @@ private:
     bool    m_HasLastSeenPos = false;
 
 
+    enum class AvoidMode : uint8_t { None, Steer, WallFollow };
+    AvoidMode m_AvoidMode = AvoidMode::None;
+    int   m_WallFollowSide = 0;       // +1:¶‰ˆ‚¢ / -1:‰E‰ˆ‚¢ / 0:–¢Œˆ’è
+    float m_ClearTimer = 0.0f;        // •Ç‰ˆ‚¢‰ğœ—p
+
 private:
     float HoldTimeByDistance(float dist) const;
     void  UpdateSuspicionFromSight(float dt);
