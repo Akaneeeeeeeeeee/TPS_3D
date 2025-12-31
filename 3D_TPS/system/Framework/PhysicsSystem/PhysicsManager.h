@@ -16,6 +16,7 @@ class GameObject;
 
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
 class JoltDebugRendererDX11;
+class CameraManager;
 #endif
 
 /*
@@ -36,6 +37,7 @@ public:
 
 #ifdef _DEBUG
     void DebugDraw(void);
+	void SetCameraManager(class CameraManager* cameraManager);
 #endif
 
     void Register(PhysicsComponent* rb);
@@ -87,5 +89,6 @@ private:
 
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     std::unique_ptr<JoltDebugRendererDX11> m_DebugRenderer;
+	CameraManager* m_CameraManager = nullptr;
 #endif
 };

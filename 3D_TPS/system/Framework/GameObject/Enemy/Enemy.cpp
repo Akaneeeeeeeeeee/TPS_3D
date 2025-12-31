@@ -43,11 +43,10 @@ void Enemy::SetWayPoints(const std::vector<Vector3>& points)
 
 void Enemy::Awake(void)
 {
-	auto& am = AssetManager::GetInstance();
 	auto& rng = RandomEngine::tls();
 
 	// 1) 見た目・アニメ周りの初期化
-	InitAnimation(am);
+	InitAnimation();
 
 	// 2) 物理・AI・聴覚コンポーネントの初期化
 	InitComponents();
@@ -85,38 +84,55 @@ void Enemy::Start(void)
 // ----------------------------------------
 // 1) アニメ関連
 // ----------------------------------------
-void Enemy::InitAnimation(AssetManager& am)
+void Enemy::InitAnimation(void)
 {
-	// アニメーションコンポーネント追加
+	//// アニメーションコンポーネント追加
+	//m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
+
+	//// メッシュ・シェーダ設定
+	//CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
+	//m_pAnimComp->SetMesh(mesh);
+
+	//CShader* shader = am.GetShader<CShader>("animshader");
+	//m_pAnimComp->SetShader(shader);
+
+	//// クリップ取得
+	//auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	//auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
+	//auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
+	//auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
+	//auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
+	//auto* lookaround = am.GetAnimationData<CAnimationData>("LookAround")->GetAnimation("LookAround", 0);
+	////auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
+	////auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
+	////auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
+	////auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
+	////auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
+
+	//// 種類ごとに登録
+	//m_pAnimComp->SetClip(AnimType::Idle, idle);
+	//m_pAnimComp->SetClip(AnimType::Walk, walk);
+	//m_pAnimComp->SetClip(AnimType::Run, run);
+	//m_pAnimComp->SetClip(AnimType::Surprise_RightTurn, right);
+	//m_pAnimComp->SetClip(AnimType::Surprise_LeftTurn, left);
+	//m_pAnimComp->SetClip(AnimType::LookAround, lookaround);
+
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
-	// メッシュ・シェーダ設定
-	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
-	m_pAnimComp->SetMesh(mesh);
+	SkinnedAnimSetup setup{};
+	setup.meshName = "Akai";
+	setup.shaderName = "animshader";
 
-	CShader* shader = am.GetShader<CShader>("animshader");
-	m_pAnimComp->SetShader(shader);
+	setup.clips = {
+		{ AnimType::Idle,               "Akai_Idle",    "Akai_Idle",    0, 1.0f },
+		{ AnimType::Walk,               "Walking",      "Walking",      0, 1.0f },
+		{ AnimType::Run,                "Akai_Run",     "Akai_Run",     0, 1.0f },
+		{ AnimType::Surprise_RightTurn, "Right_Turn",   "Right_Turn",   0, 1.0f },
+		{ AnimType::Surprise_LeftTurn,  "Left_Turn",    "Left_Turn",    0, 1.0f },
+		{ AnimType::LookAround,         "LookAround",   "LookAround",   0, 1.0f },
+	};
 
-	// クリップ取得
-	auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
-	auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
-	auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
-	auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
-	auto* lookaround = am.GetAnimationData<CAnimationData>("LookAround")->GetAnimation("LookAround", 0);
-	//auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	//auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	//auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	//auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
-	//auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
-
-	// 種類ごとに登録
-	m_pAnimComp->SetClip(AnimType::Idle, idle);
-	m_pAnimComp->SetClip(AnimType::Walk, walk);
-	m_pAnimComp->SetClip(AnimType::Run, run);
-	m_pAnimComp->SetClip(AnimType::Surprise_RightTurn, right);
-	m_pAnimComp->SetClip(AnimType::Surprise_LeftTurn, left);
-	m_pAnimComp->SetClip(AnimType::LookAround, lookaround);
+	m_pAnimComp->SetupFromAssets(setup);
 }
 
 // ----------------------------------------

@@ -29,10 +29,10 @@ public:
 	virtual void SetOffset(const Vector3& offset) { m_Offset = offset; }
 	virtual Vector3 GetOffset(void) const { return m_Offset; }
 
-    virtual void CreateBody(JPH::BodyInterface& bi) = 0;
+    virtual void CreateBody(JPH::BodyInterface& bi) {};
     virtual void DestroyBody(JPH::BodyInterface& bi);   
 
-	virtual void Attach(EngineContext& context) override;
+	virtual void Attach(EngineServices& context) override;
     virtual void Detach(void) override;
 
     virtual void SetMesh(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices) {};

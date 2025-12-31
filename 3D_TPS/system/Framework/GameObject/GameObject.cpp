@@ -24,7 +24,6 @@ GameObject::GameObject(ComponentFactory* factory,
 
 }
 
-
 void GameObject::RemoveComponent(const std::string& name)
 {
 	// コンポーネント探索
@@ -48,6 +47,8 @@ void GameObject::RemoveComponent(const std::string& name)
 // 保留中の初期化コンポーネントを初期化する
 void GameObject::FlushInitializeQueue(void)
 {
+	if (m_InitializeQueue.empty()) { return; }
+
 	// 保留中の初期化コンポーネントを初期化する
 	for (auto& component : m_InitializeQueue)
 	{
@@ -107,14 +108,16 @@ void GameObject::StartOnce(void)
 	Start();                 // 派生の処理
 }
 
-
-void GameObject::Update(const float deltatime)
+void GameObject::BaseUpdate(const float deltatime)
 {
 	// 未初期化のコンポーネントがあれば初期化する
 	FlushInitializeQueue();
 
+	// 派生先のUpdate呼び出し
+	Update(deltatime);
+
 	// コンポーネントの更新
-	for(auto& component : m_Components)
+	for (auto& component : m_Components)
 	{
 		if (component.second->GetIsValid())
 		{
@@ -126,6 +129,33 @@ void GameObject::Update(const float deltatime)
 	FlushDestroyComponents();
 }
 
+void GameObject::Update(const float deltatime)
+{
+}
+
+void GameObject::BaseLateUpdate(const float deltatime)
+{
+	// Update中にAddComponentされたものは「このフレームのLateUpdateに入れる」
+	FlushInitializeQueue();
+
+	LateUpdate(deltatime);
+
+	for (auto& [name, comp] : m_Components)
+	{
+		if (comp && comp->GetIsValid())
+		{
+			comp->LateUpdate(deltatime);
+		}
+	}
+
+	// LateUpdate中にDestroyされたコンポーネントをここで掃除
+	FlushDestroyComponents();
+}
+
+void GameObject::LateUpdate(const float deltatime)
+{
+}
+
 /// <summary>
 /// レンダラー系コンポーネントを保持していれば描画する
 /// →毎フレームコンポーネントを捜索するのは非効率的なのでフラグを持たせるべきかも
@@ -134,17 +164,29 @@ void GameObject::Update(const float deltatime)
 void GameObject::Draw(void) const
 {
 	// レンダラー系コンポーネントを保持していれば描画する
-	/*for (auto& component : m_Components) 
+	/*for (auto& component : m_Components)
 	{
-		if (auto renderer = dynamic_cast<IRenderer*>(component.second.get())) 
+		if (auto renderer = dynamic_cast<IRenderer*>(component.second.get()))
 		{
 			renderer->Render();
 		}
 	}*/
 }
 
+void GameObject::BaseDraw(void) const
+{
+	Draw();
+}
+
 void GameObject::Uninit(void)
 {
+}
+
+void GameObject::BaseUninit(void)
+{
+	// 派生先の終了処理
+	Uninit();
+
 	// コンポーネントの終了処理→取り外し
 	for (auto& component : m_Components) {
 		component.second->Uninit();
@@ -153,4 +195,3 @@ void GameObject::Uninit(void)
 	m_Components.clear();
 	m_InitializeQueue.clear();
 }
-

@@ -5,8 +5,7 @@
 void SoundWaveVisualizer::OnEmit(const WorldSoundEvent& ev)
 {
     // 足音だけを対象にしたい場合
-    if (ev.Type != SoundType::Footstep)
-        return;
+    if (ev.Type != SoundType::Footstep && ev.Type != SoundType::StoneImpact) { return; }
 
     // ---- 天候・時間による聴覚係数 ----
     float hearingFactor = 1.0f;
@@ -106,6 +105,9 @@ void SoundWaveVisualizer::DrawWorld(void)
         const float r = w.currentRadius;
         const float y = w.center.y + 50.0f; // 地面から少し浮かせる
 
+        std::vector<LineInstanceParam> lines;
+        lines.reserve(SEGMENT);
+
         for (int i = 0; i < SEGMENT; ++i)
         {
             float a0 = (2.0f * PI) * (i / static_cast<float>(SEGMENT));
@@ -122,13 +124,18 @@ void SoundWaveVisualizer::DrawWorld(void)
                 w.center.z + std::sin(a1) * r
             );
 
-            Vector3 dir = p1 - p0;
-            float   len = dir.Length();
-            if (len <= 0.0f) continue;
-            dir /= len; // 正規化
+            // 長さ0を避ける
+            Vector3 d = p1 - p0;
+            if (d.LengthSquared() <= 1e-6f) continue;
 
-            // 1本の線を描画
-            LineDrawerDraw(len, p0, dir, col);
+            LineInstanceParam inst{};
+            inst.start = p0;
+            inst.end = p1;
+            inst.color = col;
+
+            lines.push_back(inst);
         }
+        // まとめて描画
+        LineInstancedDrawerDraw(lines);
     }
 }

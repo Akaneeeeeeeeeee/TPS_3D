@@ -237,7 +237,7 @@ void CollisionTestScene::Draw(void)
 	sp.y -= 500.0f;
 
 	SetLineWidth(3.0f);
-	LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
+	//LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
 
 	//int sqno = m_field->GetSquareNo(m_player->GetTransform().GetPosition());
 

@@ -44,7 +44,7 @@ public:
 	bool IsGameOverTriggered(void) const { return m_GameOverTriggered; }
 	void DebugImGui(void);
 private:
-	void InitAnimation(AssetManager& am);
+	void InitAnimation(void);
 	void InitPatrolPoints(RandomEngine& rng);
 	void InitComponents(void);
 

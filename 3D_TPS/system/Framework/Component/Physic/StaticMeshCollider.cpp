@@ -1,6 +1,6 @@
 #include "StaticMeshCollider.h"
 #include "system/Framework/GameObject/GameObject.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/PhysicsSystem/PhysicsManager.h"
 #include "system/Framework/PhysicsSystem/PhysicsLayer.h"
 #include "renderer.h"
@@ -70,7 +70,7 @@ bool StaticMeshCollider::SampleHeight(float x, float z, float& outY) const
 }
 
 
-void StaticMeshCollider::Attach(EngineContext& context)
+void StaticMeshCollider::Attach(EngineServices& context)
 {
     PhysicsComponent::Attach(context);
 }

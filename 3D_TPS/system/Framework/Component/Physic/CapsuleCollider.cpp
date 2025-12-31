@@ -19,7 +19,7 @@ void CapsuleCollider::Uninit(void)
 	}
 }
 
-void CapsuleCollider::Attach(EngineContext& context)
+void CapsuleCollider::Attach(EngineServices& context)
 {
 	PhysicsComponent::Attach(context);
 	m_HalfHeight = m_pOwner->GetScale().y * 0.5f;

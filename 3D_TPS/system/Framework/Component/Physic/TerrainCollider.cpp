@@ -1,5 +1,5 @@
 #include "TerrainCollider.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/PhysicsSystem/PhysicsManager.h"
 #include "system/Framework/PhysicsSystem/PhysicsLayer.h"
 #include "renderer.h"
@@ -9,7 +9,7 @@
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
 
-void TerrainCollider::Attach(EngineContext& context)
+void TerrainCollider::Attach(EngineServices& context)
 {
     PhysicsComponent::Attach(context);
 }

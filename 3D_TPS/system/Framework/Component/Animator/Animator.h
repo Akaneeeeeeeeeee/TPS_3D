@@ -18,12 +18,13 @@ public:
     Animator() = default;
 
     // 最初に再生するアニメをセット（Idle など）
-    void SetInitialClip(aiAnimation* clip, float startTimeSec = 0.0f);
+    void SetInitialClip(aiAnimation* clip, float startTimeSec = 0.0f, bool loop = true);
 
     // 「次にこのアニメへ遷移したい」ときに呼ぶ
-    // nextClip が currentClip と同じなら、何もしない or 即切り替えにする
-    void RequestTransition(aiAnimation* nextClip,
-        float blendDurationSec);
+    void RequestTransition(aiAnimation* nextClip, float blendDurationSec, bool nextLoop = true);
+
+    // 強制的に現在クリップを差し替え（ブレンドを切る）
+    void ForceSetClip(aiAnimation* clip, float startTimeSec = 0.0f, bool loop = true);
 
     // 毎フレーム呼ぶ。dt は秒。
     void Update(const float dt);
@@ -47,6 +48,19 @@ public:
 
     // 0〜1 のブレンド係数（0: 完全に current, 1: 完全に next）
     float GetBlendAlpha() const;
+    // ===== 制御用 =====
+    static float GetDurationSec(const aiAnimation* clip);
+
+    float GetCurrentDurationSec() const { return GetDurationSec(m_CurrentClip); }
+    float GetCurrentNormalizedTime() const;
+    void  SetCurrentTimeSec(float sec);
+    void  SetCurrentNormalizedTime(float t01);
+
+    void  SetLoop(bool loop) { m_LoopCurrent = loop; }
+    bool  IsLoop() const { return m_LoopCurrent; }
+
+    // 非ループで最後まで到達したら true
+    bool  IsFinished() const { return m_CurrentFinished; }
 
 private:
     aiAnimation* m_CurrentClip = nullptr;
@@ -59,4 +73,9 @@ private:
     // ブレンド時間 [秒]
     float m_BlendDuration = 0.0f;
     float m_BlendTimer = 0.0f;
+
+    // ループ制御 + 完了フラグ
+    bool  m_LoopCurrent = true;
+    bool  m_LoopNext = true;
+    bool  m_CurrentFinished = false;
 };

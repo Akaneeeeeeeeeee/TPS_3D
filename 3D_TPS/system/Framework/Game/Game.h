@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include "system/Framework/ObjectManager/ObjectManager.h"
 #include "system/Framework/SceneManager/SceneManager.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/Graphics/GraphicsDevice.h"
-
+#include "system/Framework/EngineSystem/GameFeatureSystems.h"
 
 /**
  * @brief ゲームクラス
@@ -13,28 +13,20 @@
 class Game
 {
 public:
-	Game();
-	~Game();
+    Game() = default;
+    ~Game() = default;
 
-	void Init(void);
-	void Update(const float deltatime);
-	void Draw(void);
-	void Uninit(void);
+    void Init();
+    void Update(float dt);
+    void Draw();
+    void Uninit();
 
 private:
-	GraphicsDevice m_GraphicsDevice;			// グラフィックスデバイス
-	ShaderManager m_ShaderManager;				// シェーダーマネージャー
-	AssetManager m_AssetManager;				// アセットマネージャー
-	RenderManager m_RenderManager;				// レンダーマネージャー
-	CameraManager m_CameraManager;				// カメラマネージャー
-	WeatherSystem m_WeatherSystem;				// 天候システム
-	PhysicsManager m_PhysicsManager;			// 物理マネージャー
-	LightSystem m_LightSystem;				// ライトシステム
-	std::unique_ptr<EngineContext> m_pContext;	// エンジンコンテキスト(Init後に生成したいためunique_ptr)
-	
-	GameObjectFactory m_ObjectFactory;		// オブジェクトファクトリー
-	ComponentFactory m_ComponentFactory;	// コンポーネントファクトリー
-	ObjectManager m_ObjectManager;			// オブジェクト管理クラス
-	SceneManager m_SceneManager;			// シーン管理クラス
-	//SceneClassFactory m_SceneFactory;	// シーンファクトリー
+    EngineSystems m_Engine;
+	GameFeatureSystems m_GameFeatures;
+
+    ComponentFactory  m_ComponentFactory;
+    GameObjectFactory m_ObjectFactory;
+    ObjectManager     m_ObjectManager;
+    SceneManager      m_SceneManager;
 };

@@ -4,6 +4,7 @@
 // 前方宣言
 class CharacterVirtualComponent;
 class CameraComponent;
+class ThrowComponent;
 
 /*
 * @brief	プレイヤークラス
@@ -34,9 +35,47 @@ public:
 	CameraComponent* GetCamera(void) { return m_pCamera; }
 
 	void GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const;	// 視線判定用のサンプリング点を取得
+
+private:
+	struct InputState
+	{
+		Vector3 inputDir = Vector3::Zero;
+		float amount = 0.0f;
+
+		bool aiming = false;
+		bool recenter = false;
+		bool wantsJump = false;
+		bool isCrouching = false;
+
+		bool throwPressed = false; // 押した瞬間
+	};
+
+private:
+	// 入力→状態
+	InputState ReadInputState(float dt);
+
+	// 移動
+	void BuildMoveDirection(const InputState& in, Vector3& outMoveDir, float& outMoveAmount);
+	void ApplyFacingRotation(const InputState& in, const Vector3& moveDir, float moveAmount);
+	void ApplyStance(const InputState& in);
+	void ApplyMoveToCharacterVirtual(const Vector3& moveDir, float moveAmount, bool wantsJump);
+
+	// アニメ（通常時のみ。構え中は ThrowComponent が主導）
+	void UpdateMovementAnimation(const InputState& in);
+
+	// 足音
+	void UpdateFootstep(float dt);
+
+	// カメラ
+	void UpdateCamera(float dt, const InputState& in);
+
+	// Throw（通知と PostUpdate 呼び出し）
+	void UpdateThrowNotify(const InputState& in);
+
 private:
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 	CameraComponent* m_pCamera = nullptr;
+	ThrowComponent* m_pThrowComp = nullptr;
 
 	// 足音用
 	static constexpr float FOOTSTEP_BASE_INTERVAL = 0.3f;
@@ -48,6 +87,19 @@ private:
 	float m_FootstepIntervalCrouch = 0.50f;  // しゃがみ歩き
 	bool  m_FootstepEnabled = true;   // 必要なら ON/OFF できるように
 
+	// カメラ補間用（static をやめて Player が持つ）
+	float m_CamAzimuth = 0.0f;
+	float m_CamElevation = 0.0f;
+
+	float m_CamRadiusCur = 800.0f;
+	float m_CamShoulderCur = 0.0f;
+	float m_CamLookAtHeightCur = 100.0f;
+	float m_CamNearCur = 1.0f;
+
 	// 前フレームで接地していたか
 	bool  m_WasOnGround = false;
+
+	// 前フレームの構え状態
+	bool  m_PrevAiming = false;
+	float m_PrevRightTrigger = 0.0f; // 右トリガーの押し込み判定用（GetRightTriggerがfloat前提）
 };

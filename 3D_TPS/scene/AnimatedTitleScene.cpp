@@ -115,7 +115,7 @@ void AnimatedTitleScene::Update(const float deltatime)
 	}
 	
 	// デバッグ中はEnterキーで次シーンへ
-	if(CDirectInput::GetInstance().CheckKeyBufferTrigger(DIK_RETURN))
+	if (CDirectInput::GetInstance().CheckKeyBufferTrigger(DIK_RETURN))
 	{
 		SetChangeScene(true);
 		SetNextSceneName(m_NextSceneName);

@@ -13,8 +13,8 @@ Skydome::~Skydome()
 
 void Skydome::Awake(void)
 {
-    // 半径大きめの球体を作成 (例: 半径1000.0f)
-    m_SphereMesh.Init(7500.0f, Color(1.0f, 1.0f, 1.0f, 1.0f), 320, 160);
+    // 半径大きめの球体を作成 (例: 半径0000.0f)
+    m_SphereMesh.Init(10000.0f, Color(1.0f, 1.0f, 1.0f, 1.0f), 320, 160);
 
     // マテリアル設定
 	// マテリアル情報取得
@@ -68,6 +68,7 @@ void Skydome::Draw(void) const
 
 	// 描画
 	m_MeshRenderer.Draw();
+	
 	//m_MeshRenderer.DrawSubset(
 	//	static_cast<UINT>(m_SphereMesh.GetIndices().size()), // indexnum : インデックス総数
 	//	0,                                               // baseindex : 先頭から

@@ -36,11 +36,11 @@ public:
 	void SetPosition(const Vector3& pos) { SetDirty(); Position = pos; }
 
 	Quaternion GetRotation(void) const { return Rotation; }
-	Quaternion& RotationRef(void) { SetDirty(); return Rotation; }
+	Quaternion& RotationRef(void) { return Rotation; }
 	void SetRotation(const Quaternion& rot) { SetDirty(); Rotation = rot; }
 
 	Vector3 GetScale(void) const { return Scale; }
-	Vector3& ScaleRef(void) { SetDirty(); return Scale; }
+	Vector3& ScaleRef(void) { return Scale; }
 	void SetScale(const Vector3& scale) { SetDirty(); Scale = scale; }
 
 	void SetParent(Transform* _parent);

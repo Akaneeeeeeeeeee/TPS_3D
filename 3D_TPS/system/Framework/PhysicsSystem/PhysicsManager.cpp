@@ -11,7 +11,7 @@
 #endif
 
 namespace {
-        constexpr float GRAVITY_SCALE = -98.0f;     // 重力加速度スケール
+        constexpr float GRAVITY_SCALE = -980.0f;     // 重力加速度スケール
 }
 
 static void MyJoltTraceImpl(const char* inFMT, ...)
@@ -60,7 +60,7 @@ PhysicsManager::~PhysicsManager()
 void PhysicsManager::Init(void)
 {
     JPH::RegisterDefaultAllocator();
-    // ★ここで差し替える
+    // ここで差し替える
     JPH::Trace = MyJoltTraceImpl;
     JPH::Factory::sInstance = new JPH::Factory();
     JPH::RegisterTypes();
@@ -94,12 +94,19 @@ void PhysicsManager::Update(const float deltaTime)
 }
 
 #ifdef _DEBUG
+
+void PhysicsManager::SetCameraManager(class CameraManager* cameraManager)
+{
+    m_CameraManager = cameraManager;
+}
+
 void PhysicsManager::DebugDraw(void)
 {
 #ifdef JPH_DEBUG_RENDERER
     if (!m_DebugRenderer) { return; }
 
-
+	DirectX::XMMATRIX vp = m_CameraManager->GetMain()->GetProjMatrix() * m_CameraManager->GetMain()->GetViewMatrix();
+	m_DebugRenderer->Begin(vp);
     m_DebugRenderer->NextFrame();
 
     JPH::BodyManager::DrawSettings settings;
@@ -109,6 +116,7 @@ void PhysicsManager::DebugDraw(void)
     settings.mDrawVelocity = false;
 
     m_System.DrawBodies(settings, m_DebugRenderer.get());
+	m_DebugRenderer->End();
 
 
     //// ---- 竭 繝舌ャ繝・幕蟋具ｼ医け繝ｪ繧｢ & VP 陦悟・險ｭ螳夲ｼ・----

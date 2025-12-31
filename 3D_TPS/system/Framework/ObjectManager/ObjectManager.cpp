@@ -37,7 +37,7 @@ void ObjectManager::Init(GameObjectFactory* factory)
 {
 	// ファクトリをセット
 	m_ObjectFactory = factory;
-	//m_Context = context;
+
 	// オブジェクト管理用コンテナの初期化
 	m_pObjects.clear();
 	m_ObjectsByID.clear();
@@ -49,19 +49,35 @@ void ObjectManager::Init(GameObjectFactory* factory)
 
 void ObjectManager::Update(const float deltatime)
 {
+	// 前フレームまでに生成されたものを登録
+	this->FlushSpawnQueue();
+
 	// 1) Awakeを全消化（Awake中に増えた分も処理）
 	this->FlushAwakeQueue();
 
 	// 2) Startを全消化（Start中に増えた分は次フレームでもOK）
 	this->FlushStartQueue();
 
+	// ============================
+	// 3) Update パス（全員Update）
+	// ============================
 	for (auto& obj : m_pObjects)
 	{
-		// アクティブかつ破棄されていないオブジェクトのみ更新
-		if (obj->IsActive() && !obj->IsDestroy())
-		{
-			obj->Update(deltatime);
-		}
+		if (!obj) { continue; }
+		if (!obj->IsActive() || obj->IsDestroy()) { continue; }
+
+		obj->BaseUpdate(deltatime);
+	}
+
+	// ============================
+	// 4) LateUpdate パス（全員LateUpdate）
+	// ============================
+	for (auto& obj : m_pObjects)
+	{
+		if (!obj) { continue; }
+		if (!obj->IsActive() || obj->IsDestroy()) { continue; }
+
+		obj->BaseLateUpdate(deltatime);
 	}
 
 	// フレーム最後に一括破棄
@@ -76,12 +92,12 @@ void ObjectManager::Update(const float deltatime)
 */
 void ObjectManager::Draw(void) const
 {
-	for(auto& obj : m_pObjects)
+	for (auto& obj : m_pObjects)
 	{
 		// アクティブかつ破棄されていないオブジェクトのみ描画
 		if (obj->IsActive() && !obj->IsDestroy())
 		{
-			obj->Draw();
+			obj->BaseDraw();
 		}
 	}
 }
@@ -91,7 +107,7 @@ void ObjectManager::Uninit(void) {
 	for (auto& obj : m_pObjects)
 	{
 		// オブジェクトの中身を解放
-		obj->Uninit();
+		obj->BaseUninit();
 	}
 
 	// コンテナ全体を解放
@@ -102,6 +118,48 @@ void ObjectManager::Uninit(void) {
 	m_PendingAwake.clear();
 	m_PendingStart.clear();
 	//m_pRenderManager = nullptr;	// レンダリングマネージャーへのポインタをクリア
+}
+
+// FlushSpawnQueue: 生成キューを消化する関数
+void ObjectManager::FlushSpawnQueue(void)
+{
+	std::vector<std::unique_ptr<GameObject>> batch;
+	batch.swap(m_PendingSpawn);
+	if (batch.empty()) return;
+
+	for (auto& up : batch)
+	{
+		if (!up) continue;
+
+		GameObject* obj = up.get();
+		if (!obj) continue;
+
+		// 破棄予約なら世界に登録しない（必要なら Uninit して捨てる）
+		if (obj->IsDestroy())
+		{
+			continue;
+		}
+
+		// 名前重複の扱いを決める（上書きしない）
+		const std::string& nm = obj->GetName();
+		if (!nm.empty())
+		{
+			if (m_ObjectsByName.contains(nm))
+			{
+				// 弾く
+				continue;
+			}
+		}
+
+		// ここで初めて “世界に登録”
+		m_pObjects.push_back(std::move(up));             // 所有権移動
+		m_ObjectsByID[obj->GetID()] = obj;               // ID
+		if (!nm.empty()) m_ObjectsByName[nm] = obj;      // Name
+		m_ObjectsByTag[obj->GetTag()].push_back(obj);    // Tag
+
+		// Awake待ちへ
+		m_PendingAwake.push_back(obj);
+	}
 }
 
 // FlushAwakeQueue: Awakeキューを消化する関数
@@ -160,14 +218,20 @@ void ObjectManager::FlushDestroyQueue(void)
 		if (obj->IsDestroy())
 		{
 			Tag objTag = obj->GetTag();
-			// タグリストから削除
-			auto& tagList = m_ObjectsByTag[objTag];
-			tagList.erase(std::remove(tagList.begin(), tagList.end(), obj), tagList.end());
+			// タグリストから削除（存在するときだけ。[] で空要素を作らない）
+			auto tagIt = m_ObjectsByTag.find(objTag);
+			if (tagIt != m_ObjectsByTag.end())
+			{
+				auto& tagList = tagIt->second;
+				tagList.erase(std::remove(tagList.begin(), tagList.end(), obj), tagList.end());
+			}
+
 			// 名前リストから削除
 			auto nameIt = m_ObjectsByName.find(obj->GetName());
 			if (nameIt != m_ObjectsByName.end()) {
 				m_ObjectsByName.erase(nameIt);
 			}
+
 			// IDリストから削除
 			auto idIt = m_ObjectsByID.find(obj->GetID());
 			if (idIt != m_ObjectsByID.end()) {
@@ -175,7 +239,7 @@ void ObjectManager::FlushDestroyQueue(void)
 			}
 
 			// 終了処理
-			obj->Uninit();
+			obj->BaseUninit();
 			// オブジェクトコンテナから削除
 			it = m_pObjects.erase(it);
 		}

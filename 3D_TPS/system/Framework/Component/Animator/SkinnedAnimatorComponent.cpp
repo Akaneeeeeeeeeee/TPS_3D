@@ -3,6 +3,25 @@
 #include "Framework/GameObject/GameObject.h"
 #include "system/Renderer.h"
 
+void SkinnedAnimationComponent::Attach(EngineServices& ctx)
+{
+    m_asset = &ctx.asset;
+    ApplySetupIfPossible();
+}
+
+void SkinnedAnimationComponent::Detach()
+{
+    m_asset = nullptr;
+}
+
+void SkinnedAnimationComponent::SetupFromAssets(const SkinnedAnimSetup& setup)
+{
+    m_PendingSetup = setup;
+    m_SetupApplied = false;
+    ApplySetupIfPossible();
+}
+
+
 void SkinnedAnimationComponent::SetClip(AnimType type, aiAnimation* clip, float speed)
 {
     if (!clip) return;
@@ -10,11 +29,65 @@ void SkinnedAnimationComponent::SetClip(AnimType type, aiAnimation* clip, float 
     m_Clips[idx].clip = clip;
     m_Clips[idx].speed = speed;
 
-    // 最初に Idle が設定されたタイミングで Animator を初期化してもいい
     if (type == AnimType::Idle && !m_Animator.GetCurrentClip())
     {
-        m_Animator.SetInitialClip(clip, 0.0f);
+        m_Animator.SetInitialClip(clip, 0.0f, true);
     }
+}
+
+aiAnimation* SkinnedAnimationComponent::GetClipPtr(AnimType type) const
+{
+    int idx = static_cast<int>(type);
+    return m_Clips[idx].clip;
+}
+
+float SkinnedAnimationComponent::GetSpeedScaleForClip(aiAnimation* clip) const
+{
+    if (!clip) return 1.0f;
+    for (int i = 0; i < static_cast<int>(AnimType::Max); ++i)
+    {
+        if (m_Clips[i].clip == clip)
+            return m_Clips[i].speed;
+    }
+    return 1.0f;
+}
+
+void SkinnedAnimationComponent::ApplySetupIfPossible()
+{
+    if (m_SetupApplied) { return; }
+    if (!m_asset) { return; }
+    if (!m_PendingSetup.has_value()) { return; }
+
+    const auto& s = *m_PendingSetup;
+
+    // Mesh
+    if (!s.meshName.empty())
+    {
+        auto* mesh = m_asset->GetMesh<CAnimationMesh>(s.meshName);
+        SetMesh(mesh);
+        ApplyMeshToRuntimeIfReady(); // Init後でも反映できるように
+    }
+
+    // Shader
+    if (!s.shaderName.empty())
+    {
+        auto* shader = m_asset->GetShader<CShader>(s.shaderName);
+        SetShader(shader);
+    }
+
+    // Clips
+    for (const auto& c : s.clips)
+    {
+        auto* data = m_asset->GetAnimationData<CAnimationData>(c.dataName);
+        if (!data) continue;
+
+        auto* clip = data->GetAnimation(c.clipName.c_str(), c.index);
+        if (!clip) continue;
+
+        SetClip(c.type, clip, c.speed);
+    }
+
+    m_SetupApplied = true;
 }
 
 void SkinnedAnimationComponent::Play(AnimType type, float blendTimeSec)
@@ -23,27 +96,52 @@ void SkinnedAnimationComponent::Play(AnimType type, float blendTimeSec)
     const auto& info = m_Clips[idx];
     if (!info.clip) return;
 
-    // 速度はとりあえず timeScale 側でまとめて制御するなら
-    // Animator 側はそのまま RequestTransition だけでOK
-    m_Animator.RequestTransition(info.clip, blendTimeSec);
+    // 既定はループ（StoneThrow は Player 側で ForceSet(loop=false) する）
+    m_Animator.RequestTransition(info.clip, blendTimeSec, true);
 }
 
-
-void SkinnedAnimationComponent::Init(void)
+void SkinnedAnimationComponent::ForceSet(AnimType type, float startTimeSec, bool loop)
 {
-    m_AnimObject = std::make_unique<CAnimationObject>();
-    m_AnimObject->Init();
+    int idx = static_cast<int>(type);
+    const auto& info = m_Clips[idx];
+    if (!info.clip) return;
 
-    if (m_pMesh)
+    m_Animator.ForceSetClip(info.clip, startTimeSec, loop);
+}
+
+void SkinnedAnimationComponent::ApplyMeshToRuntimeIfReady()
+{
+    // Init後なら m_AnimObject が存在するので、その場で反映
+    if (m_AnimObject && m_pMesh)
     {
         m_AnimObject->SetAnimationMesh(m_pMesh);
     }
 }
 
+void SkinnedAnimationComponent::Init()
+{
+    m_AnimObject = std::make_unique<CAnimationObject>();
+    m_AnimObject->Init();
+
+    // Setup が先に済んでればここで反映される
+    if (m_pMesh)
+    {
+        m_AnimObject->SetAnimationMesh(m_pMesh);
+    }
+
+    // Attach 済みで Setup が未適用だった場合もあるので一応
+    ApplySetupIfPossible();
+}
+
 void SkinnedAnimationComponent::Update(const float dt)
 {
-    // アニメ時間を進める
-    m_Animator.Update(dt);
+    // m_PlaybackSpeed と clip の speed を反映
+    aiAnimation* cur = m_Animator.GetCurrentClip();
+    float clipScale = GetSpeedScaleForClip(cur);
+
+    const float scaledDt = dt * m_PlaybackSpeed * clipScale;
+
+    m_Animator.Update(scaledDt);
 
     // ボーン行列計算
     if (m_AnimObject)
@@ -61,16 +159,13 @@ void SkinnedAnimationComponent::Draw() const
 {
     if (!m_AnimObject) { return; }
 
-    // シェーダセット
     m_pShader->SetGPU();
 
-    // オーナーのワールド行列をセット
     if (m_pOwner)
     {
         Matrix4x4 world = m_pOwner->GetWorldMatrix();
         Renderer::SetWorldMatrix(&world);
     }
 
-    // メッシュ描画（ボーン行列は Update で仕込んだ状態）
     m_AnimObject->Draw();
 }

@@ -38,7 +38,7 @@ public:
 	void Update(const float deltaTime) override;
 	void Uninit(void) override;
 
-	void Attach(EngineContext& context) override;
+	void Attach(EngineServices& context) override;
 	void Detach(void) override;
    
 	void SetStance(Stance stance);
