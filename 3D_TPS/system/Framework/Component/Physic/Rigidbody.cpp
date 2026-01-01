@@ -180,8 +180,8 @@ void Rigidbody::CreateBody(JPH::BodyInterface& bi)
             set.mIsSensor = true;
         }
 
-        // GameObject* ‚ð UserData ‚É“ü‚ê‚é
-        set.mUserData = reinterpret_cast<JPH::uint64>(m_pOwner);
+        // GameObject ‚Ì ID ‚ð UserData ‚É“ü‚ê‚é
+        set.mUserData = m_pOwner->GetID();
         
         if (Body* body = bi.CreateBody(set))
         {

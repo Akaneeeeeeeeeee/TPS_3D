@@ -31,6 +31,7 @@ void Game::Init()
 
 	// 初期天候
 	svc.weather.SetWeather(WeatherType::HeavyRain, 0.0f);
+	svc.physics.SetObjectManager(&m_ObjectManager);
 
 	// ComponentFactory は EngineServices を注入
 	m_ComponentFactory.Init(&svc);

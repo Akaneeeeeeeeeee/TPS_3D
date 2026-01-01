@@ -59,5 +59,39 @@ public:
 
 private:
     PhysicsManager& m_Owner;
+
+    // ★Removed時に Body が取れないケースがあるので、BodyIDペア→情報を保存しておく
+    struct PairKey
+    {
+        uint32_t a;
+        uint32_t b;
+        bool operator==(const PairKey& r) const { return a == r.a && b == r.b; }
+    };
+    struct PairKeyHash
+    {
+        size_t operator()(const PairKey& k) const noexcept
+        {
+            return (size_t(k.a) << 1) ^ size_t(k.b);
+        }
+    };
+
+    struct PairInfo
+    {
+        bool isTrigger = false; // sensor1 && !sensor2 か !sensor1 && sensor2 のとき true
+        uint64_t id1 = 0;
+        uint64_t id2 = 0;
+        int refCount = 0;       // サブシェイプ複数接触の重複に備える
+    };
+
+    static PairKey MakeKey(const JPH::BodyID& id1, const JPH::BodyID& id2)
+    {
+        uint32_t a = id1.GetIndexAndSequenceNumber();
+        uint32_t b = id2.GetIndexAndSequenceNumber();
+        if (a < b) return PairKey{ a, b };
+        else       return PairKey{ b, a };
+    }
+
+    std::mutex m_PairMtx;
+    std::unordered_map<PairKey, PairInfo, PairKeyHash> m_Pairs;
 };
 

@@ -95,7 +95,10 @@ void StaticMeshCollider::SetMesh(const CStaticMesh& mesh)
     {
         auto& bi = m_Physics->GetBodyInterface();
         if (bi.IsAdded(m_BodyID))
+        {
             bi.RemoveBody(m_BodyID);
+        }
+        bi.DestroyBody(m_BodyID);
         m_BodyID = JPH::BodyID();
     }
 
@@ -248,9 +251,10 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
         Layers::TERRAIN
     );
 
-	settings.mUserData = reinterpret_cast<uint64>(m_pOwner);
+    // GameObject ‚Ì ID ‚ð UserData ‚É“ü‚ê‚é
+    settings.mUserData = m_pOwner ? m_pOwner->GetID() : 0;
 
-    m_BodyID = bi.CreateAndAddBody(settings, EActivation::Activate);
+    m_BodyID = bi.CreateAndAddBody(settings, EActivation::DontActivate);
 }
 
 void StaticMeshCollider::Uninit()
@@ -260,9 +264,9 @@ void StaticMeshCollider::Uninit()
         auto& bi = m_Physics->GetBodyInterface();
 
         if (bi.IsAdded(m_BodyID))
+        {
             bi.RemoveBody(m_BodyID);
-
-        bi.SetUserData(m_BodyID, 0);
+        }
         bi.DestroyBody(m_BodyID);
 
         m_BodyID = JPH::BodyID();

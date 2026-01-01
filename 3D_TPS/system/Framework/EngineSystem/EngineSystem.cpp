@@ -45,7 +45,12 @@ void EngineSystems::BeginFrame(float dt)
 
 void EngineSystems::UpdateFrame(float dt)
 {
+	// 物理更新
     m_Physics.Update(dt);
+    // 衝突イベントだけメインスレッドで発火
+    m_Physics.DispatchCollisionEvents();
+
+	// 天候更新
     m_Weather.Update(dt);
 
     // Weather に view/proj を渡す（あなたの現状の移植）

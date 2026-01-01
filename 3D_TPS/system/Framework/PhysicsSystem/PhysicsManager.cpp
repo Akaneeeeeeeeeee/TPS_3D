@@ -1,7 +1,7 @@
 #include "PhysicsManager.h"
 #include <Jolt/RegisterTypes.h>
 #include "Framework/Component/Physic/PhysicsComponent.h"
-#include "Framework/GameObject/GameObject.h"
+#include "Framework/ObjectManager/ObjectManager.h"
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #ifdef JPH_DEBUG_RENDERER
@@ -88,10 +88,7 @@ void PhysicsManager::Init(void)
 #endif
 }
 
-void PhysicsManager::Update(const float deltaTime)
-{
-    m_System.Update(deltaTime, 1, m_TempAllocator.get(), m_JobSystem.get());
-}
+
 
 #ifdef _DEBUG
 
@@ -152,8 +149,74 @@ void PhysicsManager::Register(PhysicsComponent* component)
 
 void PhysicsManager::UnRegister(PhysicsComponent* component)
 {
+    if (!component) return;
+
+    // 配列からも外す（残ると二重Destroyなどの温床）
+    m_PhysicsObjects.erase(
+        std::remove(m_PhysicsObjects.begin(), m_PhysicsObjects.end(), component),
+        m_PhysicsObjects.end()
+    );
+
     component->DestroyBody(m_System.GetBodyInterface());
 }
+void PhysicsManager::Update(const float deltaTime)
+{
+    m_System.Update(deltaTime, 1, m_TempAllocator.get(), m_JobSystem.get());
+    // ここでは Dispatch しない（呼び出し側＝メインスレッドが Update直後に呼ぶ）
+}
+
+void PhysicsManager::EnqueueEvent(CollisionEvent::Type type, uint64_t aId, uint64_t bId)
+{
+    // 物理スレッドから呼ばれる。GameObject には触らず、軽い処理だけ。
+    if (aId == 0 || bId == 0) return;
+
+    std::lock_guard<std::mutex> lk(m_EventMtx);
+    m_EventQueue.push_back(CollisionEvent{ type, aId, bId });
+}
+
+void PhysicsManager::DispatchCollisionEvents(void)
+{
+    // ★必ずメインスレッドで呼ぶ（Physics.Updateの後）
+    std::vector<CollisionEvent> events;
+    {
+        std::lock_guard<std::mutex> lk(m_EventMtx);
+        events.swap(m_EventQueue);
+    }
+
+    if (!m_ObjectManager) return;
+
+    for (const auto& ev : events)
+    {
+        GameObject* a = m_ObjectManager->GetObjectByID<GameObject>(ev.aId);
+        GameObject* b = m_ObjectManager->GetObjectByID<GameObject>(ev.bId);
+
+        // Destroy済み/存在しないなら呼ばない（ここで落ちないようにする）
+        if (!a || !b) continue;
+        if (a->IsDestroy() || b->IsDestroy()) continue;
+
+        switch (ev.type)
+        {
+        case CollisionEvent::Type::CollisionEnter:
+            OnCollisionEnter(*a, *b);
+            break;
+        case CollisionEvent::Type::CollisionExit:
+            OnCollisionExit(*a, *b);
+            break;
+        case CollisionEvent::Type::TriggerEnter:
+            OnTriggerEnter(*a, *b);
+            break;
+        case CollisionEvent::Type::TriggerExit:
+            OnTriggerExit(*a, *b);
+            break;
+        case CollisionEvent::Type::CharacterEnter:
+            OnCharacterCollisionEnter(*a, *b);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 
 
 void PhysicsManager::OnCollisionEnter(GameObject& a, GameObject& b)

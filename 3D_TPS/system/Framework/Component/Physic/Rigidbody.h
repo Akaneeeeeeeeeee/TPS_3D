@@ -55,7 +55,7 @@ public:
 
 	// 最大線形速度（上限の速さ）
 	void SetMaxLinearVelocity(float maxVel, bool applyNow = true);
-	float GetMaxLinearVelocity(void) const { return m_MaxLinearVelocity.value(); }
+	float GetMaxLinearVelocity(void) const { return m_MaxLinearVelocity.value_or(1000.0f); }
 
 	// “投げる”用途：Bodyが無ければ保留して、Body生成直後に適用
 	void SetInitialVelocity(const Vector3& v);
