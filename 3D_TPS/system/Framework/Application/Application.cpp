@@ -27,6 +27,14 @@ void Application::Run(void)
 	//! →二重ループに見えるが、MessageLoop()はメッセージがWM_QUIT以外の場合trueを返すので大丈夫(それ以外のメッセージはウィンドウプロシージャに送っておしまい)
 	while (Window::GetInstance().MessageLoop())
 	{
+		// MessageBoxなどで止まっていた後の「巨大dt」を無効化
+		if (Window::GetInstance().ConsumeTimeReset())
+		{
+			fpsrate.Reset();
+			Time::GetInstance().Update(0);
+			continue; // このフレームは Update/Draw しない
+		}
+
 		// FPS制御
 		fpsrate.Tick();
 		// Tick で確定したマイクロ秒を Time に渡す

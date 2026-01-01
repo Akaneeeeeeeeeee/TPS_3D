@@ -109,6 +109,12 @@ public:
         }
     */
 
+    void Reset(void)
+    {
+        m_last_time = std::chrono::steady_clock::now();
+        m_delta_time = 0;
+    }
+
 private:
     uint64_t m_MicrosecondsPerFrame = 0;  ///< 1フレームあたりの目標時間（マイクロ秒）
     uint64_t m_delta_time = 0;            ///< 前フレームからの経過時間（マイクロ秒）
