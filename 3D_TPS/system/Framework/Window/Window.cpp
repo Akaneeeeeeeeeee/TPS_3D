@@ -148,8 +148,13 @@ LRESULT CALLBACK Window::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 		// メッセージボック表示中にも同時実行されるのでここに入る可能性がある
 		isMessageBoxShowed = true;
-		int res = MessageBoxA(NULL, "終了しますか？", "確認", MB_OKCANCEL);
+
+		int res = MessageBoxA(hWnd, "終了しますか？", "確認", MB_OKCANCEL);
+		
 		isMessageBoxShowed = false;
+
+		Window::GetInstance().RequestTimeReset(); // メッセージボックス表示で時間が飛ぶのでリセット要求を出す
+		
 		if (res == IDOK) {
 			DestroyWindow(hWnd);  // 「WM_DESTROY」メッセージを送る
 		}

@@ -16,7 +16,7 @@ public:
 
 	virtual bool GetRenderInfo(RenderInfo& outInfo) = 0;	//!< 描画に必要な情報を取得する純粋仮想関数
 
-	virtual void Attach(EngineContext& context) override;
+	virtual void Attach(EngineServices& context) override;
 	virtual void Detach(void) override;
 
 protected:

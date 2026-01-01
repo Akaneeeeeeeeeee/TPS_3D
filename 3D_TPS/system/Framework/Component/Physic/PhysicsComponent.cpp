@@ -1,5 +1,5 @@
 #include "PhysicsComponent.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include "Framework/PhysicsSystem/PhysicsManager.h"
 
 void PhysicsComponent::Uninit()
@@ -20,9 +20,9 @@ void PhysicsComponent::DestroyBody(JPH::BodyInterface& bi)
     }
 }
 
-void PhysicsComponent::Attach(EngineContext& context)
+void PhysicsComponent::Attach(EngineServices& context)
 {
-    m_Physics = &context.joltPhysicsManager;
+    m_Physics = &context.physics;
     m_Physics->Register(this);
 }
 

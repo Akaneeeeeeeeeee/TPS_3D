@@ -10,7 +10,7 @@ BoxCollider::BoxCollider(void)
 {
 }
 
-void BoxCollider::Attach(EngineContext& context)
+void BoxCollider::Attach(EngineServices& context)
 {
     PhysicsComponent::Attach(context);
 }

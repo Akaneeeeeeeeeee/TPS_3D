@@ -189,7 +189,7 @@ void LineInstancedDrawerDraw(
         g_instMaterial.SetGPU();
 
         // CLineMesh ‚Í 1 –{‚Ô‚ñ‚Ì 2 ’¸“_‚ğ‚Á‚Ä‚¢‚é‘O’ñ
-        g_instRenderer.DrawInstanced(static_cast<UINT>(batchCount));
+        g_instRenderer.DrawInstanced(D3D11_PRIMITIVE_TOPOLOGY_LINELIST, static_cast<UINT>(batchCount));
 
         offset += batchCount;
     }

@@ -16,37 +16,41 @@ void CharacterContactListenerImpl::OnContactAdded(
     JPH::Vec3Arg                    inContactNormal,
     JPH::CharacterContactSettings& ioSettings)
 {
-    // 1) Character 側 GameObject*
-    GameObject* charGO = nullptr;
+     // 1) Character 側 GameObject*
+    uint64_t charId = 0;
     {
         // CharacterVirtual 自体には userData を持たせていないので、
         // InnerBodyID → Body → userData から取得する
         JPH::BodyID innerID = inCharacter->GetInnerBodyID();
 
         auto& system = m_Owner.GetSystem();
-        JPH::BodyLockRead lock(system.GetBodyLockInterfaceNoLock(), innerID);
+        JPH::BodyLockRead lock(system.GetBodyLockInterface(), innerID); // ★NoLockではなく通常版に（安全寄り）
         if (lock.Succeeded())
         {
             const JPH::Body& innerBody = lock.GetBody();
-            charGO = FromUserData(innerBody.GetUserData());
+            charId = static_cast<uint64_t>(innerBody.GetUserData());     // ★ポインタ化しない
         }
     }
 
     // 2) ぶつかった相手 Body の GameObject*
-    GameObject* otherGO = nullptr;
+    uint64_t otherId = 0;
     {
         auto& system = m_Owner.GetSystem();
-        JPH::BodyLockRead lock(system.GetBodyLockInterfaceNoLock(), inBodyID2);
+        JPH::BodyLockRead lock(system.GetBodyLockInterface(), inBodyID2); // ★同上
         if (lock.Succeeded())
         {
             const JPH::Body& body2 = lock.GetBody();
-            otherGO = FromUserData(body2.GetUserData());
+            otherId = static_cast<uint64_t>(body2.GetUserData());         // ★ポインタ化しない
         }
     }
 
-    if (!charGO || !otherGO) return;
+    if (charId == 0 || otherId == 0) return;
 
     // ここで Tags や Body の sensor フラグを見て、衝突/トリガーを振り分けてもよい
-    // まずは「キャラが何かに当たった」というイベントにまとめる
-    m_Owner.OnCharacterCollisionEnter(*charGO, *otherGO);
+    // ここをイベントキューへ
+    m_Owner.EnqueueEvent(
+        PhysicsManager::CollisionEvent::Type::CharacterEnter,
+        charId,
+        otherId
+    );
 }

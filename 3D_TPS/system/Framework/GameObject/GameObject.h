@@ -1,13 +1,11 @@
 ﻿#pragma once
 #include "system/Framework/Component/Transform/Transform.h"
 #include "system/Framework/Component/IComponent/IComponent.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/Factory/ComponentFactory.h"
-//#include "system/Framework/Component/Renderer/SpriteRenderer/SpriteRenderer.h"
-//#include "system/Framework/Component/ComponentFactory/ComponentFactory.h"
-//#include "system/Framework/AssetManager/AssetManager.h"
-//#include "system/Framework/ShaderManager/ShaderManager.h"
 
+// 前方宣言
+class ObjectManager;
 
 //! オブジェクト管理用タグ
 enum class Tag {
@@ -73,8 +71,14 @@ public:
 	void StartOnce(void);
 	virtual void Start(void) {};	// 他オブジェクト参照の解決、GetComponent / Find / 相互リンク、初回だけ行いたいセットアップ
 	virtual void Update(const float deltatime);
+	virtual void LateUpdate(const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
+
+	void BaseUpdate(const float deltatime);			// 派生で基底クラスの呼び忘れ事故を防ぐため
+	void BaseLateUpdate(const float deltatime);
+	void BaseDraw(void) const;
+	void BaseUninit(void);
 
 	// 当たり判定イベント
 	virtual void OnCollisionEnter(GameObject& other) {}
@@ -138,10 +142,12 @@ public:
 	// Transform関連は直接委譲
 	Matrix4x4 GetWorldMatrix(void) const { return m_Transform.GetWorldMatrix(); }
 
-	Tag GetTag(void) const { return m_Tag; }
+	const Tag GetTag(void) const { return m_Tag; }
 	void SetTag(const Tag& tag) { m_Tag = tag; }	// これはObjectMangerからのみ呼び出す
-	uint64_t GetID(void) const { return m_ID; }
-	std::string GetName(void) const { return m_Name; }
+	const uint64_t GetID(void) const { return m_ID; }
+	const std::string& GetName(void) const { return m_Name; }
+
+	void SetObjectManager(ObjectManager* objMgr) { m_pObjectManager = objMgr; }
 
 	bool IsActive(void) const { return m_IsActive; }
 	void SetActive(const bool isActive) { m_IsActive = isActive; }
@@ -149,16 +155,17 @@ public:
 	void Destroy(void) { m_IsDestroy = true; }
 	void SetDestroy(const bool isDestroy) { m_IsDestroy = isDestroy; }
 
+	ObjectManager* GetObjectManager(void) const { return m_pObjectManager; }
+
 protected:
 	// SRT情報（姿勢情報）
 	Transform m_Transform;
-	//! 描画の為の情報（見た目に関わる部分）
-	//Shader m_Shader; // シェーダー
 
+	// コンポーネントファクトリーへの参照
 	ComponentFactory* m_pComponentFactory = nullptr;
 
-	// コンテキストへの参照
-	//EngineContext& m_Context;
+	// オブジェクトマネージャーへの参照
+	ObjectManager* m_pObjectManager = nullptr;
 
 	//! 一意のID
 	uint64_t m_ID = 0;
@@ -185,9 +192,6 @@ protected:
 	
 	//! オブジェクトの名前
 	std::string m_Name;
-
-	//! シェーダーマネージャー
-	//ShaderManager* m_pShaderManager;
 
 	//! コンポーネントのマップ(コンポーネントが多数になる場合はunordered_mapとの併用も検討)
 	std::unordered_map<std::string, std::unique_ptr<IComponent>> m_Components;
@@ -220,22 +224,7 @@ template <typename T>
 inline bool GameObject::RemoveComponent(T* component)
 {
 	if (!component) { return false; }
-
-	// コンポーネント探索
-	auto it = std::find_if(m_Components.begin(), m_Components.end(),
-		[&](const auto& pair) { return pair.second.get() == component; });
-	if (it == m_Components.end()) { return false; }
-
-	// まだキューにいるかもしれないので一応取り除く
-	m_InitializeQueue.erase(
-		std::remove(m_InitializeQueue.begin(), m_InitializeQueue.end(), component),
-		m_InitializeQueue.end()
-	);
-
-	// 終了処理
-	it->second->Uninit();
-	it->second->Detach();
-	m_Components.erase(it);
+	component->Destroy(); // 即消さない
 	return true;
 }
 
@@ -260,14 +249,9 @@ template <typename T>
 inline T* GameObject::GetComponent(const std::string& _name)
 {
 	// コンポーネント探索
-	for (auto& comp : m_Components)
-	{
-		if (comp.first == _name)
-		{
-			return static_cast<T*>(comp.second.get());
-		}
-	}
-	return nullptr;
+	auto it = m_Components.find(_name);
+	if (it == m_Components.end()) { return nullptr; }
+	return static_cast<T*>(it->second.get()); // 同一ヒエラルキーなのでOK
 }
 
 // GameObject に全部取り出すヘルパ

@@ -200,7 +200,7 @@ public:
     // ---- 毎フレーム更新 ----
     void Update(float dt);
 
-    // ---- デバッグ描画 ----
+    // ---- 天候描画 ----
     void DebugDrawParticles(void) const;
     void DebugDrawSun(void) const;
     void DebugImGui(void);    // ImGui用

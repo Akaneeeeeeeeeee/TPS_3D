@@ -2,6 +2,7 @@
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/Component/Transform/Transform.h"
 #include "system/Framework/WeatherSystem/WeatherSystem.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 
 using namespace DirectX;
 
@@ -10,10 +11,10 @@ ParticleComponent::ParticleComponent()
 {
 }
 
-void ParticleComponent::Attach(EngineContext& context)
+void ParticleComponent::Attach(EngineServices& context)
 {
     // ‚±‚±‚Å“o˜^
-    m_WeatherSystem = &context.weatherSystem;
+    m_WeatherSystem = &context.weather;
     if (m_WeatherSystem)
     {
         m_WeatherSystem->Register(this);

@@ -1,5 +1,5 @@
 #pragma once
-#include "Framework/EngineContext/EngineContext.h"
+#include "Framework/EngineSystem/EngineSystem.h"
 #include "Framework/Component/IComponent/IComponent.h"
 
 /*
@@ -13,13 +13,13 @@ class ComponentFactory
 {
 public:
     explicit ComponentFactory()
-        : m_pContext(nullptr) {};
+        : m_pServices(nullptr) {};
 
     ~ComponentFactory() = default;
 
-    void Init(EngineContext* context) 
+    void Init(EngineServices* service)
     {
-        m_pContext = context; 
+        m_pServices = service;
     }
 
     template<typename T, typename... Args>
@@ -29,11 +29,11 @@ public:
         auto comp = std::make_unique<T>(std::forward<Args>(args)...);
 
         comp->SetOwner(&owner);
-        comp->Attach(*m_pContext);   // ここでコンテキストを渡す
+        comp->Attach(*m_pServices);   // ここでコンテキストを渡す
 
         return comp;
     }
 
 private:
-    EngineContext* m_pContext = nullptr;
+    EngineServices* m_pServices = nullptr;
 };

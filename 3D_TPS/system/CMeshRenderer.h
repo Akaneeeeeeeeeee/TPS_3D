@@ -93,6 +93,24 @@ public:
 		);
 	}
 
+	// インスタンシング描画（トポロジー指定版）
+	virtual void DrawInstanced(D3D_PRIMITIVE_TOPOLOGY primtype, UINT instanceCount) const
+	{
+		// まず線用のトポロジーにする
+		BeforeDraw(primtype);
+
+		if (m_IndexNum <= 0 || instanceCount == 0) return;
+
+		Renderer::GetDeviceContext()->DrawIndexedInstanced(
+			m_IndexNum,
+			instanceCount,
+			0,
+			0,
+			0
+		);
+	}
+
+
 	// 頂点バッファを更新
 	void Modify(const std::vector<VERTEX_3D>& vertices)
 	{

@@ -14,14 +14,15 @@ class CameraComponent : public IComponent
 public:
     enum class Mode
     {
-        Orbit,   // 今のやつ（LookAt + Radius/Elevation/Azimuth）
+        Orbit,   // LookAt + Radius/Elevation/Azimuth
         Direct   // Position/LookAt/Up をそのまま使う
     };
+
     CameraComponent();
     ~CameraComponent() override = default;
 
     // IComponent
-    void Attach(EngineContext& context) override;
+    void Attach(EngineServices& context) override;
     void Detach(void) override;
 
     void Init(void) override;
@@ -59,26 +60,38 @@ public:
     // カメラ行列計算＋Renderer にセット
     void ApplyCamera(void);
 
+    // 肩越し用：右方向へずらす量（+で右肩、-で左肩）
+    float GetShoulderOffset() const { return m_ShoulderOffset; }
+    void  SetShoulderOffset(float v) { m_ShoulderOffset = v; }
+
+    // 近クリップだけ変えたい（ズーム時に足/体を切りやすくする）
+    float GetNearPlane() const { return m_Near; }
+    void  SetNearPlane(float nearPlane) { m_Near = nearPlane; }
+
 private:
-    Mode m_Mode = Mode::Orbit;
     CameraManager* m_CameraManager = nullptr;
-    
+    Mode m_Mode = Mode::Orbit;
+
     // メインカメラか？
     bool m_IsMainCamera = true;
 
     // 軌道カメラ用パラメータ
     float m_Elevation = -90.0f * PI / 180.0f;   // 仰角
-    float m_Azimuth = PI / 2.0f;                // 方位角
-    float m_Radius = 100.0f;                    // 半径
+    float m_Azimuth = PI / 2.0f;              // 方位角
+    float m_Radius = 100.0f;                 // 半径
 
     // 投影パラメータ
     float m_FovY = DirectX::XMConvertToRadians(45.0f);
     float m_Near = 1.0f;
     float m_Far = 100.0f;
+
+    // 右肩/左肩のオフセット（カメラの“右方向”へずらすだけ）
+    float m_ShoulderOffset = 0.0f;
+
     // カメラの基本情報
-    Vector3 m_Position = Vector3::Zero; // カメラ位置
-    Vector3 m_LookAt = Vector3::Zero;   // 注視点
-    Vector3 m_Up = Vector3::Up;         // 上方向
+    Vector3  m_Position = Vector3::Zero; // カメラ位置
+    Vector3  m_LookAt = Vector3::Zero; // 注視点
+    Vector3  m_Up = Vector3::Up;   // 上方向
     Matrix4x4 m_View{};                 // ビュー行列
     Matrix4x4 m_Proj{};                 // プロジェクション行列
 };

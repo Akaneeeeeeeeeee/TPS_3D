@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -199,6 +199,7 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\CapsuleCollider.h" />
     <ClInclude Include="system\Framework\Component\Physic\CharacterVirtualComponent.h" />
+    <ClInclude Include="system\Framework\Component\Physic\SphereCollider.h" />
     <ClInclude Include="system\Framework\Component\Physic\StaticMeshCollider.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -210,6 +211,10 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />
+    <ClInclude Include="system\Framework\Component\Throw\ThrowComponent.h" />
+    <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h" />
+    <ClInclude Include="system\Framework\EngineSystem\GameFeatureSystems.h" />
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
     <ClInclude Include="system\Framework\Factory\GameObjectFactory.h" />
     <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
@@ -230,6 +235,7 @@
     </ClInclude>
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
+    <ClInclude Include="system\Framework\SoundManager\sound.h" />
     <ClInclude Include="system\Framework\SoundManager\SoundManager.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
     <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h" />
@@ -275,9 +281,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Transform\Transform.h" />
-    <ClInclude Include="system\Framework\EngineContext\EngineContext.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Character\Character.h" />
     <ClInclude Include="system\Framework\GameObject\Enemy\Enemy.h" />
     <ClInclude Include="system\Framework\GameObject\GameObject.h" />
@@ -399,6 +402,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\CapsuleCollider.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\CharacterVirtualComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\Physic\SphereCollider.cpp" />
     <ClCompile Include="system\Framework\Component\Physic\StaticMeshCollider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -416,7 +420,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />
+    <ClCompile Include="system\Framework\Component\Throw\ThrowComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Transform\Transform.cpp" />
+    <ClCompile Include="system\Framework\EngineSystem\EngineSystem.cpp" />
     <ClCompile Include="system\Framework\GameObject\Character\Character.cpp" />
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
     <ClCompile Include="system\Framework\GameObject\GameObject.cpp" />
@@ -464,6 +471,7 @@
     <ClCompile Include="system\Framework\Shader\Shaders\VertexShader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\SoundManager\sound.cpp" />
     <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp" />
     <ClCompile Include="system\Framework\Window\Window.cpp" />
     <ClCompile Include="system\GameObject\obstacle.cpp" />

@@ -1,7 +1,7 @@
 #pragma once
 #include "Framework/Component/IComponent/IComponent.h"
 #include "Framework/WeatherSystem/WeatherSystem.h"
-#include "Framework/EngineContext/EngineContext.h"
+#include "Framework/EngineSystem/EngineSystem.h"
 
 class DayNightObserverComponent final
     : public IComponent
@@ -19,10 +19,10 @@ public:
     bool IsNightCached() const { return m_IsNight; } // 「取得だけ」用途
 
     // ---- IComponent ----
-    void Attach(EngineContext& ctx) override
+    void Attach(EngineServices& ctx) override
     {
         // contextに触るのはここだけ
-        m_Weather = &ctx.weatherSystem;
+        m_Weather = &ctx.weather;
         if (m_Weather)
             m_Weather->RegisterDayNightListener(this); // Register直後に通知される実装でもOK
     }

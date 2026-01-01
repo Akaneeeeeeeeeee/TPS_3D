@@ -1,7 +1,7 @@
 #include "PhysicsManager.h"
 #include <Jolt/RegisterTypes.h>
 #include "Framework/Component/Physic/PhysicsComponent.h"
-#include "Framework/GameObject/GameObject.h"
+#include "Framework/ObjectManager/ObjectManager.h"
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #ifdef JPH_DEBUG_RENDERER
@@ -11,7 +11,7 @@
 #endif
 
 namespace {
-        constexpr float GRAVITY_SCALE = -98.0f;     // 重力加速度スケール
+        constexpr float GRAVITY_SCALE = -980.0f;     // 重力加速度スケール
 }
 
 static void MyJoltTraceImpl(const char* inFMT, ...)
@@ -60,7 +60,7 @@ PhysicsManager::~PhysicsManager()
 void PhysicsManager::Init(void)
 {
     JPH::RegisterDefaultAllocator();
-    // ★ここで差し替える
+    // ここで差し替える
     JPH::Trace = MyJoltTraceImpl;
     JPH::Factory::sInstance = new JPH::Factory();
     JPH::RegisterTypes();
@@ -88,18 +88,22 @@ void PhysicsManager::Init(void)
 #endif
 }
 
-void PhysicsManager::Update(const float deltaTime)
-{
-    m_System.Update(deltaTime, 1, m_TempAllocator.get(), m_JobSystem.get());
-}
+
 
 #ifdef _DEBUG
+
+void PhysicsManager::SetCameraManager(class CameraManager* cameraManager)
+{
+    m_CameraManager = cameraManager;
+}
+
 void PhysicsManager::DebugDraw(void)
 {
 #ifdef JPH_DEBUG_RENDERER
     if (!m_DebugRenderer) { return; }
 
-
+	DirectX::XMMATRIX vp = m_CameraManager->GetMain()->GetProjMatrix() * m_CameraManager->GetMain()->GetViewMatrix();
+	m_DebugRenderer->Begin(vp);
     m_DebugRenderer->NextFrame();
 
     JPH::BodyManager::DrawSettings settings;
@@ -109,6 +113,7 @@ void PhysicsManager::DebugDraw(void)
     settings.mDrawVelocity = false;
 
     m_System.DrawBodies(settings, m_DebugRenderer.get());
+	m_DebugRenderer->End();
 
 
     //// ---- 竭 繝舌ャ繝・幕蟋具ｼ医け繝ｪ繧｢ & VP 陦悟・險ｭ螳夲ｼ・----
@@ -144,8 +149,74 @@ void PhysicsManager::Register(PhysicsComponent* component)
 
 void PhysicsManager::UnRegister(PhysicsComponent* component)
 {
+    if (!component) return;
+
+    // 配列からも外す（残ると二重Destroyなどの温床）
+    m_PhysicsObjects.erase(
+        std::remove(m_PhysicsObjects.begin(), m_PhysicsObjects.end(), component),
+        m_PhysicsObjects.end()
+    );
+
     component->DestroyBody(m_System.GetBodyInterface());
 }
+void PhysicsManager::Update(const float deltaTime)
+{
+    m_System.Update(deltaTime, 1, m_TempAllocator.get(), m_JobSystem.get());
+    // ここでは Dispatch しない（呼び出し側＝メインスレッドが Update直後に呼ぶ）
+}
+
+void PhysicsManager::EnqueueEvent(CollisionEvent::Type type, uint64_t aId, uint64_t bId)
+{
+    // 物理スレッドから呼ばれる。GameObject には触らず、軽い処理だけ。
+    if (aId == 0 || bId == 0) return;
+
+    std::lock_guard<std::mutex> lk(m_EventMtx);
+    m_EventQueue.push_back(CollisionEvent{ type, aId, bId });
+}
+
+void PhysicsManager::DispatchCollisionEvents(void)
+{
+    // ★必ずメインスレッドで呼ぶ（Physics.Updateの後）
+    std::vector<CollisionEvent> events;
+    {
+        std::lock_guard<std::mutex> lk(m_EventMtx);
+        events.swap(m_EventQueue);
+    }
+
+    if (!m_ObjectManager) return;
+
+    for (const auto& ev : events)
+    {
+        GameObject* a = m_ObjectManager->GetObjectByID<GameObject>(ev.aId);
+        GameObject* b = m_ObjectManager->GetObjectByID<GameObject>(ev.bId);
+
+        // Destroy済み/存在しないなら呼ばない（ここで落ちないようにする）
+        if (!a || !b) continue;
+        if (a->IsDestroy() || b->IsDestroy()) continue;
+
+        switch (ev.type)
+        {
+        case CollisionEvent::Type::CollisionEnter:
+            OnCollisionEnter(*a, *b);
+            break;
+        case CollisionEvent::Type::CollisionExit:
+            OnCollisionExit(*a, *b);
+            break;
+        case CollisionEvent::Type::TriggerEnter:
+            OnTriggerEnter(*a, *b);
+            break;
+        case CollisionEvent::Type::TriggerExit:
+            OnTriggerExit(*a, *b);
+            break;
+        case CollisionEvent::Type::CharacterEnter:
+            OnCharacterCollisionEnter(*a, *b);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 
 
 void PhysicsManager::OnCollisionEnter(GameObject& a, GameObject& b)

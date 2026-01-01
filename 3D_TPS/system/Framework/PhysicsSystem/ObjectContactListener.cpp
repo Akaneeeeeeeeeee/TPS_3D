@@ -15,12 +15,7 @@ ValidateResult ObjectContactListener::OnContactValidate(
     JPH::RVec3Arg baseOffset,
     const JPH::CollideShapeResult& result)
 {
-    // Jolt 側（userData → GameObject*）はポインタ
-    // null の可能性があるのでポインタが向いている
-    // エンジン内の「接触イベント API」は参照にする
-    GameObject* go1 = FromUserData(body1.GetUserData());
-    GameObject* go2 = FromUserData(body2.GetUserData());
-    if (!go1 || !go2) { return ValidateResult::RejectAllContactsForThisBodyPair; }
+    // ここで Reject すると「衝突そのもの」が無効になるので基本Acceptにする
     // ここでフィルタリングを行うこともできる
     return ValidateResult::AcceptAllContactsForThisBodyPair;
 }
@@ -34,31 +29,41 @@ void ObjectContactListener::OnContactAdded(
     // Jolt 側（userData → GameObject*）はポインタ
     // null の可能性があるのでポインタが向いている
     // エンジン内の「接触イベント API」は参照にする
-    GameObject* go1 = FromUserData(body1.GetUserData());
-    GameObject* go2 = FromUserData(body2.GetUserData());
+    // ※現在は userData に GameObject の ID(uint64) を入れている
 
-    if (!go1 || !go2) { return; }
+    const uint64_t id1 = static_cast<uint64_t>(body1.GetUserData());
+    const uint64_t id2 = static_cast<uint64_t>(body2.GetUserData());
+    if (id1 == 0 || id2 == 0) return; // 物理は有効のまま、イベントだけ出さない
 
     const bool sensor1 = body1.IsSensor();
     const bool sensor2 = body2.IsSensor();
+    const bool isTrigger = (sensor1 && !sensor2) || (!sensor1 && sensor2);
 
-    if (sensor1 && !sensor2)
+    const auto key = MakeKey(body1.GetID(), body2.GetID());
+
+    bool needEnter = false;
     {
-        // trigger1 に物体2が入った
-        m_Owner.OnTriggerEnter(*go1, *go2);
+        std::lock_guard<std::mutex> lk(m_PairMtx);
+        auto& info = m_Pairs[key];
+
+        if (info.refCount == 0)
+        {
+            info.isTrigger = isTrigger;
+            info.id1 = id1;
+            info.id2 = id2;
+            needEnter = true;
+        }
+        info.refCount++;
     }
-    else if (!sensor1 && sensor2)
+
+    if (needEnter)
     {
-        // trigger2 に物体1が入った
-        m_Owner.OnTriggerEnter(*go2, *go1);
-    }
-    else
-    {
-        // 通常の衝突
-        m_Owner.OnCollisionEnter(*go1, *go2);
+        if (isTrigger)
+            m_Owner.EnqueueEvent(PhysicsManager::CollisionEvent::Type::TriggerEnter, id1, id2);
+        else
+            m_Owner.EnqueueEvent(PhysicsManager::CollisionEvent::Type::CollisionEnter, id1, id2);
     }
 }
-
 
 void ObjectContactListener::OnContactPersisted(
     const JPH::Body& body1,
@@ -66,67 +71,42 @@ void ObjectContactListener::OnContactPersisted(
     const JPH::ContactManifold& manifold,
     JPH::ContactSettings& settings)
 {
-    GameObject* go1 = FromUserData(body1.GetUserData());
-    GameObject* go2 = FromUserData(body2.GetUserData());
-    
-    if (!go1 || !go2) { return; }
-
-    const bool sensor1 = body1.IsSensor();
-    const bool sensor2 = body2.IsSensor();
-
-    if (sensor1 && !sensor2)
-    {
-        m_Owner.OnTriggerStay(*go1, *go2);
-    }
-    else if (!sensor1 && sensor2)
-    {
-        m_Owner.OnTriggerStay(*go2, *go1);
-    }
-    else
-    {
-        m_Owner.OnCollisionStay(*go1, *go2);
-    }
+    // 既存の Stay を使いたい場合、
+    // ここで毎回キューに積むと量が増えやすいので、まずは Enter/Exit のみで安定化させる。
+    // 必要なら「メインスレッド側で接触ペア集合から毎フレームStayを呼ぶ」方式にするのが安全。
 }
 
 void ObjectContactListener::OnContactRemoved(const JPH::SubShapeIDPair& pair)
 {
     // BodyID から Body を取得
-    auto& system = m_Owner.GetSystem();
-    const JPH::BodyInterface& bodyInterface = system.GetBodyInterfaceNoLock();
+    // （Removed は Body が既に消えている可能性があるので、ここで Body を取りに行かない）
+    // ※Addedで保存した情報から Exit を作る
 
-    // BodyLockRead を使って Body を取得
-    JPH::BodyLockRead lock1(system.GetBodyLockInterfaceNoLock(), pair.GetBody1ID());
-    JPH::BodyLockRead lock2(system.GetBodyLockInterfaceNoLock(), pair.GetBody2ID());
+    const auto key = MakeKey(pair.GetBody1ID(), pair.GetBody2ID());
 
-	// 成功確認
-    if(lock1.Succeeded() == false || lock2.Succeeded() == false)
+    PairInfo info{};
+    bool needExit = false;
+
     {
-        return;
-	}
+        std::lock_guard<std::mutex> lk(m_PairMtx);
+        auto it = m_Pairs.find(key);
+        if (it == m_Pairs.end())
+            return;
 
-    const JPH::Body* body1 = &lock1.GetBody();
-    const JPH::Body* body2 = &lock2.GetBody();
-
-    if (!body1 || !body2) { return; }
-
-    GameObject* go1 = FromUserData(body1->GetUserData());
-    GameObject* go2 = FromUserData(body2->GetUserData());
-
-    if (!go1 || !go2) { return; }
-
-    const bool sensor1 = body1->IsSensor();
-    const bool sensor2 = body2->IsSensor();
-
-    if (sensor1 && !sensor2)
-    {
-        m_Owner.OnTriggerExit(*go1, *go2);
+        it->second.refCount--;
+        if (it->second.refCount <= 0)
+        {
+            info = it->second;      // Exit用にコピー
+            m_Pairs.erase(it);
+            needExit = true;
+        }
     }
-    else if (!sensor1 && sensor2)
-    {
-        m_Owner.OnTriggerExit(*go2, *go1);
-    }
+
+    if (!needExit) return;
+    if (info.id1 == 0 || info.id2 == 0) return;
+
+    if (info.isTrigger)
+        m_Owner.EnqueueEvent(PhysicsManager::CollisionEvent::Type::TriggerExit, info.id1, info.id2);
     else
-    {
-        m_Owner.OnCollisionExit(*go1, *go2);
-    }
+        m_Owner.EnqueueEvent(PhysicsManager::CollisionEvent::Type::CollisionExit, info.id1, info.id2);
 }

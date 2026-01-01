@@ -38,6 +38,14 @@ public:
 	uint32_t GetWidth(void) const { return m_Width; }		//! ウィンドウの横幅取得関数
 	uint32_t GetHeight(void) const { return m_Height; }	//! ウィンドウの縦幅取得関数
 
+	void RequestTimeReset() { m_RequestTimeReset = true; }
+	bool ConsumeTimeReset(void)
+	{
+		bool r = m_RequestTimeReset;
+		m_RequestTimeReset = false;
+		return r;
+	}
+
 private:
 	// 外部からのインスタンス生成を禁止するためにコンストラクタとデストラクタをprivateにする
 	Window() = default;
@@ -48,4 +56,5 @@ private:
 	uint32_t	m_Width;	// ウィンドウの横幅
 	uint32_t	m_Height;	// ウィンドウの縦幅
 	MSG			m_Msg;		// ウィンドウのイベントを識別するメッセージを保持するための構造体
+	bool m_RequestTimeReset = false;
 };

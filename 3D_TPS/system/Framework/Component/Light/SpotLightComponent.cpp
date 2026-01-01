@@ -1,5 +1,5 @@
 #include "SpotLightComponent.h"
-#include "Framework/EngineContext/EngineContext.h"
+#include "Framework/EngineSystem/EngineSystem.h"
 #include "Framework/GameObject/GameObject.h"
 #include <algorithm>
 #include <cmath>
@@ -17,9 +17,9 @@ void SpotLightComponent::SetNear(float n)
     m_Near = std::clamp(n, 0.0f, m_Range);
 }
 
-void SpotLightComponent::Attach(EngineContext& context)
+void SpotLightComponent::Attach(EngineServices& context)
 {
-    m_System = &context.lightSystem;
+    m_System = &context.light;
     m_System->Register(this);
 }
 

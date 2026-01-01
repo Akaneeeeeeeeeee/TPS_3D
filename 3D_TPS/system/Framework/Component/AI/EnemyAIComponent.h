@@ -31,7 +31,7 @@ public:
     void Update(const float deltatime) override;
     void Uninit(void) override;
 
-    void Attach(EngineContext& ctx) override;
+    void Attach(EngineServices& ctx) override;
     void Detach(void) override;
 
     // ’®Šo“ü—Í

@@ -12,10 +12,12 @@
 
 // 前方宣言
 class PhysicsComponent;
+class ObjectManager;
 class GameObject;
 
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
 class JoltDebugRendererDX11;
+class CameraManager;
 #endif
 
 /*
@@ -36,10 +38,16 @@ public:
 
 #ifdef _DEBUG
     void DebugDraw(void);
+	void SetCameraManager(class CameraManager* cameraManager);
 #endif
 
     void Register(PhysicsComponent* rb);
     void UnRegister(PhysicsComponent* rb);
+
+    void SetObjectManager(ObjectManager* om) { m_ObjectManager = om; }
+
+    // メインスレッドで呼ぶ（Physics.Updateの直後）
+    void DispatchCollisionEvents(void);
 
     JPH::PhysicsSystem& GetSystem(void) { return m_System; }
     JPH::BodyInterface& GetBodyInterface(void) { return m_System.GetBodyInterface(); }
@@ -77,6 +85,26 @@ public:
         const Vector3& from, const Vector3& to,
         const JPH::BodyID& ignoreBody = JPH::BodyID()) const;
 
+
+    struct CollisionEvent
+    {
+        enum class Type
+        {
+            CollisionEnter,
+            CollisionExit,
+            TriggerEnter,
+            TriggerExit,
+            CharacterEnter,
+        };
+
+        Type type;
+        uint64_t aId;
+        uint64_t bId;
+    };
+
+    // 物理スレッドからは「積むだけ」
+    void EnqueueEvent(CollisionEvent::Type type, uint64_t aId, uint64_t bId);
+
 private:
     JPH::PhysicsSystem m_System;
     std::unique_ptr<JPH::TempAllocatorImpl> m_TempAllocator;
@@ -85,7 +113,13 @@ private:
     ObjectContactListener m_ObjectContactListener;
     CharacterContactListenerImpl m_CharacterContactListener;
 
+    ObjectManager* m_ObjectManager = nullptr;
+
+    std::mutex m_EventMtx;
+    std::vector<CollisionEvent> m_EventQueue;
+
 #if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
     std::unique_ptr<JoltDebugRendererDX11> m_DebugRenderer;
+	CameraManager* m_CameraManager = nullptr;
 #endif
 };

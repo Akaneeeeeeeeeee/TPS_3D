@@ -7,91 +7,49 @@
 #include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Sound/SoundWaveVisualizer.h"
 
-Game::Game()
-{
-}
-
-Game::~Game()
-{
-}
-
 /**
 * @brief
 * @param
 */
-void Game::Init(void)
+void Game::Init()
 {
-	// シーンマネージャ、サウンドの初期化
-	//Sound::GetInstance().Init();
-	//m_GraphicsDevice.Init();
-	//m_SceneManager.SetSceneFactory(&m_SceneFactory);
-	//m_RenderManager.Init(&m_GraphicsDevice, &m_ShaderManager);
-	//RenderManager::GetInstance().Init(&m_GraphicsDevice, &m_ShaderManager);
-	//m_ComponentFactory.Init(&m_ShaderManager);
-	//m_ComponentFactory.Init(&m_RenderManager, &m_ShaderManager);
-	//m_ObjectManager.Init(&m_ComponentFactory);
-
-
-	// レンダラの初期化
 	Renderer::Init();
 
-	// DirectInputの初期化
-	CDirectInput::GetInstance().Init(Window::GetInstance().GetHandleInstance(),
+	CDirectInput::GetInstance().Init(
+		Window::GetInstance().GetHandleInstance(),
 		Window::GetInstance().GetHandleWindow(),
 		Window::GetInstance().GetWidth(),
-		Window::GetInstance().GetHeight());
+		Window::GetInstance().GetHeight()
+	);
 
+	// エンジン共通初期化
+	m_Engine.Init();
+	auto& svc = m_Engine.GetServices();
+	
+	// ゲーム固有のシステム初期化
+	m_GameFeatures.Init(svc);
 
-	// 低レベルから初期化
-	m_GraphicsDevice.Init();
-	// シェーダー管理クラスの初期化
-	ShaderManager::GetInstance().Init();
-	// アセット管理クラスの初期化
-	AssetManager::GetInstance().Init();
+	// 初期天候
+	svc.weather.SetWeather(WeatherType::HeavyRain, 0.0f);
+	svc.physics.SetObjectManager(&m_ObjectManager);
 
-	//m_CameraManager.Init();
+	// ComponentFactory は EngineServices を注入
+	m_ComponentFactory.Init(&svc);
 
-
-	// レンダーマネージャの初期化
-	m_RenderManager.Init(&m_GraphicsDevice);
-	// 物理マネージャの初期化
-	m_PhysicsManager.Init();
-	m_WeatherSystem.Init();
-	// ライトシステムの初期化
-	//m_LightSystem.Init();
-
-
-	m_pContext = std::make_unique<EngineContext>(
-		m_RenderManager,
-		ShaderManager::GetInstance(),
-		AssetManager::GetInstance(),
-		m_PhysicsManager,
-		m_WeatherSystem,
-		m_CameraManager,
-		m_LightSystem);
-
-	m_WeatherSystem.SetWeather(WeatherType::HeavyRain, 0.0f);
-
-	m_ComponentFactory.Init(m_pContext.get());
+	// 既存の ObjectFactory / ObjectManager 初期化
 	m_ObjectFactory.Init(&m_ComponentFactory);
-
-	// オブジェクトマネージャの初期化
 	m_ObjectManager.Init(&m_ObjectFactory);
 
-	// シーンマネージャの初期化
-	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
-	//m_SceneManager.Init(&m_ObjectManager, "TitleScene");
+	// シーン開始
 	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
-	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&m_WeatherSystem);
+	// 既存の独立物（統一したいなら EngineSystems 側に寄せる）
+	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&svc.weather);
 
-	// デバッグ時のみ、デバッグUIの初期化
 #ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
-#endif // _DEBUG
-
+#endif
 }
-
 
 /**
  * @brief ゲームのループ処理
@@ -100,15 +58,16 @@ void Game::Init(void)
 void Game::Update(const float deltatime)
 {
 	SoundManager::GetInstance().BeginFrame();
-	m_pContext->Update(deltatime);
 
-	CDirectInput::GetInstance().Update();		// 入力状態を更新
+	m_Engine.BeginFrame(deltatime);   // ここで入力更新
+	m_Engine.UpdateFrame(deltatime);  // 物理/天候/ライトなど
 
 	// ゲーム終了フラグが立っていない場合
 	if (!m_SceneManager.GetIsQuit())
 	{
 		// イベント発生まではループし続ける
 		m_SceneManager.Update(deltatime);
+		m_GameFeatures.Update(deltatime);
 		SoundWaveVisualizer::GetInstance().Update(deltatime);
 	}
 	// ゲーム終了フラグが立ったら
@@ -130,14 +89,18 @@ void Game::Draw()
 	// シーンマネージャの描画
 	m_SceneManager.Draw();
 
-	// 物理デバッグ描画
-	//m_PhysicsManager.DebugDraw();
-
+	m_GameFeatures.DrawWorld();
 
 	// todo:ここは後から描画機能に責任を持たせる
 	SoundWaveVisualizer::GetInstance().DrawWorld();
-	m_pContext->weatherSystem.DebugDrawParticles();
-	m_pContext->weatherSystem.DebugDrawSun();
+
+	auto& svc = m_Engine.GetServices();
+
+	// デバッグ用当たり判定描画
+	//svc.physics.DebugDraw();
+
+	svc.weather.DebugDrawParticles();
+	svc.weather.DebugDrawSun();
 
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
@@ -170,5 +133,6 @@ void Game::Uninit(void)
 	// レンダラの終了処理
 	//m_RenderManager.Uninit();
 	Renderer::Uninit();
+	m_Engine.Uninit();
 }
 

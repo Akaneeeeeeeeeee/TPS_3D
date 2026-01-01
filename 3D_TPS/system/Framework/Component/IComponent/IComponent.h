@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-class GameObject;	// 前方宣言
-struct EngineContext;	// 前方宣言(管理システム)
+// 前方宣言
+class GameObject;
+struct EngineServices;
 
 /// <summary>
 /// 全てのコンポーネントの元となるクラス
@@ -16,6 +17,7 @@ public:
 
 	virtual void Init(void) = 0;		// 初期化
 	virtual void Update(const float deltatime) = 0;		// 更新
+	virtual void LateUpdate(const float deltatime) {}	// 後更新(必要なら派生先でオーバーライド)
 	virtual void Uninit(void) = 0;		// 終了
 
 	void SetIsValid(bool flg) { IsValid = flg; }
@@ -28,7 +30,7 @@ public:
 	virtual GameObject* GetOwner(void) const;		// アタッチ先のオブジェクトの取得
 	//void RemoveOwner(void);			// アタッチされているオブジェクトからの取り外し
 
-	virtual void Attach(EngineContext& context) = 0;	// アタッチされたときの処理(各派生コンポーネントでどの管理システムに登録するかを実装)
+	virtual void Attach(EngineServices& context) = 0;	// アタッチされたときの処理(各派生コンポーネントでどの管理システムに登録するかを実装)
 	virtual void Detach(void) = 0;	// デタッチされたときの処理(各派生コンポーネントでどの管理システムから解除するかを実装)
 
 protected:

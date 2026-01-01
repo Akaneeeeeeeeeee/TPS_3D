@@ -1,16 +1,21 @@
 #pragma once
 #include <vector>
 #include "commontypes.h"
-#include "system/Framework/NonCopyable/Singleton_Template.h"
 #include "system/Sound/WorldSoundEvent.h"
 
+// 前方宣言
+class SoundSystem;
 class WeatherSystem;
 
-class SoundWaveVisualizer : public Singleton<SoundWaveVisualizer>
+class SoundWaveVisualizer
 {
 public:
-    friend class Singleton<SoundWaveVisualizer>;
-
+    static SoundWaveVisualizer& GetInstance()
+    {
+        static SoundWaveVisualizer instance;
+        return instance;
+	}
+    SoundWaveVisualizer() = default;
     // 毎フレーム冒頭で呼ぶ（消滅判定など）
     void Update(float dt);
 
@@ -29,9 +34,10 @@ public:
     // WeatherSystem をセットする
     void SetWeatherSystem(WeatherSystem* ws) { m_pWeather = ws; }
 
-private:
-    SoundWaveVisualizer() = default;
+	// SoundSystem をセットする
+    void SetSoundSystem(SoundSystem* s) { m_pSound = s; }
 
+private:
     struct Wave
     {
         Vector3 center;       // 波の中心（音が出た位置）
@@ -51,6 +57,7 @@ private:
     float m_MaxLoudness = 1.0f;
     float m_DecayPerSec = 1.5f;
 
+    SoundSystem* m_pSound = nullptr;
     WeatherSystem* m_pWeather = nullptr;
 
     //void PushSample(float loudness);

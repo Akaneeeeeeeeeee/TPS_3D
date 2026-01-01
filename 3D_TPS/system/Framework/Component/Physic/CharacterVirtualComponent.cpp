@@ -1,7 +1,7 @@
 #include "CharacterVirtualComponent.h"
 #include "system/Framework/PhysicsSystem/Physics.h"
 #include "system/Framework/PhysicsSystem/PhysicsManager.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include "Framework/GameObject/GameObject.h"
 #include <Jolt/Math/Vec3.h>
@@ -31,9 +31,9 @@ CharacterVirtualComponent::~CharacterVirtualComponent()
 	Uninit();
 }
 
-void CharacterVirtualComponent::Attach(EngineContext& ctx)
+void CharacterVirtualComponent::Attach(EngineServices& ctx)
 {
-	m_Physics = &ctx.joltPhysicsManager;
+	m_Physics = &ctx.physics;
 }
 
 void CharacterVirtualComponent::Detach(void)

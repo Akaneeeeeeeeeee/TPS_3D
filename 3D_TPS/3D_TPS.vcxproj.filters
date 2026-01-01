@@ -82,9 +82,6 @@
     <Filter Include="ソース ファイル\MyFramework\GraphicsSystem">
       <UniqueIdentifier>{d3c78b8c-6a5d-4623-b1e4-b324918a8282}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\EngineContext">
-      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\Buffer">
       <UniqueIdentifier>{377c53f3-5ee4-48a7-91d7-5e1609a47091}</UniqueIdentifier>
     </Filter>
@@ -183,6 +180,12 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\Component\DayNightObserver">
       <UniqueIdentifier>{6b640f6c-b836-430e-a5e7-b3273c1b8581}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Throw">
+      <UniqueIdentifier>{1bc930ad-2bf2-49c7-aaba-82022ff02204}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\EngineContext">
+      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -417,9 +420,6 @@
     <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
       <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\EngineContext\EngineContext.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
-    </ClInclude>
     <ClInclude Include="system\MyIndexBuffer.h">
       <Filter>ソース ファイル\MyFramework\Buffer</Filter>
     </ClInclude>
@@ -596,6 +596,24 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\DayNightObserver\DayNightObserver.h">
       <Filter>ソース ファイル\MyFramework\Component\DayNightObserver</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Throw\ThrowComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h">
+      <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h">
+      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SoundManager\sound.h">
+      <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\EngineSystem\GameFeatureSystems.h">
+      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Physic\SphereCollider.h">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -910,6 +928,21 @@
     </ClCompile>
     <ClCompile Include="system\Framework\PerceptionManager\PerceptionManager.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\PerceptionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Throw\ThrowComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\EngineSystem\EngineSystem.cpp">
+      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\SoundManager\sound.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Physic\SphereCollider.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

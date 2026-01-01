@@ -14,7 +14,6 @@ class CStaticMesh;
 class StaticMeshCollider : public PhysicsComponent
 {
 public:
-public:
     StaticMeshCollider() = default;
     ~StaticMeshCollider() noexcept override = default;
 
@@ -27,7 +26,7 @@ public:
     void Update(const float deltaTime) override {}
     void Uninit(void) override;
 
-    void Attach(EngineContext& context) override;
+    void Attach(EngineServices& context) override;
     void Detach(void) override;
 
     // Œ`ó‚ğæ“¾

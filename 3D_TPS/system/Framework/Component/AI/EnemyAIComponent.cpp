@@ -31,17 +31,17 @@ namespace {
 }
 
 
-void EnemyAIComponent::Attach(EngineContext& ctx)
+void EnemyAIComponent::Attach(EngineServices& ctx)
 {
 	// 物理とキャラクター制御
-	m_Physics = &ctx.joltPhysicsManager;
+	m_Physics = &ctx.physics;
 	m_Char = m_pOwner->GetComponent<CharacterVirtualComponent>();
 
 	// 天候・時間管理（視界パラメータの補正に使う）
-	m_Weather = &ctx.weatherSystem;
+	m_Weather = &ctx.weather;
 
 	// ライトシステム（視界判定に使う）
-	m_Light = &ctx.lightSystem;
+	m_Light = &ctx.light;
 }
 
 void EnemyAIComponent::Detach(void)

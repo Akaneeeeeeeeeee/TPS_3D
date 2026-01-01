@@ -1,9 +1,8 @@
 ﻿#pragma once
 #include "system/Framework/ObjectManager/SnowFlakeID.h"
 #include "system/Framework/GameObject/GameObject.h"
-#include "system/Framework/EngineContext/EngineContext.h"
+#include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/Factory/GameObjectFactory.h"
-
 
 /**
  * @brief オブジェクトを管理するクラス
@@ -55,6 +54,7 @@ public:
 	void Draw(void) const;
 	void Uninit(void);
 
+	void FlushSpawnQueue(void);				// 生成キューの消化
 	void FlushAwakeQueue(void);				// Awakeキューの消化
 	void FlushStartQueue(void);				// Startキューの消化
 	void FlushDestroyQueue(void);			// 削除キューの消化(ここでのみ破棄を行う)
@@ -67,18 +67,18 @@ public:
 
 private:
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
-	
+
 	GameObjectFactory* m_ObjectFactory;
-	std::string m_CurrentSceneName;		// 「今のシーン名」	
+	std::string m_CurrentSceneName;		// 「今のシーン名」
 
 	std::vector<std::unique_ptr<GameObject>> m_pObjects;				//! オブジェクトのコンテナ(ここが所有権を持つ)
 	std::unordered_map<Tag, std::vector<GameObject*>> m_ObjectsByTag;	//! タグごとにオブジェクトを管理するためのmap
 	std::unordered_map<uint64_t, GameObject*> m_ObjectsByID;			//! IDごとにオブジェクトを管理するためのmap
 	std::unordered_map<std::string, GameObject*> m_ObjectsByName;		//! 名前ごとにオブジェクトを管理するためのmap
+	std::vector<std::unique_ptr<GameObject>> m_PendingSpawn;			//! 生成待ちオブジェクトのコンテナ
 	std::vector<GameObject*> m_PendingAwake;							//! Awake待ちオブジェクトのコンテナ
 	std::vector<GameObject*> m_PendingStart;							//! Start待ちオブジェクトのコンテナ
 };
-
 
 
 template <typename T, typename ...Args>
@@ -97,15 +97,10 @@ inline T* ObjectManager::Instantiate(const std::string& _Name, const Tag _Tag, A
 	// 所有シーンと寿命を設定
 	rawPtr->SetOwnerScene(m_CurrentSceneName);
 	rawPtr->SetLifetime(GameObject::Lifetime::Scene); // デフォルトはシーン限定
+	rawPtr->SetObjectManager(this); // オブジェクトマネージャーをセット
 	
-	// 各コンテナに追加
-	m_pObjects.push_back(std::move(obj));
-	m_ObjectsByTag[_Tag].push_back(rawPtr);
-	m_ObjectsByID[id] = rawPtr;
-	m_ObjectsByName[_Name] = rawPtr;
-
-	// 初期化キューに積む
-	m_PendingAwake.push_back(rawPtr);
+	// まだ世界に登録せず、生成しただけ
+	m_PendingSpawn.push_back(std::move(obj));
 
 	return static_cast<T*>(rawPtr);
 }

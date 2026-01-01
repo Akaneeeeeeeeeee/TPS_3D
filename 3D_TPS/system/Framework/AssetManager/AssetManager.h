@@ -31,8 +31,6 @@ public:
 	void LoadStaticMesh(const std::string& name, const std::filesystem::path& filepath, const std::filesystem::path& texturepath);
 	CStaticMesh* GetStaticMesh(const std::string& name) const;
 
-
-
 public:
 	// ========= Mesh Œn =========
 	template<class TMesh>

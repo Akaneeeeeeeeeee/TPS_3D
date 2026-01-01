@@ -5,10 +5,10 @@
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 
-void EnemyHearingComponent::Attach(EngineContext& context)
+void EnemyHearingComponent::Attach(EngineServices& context)
 {
-	m_pPhysics = &context.joltPhysicsManager;
-	m_pWeather = &context.weatherSystem;
+	m_pPhysics = &context.physics;
+	m_pWeather = &context.weather;
 }
 
 void EnemyHearingComponent::Detach(void)

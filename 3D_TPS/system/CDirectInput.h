@@ -370,6 +370,27 @@ public:
 	}
 
 	// 右スティック（-1～1、デッドゾーン処理つき）
+	DirectX::XMFLOAT2 GetRightStick(void) const
+	{
+		if (!m_padConnected) { return DirectX::XMFLOAT2(0, 0); }
+
+		float x = (float)m_pad.Gamepad.sThumbRX / 32767.0f;
+		float y = (float)m_pad.Gamepad.sThumbRY / 32767.0f;
+
+		// デッドゾーン
+		constexpr float dz = 0.2f;
+		float len = std::sqrt(x * x + y * y);
+		if (len < dz) { return DirectX::XMFLOAT2(0, 0); }
+
+		// 0～1に再正規化（倒し具合を滑らかに）
+		float t = (len - dz) / (1.0f - dz);
+		if (t > 1.0f) t = 1.0f;
+
+		x /= len; y /= len;
+		return DirectX::XMFLOAT2(x * t, y * t);
+	}
+
+	// ボタンの押下取得
 	bool GetButtonPress(WORD btn) const
 	{
 		return m_padConnected && ((m_pad.Gamepad.wButtons & btn) != 0);

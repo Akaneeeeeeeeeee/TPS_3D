@@ -13,7 +13,7 @@ public:
     ParticleComponent();
     ~ParticleComponent() override = default;
 
-    void Attach(EngineContext& context) override;
+    void Attach(EngineServices& context) override;
     void Detach() override;
 
     void Init(void) override;

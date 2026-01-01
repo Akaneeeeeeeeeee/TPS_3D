@@ -27,7 +27,7 @@ public:
     void Update(const float) override {}
     void Uninit() override {}
 
-    void Attach(EngineContext& context) override;
+    void Attach(EngineServices& context) override;
     void Detach() override;
 
     // ---- パラメータ ----
