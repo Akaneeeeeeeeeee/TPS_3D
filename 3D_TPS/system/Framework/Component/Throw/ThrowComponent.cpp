@@ -13,37 +13,6 @@ namespace
     constexpr float EPS_SQ = 1e-6f;
     constexpr float DEG2RAD = PI / 180.0f;
 
-    // 「カメラforward」から「投げ方向」を作る（角度を制限）
-    static Vector3 BuildThrowDirFromCameraForward(Vector3 camFwd, float minAngleDeg, float maxAngleDeg)
-    {
-        if (camFwd.LengthSquared() < EPS_SQ)
-            return Vector3(0, 0, 1);
-
-        camFwd.Normalize();
-
-        // yaw成分（水平前方）
-        Vector3 yawFwd(camFwd.x, 0.0f, camFwd.z);
-        if (yawFwd.LengthSquared() < EPS_SQ)
-            yawFwd = Vector3(0, 0, 1);
-        else
-            yawFwd.Normalize();
-
-        // pitch角（上向き角）を取得
-        const float horiz = std::sqrt(camFwd.x * camFwd.x + camFwd.z * camFwd.z);
-        float pitchRad = std::atan2(camFwd.y, std::max(horiz, 1e-6f)); // 上向き＋
-
-        // pitch を制限（下向き投げすぎ/上向き投げすぎ防止）
-        const float minRad = minAngleDeg * DEG2RAD;
-        const float maxRad = maxAngleDeg * DEG2RAD;
-        pitchRad = std::clamp(pitchRad, minRad, maxRad);
-
-        // 最終方向（速度の向き）
-        const Vector3 up(0, 1, 0);
-        Vector3 dir = yawFwd * std::cos(pitchRad) + up * std::sin(pitchRad);
-        dir.Normalize();
-        return dir;
-    }
-
 
     // 放物線を線分で描く（LineDrawerDraw）
     static void DrawThrowGuide_Line(const Vector3& startPos, const Vector3& startVel)
@@ -315,17 +284,62 @@ float ThrowComponent::SanitizeReleaseNorm(const ThrowTuning& t) const
     return std::max(h, r);
 }
 
+//Vector3 ThrowComponent::ComputeThrowVelocity(const ThrowTuning& t) const
+//{
+//    Vector3 camFwd = GetAimForward();
+//
+//    // 投げ角の制限（必要なら ThrowTuning に持たせてもOK）
+//    constexpr float MIN_ANGLE_DEG = -5.0f;  // 少し下向きは許可
+//    constexpr float MAX_ANGLE_DEG = 60.0f;  // 上向き上限
+//
+//    Vector3 dir = BuildThrowDirFromCameraForward(camFwd, MIN_ANGLE_DEG, MAX_ANGLE_DEG);
+//
+//    // 速さは一定（t.speed を「速さ」にする）
+//    return dir * t.speed;
+//}
+
+
 Vector3 ThrowComponent::ComputeThrowVelocity(const ThrowTuning& t) const
 {
     Vector3 camFwd = GetAimForward();
+    if (camFwd.LengthSquared() < EPS_SQ) return Vector3(0, 0, t.speed);
 
-    // 投げ角の制限（必要なら ThrowTuning に持たせてもOK）
-    constexpr float MIN_ANGLE_DEG = -5.0f;  // 少し下向きは許可
-    constexpr float MAX_ANGLE_DEG = 60.0f;  // 上向き上限
+    camFwd.Normalize();
 
-    Vector3 dir = BuildThrowDirFromCameraForward(camFwd, MIN_ANGLE_DEG, MAX_ANGLE_DEG);
+    // 水平前方（yaw）を作る
+    Vector3 yawFwd(camFwd.x, 0.0f, camFwd.z);
+    if (yawFwd.LengthSquared() < EPS_SQ) yawFwd = Vector3(0, 0, 1);
+    else yawFwd.Normalize();
 
-    // 速さは一定（t.speed を「速さ」にする）
+    // カメラの上向き角（ラジアン）
+    const float horiz = std::sqrt(camFwd.x * camFwd.x + camFwd.z * camFwd.z);
+    const float camPitch = std::atan2(camFwd.y, std::max(horiz, 1e-6f)); // 上向き+
+
+    // 「カメラ角度の範囲」→ 0..1
+    constexpr float CAM_PITCH_MIN = -25.0f * DEG2RAD; // このくらい下向きを最小扱い
+    constexpr float CAM_PITCH_MAX = 45.0f * DEG2RAD; // このくらい上向きを最大扱い
+    float pitch01 = (camPitch - CAM_PITCH_MIN) / (CAM_PITCH_MAX - CAM_PITCH_MIN);
+    pitch01 = std::clamp(pitch01, 0.0f, 1.0f);
+
+    // 「投げ角の範囲」へ写す（ここが“投射角度”）
+    constexpr float THROW_ANGLE_MIN = -5.0f * DEG2RAD;  // 下向き投げを少しだけ許可
+    constexpr float THROW_ANGLE_MAX = 60.0f * DEG2RAD; // 上向き上限
+    float throwPitch = std::lerp(THROW_ANGLE_MIN, THROW_ANGLE_MAX, pitch01);
+
+    // t.lob を「角度の上乗せ」として使いたいなら（任意）
+    // lob を “上向き速度っぽい値” としているなら、角度に変換して足すと扱いやすい
+    // 例：speed=900, lob=120 -> atan2(120,900) ≒ 0.13rad(約7.5度)
+    if (t.lob != 0.0f)
+    {
+        const float lobBias = std::atan2(t.lob, std::max(t.speed, 1e-6f));
+        throwPitch = std::clamp(throwPitch + lobBias, THROW_ANGLE_MIN, THROW_ANGLE_MAX);
+    }
+
+    // 最終方向
+    const Vector3 up(0, 1, 0);
+    Vector3 dir = yawFwd * std::cos(throwPitch) + up * std::sin(throwPitch);
+    dir.Normalize();
+
     return dir * t.speed;
 }
 
