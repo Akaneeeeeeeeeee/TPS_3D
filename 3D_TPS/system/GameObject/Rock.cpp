@@ -85,6 +85,11 @@ void Rock::Start()
 		m_RB->SetInitialVelocity(*m_PendingVel);
 		m_PendingVel.reset();
 	}
+	if (m_PendingAngVel.has_value())
+	{
+		m_RB->SetInitialAngularVelocity(*m_PendingAngVel);
+		m_PendingAngVel.reset();
+	}
 }
 
 void Rock::Awake(void)
