@@ -33,6 +33,7 @@ void Character::Draw(void) const
 	{
 		m_pAnimComp->Draw();
 	}
+	GameObject::Draw();
 }
 
 void Character::Uninit(void)

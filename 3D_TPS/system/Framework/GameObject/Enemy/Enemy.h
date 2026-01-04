@@ -8,6 +8,7 @@ class CharacterVirtualComponent;
 class EnemyAIComponent;
 class Terrain;
 class StaticMeshCollider;
+class EnemyHeadIconComponent;
 
 /*
 * @brief	敵クラス
@@ -56,6 +57,7 @@ private:
 	StaticMeshCollider* m_pTerrainCollider;
 	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
+	EnemyHeadIconComponent* m_HeadIcon = nullptr;
 
 	bool       m_TurnRight = false; // 右向きアニメかどうか
 	// 巡回点

@@ -92,6 +92,7 @@ public:
         }
     }
 
+    void SetMoveSpeedScale(float s) { m_MoveSpeedScale = std::max(0.0f, s); }
 
 private:
     // 姿勢ごとの係数
@@ -143,6 +144,7 @@ private:
 
     // チューニング用
     float m_BaseMoveSpeed = 500.0f; // 立ち状態を基準にした最高速度
-    float   m_MoveSpeed = 500.0f;   // 最高速度
-    float   m_JumpSpeed = 400.0f;
+    float m_MoveSpeed = 500.0f;     // 最高速度
+    float m_JumpSpeed = 400.0f;
+    float m_MoveSpeedScale = 1.0f; // 1.0=基準、0.5=半分など
 };

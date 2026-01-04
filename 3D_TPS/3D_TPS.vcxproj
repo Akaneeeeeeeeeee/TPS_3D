@@ -212,6 +212,7 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h" />
     <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />
     <ClInclude Include="system\Framework\Component\Throw\ThrowComponent.h" />
     <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h" />
@@ -423,6 +424,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Transform\Transform.cpp" />

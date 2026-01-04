@@ -227,20 +227,90 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
 	}
 
 	Vector3 pos = m_pOwner->GetPosition();
-	Vector3 target = m_WayPoints[m_CurrentIndex];
 
+	// ----------------------------
+	// (A) 振り向き中フェーズ
+	// ----------------------------
+	if (m_IsPatrolTurning)
+	{
+		m_Char->SetMoveInput(Vector3::Zero, 0.0f);
+
+		m_PatrolTurnTime += dt;
+		float t = (m_PatrolTurnDuration > 1e-6f) ? (m_PatrolTurnTime / m_PatrolTurnDuration) : 1.0f;
+		if (t > 1.0f) t = 1.0f;
+
+		// 最短角で補間するため、m_PatrolTargetYaw は「最短にした値」を入れておく前提
+		float yaw = std::lerp(m_PatrolStartYaw, m_PatrolTargetYaw, t);
+		m_pOwner->SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Up, yaw));
+
+		if (t >= 1.0f)
+		{
+			m_IsPatrolTurning = false;
+			m_CurrentIndex = m_PatrolNextIndex;
+		}
+		return;
+	}
+
+	// 現在目標
+	Vector3 target = m_WayPoints[m_CurrentIndex];
 	Vector3 toTarget = target - pos;
 	float distSq = toTarget.LengthSquared();
 
+	// ----------------------------
+	// (B) 巡回点に到着 → 次の方向へ振り向き開始
+	// ----------------------------
 	// 目標地点に十分近づいたら次のウェイポイントへ
 	if (distSq < m_ArriveRadius * m_ArriveRadius)
 	{
-		m_CurrentIndex = (m_CurrentIndex + 1) % m_WayPoints.size();
+		const int nextIndex = (m_CurrentIndex + 1) % (int)m_WayPoints.size();
+
+		Vector3 toNext = m_WayPoints[nextIndex] - pos;
+		toNext.y = 0.0f;
+
+		if (toNext.LengthSquared() > 1e-6f)
+		{
+			toNext.Normalize();
+
+			Vector3 forward = m_pOwner->GetForward();
+			forward.y = 0.0f;
+			if (forward.LengthSquared() < 1e-6f) forward = Vector3::Forward;
+			forward.Normalize();
+
+			// 右/左（アニメ選択用）
+			float crossY = forward.x * toNext.z - forward.z * toNext.x;
+			m_PatrolTurnRight = (crossY > 0.0f);
+
+			// ヨー角（今と目標）
+			float startYaw = std::atan2(-forward.x, -forward.z);
+			float targetYaw = std::atan2(-toNext.x, -toNext.z);
+
+			// 最短角へ正規化
+			float delta = targetYaw - startYaw;
+			while (delta > PI)  delta -= 2.0f * PI;
+			while (delta < -PI) delta += 2.0f * PI;
+
+			m_PatrolStartYaw = startYaw;
+			m_PatrolTargetYaw = startYaw + delta;
+
+			m_PatrolTurnTime = 0.0f;
+			m_PatrolNextIndex = nextIndex;
+			m_IsPatrolTurning = true;
+
+			// このフレームは止まって振り向き開始
+			m_Char->SetMoveInput(Vector3::Zero, 0.0f);
+			return;
+		}
+
+		// 次が同一点っぽいなら普通に進める
+		m_CurrentIndex = nextIndex;
 		target = m_WayPoints[m_CurrentIndex];
 		toTarget = target - pos;
 		distSq = toTarget.LengthSquared();
 	}
 
+	// ----------------------------
+	// (C) 通常の巡回移動
+	// ----------------------------
 	// 障害物回避込みの移動方向
 	Vector3 moveDir = ComputeMoveDirToTarget(target);
 

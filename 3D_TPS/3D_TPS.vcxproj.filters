@@ -187,6 +187,9 @@
     <Filter Include="ソース ファイル\MyFramework\EngineContext">
       <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\StateIcon">
+      <UniqueIdentifier>{1b594347-e51e-4838-9c4f-6d82e0978f04}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -621,6 +624,9 @@
     <ClInclude Include="system\Framework\Time\CountDownTimer.h">
       <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -952,6 +958,9 @@
     </ClCompile>
     <ClCompile Include="system\DirectWrite.cpp">
       <Filter>ソース ファイル\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

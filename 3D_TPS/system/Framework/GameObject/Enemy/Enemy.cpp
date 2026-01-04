@@ -9,6 +9,7 @@
 #include "system/RandomEngine.h"
 #include "Framework/Component/AI/EnemyHearingComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
+#include "Framework/Component/StateIcon/StateIconComponent.h"
 #include "system/meshmanager.h"
 #include "system/Framework/Time/Time.h"
 #include "system/imgui/imgui.h"
@@ -58,6 +59,11 @@ void Enemy::Awake(void)
 
 void Enemy::Start(void)
 {
+	// HeadIcon コンポーネント設定
+	m_HeadIcon->Setup(m_pPlayer->GetCamera(), 64, 64, "assets/texture/hatena-illust1.png", "assets/texture/b-mk-illust2.png");
+	m_HeadIcon->SetOffset(Vector3(0, 180, 0));
+	m_HeadIcon->SetScale(Vector3(1, 1, 1));
+
 	// AIコンポーネントにプレイヤー・地形コライダをセット
 	m_AIComp->SetPlayer(m_pPlayer);
 	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
@@ -162,46 +168,48 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 		return;
 	}
 
-	//Vector3 xzMin, xzMax;
-	//if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
-	//{
-	//	SetDefaultPatrol();
-	//	m_Transform.SetPosition(m_StartPos);
-	//	return;
-	//}
-
-	//// 地形範囲内のランダム XZ を生成
-	//auto RandXZInTerrain = [&]() -> Vector3 {
-	//	float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
-	//	float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
-	//	return Vector3(x, 0.0f, z);
-	//	};
-
-	//constexpr int   MAX_TRY = 16;
-	//constexpr float HEIGHT_OFFSET = 75.0f;
-
-	//bool ok = false;
-	//for (int i = 0; i < MAX_TRY && !ok; ++i)
-	//{
-	//	Vector3 p0 = RandXZInTerrain();
-	//	Vector3 p1 = RandXZInTerrain();
-
-	//	float y0, y1;
-	//	if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
-	//		m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
-	//	{
-	//		m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
-	//		m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
-	//		ok = true;
-	//	}
-	//}
-
-	//if (!ok)
-	//{
-	//	SetDefaultPatrol();
-	//}
-
+#ifdef _DEBUG
 	SetDefaultPatrol();
+#else
+	Vector3 xzMin, xzMax;
+	if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
+	{
+		SetDefaultPatrol();
+		m_Transform.SetPosition(m_StartPos);
+		return;
+	}
+
+	// 地形範囲内のランダム XZ を生成
+	auto RandXZInTerrain = [&]() -> Vector3 {
+		float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
+		float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
+		return Vector3(x, 0.0f, z);
+		};
+
+	constexpr int   MAX_TRY = 16;
+	constexpr float HEIGHT_OFFSET = 75.0f;
+
+	bool ok = false;
+	for (int i = 0; i < MAX_TRY && !ok; ++i)
+	{
+		Vector3 p0 = RandXZInTerrain();
+		Vector3 p1 = RandXZInTerrain();
+
+		float y0, y1;
+		if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
+			m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
+		{
+			m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
+			m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
+			ok = true;
+		}
+	}
+
+	if (!ok)
+	{
+		SetDefaultPatrol();
+	}
+#endif
 
 	// 実際の Transform を開始地点に合わせる
 	m_Transform.SetPosition(m_StartPos);
@@ -215,9 +223,6 @@ void Enemy::InitComponents()
 	// EnemyAIComponent
 	{
 		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
-
-		// すでに巡回点が設定されている場合はスキップ
-		if (!m_AIComp->GetWayPoints().empty()) { return; }
 
 		m_AIComp->SetRayLength(900.0f);
 		m_AIComp->SetAvoidWeight(1.5f);
@@ -235,6 +240,11 @@ void Enemy::InitComponents()
 	{
 		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
 		hearingComp->SetEnemyAI(m_AIComp);
+	}
+
+	// EnemyHeadIconComponent
+	{
+		m_HeadIcon = AddComponent<EnemyHeadIconComponent>("HeadIcon");
 	}
 }
 
@@ -265,9 +275,6 @@ void Enemy::Update(const float deltatime)
 
 		return;
 	}
-
-	// 1) コンポーネント更新（AI / CharacterVirtual / Animator など）
-	GameObject::Update(deltatime);
 
 	// 2) 今フレーム「音を聞いた」通知が AI に入っていれば、驚きアニメ開始
 	bool startedSoundTurn = false;
@@ -330,29 +337,27 @@ void Enemy::Update(const float deltatime)
 		}
 
 		// それ以外の状態: Idle / Walk / Run を速度に応じて再生
+		// それ以外
 		Vector3 vel = Vector3::Zero;
-		if (m_CharComp)
-		{
-			vel = m_CharComp->GetLinearVelocity();
-			// 必要なら vel.y = 0.0f;
-		}
+		if (m_CharComp) vel = m_CharComp->GetLinearVelocity();
+		vel.y = 0.0f;
+		const float speed = vel.Length();
 
-		float speed = vel.Length();
+		constexpr float MOVE_EPS = 5.0f; // ほぼ停止扱い
 
-		const float walkThreshold = 10.0f;
-		const float runThreshold = 200.0f;
-
-		if (speed < walkThreshold)
+		if (aiState == EnemyAIComponent::State::Idle)
 		{
 			m_pAnimComp->Play(AnimType::Idle, 0.1f);
 		}
-		else if (speed < runThreshold)
+		else if (aiState == EnemyAIComponent::State::Investigate)
 		{
-			m_pAnimComp->Play(AnimType::Walk, 0.1f);
+			// 調査中：動いてるなら走り、止まってるなら待機
+			m_pAnimComp->Play((speed > MOVE_EPS) ? AnimType::Run : AnimType::Idle, 0.1f);
 		}
 		else
 		{
-			m_pAnimComp->Play(AnimType::Run, 0.1f);
+			// 通常（巡回など）：動いてるなら歩き、止まってるなら待機
+			m_pAnimComp->Play((speed > MOVE_EPS) ? AnimType::Walk : AnimType::Idle, 0.1f);
 		}
 		m_PrevAIState = aiState;
 	}

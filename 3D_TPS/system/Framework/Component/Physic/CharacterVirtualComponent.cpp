@@ -205,7 +205,7 @@ void CharacterVirtualComponent::Update(const float dt)
 		// 念のため正規化
 		move_dir = move_dir.Normalized();
 		// 倒し具合で速度を変える
-		const float targetSpeed = m_MoveSpeed * m_MoveAmount;
+		const float targetSpeed = m_MoveSpeed * m_MoveAmount * m_MoveSpeedScale;
 		horizontal = move_dir * targetSpeed;
 	}
 	else
@@ -223,7 +223,7 @@ void CharacterVirtualComponent::Update(const float dt)
 			vertical += up * m_JumpSpeed;
 	}
 
-	// ★ キャラ専用の重力を使う
+	// キャラ専用の重力を使う
 	Vec3 charGravity(0.0f, CHAR_GRAVITY_Y, 0.0f);
 
 	vertical += charGravity * dt;

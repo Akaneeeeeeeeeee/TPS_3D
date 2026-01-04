@@ -102,4 +102,6 @@ private:
 	// 前フレームの構え状態
 	bool  m_PrevAiming = false;
 	float m_PrevRightTrigger = 0.0f; // 右トリガーの押し込み判定用（GetRightTriggerがfloat前提）
+
+	bool m_CrouchToggle = false;	// しゃがみ状態切り替え用
 };

@@ -55,15 +55,15 @@ namespace
 
     // しゃがみ歩き：スティック量(0..1) → 再生速度
     constexpr float ANIM_SPEED_CROUCH_WALK_MIN = 0.60f;
-    constexpr float ANIM_SPEED_CROUCH_WALK_MAX = 1.10f;
+    constexpr float ANIM_SPEED_CROUCH_WALK_MAX = 1.0f;
 
     // 歩き：スティック量(0..1) → 再生速度
     constexpr float ANIM_SPEED_WALK_MIN = 0.80f;
-    constexpr float ANIM_SPEED_WALK_MAX = 1.20f;
+    constexpr float ANIM_SPEED_WALK_MAX = 1.0f;
 
     // 走り：スティック量(0..1) → 再生速度
     constexpr float ANIM_SPEED_RUN_MIN = 0.90f;
-    constexpr float ANIM_SPEED_RUN_MAX = 1.50f;
+    constexpr float ANIM_SPEED_RUN_MAX = 1.0f;
 
     //============================
     // Player: 足音 / 着地音
@@ -144,7 +144,7 @@ namespace
     constexpr float AIM_TRIGGER_THRESHOLD = 0.75f;
 
     // 投げ判定（右トリガーの押し込み）
-    constexpr float THROW_TRIGGER_THRESHOLD = 0.75f;
+    constexpr float THROW_TRIGGER_THRESHOLD = 0.25f;
 
     // 構え中カメラ（調整用）
     constexpr float CAMERA_RADIUS_AIM = 125.0f;
@@ -316,8 +316,8 @@ Player::InputState Player::ReadInputState(float dt)
     // ジャンプ入力
     st.wantsJump = input.CheckKeyBuffer(DIK_SPACE);
 
-    // しゃがみキー（Cキー）押下中かどうか
-    st.isCrouching = input.CheckKeyBuffer(DIK_C);
+    // しゃがみキー（CキーorBボタン）押下中かどうか
+    st.isCrouching = input.CheckKeyBuffer(DIK_C) || input.GetButtonTrigger(XINPUT_GAMEPAD_B);
 
     return st;
 }
@@ -393,6 +393,13 @@ void Player::ApplyStance(const InputState& in)
             : CharacterVirtualComponent::Stance::Stand
         );
     }
+
+    // 姿勢切り替え
+    if (in.isCrouching)
+    {
+        m_CrouchToggle = !m_CrouchToggle;
+    }
+
 }
 
 void Player::ApplyMoveToCharacterVirtual(const Vector3& moveDir, float moveAmount, bool wantsJump)

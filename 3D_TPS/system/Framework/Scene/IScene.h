@@ -17,6 +17,7 @@ public:
 	virtual void Update(const float deltatime) = 0;
 	virtual void Draw(void) = 0;
 	virtual void Uninit(void) = 0;
+	virtual void DrawUI(void) {}
 
 	void SetChangeScene(bool _Flg) { m_ChangeScene = _Flg; }
 	bool GetChangeScene(void) const { return m_ChangeScene; };
