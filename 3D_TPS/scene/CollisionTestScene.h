@@ -16,6 +16,8 @@
 #include "Framework/GameObject/Terrain/Terrain.h"
 #include "Framework/GameObject/Goal/Goal.h"
 #include "GameObject/obstacle.h"
+#include "DirectWrite.h"
+#include "Framework/Time/CountDownTimer.h"
 
 /**
  * @brief メッシュフィールドを表示する
@@ -40,13 +42,13 @@ public:
 
 	/**
 	 * @brief 毎フレームの更新処理
-	 * @param deltatime 前フレームからの経過時間（マイクロ秒）
+	 * @param deltatime 前フレームからの経過時間（秒）
 	 */
 	void Update(const float deltatime) override;
 
 	/**
 	 * @brief 毎フレームの描画処理
-	 * @param deltatime 前フレームからの経過時間（マイクロ秒）
+	 * @param deltatime 前フレームからの経過時間（秒）
 	 *
 	 */
 	void Draw(void) override;
@@ -104,6 +106,7 @@ public:
 	bool MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used);
 	void RebuildEnemies(void);
 	void SpawnEnemies(int count);
+	void DrawUI(void) override;
 
 private:
 
@@ -153,6 +156,12 @@ private:
 
 	// 1体モードで出したい「元の座標」
 	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 210.0f, 1750.0f);
+
+	std::unique_ptr<DirectWrite> m_pDirectWrite;
+	FontData m_FontData;
+
+	CountdownTimer m_Limit;
+	bool m_IsGameOver = false;
 };
 
 REGISTER_SCENE(CollisionTestScene)

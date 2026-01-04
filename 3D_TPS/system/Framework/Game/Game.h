@@ -22,6 +22,11 @@ public:
     void Uninit();
 
 private:
+    bool  m_IsPaused = false;
+    float m_PrevTimeScale = 1.0f;
+
+    void SetPaused(bool paused);
+    
     EngineSystems m_Engine;
 	GameFeatureSystems m_GameFeatures;
 

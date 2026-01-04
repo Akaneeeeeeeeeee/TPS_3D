@@ -615,6 +615,12 @@
     <ClInclude Include="system\Framework\Component\Physic\SphereCollider.h">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClInclude>
+    <ClInclude Include="system\DirectWrite.h">
+      <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Time\CountDownTimer.h">
+      <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -943,6 +949,9 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\SphereCollider.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\DirectWrite.cpp">
+      <Filter>ソース ファイル\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

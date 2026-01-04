@@ -181,6 +181,7 @@
     <ClInclude Include="system\CPlane.h" />
     <ClInclude Include="system\Cube\Cube.h" />
     <ClInclude Include="system\CVertexBuffer.h" />
+    <ClInclude Include="system\DirectWrite.h" />
     <ClInclude Include="system\Framework\CameraManager\CameraManager.h" />
     <ClInclude Include="system\Framework\ColliderManager\collision.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -238,6 +239,7 @@
     <ClInclude Include="system\Framework\SoundManager\sound.h" />
     <ClInclude Include="system\Framework\SoundManager\SoundManager.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
+    <ClInclude Include="system\Framework\Time\CountDownTimer.h" />
     <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
@@ -379,6 +381,7 @@
     <ClCompile Include="system\Cube\Cube.cpp" />
     <ClCompile Include="system\CylinderDrawer.cpp" />
     <ClCompile Include="system\DebugUI.cpp" />
+    <ClCompile Include="system\DirectWrite.cpp" />
     <ClCompile Include="system\dx11helper.cpp" />
     <ClCompile Include="system\Framework\Application\Application.cpp" />
     <ClCompile Include="system\Framework\Application\Entry\main.cpp" />

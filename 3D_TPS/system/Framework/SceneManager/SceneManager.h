@@ -30,6 +30,8 @@ public:
 
 	// 描画
 	void Draw(void);
+	// UI描画
+	void DrawUI(void);
 
 	// 終了
 	void Uninit();
