@@ -228,6 +228,23 @@ void CSprite::Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj) const
 	);
 }
 
+void CSprite::DrawRaw(Matrix4x4& world) const
+{
+	Renderer::SetWorldMatrix(&world);
+
+	ID3D11DeviceContext* devicecontext = Renderer::GetDeviceContext();
+	devicecontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	m_Shader.SetGPU();
+	m_VertexBuffer.SetGPU();
+	m_IndexBuffer.SetGPU();
+	m_Material.SetGPU();
+	m_Texture.SetGPU();
+
+	devicecontext->DrawIndexed(4, 0, 0);
+}
+
+
 /**
  * @brief 使用しているリソースを解放する
  *

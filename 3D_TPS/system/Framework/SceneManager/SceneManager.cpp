@@ -210,6 +210,15 @@ void SceneManager::Draw()
 	}
 }
 
+void SceneManager::DrawUI()
+{
+	// シーンUI描画
+	if (m_CurrentScene)
+	{
+		m_CurrentScene->DrawUI();
+	}
+}
+
 void SceneManager::Uninit()
 {
 	// 現在シーンをきちんと終了

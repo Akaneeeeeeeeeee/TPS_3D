@@ -90,6 +90,9 @@ public:
 
     float GetSuspicion01() const { return m_Suspicion; } // デバッグ用
 
+    bool IsInPatrolTurnPhase() const { return m_IsPatrolTurning; }
+    bool IsPatrolTurnRight() const { return m_PatrolTurnRight; }
+
 private:
     PhysicsManager* m_Physics = nullptr;
     CharacterVirtualComponent* m_Char = nullptr;
@@ -109,6 +112,9 @@ private:
 
     void UpdateStuck(float dt, const Vector3& desiredDir);
     void ResolveStuck(void);
+
+    float HoldTimeByDistance(float dist) const;
+    void  UpdateSuspicionFromSight(float dt);
 
 	// 状態ごとの更新処理
     void UpdateIdle(const float deltatime);
@@ -224,7 +230,15 @@ private:
     int   m_WallFollowSide = 0;       // +1:左沿い / -1:右沿い / 0:未決定
     float m_ClearTimer = 0.0f;        // 壁沿い解除用
 
-private:
-    float HoldTimeByDistance(float dist) const;
-    void  UpdateSuspicionFromSight(float dt);
+	// ===== 巡回用 =====
+    bool  m_IsPatrolTurning = false;
+    bool  m_PatrolTurnRight = false;
+    float m_PatrolTurnTime = 0.0f;
+    float m_PatrolTurnDuration = 0.35f; // 調整
+    float m_PatrolStartYaw = 0.0f;
+    float m_PatrolTargetYaw = 0.0f;
+    int   m_PatrolNextIndex = 0;
+
+    float m_PatrolMoveAmount = 0.5f; // 巡回の入力量(歩き)
+    float m_InvestigateMoveAmount = 0.80f; // 調査の入力量(速め)
 };

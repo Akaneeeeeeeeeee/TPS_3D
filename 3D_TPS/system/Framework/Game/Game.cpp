@@ -6,6 +6,7 @@
 #include "fpscontrol.h"
 #include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Sound/SoundWaveVisualizer.h"
+#include "Framework/Time/Time.h"
 
 /**
 * @brief
@@ -41,7 +42,8 @@ void Game::Init()
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーン開始
-	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	// 既存の独立物（統一したいなら EngineSystems 側に寄せる）
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&svc.weather);
@@ -59,8 +61,24 @@ void Game::Update(const float deltatime)
 {
 	SoundManager::GetInstance().BeginFrame();
 
-	m_Engine.BeginFrame(deltatime);   // ここで入力更新
-	m_Engine.UpdateFrame(deltatime);  // 物理/天候/ライトなど
+	// まず入力は更新（解除キーを拾う）
+	m_Engine.BeginFrame(deltatime);
+
+	// ここでポーズチェック
+	// ESC または P で切り替え
+	if (CDirectInput::GetInstance().CheckKeyBufferTrigger(DIK_P))
+	{
+		SetPaused(!m_IsPaused);
+	}
+
+	// ポーズ中は「世界」を更新しない
+	if (m_IsPaused)
+	{
+		return;
+	}
+
+	// ここから通常の世界更新
+	m_Engine.UpdateFrame(deltatime);
 
 	// ゲーム終了フラグが立っていない場合
 	if (!m_SceneManager.GetIsQuit())
@@ -110,8 +128,32 @@ void Game::Draw()
 	DebugUI::Render();
 #endif // _DEBUG
 
-	// 描画しきった後に切り替え確定
-	m_SceneManager.CommitSceneChange();
+	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	// UI描画
+	m_SceneManager.DrawUI();
+
+	// ポーズUIを上に重ねる
+	if (m_IsPaused)
+	{
+		// ImGuiで描くならここ
+		//ImGui::Begin("Pause", nullptr,
+		//	ImGuiWindowFlags_NoResize |
+		//	ImGuiWindowFlags_AlwaysAutoResize);
+		//ImGui::Text("PAUSED");
+		//ImGui::Text("Press P (or ESC) to resume.");
+		//ImGui::End();
+
+		// DirectWriteで描くなら、あなたの描画経路に合わせてここで DrawString
+		// (DirectWriteのrender targetがBegin/Endと噛むならUI専用の描画フェーズに寄せる)
+	}
+
+	// ポーズ中はシーン切替確定も止めたいならガードする
+	if (!m_IsPaused)
+	{
+		// 描画しきった後に切り替え確定
+		m_SceneManager.CommitSceneChange();
+	}
 	
 	// レンダリング後処理
 	//m_RenderManager.EndRender();
@@ -136,3 +178,21 @@ void Game::Uninit(void)
 	m_Engine.Uninit();
 }
 
+void Game::SetPaused(bool paused)
+{
+	if (m_IsPaused == paused) return;
+	m_IsPaused = paused;
+
+	if (m_IsPaused)
+	{
+		// 「ゲーム世界」を止める
+		m_PrevTimeScale = Time::GetInstance().GetTimeScale();
+		Time::GetInstance().SetTimeScale(0.0f);
+	}
+	else
+	{
+		Time::GetInstance().SetTimeScale(m_PrevTimeScale);
+		// 必須ではないが、安全側に倒すなら入れてOK（遷移/一時停止解除の瞬間のズレ対策）
+		Window::GetInstance().RequestTimeReset();
+	}
+}

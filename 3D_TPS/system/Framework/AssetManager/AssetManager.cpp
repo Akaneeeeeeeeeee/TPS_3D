@@ -158,6 +158,11 @@ void AssetManager::Init()
         lookaround->LoadAnimation("assets/model/akai/Looking.fbx",
 			"LookAround");
 		RegisterAnimationData("LookAround", std::move(lookaround));
+        
+        auto gunShot = std::make_unique<CAnimationData>();
+        gunShot->LoadAnimation("assets/model/akai/GunShot.fbx",
+			"GunShot");
+		RegisterAnimationData("GunShot", std::move(gunShot));
     }
 }
 

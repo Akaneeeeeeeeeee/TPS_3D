@@ -19,6 +19,7 @@ public:
 	virtual void Update(const float deltatime) = 0;		// 更新
 	virtual void LateUpdate(const float deltatime) {}	// 後更新(必要なら派生先でオーバーライド)
 	virtual void Uninit(void) = 0;		// 終了
+	virtual void Draw(void) const {}	// 描画(必要なら派生先でオーバーライド)
 
 	void SetIsValid(bool flg) { IsValid = flg; }
 	bool GetIsValid(void) const { return IsValid; }

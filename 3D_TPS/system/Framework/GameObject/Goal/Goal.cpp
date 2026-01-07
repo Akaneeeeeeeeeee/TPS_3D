@@ -31,7 +31,6 @@ void Goal::Awake(void)
 
 void Goal::Update(const float delta)
 {
-	GameObject::Update(delta);
 }
 
 void Goal::Draw(void) const

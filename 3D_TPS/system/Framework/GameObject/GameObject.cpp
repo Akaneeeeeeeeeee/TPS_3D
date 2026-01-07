@@ -176,6 +176,13 @@ void GameObject::Draw(void) const
 void GameObject::BaseDraw(void) const
 {
 	Draw();
+	for (auto& component : m_Components)
+	{
+		if (component.second->GetIsValid())
+		{
+			component.second->Draw();
+		}
+	}
 }
 
 void GameObject::Uninit(void)

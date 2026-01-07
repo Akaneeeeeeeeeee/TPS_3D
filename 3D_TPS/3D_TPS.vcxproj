@@ -181,10 +181,9 @@
     <ClInclude Include="system\CPlane.h" />
     <ClInclude Include="system\Cube\Cube.h" />
     <ClInclude Include="system\CVertexBuffer.h" />
+    <ClInclude Include="system\DirectWrite.h" />
     <ClInclude Include="system\Framework\CameraManager\CameraManager.h" />
-    <ClInclude Include="system\Framework\ColliderManager\collision.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="system\Framework\ColliderManager\collision.h" />
     <ClInclude Include="system\Framework\Component\AI\EnemyAIComponent.h" />
     <ClInclude Include="system\Framework\Component\AI\EnemyHearingComponent.h" />
     <ClInclude Include="system\Framework\Component\Animator\Animator.h" />
@@ -211,8 +210,10 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h" />
     <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />
     <ClInclude Include="system\Framework\Component\Throw\ThrowComponent.h" />
+    <ClInclude Include="system\Framework\Component\UI\UIImageComponent.h" />
     <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h" />
     <ClInclude Include="system\Framework\EngineSystem\GameFeatureSystems.h" />
     <ClInclude Include="system\Framework\Factory\ComponentFactory.h" />
@@ -238,6 +239,8 @@
     <ClInclude Include="system\Framework\SoundManager\sound.h" />
     <ClInclude Include="system\Framework\SoundManager\SoundManager.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
+    <ClInclude Include="system\Framework\Time\CountDownTimer.h" />
+    <ClInclude Include="system\Framework\UIManager\UIManager.h" />
     <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
@@ -379,13 +382,12 @@
     <ClCompile Include="system\Cube\Cube.cpp" />
     <ClCompile Include="system\CylinderDrawer.cpp" />
     <ClCompile Include="system\DebugUI.cpp" />
+    <ClCompile Include="system\DirectWrite.cpp" />
     <ClCompile Include="system\dx11helper.cpp" />
     <ClCompile Include="system\Framework\Application\Application.cpp" />
     <ClCompile Include="system\Framework\Application\Entry\main.cpp" />
     <ClCompile Include="system\Framework\AssetManager\AssetManager.cpp" />
-    <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="system\Framework\ColliderManager\collision.cpp" />
     <ClCompile Include="system\Framework\Component\AI\EnemyAIComponent.cpp" />
     <ClCompile Include="system\Framework\Component\AI\EnemyHearingComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Animator\Animator.cpp" />
@@ -420,9 +422,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Transform\Transform.cpp" />
+    <ClCompile Include="system\Framework\Component\UI\UIImageComponent.cpp" />
     <ClCompile Include="system\Framework\EngineSystem\EngineSystem.cpp" />
     <ClCompile Include="system\Framework\GameObject\Character\Character.cpp" />
     <ClCompile Include="system\Framework\GameObject\Enemy\Enemy.cpp" />
@@ -472,6 +476,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\SoundManager\sound.cpp" />
+    <ClCompile Include="system\Framework\UIManager\UIManager.cpp" />
     <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp" />
     <ClCompile Include="system\Framework\Window\Window.cpp" />
     <ClCompile Include="system\GameObject\obstacle.cpp" />

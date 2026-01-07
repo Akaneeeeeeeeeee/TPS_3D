@@ -22,6 +22,7 @@ enum class AnimType
 	Surprise_LeftTurn,  // 左振り向き
 	Check_OverWall,
 	StoneThrow,
+	GunShot,
     Run,
     Max,
 };
@@ -75,7 +76,8 @@ public:
     void SetClip(AnimType type, aiAnimation* clip, float speed = 1.0f);
 
     // アニメ遷移（Player / Enemy から呼ぶ用）
-    void Play(AnimType type, float blendTimeSec);
+    void Play(AnimType type, float blendTimeSec, bool loop = true);
+    bool IsPlaying(AnimType type) const;
 
     // 強制的に現在クリップを差し替え（ブレンドを切る）
     void ForceSet(AnimType type, float startTimeSec = 0.0f, bool loop = true);
@@ -99,7 +101,7 @@ public:
     aiAnimation* GetClipPtr(AnimType type) const;
 
     // 描画（GameObject::Draw から呼ぶ）
-    void Draw() const;
+    void Draw(void) const override;
     void DebugImGui();
 
 private:

@@ -176,7 +176,7 @@ void PhysicsManager::EnqueueEvent(CollisionEvent::Type type, uint64_t aId, uint6
 
 void PhysicsManager::DispatchCollisionEvents(void)
 {
-    // ★必ずメインスレッドで呼ぶ（Physics.Updateの後）
+    // 必ずメインスレッドで呼ぶ（Physics.Updateの後）
     std::vector<CollisionEvent> events;
     {
         std::lock_guard<std::mutex> lk(m_EventMtx);
@@ -210,6 +210,9 @@ void PhysicsManager::DispatchCollisionEvents(void)
             break;
         case CollisionEvent::Type::CharacterEnter:
             OnCharacterCollisionEnter(*a, *b);
+            break;
+        case CollisionEvent::Type::CharacterExit:
+            OnCharacterCollisionExit(*a, *b);
             break;
         default:
             break;
@@ -259,6 +262,12 @@ void PhysicsManager::OnCharacterCollisionEnter(GameObject& character, GameObject
 {
     character.OnCollisionCharacterEnter(other);
     other.OnCollisionCharacterEnter(character);
+}
+
+void PhysicsManager::OnCharacterCollisionExit(GameObject& a, GameObject& b)
+{
+    a.OnCollisionCharacterExit(b);
+    b.OnCollisionCharacterExit(a);
 }
 
 bool PhysicsManager::RaycastClosest(

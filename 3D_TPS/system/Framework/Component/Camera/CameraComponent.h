@@ -1,9 +1,11 @@
 #pragma once
 #include "system/Framework/Component/IComponent/IComponent.h"
 #include "commontypes.h"
+#include "Framework/PhysicsSystem/Physics.h"
 
 // 前方宣言
 class CameraManager;
+class PhysicsManager;
 
 /*
 * @brief    カメラコンポーネント
@@ -68,9 +70,15 @@ public:
     float GetNearPlane() const { return m_Near; }
     void  SetNearPlane(float nearPlane) { m_Near = nearPlane; }
 
+    void SetCollisionPivot(const Vector3& p) { m_CollisionPivot = p; }
+    void SetIgnoreBody(const JPH::BodyID& id) { m_IgnoreBody = id; }
 private:
     CameraManager* m_CameraManager = nullptr;
+    JPH::PhysicsSystem* m_Physics = nullptr;
     Mode m_Mode = Mode::Orbit;
+
+    Vector3 m_CollisionPivot = Vector3::Zero;
+    JPH::BodyID m_IgnoreBody; // 自分(プレイヤー)除外用
 
     // メインカメラか？
     bool m_IsMainCamera = true;

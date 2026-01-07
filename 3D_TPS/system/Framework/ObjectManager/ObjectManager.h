@@ -34,6 +34,15 @@ public:
 		requires std::derived_from<T, GameObject>
 	std::vector<T*> GetObjectsByTag(const Tag tag) const;
 
+	template <typename T>
+		requires std::derived_from<T, GameObject>
+	T* GetObjectByTag(const Tag tag) const
+	{
+		auto objs = GetObjectsByTag<T>(tag);
+		if (objs.empty()) { return nullptr; }
+		return objs.front();
+	}
+
 	// 名前からオブジェクトを取得
 	template <typename T>
 		requires std::derived_from<T, GameObject>

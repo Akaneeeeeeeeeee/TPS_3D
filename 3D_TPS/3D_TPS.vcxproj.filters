@@ -118,9 +118,6 @@
     <Filter Include="ソース ファイル\MyFramework\Manager\AssetManager">
       <UniqueIdentifier>{69348d46-fc8b-4c1b-a464-35fe3b992e5e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Manager\ColliderManager">
-      <UniqueIdentifier>{371a09ce-76e2-4fdb-929f-eb6ba1928b2a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\Manager\Time">
       <UniqueIdentifier>{53b5c3cc-aef5-4912-8067-e70d2f70fa4b}</UniqueIdentifier>
     </Filter>
@@ -186,6 +183,15 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\EngineContext">
       <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\StateIcon">
+      <UniqueIdentifier>{1b594347-e51e-4838-9c4f-6d82e0978f04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Manager\UIManager">
+      <UniqueIdentifier>{244fb413-961b-4c06-ab88-bdca81a259d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\UI">
+      <UniqueIdentifier>{ceeb3eb0-a07f-4e91-beb2-d49bb0e27345}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -438,9 +444,6 @@
     <ClInclude Include="system\Framework\Material\MyMaterial.h">
       <Filter>ソース ファイル\MyFramework\Material</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\ColliderManager\collision.h">
-      <Filter>ソース ファイル\MyFramework\Manager\ColliderManager</Filter>
-    </ClInclude>
     <ClInclude Include="system\CPlane.h">
       <Filter>ソース ファイル\system</Filter>
     </ClInclude>
@@ -614,6 +617,24 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\SphereCollider.h">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="system\DirectWrite.h">
+      <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Time\CountDownTimer.h">
+      <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\UIManager\UIManager.h">
+      <Filter>ソース ファイル\MyFramework\Manager\UIManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\UI\UIImageComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\ColliderManager\collision.h">
+      <Filter>ソース ファイル\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -800,9 +821,6 @@
     <ClCompile Include="system\Framework\Material\MyMaterial.cpp">
       <Filter>ソース ファイル\MyFramework\Material</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
-      <Filter>ソース ファイル\MyFramework\Manager\ColliderManager</Filter>
-    </ClCompile>
     <ClCompile Include="system\CPlane.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
@@ -943,6 +961,21 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\SphereCollider.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="system\DirectWrite.cpp">
+      <Filter>ソース ファイル\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\UIManager\UIManager.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\UIManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\UI\UIImageComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
+      <Filter>ソース ファイル\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

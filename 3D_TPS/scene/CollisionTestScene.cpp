@@ -167,7 +167,6 @@ void CollisionTestScene::debugFieldUnduration() {
 	}
 
 	ImGui::End();
-
 }
 
 /**
@@ -184,29 +183,72 @@ CollisionTestScene::CollisionTestScene()
  */
 void CollisionTestScene::Update(const float deltatime)
 {
+	if (m_IsGameOver) { return; }
+
+	// ここから通常更新
 	m_pObjectManager->Update(deltatime);
 
+	// --- 1) 発見した瞬間にカメラを向ける ---
+	if (!m_CameraFocusIssued && m_player)
+	{
+		for (auto& enemy : m_enemies)
+		{
+			if (!enemy) continue;
+
+			if (enemy->IsGameOverTriggered())
+			{
+				m_CameraFocusIssued = true;
+				m_FoundByEnemy = enemy;
+
+				Vector3 t = enemy->GetTransform().GetPosition();
+				t.y += 140.0f; // 敵の頭あたり（調整）
+
+				m_player->StartForceLookAt(t, /*turnSpeed=*/20.0f, /*freezePos=*/true);
+				break;
+			}
+		}
+	}
+
+	// --- 2) 射撃モーションが終わったら遷移 ---
+	for (auto& enemy : m_enemies)
+	{
+		if (!enemy) continue;
+
+		if (enemy->IsSceneTransitionRequested())
+		{
+			SetChangeScene(true);
+			SetNextSceneName("ResultScene");
+			return;
+		}
+	}
+
+	// タイマー更新（dt=0 なら止まる）
+	m_Limit.Update(deltatime);
+
+	// 時間切れ
+	if (m_Limit.IsTimeout())
+	{
+		m_IsGameOver = true;
+		SetChangeScene(true);
+		SetNextSceneName("ResultScene"); // ゲームオーバー先に合わせる
+		return;
+	}
+
+	// ゴール到達判定
+	if (m_Goal->IsReached())
+	{
+		SetChangeScene(true);
+		SetNextSceneName("ResultScene");
+		return;
+	}
+
+	// 敵再配置リクエストが来ていたら実行
 	if (m_RequestRebuildEnemies)
 	{
 		m_RequestRebuildEnemies = false;
 		RebuildEnemies();
 	}
 
-	if (m_Goal->IsReached())
-	{
-		SetChangeScene(true);
-		SetNextSceneName("ResultScene");
-	}
-
-	for(auto& enemy : m_enemies) 
-	{
-		if (enemy && enemy->IsGameOverTriggered())
-		{
-			SetChangeScene(true);
-			SetNextSceneName("ResultScene");
-			break;
-		}
-	}
 }
 
 
@@ -265,6 +307,8 @@ void CollisionTestScene::Draw(void)
 void CollisionTestScene::Init(ObjectManager* mgr)
 {
 	m_pObjectManager = mgr;
+	m_IsGameOver = false;
+	m_Limit.Start(120.0f);
 
 	// ローカル軸表示用線分の初期化
 	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
@@ -273,14 +317,11 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
 	m_playersegment[0] = std::make_unique<Segment>(Vector3(0, -100, 0), Vector3(0, 100, 0));
 
-
 	// フィールド初期化
-	//m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
-	//m_field->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
 	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
 	m_terrain->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
-
+	m_terrain->SetScene(this);
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
@@ -342,6 +383,20 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 			/*topRadiusMin=*/80.0f,   // 上面の“口径”を確保
 			/*innerRatio=*/0.6f       // 中心が強い範囲
 		);
+	}
+
+	// DirectWrite 初期化（1回だけ）
+	if (!m_pDirectWrite)
+	{
+		m_FontData.fontSize = 24.0f;
+		m_FontData.Color = D2D1::ColorF(D2D1::ColorF::White);
+		m_FontData.shadowOffset = D2D1::Point2F(2.0f, -2.0f);
+
+		m_pDirectWrite = std::make_unique<DirectWrite>(&m_FontData);
+
+		// Renderer が管理している swapchain を渡す（ここがズレると表示されない）
+		HRESULT hr = m_pDirectWrite->Init(Renderer::GetSwapChain());
+		assert(SUCCEEDED(hr));
 	}
 
 	// デバッグ Free Camera
@@ -478,4 +533,34 @@ void CollisionTestScene::RebuildEnemies()
 	ClearEnemies();
 	int spawnCount = m_MultiEnemy ? m_MultiCount : 1;
 	SpawnEnemies(spawnCount);
+}
+
+void CollisionTestScene::DrawUI(void)
+{
+	if (!m_pDirectWrite) return;
+
+	// 残り秒 → mm:ss
+	int s = (m_Limit.remain > 0.0f) ? (int)std::ceil(m_Limit.remain) : 0;
+	int mm = s / 60;
+	int ss = s % 60;
+
+	wchar_t timeBuf[64];
+	swprintf_s(timeBuf, L"TIME %02d:%02d", mm, ss);
+
+	m_pDirectWrite->DrawString(timeBuf, { 20.0f, 20.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
+
+	// 参考：ゲームオーバー表示
+	if (m_IsGameOver)
+	{
+		m_pDirectWrite->DrawString(L"GAME OVER", { 400.0f, 200.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
+	}
+
+	// 既存の表示
+	if (m_player)
+	{
+		const auto p = m_player->GetTransform().GetPosition();
+		wchar_t buf[256];
+		swprintf_s(buf, L"Player (%.1f, %.1f, %.1f)", p.x, p.y, p.z);
+		m_pDirectWrite->DrawString(buf, { 20.0f, 50.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
+	}
 }

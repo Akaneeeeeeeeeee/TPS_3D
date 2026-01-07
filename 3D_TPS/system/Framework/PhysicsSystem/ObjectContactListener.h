@@ -60,7 +60,7 @@ public:
 private:
     PhysicsManager& m_Owner;
 
-    // ★Removed時に Body が取れないケースがあるので、BodyIDペア→情報を保存しておく
+    // Removed時に Body が取れないケースがあるので、BodyIDペア→情報を保存しておく
     struct PairKey
     {
         uint32_t a;

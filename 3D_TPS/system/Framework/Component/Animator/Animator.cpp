@@ -38,7 +38,7 @@ float Animator::GetDurationSec(const aiAnimation* clip)
 
     // aiAnimation::mDuration ‚Í ticks
     // mTicksPerSecond ‚ª 0 ‚Ìê‡‚ª‚ ‚é
-    const double tps = (clip->mTicksPerSecond > 0.0) ? clip->mTicksPerSecond : 25.0; // („‘ª‚Å‚·) ‚æ‚­‚ ‚éŠù’è’l
+    const double tps = (clip->mTicksPerSecond > 0.0) ? clip->mTicksPerSecond : 25.0;
     const double dur = (tps > 0.0) ? (clip->mDuration / tps) : 0.0;
 
     return static_cast<float>(dur);

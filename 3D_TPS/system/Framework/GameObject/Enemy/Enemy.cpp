@@ -9,6 +9,7 @@
 #include "system/RandomEngine.h"
 #include "Framework/Component/AI/EnemyHearingComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
+#include "Framework/Component/StateIcon/StateIconComponent.h"
 #include "system/meshmanager.h"
 #include "system/Framework/Time/Time.h"
 #include "system/imgui/imgui.h"
@@ -34,9 +35,11 @@ Enemy::~Enemy()
 
 void Enemy::SetWayPoints(const std::vector<Vector3>& points)
 {
+	m_RequestedWayPoints = points;
+
 	if (m_AIComp)
 	{
-		m_AIComp->SetWayPoints(points);
+		m_AIComp->SetWayPoints(m_RequestedWayPoints);
 	}
 }
 
@@ -51,6 +54,12 @@ void Enemy::Awake(void)
 	// 2) 物理・AI・聴覚コンポーネントの初期化
 	InitComponents();
 
+	// 外部指定の巡回点があるなら、AI生成後にここで反映
+	if (m_AIComp && !m_RequestedWayPoints.empty())
+	{
+		m_AIComp->SetWayPoints(m_RequestedWayPoints);
+	}
+
 	DebugUI::RedistDebugFunction([this]() {
 		DebugImGui();
 		});
@@ -58,11 +67,48 @@ void Enemy::Awake(void)
 
 void Enemy::Start(void)
 {
-	// AIコンポーネントにプレイヤー・地形コライダをセット
-	m_AIComp->SetPlayer(m_pPlayer);
-	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
-	m_AIComp->SetTerrainCollider(m_pTerrainCollider);
+	// 1) AI用の Player* は「本編でだけ」取れれば使う（タイトルでは null のまま）
+	if (!m_pPlayer && m_pObjectManager)
+	{
+		// ※タイトルの Tag::Player は TitlePlayerActor なので、ここは null になってOK
+		m_pPlayer = m_pObjectManager->GetObjectByTag<Player>(Tag::Player);
+	}
 
+	// 2) HeadIcon 用カメラは「Tag::Player の Character から CameraComponent を拾う」
+	CameraComponent* cam = nullptr;
+
+	if (m_pPlayer)
+	{
+		cam = m_pPlayer->GetCamera(); // 本編
+	}
+	else if (m_pObjectManager)
+	{
+		// タイトル：TitlePlayerActor も Character なので拾える
+		if (auto* playerCh = m_pObjectManager->GetObjectByTag<Character>(Tag::Player))
+		{
+			cam = playerCh->GetComponent<CameraComponent>();
+		}
+	}
+
+	if (m_HeadIcon && cam)
+	{
+		m_HeadIcon->Setup(cam, 64, 64,
+			"assets/texture/hatena-illust1.png",
+			"assets/texture/b-mk-illust2.png");
+		m_HeadIcon->SetOffset(Vector3(0, 200, 0));
+		m_HeadIcon->SetScale(Vector3(1, 1, 1));
+	}
+
+	// 3) AIには Player* がある時だけ渡す（タイトルは視認なしでOK）
+	if (m_AIComp && m_pPlayer)
+		m_AIComp->SetPlayer(m_pPlayer);
+
+	// 4) 地形コライダ
+	if (m_AIComp && m_pTerrain)
+	{
+		m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
+		m_AIComp->SetTerrainCollider(m_pTerrainCollider);
+	}
 	// すでに巡回点が設定されている場合はスキップ
 	if (!m_AIComp->GetWayPoints().empty()) { return; }
 
@@ -86,37 +132,7 @@ void Enemy::Start(void)
 // ----------------------------------------
 void Enemy::InitAnimation(void)
 {
-	//// アニメーションコンポーネント追加
-	//m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
-
-	//// メッシュ・シェーダ設定
-	//CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
-	//m_pAnimComp->SetMesh(mesh);
-
-	//CShader* shader = am.GetShader<CShader>("animshader");
-	//m_pAnimComp->SetShader(shader);
-
-	//// クリップ取得
-	//auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	//auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
-	//auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
-	//auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
-	//auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
-	//auto* lookaround = am.GetAnimationData<CAnimationData>("LookAround")->GetAnimation("LookAround", 0);
-	////auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	////auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	////auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	////auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
-	////auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
-
-	//// 種類ごとに登録
-	//m_pAnimComp->SetClip(AnimType::Idle, idle);
-	//m_pAnimComp->SetClip(AnimType::Walk, walk);
-	//m_pAnimComp->SetClip(AnimType::Run, run);
-	//m_pAnimComp->SetClip(AnimType::Surprise_RightTurn, right);
-	//m_pAnimComp->SetClip(AnimType::Surprise_LeftTurn, left);
-	//m_pAnimComp->SetClip(AnimType::LookAround, lookaround);
-
+	// アニメーションコンポーネント追加
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	SkinnedAnimSetup setup{};
@@ -130,6 +146,7 @@ void Enemy::InitAnimation(void)
 		{ AnimType::Surprise_RightTurn, "Right_Turn",   "Right_Turn",   0, 1.0f },
 		{ AnimType::Surprise_LeftTurn,  "Left_Turn",    "Left_Turn",    0, 1.0f },
 		{ AnimType::LookAround,         "LookAround",   "LookAround",   0, 1.0f },
+		{ AnimType::GunShot,			"GunShot",		"GunShot",		0, 1.0f },
 	};
 
 	m_pAnimComp->SetupFromAssets(setup);
@@ -162,46 +179,48 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 		return;
 	}
 
-	//Vector3 xzMin, xzMax;
-	//if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
-	//{
-	//	SetDefaultPatrol();
-	//	m_Transform.SetPosition(m_StartPos);
-	//	return;
-	//}
-
-	//// 地形範囲内のランダム XZ を生成
-	//auto RandXZInTerrain = [&]() -> Vector3 {
-	//	float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
-	//	float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
-	//	return Vector3(x, 0.0f, z);
-	//	};
-
-	//constexpr int   MAX_TRY = 16;
-	//constexpr float HEIGHT_OFFSET = 75.0f;
-
-	//bool ok = false;
-	//for (int i = 0; i < MAX_TRY && !ok; ++i)
-	//{
-	//	Vector3 p0 = RandXZInTerrain();
-	//	Vector3 p1 = RandXZInTerrain();
-
-	//	float y0, y1;
-	//	if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
-	//		m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
-	//	{
-	//		m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
-	//		m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
-	//		ok = true;
-	//	}
-	//}
-
-	//if (!ok)
-	//{
-	//	SetDefaultPatrol();
-	//}
-
+#ifdef _DEBUG
 	SetDefaultPatrol();
+#else
+	Vector3 xzMin, xzMax;
+	if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
+	{
+		SetDefaultPatrol();
+		m_Transform.SetPosition(m_StartPos);
+		return;
+	}
+
+	// 地形範囲内のランダム XZ を生成
+	auto RandXZInTerrain = [&]() -> Vector3 {
+		float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
+		float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
+		return Vector3(x, 0.0f, z);
+		};
+
+	constexpr int   MAX_TRY = 16;
+	constexpr float HEIGHT_OFFSET = 75.0f;
+
+	bool ok = false;
+	for (int i = 0; i < MAX_TRY && !ok; ++i)
+	{
+		Vector3 p0 = RandXZInTerrain();
+		Vector3 p1 = RandXZInTerrain();
+
+		float y0, y1;
+		if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
+			m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
+		{
+			m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
+			m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
+			ok = true;
+		}
+	}
+
+	if (!ok)
+	{
+		SetDefaultPatrol();
+	}
+#endif
 
 	// 実際の Transform を開始地点に合わせる
 	m_Transform.SetPosition(m_StartPos);
@@ -215,9 +234,6 @@ void Enemy::InitComponents()
 	// EnemyAIComponent
 	{
 		m_AIComp = AddComponent<EnemyAIComponent>("EnemyAI");
-
-		// すでに巡回点が設定されている場合はスキップ
-		if (!m_AIComp->GetWayPoints().empty()) { return; }
 
 		m_AIComp->SetRayLength(900.0f);
 		m_AIComp->SetAvoidWeight(1.5f);
@@ -236,6 +252,11 @@ void Enemy::InitComponents()
 		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
 		hearingComp->SetEnemyAI(m_AIComp);
 	}
+
+	// EnemyHeadIconComponent
+	{
+		m_HeadIcon = AddComponent<EnemyHeadIconComponent>("HeadIcon");
+	}
 }
 
 void Enemy::Update(const float deltatime)
@@ -252,22 +273,31 @@ void Enemy::Update(const float deltatime)
 	// ==============================
 	if (m_GameOverTriggered)
 	{
-		// 念のため毎フレ入力も 0 にしておく
-		if (m_CharComp)
+		if (m_CharComp) m_CharComp->SetMoveDir(Vector3::Zero);
+
+		if (!m_pAnimComp)
 		{
-			m_CharComp->SetMoveDir(Vector3::Zero);
+			// アニメが無い場合の保険：即遷移
+			m_RequestSceneTransition = true;
+			return;
 		}
 
-		if (m_pAnimComp)
+		if (!m_ShotStarted)
 		{
-			m_pAnimComp->Play(AnimType::Idle, 0.1f);
+			m_ShotStarted = true;
+
+			// 非ループで射撃開始（確実に 0 秒から）
+			m_pAnimComp->ForceSet(AnimType::GunShot, 0.0f, false);
+			return;
 		}
 
+		// GunShot が「現在再生中」かつ「終了した」なら遷移OK
+		if (m_pAnimComp->IsPlaying(AnimType::GunShot) && m_pAnimComp->IsCurrentFinished())
+		{
+			m_RequestSceneTransition = true;
+		}
 		return;
 	}
-
-	// 1) コンポーネント更新（AI / CharacterVirtual / Animator など）
-	GameObject::Update(deltatime);
 
 	// 2) 今フレーム「音を聞いた」通知が AI に入っていれば、驚きアニメ開始
 	bool startedSoundTurn = false;
@@ -292,7 +322,8 @@ void Enemy::Update(const float deltatime)
 	// ==============================
 	if (m_AIComp && m_AIComp->IsFound())
 	{
-		OnFoundPlayer();      // ここで m_GameOverTriggered が true になる
+		OnFoundPlayer();
+		return;
 		// このフレームの残り処理はそのまま進むが、
 		// 次フレームからは上の if(m_GameOverTriggered) で止まる
 	}
@@ -305,7 +336,7 @@ void Enemy::Update(const float deltatime)
 		// ---- Caution（怪しんでる） ----
 		if (aiState == EnemyAIComponent::State::Caution)
 		{
-			// ★Cautionに入った瞬間（視覚の可能性が高い）に LookAround を開始
+			// Cautionに入った瞬間（視覚の可能性が高い）に LookAround を開始
 			if (m_PrevAIState != EnemyAIComponent::State::Caution)
 			{
 				if (!startedSoundTurn)
@@ -330,29 +361,27 @@ void Enemy::Update(const float deltatime)
 		}
 
 		// それ以外の状態: Idle / Walk / Run を速度に応じて再生
+		// それ以外
 		Vector3 vel = Vector3::Zero;
-		if (m_CharComp)
-		{
-			vel = m_CharComp->GetLinearVelocity();
-			// 必要なら vel.y = 0.0f;
-		}
+		if (m_CharComp) vel = m_CharComp->GetLinearVelocity();
+		vel.y = 0.0f;
+		const float speed = vel.Length();
 
-		float speed = vel.Length();
+		constexpr float MOVE_EPS = 5.0f; // ほぼ停止扱い
 
-		const float walkThreshold = 10.0f;
-		const float runThreshold = 200.0f;
-
-		if (speed < walkThreshold)
+		if (aiState == EnemyAIComponent::State::Idle)
 		{
 			m_pAnimComp->Play(AnimType::Idle, 0.1f);
 		}
-		else if (speed < runThreshold)
+		else if (aiState == EnemyAIComponent::State::Investigate)
 		{
-			m_pAnimComp->Play(AnimType::Walk, 0.1f);
+			// 調査中：動いてるなら走り、止まってるなら待機
+			m_pAnimComp->Play((speed > MOVE_EPS) ? AnimType::Run : AnimType::Idle, 0.1f);
 		}
 		else
 		{
-			m_pAnimComp->Play(AnimType::Run, 0.1f);
+			// 通常（巡回など）：動いてるなら歩き、止まってるなら待機
+			m_pAnimComp->Play((speed > MOVE_EPS) ? AnimType::Walk : AnimType::Idle, 0.1f);
 		}
 		m_PrevAIState = aiState;
 	}
@@ -361,7 +390,6 @@ void Enemy::Update(const float deltatime)
 
 void Enemy::Draw(void) const
 {
-	Character::Draw();
 }
 
 void Enemy::Uninit(void)
@@ -416,6 +444,22 @@ bool Enemy::TryStartSurpriseTurn(const Vector3& soundPos)
 	return true;
 }
 
+void Enemy::SetWayPoints(const Vector3& start, const Vector3& end)
+{
+	m_StartPos = start;
+	m_EndPos = end;
+
+	m_RequestedWayPoints.clear();
+	m_RequestedWayPoints.push_back(start);
+	m_RequestedWayPoints.push_back(end);
+
+	if (m_AIComp)
+	{
+		m_AIComp->SetWayPoints(m_RequestedWayPoints);
+	}
+}
+
+
 void Enemy::OnFoundPlayer(void)
 {
 	// すでに演出中なら何もしない
@@ -423,6 +467,10 @@ void Enemy::OnFoundPlayer(void)
 		return;
 
 	m_GameOverTriggered = true;
+
+	// 射撃アニメ再生開始（ここで初期化）
+	m_ShotStarted = false;
+	m_ShotTimer = 0.0f;
 
 	// 1) 移動停止
 	if (m_CharComp)
@@ -442,8 +490,13 @@ void Enemy::OnFoundPlayer(void)
 		if (dir.LengthSquared() > 1e-4f)
 		{
 			dir.Normalize();
-			// モデルが Z- 前方系なので FaceMoveDir と同じ計算
-			float yaw = std::atan2(-dir.x, -dir.z);
+
+			float yaw = std::atan2(-dir.x, -dir.z);   // いま使ってる「プレイヤーへ向く」yaw
+
+			// --- アニメーションの都合で右へ90度回転補正 ---
+			constexpr float RIGHT_90 = PI * 0.5f;      // 90度
+			yaw += RIGHT_90;                           // もし逆なら yaw -= RIGHT_90 にする
+
 			Quaternion q = Quaternion::CreateFromAxisAngle(Vector3::Up, yaw);
 			m_Transform.SetRotation(q);
 		}

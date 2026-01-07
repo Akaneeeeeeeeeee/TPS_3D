@@ -90,6 +90,7 @@ public:
 	virtual void OnTriggerExit(GameObject& other) {}
 
 	virtual void OnCollisionCharacterEnter(GameObject& other) {}
+	virtual void OnCollisionCharacterExit(GameObject& other) {}
 
 	void SetLifetime(Lifetime lt) { m_Lifetime = lt; }
 	Lifetime GetLifetime() const { return m_Lifetime; }

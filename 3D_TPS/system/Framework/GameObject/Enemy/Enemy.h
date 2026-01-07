@@ -8,6 +8,7 @@ class CharacterVirtualComponent;
 class EnemyAIComponent;
 class Terrain;
 class StaticMeshCollider;
+class EnemyHeadIconComponent;
 
 /*
 * @brief	敵クラス
@@ -33,16 +34,14 @@ public:
 
 	void SetPlayer(Player* player) { m_pPlayer = player; }
 	void SetTerrain(Terrain* terrain) { m_pTerrain = terrain; }
-	void SetWayPoints(const Vector3& start, const Vector3& end)
-	{
-		m_StartPos = start;
-		m_EndPos = end;
-	}
+	void SetWayPoints(const Vector3& start, const Vector3& end);
 	void SetWayPoints(const std::vector<Vector3>& points);
 
 	bool CanSeePlayer(const Vector3& playerPos) const;
 	bool IsGameOverTriggered(void) const { return m_GameOverTriggered; }
 	void DebugImGui(void);
+
+	bool IsSceneTransitionRequested() const { return m_RequestSceneTransition; }
 private:
 	void InitAnimation(void);
 	void InitPatrolPoints(RandomEngine& rng);
@@ -56,6 +55,9 @@ private:
 	StaticMeshCollider* m_pTerrainCollider;
 	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
+	EnemyHeadIconComponent* m_HeadIcon = nullptr;
+
+	std::vector<Vector3> m_RequestedWayPoints; // シーンなど外部から指定された巡回点
 
 	bool       m_TurnRight = false; // 右向きアニメかどうか
 	// 巡回点
@@ -72,6 +74,13 @@ private:
 	EnemyAIComponent::State m_PrevAIState;
 
 	// すでにゲームオーバー処理を走らせたかどうか
-	bool        m_GameOverTriggered = false;
+	bool	m_GameOverTriggered = false;
+	bool	m_RequestSceneTransition = false;
+
+	bool  m_ShotStarted = false;
+	float m_ShotTimer = 0.0f;
+
+	// クリップ長が取れない→固定秒でOK（後で調整）
+	float m_ShotDuration = 0.7f;
 };
 
