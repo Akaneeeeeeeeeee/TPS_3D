@@ -34,6 +34,9 @@ public:
 
 	CameraComponent* GetCamera(void) { return m_pCamera; }
 
+	void StartForceLookAt(const Vector3& targetWorld, float turnSpeed = 18.0f, bool freezePos = true);
+	void StopForceLookAt();
+
 	void GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const;	// 視線判定用のサンプリング点を取得
 
 private:
@@ -76,6 +79,18 @@ private:
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 	CameraComponent* m_pCamera = nullptr;
 	ThrowComponent* m_pThrowComp = nullptr;
+
+	struct ForceLookAtState
+	{
+		bool   active = false;
+		bool   freezePos = true;
+		float  turnSpeed = 18.0f; // 大きいほど速く向く
+
+		Vector3 target = Vector3::Zero;			// 敵の注視点
+		Vector3 frozenCamPos = Vector3::Zero;	// 開始時のカメラ位置
+		Vector3 lookAtCur = Vector3::Zero;		// 補間中の注視点
+		float zoomCur = 0.0f;					// 寄り量（現在値）
+	} m_ForceLookAt;
 
 	// 足音用
 	static constexpr float FOOTSTEP_BASE_INTERVAL = 0.3f;

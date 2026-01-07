@@ -162,6 +162,10 @@ private:
 
 	CountdownTimer m_Limit;
 	bool m_IsGameOver = false;
+
+	// ƒvƒŒƒCƒ„[‚ğŒ©‚Â‚¯‚½“G
+	Enemy* m_FoundByEnemy = nullptr;
+	bool   m_CameraFocusIssued = false;
 };
 
 REGISTER_SCENE(CollisionTestScene)

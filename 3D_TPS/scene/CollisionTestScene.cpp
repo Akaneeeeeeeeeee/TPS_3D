@@ -167,7 +167,6 @@ void CollisionTestScene::debugFieldUnduration() {
 	}
 
 	ImGui::End();
-
 }
 
 /**
@@ -186,6 +185,43 @@ void CollisionTestScene::Update(const float deltatime)
 {
 	if (m_IsGameOver) { return; }
 
+	// ここから通常更新
+	m_pObjectManager->Update(deltatime);
+
+	// --- 1) 発見した瞬間にカメラを向ける ---
+	if (!m_CameraFocusIssued && m_player)
+	{
+		for (auto& enemy : m_enemies)
+		{
+			if (!enemy) continue;
+
+			if (enemy->IsGameOverTriggered())
+			{
+				m_CameraFocusIssued = true;
+				m_FoundByEnemy = enemy;
+
+				Vector3 t = enemy->GetTransform().GetPosition();
+				t.y += 140.0f; // 敵の頭あたり（調整）
+
+				m_player->StartForceLookAt(t, /*turnSpeed=*/20.0f, /*freezePos=*/true);
+				break;
+			}
+		}
+	}
+
+	// --- 2) 射撃モーションが終わったら遷移 ---
+	for (auto& enemy : m_enemies)
+	{
+		if (!enemy) continue;
+
+		if (enemy->IsSceneTransitionRequested())
+		{
+			SetChangeScene(true);
+			SetNextSceneName("ResultScene");
+			return;
+		}
+	}
+
 	// タイマー更新（dt=0 なら止まる）
 	m_Limit.Update(deltatime);
 
@@ -198,15 +234,7 @@ void CollisionTestScene::Update(const float deltatime)
 		return;
 	}
 
-	// ここから通常更新
-	m_pObjectManager->Update(deltatime);
-
-	if (m_RequestRebuildEnemies)
-	{
-		m_RequestRebuildEnemies = false;
-		RebuildEnemies();
-	}
-
+	// ゴール到達判定
 	if (m_Goal->IsReached())
 	{
 		SetChangeScene(true);
@@ -214,15 +242,13 @@ void CollisionTestScene::Update(const float deltatime)
 		return;
 	}
 
-	for (auto& enemy : m_enemies)
+	// 敵再配置リクエストが来ていたら実行
+	if (m_RequestRebuildEnemies)
 	{
-		if (enemy && enemy->IsGameOverTriggered())
-		{
-			SetChangeScene(true);
-			SetNextSceneName("ResultScene");
-			break;
-		}
+		m_RequestRebuildEnemies = false;
+		RebuildEnemies();
 	}
+
 }
 
 
@@ -291,14 +317,11 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 
 	m_playersegment[0] = std::make_unique<Segment>(Vector3(0, -100, 0), Vector3(0, 100, 0));
 
-
 	// フィールド初期化
-	//m_field = m_pObjectManager->Instantiate<Field>("field", Tag::Field);
-	//m_field->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
 	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
 	m_terrain->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
-
+	m_terrain->SetScene(this);
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);

@@ -18,6 +18,7 @@
 #include "Framework/SoundManager/SoundManager.h"
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/GameObject/StreetLight/StreetLight.h"
+#include "Framework/Component/UI/UIImageComponent.h"
 
 // 指定方向ベクトルから Yaw 回転を求める（XZ平面投影、正規化済み前提）
 static Quaternion YawQuatFromDirXZ(const Vector3& dir)
@@ -182,6 +183,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	m_Terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
 	m_Terrain->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
 	m_Terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
+	m_Terrain->SetScene(this);
 
 	// プレイヤー追加
 	m_Player = m_pObjectManager->Instantiate<TitlePlayerActor>("PlayerActor", Tag::Player);
@@ -226,6 +228,31 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	// タイトル画像の生成
 	m_TitleImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/SilentEchoT1.png");
 
+	// UI専用オブジェクト（Tagは何でもOK）
+	auto* uiObj = m_pObjectManager->Instantiate<GameObject>(
+		"UI_TitleLogo",
+		Tag::Object,              // Tag::UI があるならそれでもOK
+		Transform::One()
+	);
+
+	UIImageComponent* img = uiObj->AddComponent<UIImageComponent>(
+		"Image",
+		"assets/texture/Images/SilentEchoT1.png"
+	);
+
+	// UITransform（内包Rect）をセット
+	auto& r = img->Rect();
+
+	// 画面中央に置く
+	r.anchor = { 1.0f, 0.f };          // 基準点：画面中央
+	r.anchoredPosPx = { 0.0f, 0.0f };   // 基準点からの差分(px)
+	r.sizePx = { 800.0f, 400.0f };      // 表示サイズ(px)
+	r.pivot = { 0.5f, 0.5f };          // 自分の中心を基準
+	r.rotZRad = 0.0f;
+
+	r.layer = 100;
+	r.order = 0;
+	r.visible = true;
 
 #ifdef _DEBUG
 	// ローカル軸表示用線分の初期化
@@ -259,7 +286,7 @@ void TitleScript::Setup(TitlePlayerActor* player, Enemy* enemy, obstacle* cover)
 	const Vector3 s = m_Cover->GetScale();
 
 	m_EnterPos = Vector3(c.x - s.x * 1.2f, c.y, c.z + s.z * 2.0f);		// 左手前から入る
-	m_HidePos = Vector3(c.x - s.x * 0.5f, c.y, c.z);					// 障害物の左側に隠れる
+	m_HidePos = Vector3(c.x + s.x * 0.5f, c.y, c.z - s.z * 5.0f);		// 障害物の右側に隠れる
 	m_ExitPos = Vector3(1500.0f, c.y, -4250.0f);	// 右側に抜ける
 
 	m_RockLandPos = Vector3(c.x + s.x * 1.8f, c.y, c.z + s.z * 0.8f);	// 石の着地点（敵を誘導したい場所）

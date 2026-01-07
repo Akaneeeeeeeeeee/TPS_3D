@@ -164,12 +164,12 @@ void CharacterVirtualComponent::Init(void)
 	// InnerBodyID ‚ð•Û‘¶
 	m_InnerBodyID = m_Character->GetInnerBodyID();
 
-	// InnerBody ‚É‚à GameObject* ‚ð UserData ‚Æ‚µ‚ÄÝ’è
+	// InnerBody ‚É‚à ObjectID ‚ð UserData ‚Æ‚µ‚ÄÝ’è
 	{
 		auto& bi = m_Physics->GetBodyInterface();
 		bi.SetUserData(
 			m_InnerBodyID,
-			reinterpret_cast<JPH::uint64>(m_pOwner)
+			m_pOwner->GetID()
 		);
 	}
 

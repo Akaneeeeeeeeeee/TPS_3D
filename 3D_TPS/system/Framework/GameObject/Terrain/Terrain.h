@@ -40,6 +40,8 @@ public:
     bool GetWorldXZBounds(Vector3& outMin, Vector3& outMax) const;
     bool SampleHeight(float x, float z, float& outY) const;
 
+	void SetScene(IScene* scene) { m_ownerscene = scene; }
+
 private:
     CStaticMesh* m_mesh{};
     CStaticMeshRenderer* m_meshrenderer{};

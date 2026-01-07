@@ -42,7 +42,8 @@ void Game::Init()
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーン開始
-	m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
 
 	// 既存の独立物（統一したいなら EngineSystems 側に寄せる）
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&svc.weather);
@@ -126,6 +127,8 @@ void Game::Draw()
 #ifdef _DEBUG
 	DebugUI::Render();
 #endif // _DEBUG
+
+	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// UI描画
 	m_SceneManager.DrawUI();

@@ -7,6 +7,9 @@
 #include "system/CShader.h"
 #include "system/Framework/Component/Physic/StaticMeshCollider.h"
 #include "system/Framework/PhysicsSystem/PhysicsManager.h"
+#include "Framework/Scene/IScene.h"
+#include "Framework/GameObject/Player/Player.h"
+#include "Framework/GameObject/Player/TitlePlayerActor.h"
 
 #include "system/DebugUI.h"
 
@@ -49,7 +52,37 @@ void Terrain::Draw() const
     if (!m_mesh || !m_meshrenderer || !m_shader) { return; }
 
     Matrix4x4 mtx = m_Transform.GetWorldMatrix();
+	Matrix4x4 currentview = Renderer::GetViewMatrix();
+    Matrix4x4 view;
+    Matrix4x4 currentproj = Renderer::GetProjectionMatrix();
+	Matrix4x4 proj;
     Renderer::SetWorldMatrix(&mtx);
+    if (Player* player = m_ownerscene->GetObjectManager()->GetObjectByTag<Player>(Tag::Player))
+    {
+        auto comp = player->GetComponent<CameraComponent>();
+        view = comp->GetViewMatrix();
+		proj = comp->GetProjMatrix();
+    }
+    else if (TitlePlayerActor * titlePlayer = m_ownerscene->GetObjectManager()->GetObjectByTag<TitlePlayerActor>(Tag::Player))
+    {
+        auto comp = titlePlayer->GetComponent<CameraComponent>();
+        view = comp->GetViewMatrix();
+        proj = comp->GetProjMatrix();
+    }
+
+    //if(view == currentview && proj == currentproj)
+    //{
+    //    // 変更がないなら設定し直す必要はない
+    //}
+    //else
+    //{
+    //    // 変更があったら設定し直す
+    //    Renderer::SetViewMatrix(&view);
+    //    Renderer::SetProjectionMatrix(&proj);
+    //}
+
+	Renderer::SetViewMatrix(&view);
+	Renderer::SetProjectionMatrix(&proj);
 
     m_shader->SetGPU();
     m_meshrenderer->Draw();

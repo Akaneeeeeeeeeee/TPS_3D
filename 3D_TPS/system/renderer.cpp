@@ -449,7 +449,7 @@ void Renderer::SetWorldMatrix(Matrix4x4* WorldMatrix, UINT slot)
 
 void Renderer::SetViewMatrix(Matrix4x4* ViewMatrix, UINT slot)
 {
-	// ★ 元の行列を保持（非転置のまま）
+	// 元の行列を保持（非転置のまま）
 	m_CurrentView = *ViewMatrix;
 
 	// 定数バッファ用に転置して GPU に送る
@@ -460,7 +460,7 @@ void Renderer::SetViewMatrix(Matrix4x4* ViewMatrix, UINT slot)
 
 void Renderer::SetProjectionMatrix(Matrix4x4* ProjectionMatrix, UINT slot)
 {
-	// ★ 元の行列を保持（非転置のまま）
+	// 元の行列を保持（非転置のまま）
 	m_CurrentProjection = *ProjectionMatrix;
 
 	// 定数バッファ用に転置して GPU に送る

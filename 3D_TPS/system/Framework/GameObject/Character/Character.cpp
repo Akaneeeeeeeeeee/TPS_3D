@@ -28,12 +28,6 @@ void Character::Draw(void) const
 	//Renderer::SetWorldMatrix(&worldMatrix);
 
 	//m_pAnimationObject->Draw();
-
-	if (m_pAnimComp)
-	{
-		m_pAnimComp->Draw();
-	}
-	GameObject::Draw();
 }
 
 void Character::Uninit(void)

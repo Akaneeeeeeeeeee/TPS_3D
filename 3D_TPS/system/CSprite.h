@@ -94,6 +94,7 @@ public:
 	 */
 	void Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj) const;
 
+	void DrawRaw(Matrix4x4& world) const;
 
 	/// @brief リソースの解放（明示的に呼び出すことを推奨）
 	void Dispose();

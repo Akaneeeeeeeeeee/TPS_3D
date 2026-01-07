@@ -26,6 +26,7 @@ public:
 	const std::string& GetNextSceneName(void) { return m_NextSceneName; }
 	void SetNextSceneName(const std::string& name) { m_NextSceneName = name; }
 
+	ObjectManager* GetObjectManager(void) const { return m_pObjectManager; }
 protected:
 	IScene() = default;
 	ObjectManager* m_pObjectManager = nullptr;	// オブジェクト管理クラスへのポインタ

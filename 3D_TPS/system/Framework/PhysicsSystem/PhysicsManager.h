@@ -74,6 +74,7 @@ public:
 
     // キャラ用イベント(衝突時だけ)
 	void OnCharacterCollisionEnter(GameObject& a, GameObject& b);
+	void OnCharacterCollisionExit(GameObject& a, GameObject& b);
 
     // ignoreBody は不要なら省略できるようにしておく
     bool RaycastClosest(
@@ -95,6 +96,7 @@ public:
             TriggerEnter,
             TriggerExit,
             CharacterEnter,
+            CharacterExit,
         };
 
         Type type;

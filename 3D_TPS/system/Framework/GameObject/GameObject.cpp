@@ -171,18 +171,18 @@ void GameObject::Draw(void) const
 			renderer->Render();
 		}
 	}*/
-	for(auto& component : m_Components)
+}
+
+void GameObject::BaseDraw(void) const
+{
+	Draw();
+	for (auto& component : m_Components)
 	{
 		if (component.second->GetIsValid())
 		{
 			component.second->Draw();
 		}
 	}
-}
-
-void GameObject::BaseDraw(void) const
-{
-	Draw();
 }
 
 void GameObject::Uninit(void)

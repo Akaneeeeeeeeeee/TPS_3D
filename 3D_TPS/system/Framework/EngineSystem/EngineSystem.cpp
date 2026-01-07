@@ -19,6 +19,8 @@ void EngineSystems::Init()
     m_Render.Init(&m_Graphics);
 
     m_Physics.Init();
+
+	m_UI.Init();
 #ifdef _DEBUG
 	m_Physics.SetCameraManager(&m_Camera);
 #endif

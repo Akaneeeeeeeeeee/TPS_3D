@@ -90,14 +90,20 @@ void SkinnedAnimationComponent::ApplySetupIfPossible()
     m_SetupApplied = true;
 }
 
-void SkinnedAnimationComponent::Play(AnimType type, float blendTimeSec)
+void SkinnedAnimationComponent::Play(AnimType type, float blendTimeSec, bool loop)
 {
     int idx = static_cast<int>(type);
     const auto& info = m_Clips[idx];
     if (!info.clip) return;
 
-    // 既定はループ（StoneThrow は Player 側で ForceSet(loop=false) する）
-    m_Animator.RequestTransition(info.clip, blendTimeSec, true);
+    // 既定はループ（必要であれば ForceSet(loop=false) する）
+    m_Animator.RequestTransition(info.clip, blendTimeSec, loop);
+}
+
+
+bool SkinnedAnimationComponent::IsPlaying(AnimType type) const
+{
+    return m_Animator.GetCurrentClip() == GetClipPtr(type);
 }
 
 void SkinnedAnimationComponent::ForceSet(AnimType type, float startTimeSec, bool loop)

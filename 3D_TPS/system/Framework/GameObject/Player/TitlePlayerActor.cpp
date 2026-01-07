@@ -74,18 +74,11 @@ void TitlePlayerActor::Awake(void)
 
 	// カメラ追加
 	m_pCamera = this->AddComponent<CameraComponent>("TitleCameraComponent");
-	m_pCamera->SetPosition(Vector3(500.0f, 100.0f, -750.0f));
-	m_pCamera->SetLookAt(this->GetPosition());
-
+	Vector3 campos = this->GetPosition() - Vector3(0.0f, 100.0f, 550.0f);
+	m_pCamera->SetPosition(campos);
 	// 低い位置から、少し離れて見上げる
 	m_pCamera->SetLookAt(CAMERA_LOOKAT_POSITION);
-	m_pCamera->SetRadius(1000.0f);
-
-	// どれくらい見上げるか？(角度)
-	m_pCamera->SetElevation(DirectX::XMConvertToRadians(-105.0f));
-
-	// どの側(角度)から見るか？
-	m_pCamera->SetAzimuth(DirectX::XMConvertToRadians(30.0f));
+	m_pCamera->SetMode(CameraComponent::Mode::Direct);
 
 	// CharacterVirtual 必須（地形当たり判定のため）
 	m_pCharaVirtualComp = AddComponent<CharacterVirtualComponent>("TitleCharacterVirtualComponent");

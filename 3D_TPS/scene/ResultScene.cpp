@@ -17,7 +17,7 @@
  */
 ResultScene::ResultScene() : IScene()
 {
-	m_NextSceneName = "TitleScene";
+	m_NextSceneName = "AnimatedTitleScene";
 }
 
 /**
