@@ -17,11 +17,11 @@ public:
         IScene* currentscene = nullptr,
         const Transform& transform = Transform::One())
         : GameObject(factory, id, name, tag, transform)
-        , m_mesh(nullptr)
-        , m_meshrenderer(nullptr)
-        , m_shader(nullptr)
-        , m_collider(nullptr)
-        , m_ownerscene(currentscene)
+        , m_pMesh(nullptr)
+        , m_pMeshRenderer(nullptr)
+        , m_pShader(nullptr)
+        , m_pCollider(nullptr)
+        , m_pOwnerScene(currentscene)
     {
     }
 
@@ -40,15 +40,15 @@ public:
     bool GetWorldXZBounds(Vector3& outMin, Vector3& outMax) const;
     bool SampleHeight(float x, float z, float& outY) const;
 
-	void SetScene(IScene* scene) { m_ownerscene = scene; }
+	void SetScene(IScene* scene) { m_pOwnerScene = scene; }
 
 private:
-    CStaticMesh* m_mesh{};
-    CStaticMeshRenderer* m_meshrenderer{};
-    CShader* m_shader{};
-    StaticMeshCollider* m_collider{};
+    CStaticMesh* m_pMesh{};
+    CStaticMeshRenderer* m_pMeshRenderer{};
+    CShader* m_pShader{};
+    StaticMeshCollider* m_pCollider{};
 
-    IScene* m_ownerscene = nullptr;
+    IScene* m_pOwnerScene = nullptr;
     Vector3 m_XZMin = Vector3::Zero;
     Vector3 m_XZMax = Vector3::Zero;
 };

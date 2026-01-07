@@ -64,9 +64,9 @@ void Game::Update(const float deltatime)
 	// まず入力は更新（解除キーを拾う）
 	m_Engine.BeginFrame(deltatime);
 
-	// ここでポーズトグル（入力の取り方はあなたの実装に合わせる）
-	// 例: ESC または P で切り替え
-	if (CDirectInput::GetInstance().CheckKeyBuffer(DIK_P))
+	// ここでポーズチェック
+	// ESC または P で切り替え
+	if (CDirectInput::GetInstance().CheckKeyBufferTrigger(DIK_P))
 	{
 		SetPaused(!m_IsPaused);
 	}
