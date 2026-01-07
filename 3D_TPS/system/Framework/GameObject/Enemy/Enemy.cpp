@@ -95,7 +95,7 @@ void Enemy::Start(void)
 		m_HeadIcon->Setup(cam, 64, 64,
 			"assets/texture/hatena-illust1.png",
 			"assets/texture/b-mk-illust2.png");
-		m_HeadIcon->SetOffset(Vector3(0, 180, 0));
+		m_HeadIcon->SetOffset(Vector3(0, 200, 0));
 		m_HeadIcon->SetScale(Vector3(1, 1, 1));
 	}
 
@@ -132,37 +132,7 @@ void Enemy::Start(void)
 // ----------------------------------------
 void Enemy::InitAnimation(void)
 {
-	//// アニメーションコンポーネント追加
-	//m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
-
-	//// メッシュ・シェーダ設定
-	//CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
-	//m_pAnimComp->SetMesh(mesh);
-
-	//CShader* shader = am.GetShader<CShader>("animshader");
-	//m_pAnimComp->SetShader(shader);
-
-	//// クリップ取得
-	//auto* idle = am.GetAnimationData<CAnimationData>("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	//auto* run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
-	//auto* walk = am.GetAnimationData<CAnimationData>("Walking")->GetAnimation("Walking", 0);
-	//auto* right = am.GetAnimationData<CAnimationData>("Right_Turn")->GetAnimation("Right_Turn", 0);
-	//auto* left = am.GetAnimationData<CAnimationData>("Left_Turn")->GetAnimation("Left_Turn", 0);
-	//auto* lookaround = am.GetAnimationData<CAnimationData>("LookAround")->GetAnimation("LookAround", 0);
-	////auto* idle = am.GetAnimationData("Akai_Idle")->GetAnimation("Akai_Idle", 0);
-	////auto* run = am.GetAnimationData("Akai_Run")->GetAnimation("Akai_Run", 0);
-	////auto* walk = am.GetAnimationData("Walking")->GetAnimation("Walking", 0);
-	////auto* right = am.GetAnimationData("Right_Turn")->GetAnimation("Right_Turn", 0);
-	////auto* left = am.GetAnimationData("Left_Turn")->GetAnimation("Left_Turn", 0);
-
-	//// 種類ごとに登録
-	//m_pAnimComp->SetClip(AnimType::Idle, idle);
-	//m_pAnimComp->SetClip(AnimType::Walk, walk);
-	//m_pAnimComp->SetClip(AnimType::Run, run);
-	//m_pAnimComp->SetClip(AnimType::Surprise_RightTurn, right);
-	//m_pAnimComp->SetClip(AnimType::Surprise_LeftTurn, left);
-	//m_pAnimComp->SetClip(AnimType::LookAround, lookaround);
-
+	// アニメーションコンポーネント追加
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	SkinnedAnimSetup setup{};
