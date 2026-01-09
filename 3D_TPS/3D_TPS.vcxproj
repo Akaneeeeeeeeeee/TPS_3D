@@ -153,13 +153,8 @@
   <ItemGroup>
     <ClInclude Include="fpscontrol.h" />
     <ClInclude Include="scene\AnimatedTitleScene.h" />
-    <ClInclude Include="scene\CollisionTestScene.h" />
+    <ClInclude Include="scene\GameScene.h" />
     <ClInclude Include="scene\ResultScene.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="scene\SkeltalmeshScene.h" />
-    <ClInclude Include="scene\TestScene.h" />
-    <ClInclude Include="scene\TitleScene.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="system\AimOrientation.h" />
@@ -241,10 +236,10 @@
     <ClInclude Include="system\Framework\Time\Time.h" />
     <ClInclude Include="system\Framework\Time\CountDownTimer.h" />
     <ClInclude Include="system\Framework\UIManager\UIManager.h" />
+    <ClInclude Include="system\Framework\WeatherSystem\SkyFogPass.h" />
     <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
-    <ClInclude Include="system\GameObject\Skydome.h" />
     <ClInclude Include="system\GameObject\Field.h" />
     <ClInclude Include="system\meshmanager.h" />
     <ClInclude Include="system\MyIndexBuffer.h">
@@ -349,13 +344,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="scene\AnimatedTitleScene.cpp" />
-    <ClCompile Include="scene\CollisionTestScene.cpp" />
+    <ClCompile Include="scene\GameScene.cpp" />
     <ClCompile Include="scene\ResultScene.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="scene\SkeltalmeshScene.cpp" />
-    <ClCompile Include="scene\TestScene.cpp" />
-    <ClCompile Include="scene\TitleScene.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\AssimpPerse.cpp" />
@@ -477,11 +467,11 @@
     </ClCompile>
     <ClCompile Include="system\Framework\SoundManager\sound.cpp" />
     <ClCompile Include="system\Framework\UIManager\UIManager.cpp" />
+    <ClCompile Include="system\Framework\WeatherSystem\SkyFogPass.cpp" />
     <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp" />
     <ClCompile Include="system\Framework\Window\Window.cpp" />
     <ClCompile Include="system\GameObject\obstacle.cpp" />
     <ClCompile Include="system\GameObject\Rock.cpp" />
-    <ClCompile Include="system\GameObject\Skydome.cpp" />
     <ClCompile Include="system\GameObject\Field.cpp" />
     <ClCompile Include="system\imgui\imgui.cpp" />
     <ClCompile Include="system\imgui\imgui_demo.cpp" />
@@ -491,7 +481,6 @@
     <ClCompile Include="system\imgui\imgui_tables.cpp" />
     <ClCompile Include="system\imgui\imgui_widgets.cpp" />
     <ClCompile Include="system\LineDrawer.cpp" />
-    <ClCompile Include="system\meshmanager.cpp" />
     <ClCompile Include="system\renderer.cpp" />
     <ClCompile Include="system\Sound\SoundWaveVisualizer.cpp" />
     <ClCompile Include="system\SphereDrawer.cpp" />
@@ -550,6 +539,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <None Include="shader\SkyFog.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="shader\unlitTexturePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Assets\Shader\%(Filename).cso</ObjectFileOutput>

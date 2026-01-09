@@ -193,6 +193,10 @@ private:
 
     static ComPtr<ID3D11Buffer> m_SpotLightBuffer;
     static CBSpotLights m_SpotLightCB;
+
+	// 深度バッファのSRVを保持する（合成で使うため）
+    static ComPtr<ID3D11ShaderResourceView> m_DepthSRV;
+
 public:
     static void Init();
     static void Uninit();
@@ -222,4 +226,9 @@ public:
     static LIGHT GetLight();
     static const Matrix4x4& GetViewMatrix() { return m_CurrentView; }
     static const Matrix4x4& GetProjectionMatrix() { return m_CurrentProjection; }
+
+    static ID3D11ShaderResourceView* GetDepthSRV() { return m_DepthSRV.Get(); }
+
+    // 合成で backbuffer の RTV が欲しい
+    static ID3D11RenderTargetView* GetRTV() { return m_RenderTargetView.Get(); }
 };

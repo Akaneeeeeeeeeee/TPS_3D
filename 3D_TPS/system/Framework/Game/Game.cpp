@@ -7,6 +7,7 @@
 #include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Sound/SoundWaveVisualizer.h"
 #include "Framework/Time/Time.h"
+#include "system/Framework/WeatherSystem/SkyFogPass.h"
 
 /**
 * @brief
@@ -26,7 +27,7 @@ void Game::Init()
 	// エンジン共通初期化
 	m_Engine.Init();
 	auto& svc = m_Engine.GetServices();
-	
+
 	// ゲーム固有のシステム初期化
 	m_GameFeatures.Init(svc);
 
@@ -104,34 +105,36 @@ void Game::Draw()
 	Renderer::Begin();
 	//m_RenderManager.StartRender();
 
-	// シーンマネージャの描画
-	m_SceneManager.Draw();
+	auto& svc = m_Engine.GetServices();
 
+	// 空（ワールドより前）
+	svc.weather.DrawAtmospherePreWorld();
+
+	// シーンの描画
+	m_SceneManager.DrawWorld();
 	m_GameFeatures.DrawWorld();
-
 	// todo:ここは後から描画機能に責任を持たせる
 	SoundWaveVisualizer::GetInstance().DrawWorld();
 
-	auto& svc = m_Engine.GetServices();
+	// 天候パーティクル描画
+	svc.weather.DrawParticles();
 
 	// デバッグ用当たり判定描画
 	//svc.physics.DebugDraw();
 
-	svc.weather.DebugDrawParticles();
-	svc.weather.DebugDrawSun();
+	// 霧（不透明ワールドの後）
+	svc.weather.DrawAtmospherePostWorld();
 
 	/*m_RenderManager.CollectRenderInfo();
 	m_RenderManager.RenderAll();*/
-
-	// デバッグUIの描画
-#ifdef _DEBUG
-	DebugUI::Render();
-#endif // _DEBUG
 
 	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// UI描画
 	m_SceneManager.DrawUI();
+
+	// 遷移フェードを最後に描く
+	m_SceneManager.DrawTransition();
 
 	// ポーズUIを上に重ねる
 	if (m_IsPaused)
@@ -154,7 +157,13 @@ void Game::Draw()
 		// 描画しきった後に切り替え確定
 		m_SceneManager.CommitSceneChange();
 	}
-	
+
+
+	// デバッグUIの描画
+#ifdef _DEBUG
+	DebugUI::Render();
+#endif // _DEBUG
+
 	// レンダリング後処理
 	//m_RenderManager.EndRender();
 	Renderer::End();

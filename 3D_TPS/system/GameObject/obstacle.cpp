@@ -2,8 +2,6 @@
 #include    "system/CDirectInput.h"
 #include	"system/meshmanager.h"
 
-#include	"scene/TestScene.h"
-
 #include	"Framework/Component/Physic/BoxCollider.h"
 #include	"Framework/Component/Physic/Rigidbody.h"
 #include "system/DebugUI.h"

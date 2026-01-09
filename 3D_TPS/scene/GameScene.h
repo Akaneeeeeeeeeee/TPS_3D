@@ -13,42 +13,42 @@
 #include "GameObject/Field.h"
 #include "Framework/GameObject/Player/Player.h"
 #include "Framework/GameObject/Enemy/Enemy.h"
+#include "Framework/GameObject/Terrain/Terrain.h"
+#include "Framework/GameObject/Goal/Goal.h"
 #include "GameObject/obstacle.h"
+#include "DirectWrite.h"
+#include "Framework/Time/CountDownTimer.h"
 
 /**
  * @brief メッシュフィールドを表示する
  */
-class TestScene : public IScene {
+class GameScene : public IScene {
 public:
 	static constexpr uint32_t ENEMYMAX = 10;
 	static constexpr uint32_t OBSTACLEMAX = 10;
 
 	/// @brief コピーコンストラクタは使用不可
-	TestScene(const TestScene&) = delete;
+	GameScene(const GameScene&) = delete;
 
 	/// @brief 代入演算子も使用不可
-	TestScene& operator=(const TestScene&) = delete;
+	GameScene& operator=(const GameScene&) = delete;
 
 	/**
 	 * @brief コンストラクタ
 	 *
 	 *
 	 */
-	explicit TestScene();
+	explicit GameScene();
 
 	/**
 	 * @brief 毎フレームの更新処理
-	 * @param deltatime 前フレームからの経過時間（マイクロ秒）
+	 * @param deltatime 前フレームからの経過時間（秒）
 	 */
 	void Update(const float deltatime) override;
 
-	void LightUpdate(float deltatime);
-	Color GetSunColor(float worldtime);
-	Color LerpColor(const Color& a, const Color& b, float t);
-
 	/**
 	 * @brief 毎フレームの描画処理
-	 * @param deltatime 前フレームからの経過時間（マイクロ秒）
+	 * @param deltatime 前フレームからの経過時間（秒）
 	 *
 	 */
 	void Draw(void) override;
@@ -64,13 +64,6 @@ public:
 	 *
 	 */
 	void Uninit(void) override;
-
-	/**
-	 * @brief Directional Light
-	*
-		* Directional Light
-	 */
-	void debugDirectionalLight();
 
 	/**
 	 * @brief Free Camera
@@ -109,6 +102,12 @@ public:
 		return m_player;
 	}
 
+	void ClearEnemies(void);
+	bool MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used);
+	void RebuildEnemies(void);
+	void SpawnEnemies(int count);
+	void DrawUI(void) override;
+
 private:
 
 	/**
@@ -125,9 +124,16 @@ private:
 	Field* m_field;
 
 	/**
+	* @brief 読み込んだ地形
+	*/
+	Terrain* m_terrain;
+
+	/**
 	* @brief プレイヤ
 	*/
-	Player*		m_player;		// プレイヤ
+	Player* m_player;		// プレイヤ
+
+	Goal* m_Goal;
 
 	/**
 	* @brief 敵群
@@ -139,6 +145,27 @@ private:
 	*/
 	std::array<obstacle*, OBSTACLEMAX>	m_obstacles;	// 障害物
 
+	// GameScene.h 側
+	StaticMeshCollider* m_TerrainCol = nullptr;
+
+	bool m_MultiEnemy = true;
+	int  m_MultiCount = 4;
+	bool m_RequestRebuildEnemies = false;
+
+	int m_EnemyAliveCount = 0;
+
+	// 1体モードで出したい「元の座標」
+	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 210.0f, 1750.0f);
+
+	std::unique_ptr<DirectWrite> m_pDirectWrite;
+	FontData m_FontData;
+
+	CountdownTimer m_Limit;
+	bool m_IsGameOver = false;
+
+	// プレイヤーを見つけた敵
+	Enemy* m_FoundByEnemy = nullptr;
+	bool   m_CameraFocusIssued = false;
 };
 
-REGISTER_SCENE(TestScene)
+REGISTER_SCENE(GameScene)

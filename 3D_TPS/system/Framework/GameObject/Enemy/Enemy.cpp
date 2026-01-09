@@ -163,13 +163,6 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 		m_EndPos = Vector3(-300.0f, 210.0f, -540.0f);
 		};
 
-	//if (!m_pTerrain)
-	//{
-	//	SetDefaultPatrol();
-	//	m_Transform.SetPosition(m_StartPos);
-	//	return;
-	//}
-
 	// StaticMeshCollider から AABB と高さサンプルを取る
 	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
 	if (!m_pTerrainCollider)
@@ -179,9 +172,9 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 		return;
 	}
 
-#ifdef _DEBUG
-	SetDefaultPatrol();
-#else
+//#ifdef _DEBUG
+//	SetDefaultPatrol();
+//#else
 	Vector3 xzMin, xzMax;
 	if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
 	{
@@ -220,7 +213,7 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	{
 		SetDefaultPatrol();
 	}
-#endif
+//#endif
 
 	// 実際の Transform を開始地点に合わせる
 	m_Transform.SetPosition(m_StartPos);
@@ -459,7 +452,6 @@ void Enemy::SetWayPoints(const Vector3& start, const Vector3& end)
 	}
 }
 
-
 void Enemy::OnFoundPlayer(void)
 {
 	// すでに演出中なら何もしない
@@ -505,8 +497,6 @@ void Enemy::OnFoundPlayer(void)
 	// 3) スローモーション演出
 	Time::GetInstance().SetTimeScale(0.5f);
 }
-
-
 
 void Enemy::DebugImGui(void)
 {

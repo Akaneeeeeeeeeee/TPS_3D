@@ -15,6 +15,7 @@ enum class WeatherType {
 	Weather_MAX
 };
 
+
 // 知覚影響パラメータ
 struct PerceptionFactors
 {
@@ -165,6 +166,27 @@ class WeatherSystem
 public:
     WeatherSystem();
 
+    struct AtmosphereTuning
+    {
+        bool  enableSky = true;
+        bool  enableFog = true;
+
+        // Sky
+        float cloudOpacity = 0.55f;
+        float cloudTiling = 1.0f;
+        float cloudSpeedU = 0.004f;
+        float cloudSpeedV = 0.0f;
+        float vignetteStrength = 0.35f;
+        float vignettePower = 2.2f;
+        float cloudToFogBlend = 0.6f; // 雲色を霧色へ寄せる割合
+
+        // Fog
+        float fogMaxDist = 600.0f;
+        float fogFarSwitchDist = 120.0f;
+        float fogNearSteps = 16.0f;
+        float fogNoiseStrength = 1.0f;
+    };
+
     // ---- パーティクル登録 ----
     void Register(ParticleComponent* comp);
     void Unregister(ParticleComponent* comp);
@@ -201,11 +223,14 @@ public:
     void Update(float dt);
 
     // ---- 天候描画 ----
-    void DebugDrawParticles(void) const;
-    void DebugDrawSun(void) const;
+    void DrawParticles(void) const;
     void DebugImGui(void);    // ImGui用
-    void DebugDrawRain(void) const;
-    void DebugDrawSand(void) const;
+    void DrawRain(void) const;
+    void DrawSand(void) const;
+    // 空（ワールドより前に呼ぶ）
+    void DrawAtmospherePreWorld();
+    // 霧（不透明ワールドの後に呼ぶ）
+    void DrawAtmospherePostWorld();
 
     // DebugDrawParticles 用のカメラ行列
     void SetViewProjMatrices(Matrix4x4& viewMatrix, Matrix4x4& projMatrix)
@@ -217,6 +242,13 @@ public:
     const PerceptionFactors& GetPerceptionFactors(void) const { return m_Perception; }
     float GetVisibilityFactor() const { return m_Perception.visibility; }
     float GetHearingFactor() const { return m_Perception.hearing; }
+
+    float GetFogDensity() const { return m_CurrentParams.fogDensity; }
+
+    Vector3 GetFogColor() const
+    {
+        return Vector3(m_CurrentParams.fogColor.x, m_CurrentParams.fogColor.y, m_CurrentParams.fogColor.z);
+    }
 
 private:
     // ---- 天候補間（既存ロジック） ----
@@ -272,4 +304,6 @@ private:
 
     bool ComputeIsNightByHour(float hours) const;
     void UpdateDayNightState(); // Update内で呼ぶ
+
+    AtmosphereTuning m_Atmo;
 };

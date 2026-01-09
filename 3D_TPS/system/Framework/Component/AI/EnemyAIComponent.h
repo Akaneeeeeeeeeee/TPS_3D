@@ -21,7 +21,7 @@ namespace
 /*
 * @brief    敵AIコンポーネント
 * @detail   指定地点を巡回するように移動し、障害物を回避するAIコンポーネント
-* @author   赤根　和樹２４８
+* @author   赤根　和樹
 * @date     2025/11/16
 */
 class EnemyAIComponent : public IComponent

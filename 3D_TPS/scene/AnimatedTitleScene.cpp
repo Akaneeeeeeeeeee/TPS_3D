@@ -93,7 +93,7 @@ void AnimatedTitleScene::debugFreeCamera()
  */
 AnimatedTitleScene::AnimatedTitleScene() : IScene()
 {
-	m_NextSceneName = "CollisionTestScene";
+	m_NextSceneName = "GameScene";
 }
 
 /**
@@ -148,6 +148,9 @@ void AnimatedTitleScene::Update(const float deltatime)
  */
 void AnimatedTitleScene::Draw(void)
 {
+	// 3Dオブジェクト描画
+	m_pObjectManager->Draw();
+
 	// 3軸カラー
 	Color axiscol[3] = {
 		Color(1, 0, 0, 1),
@@ -169,7 +172,6 @@ void AnimatedTitleScene::Draw(void)
 	SetLineWidth(3.0f);
 	LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
 #endif
-	m_pObjectManager->Draw();
 }
 
 /**

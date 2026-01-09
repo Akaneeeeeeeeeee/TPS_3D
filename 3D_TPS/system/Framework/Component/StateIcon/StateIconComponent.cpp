@@ -111,7 +111,11 @@ void EnemyHeadIconComponent::Draw(void) const
     const CSprite* sp = GetSprite(kind);
     if (!sp) return;
 
+    Renderer::SetDepthEnable(false);
+    Renderer::SetBlendState(BS_ALPHABLEND);
     Renderer::DisableCulling(false);
     sp->Draw(m_World, m_pCamera->GetViewMatrix(), m_pCamera->GetProjMatrix());
     Renderer::DisableCulling(true);
+    Renderer::SetBlendState(BS_NONE);
+    Renderer::SetDepthEnable(true);
 }

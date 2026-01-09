@@ -125,6 +125,8 @@ void FadeTransition::Draw(void)
 	{
 		// 2Dï`âÊÉÇÅ[ÉhÇ…ê›íË
 		Renderer::SetWorldViewProjection2D();
+		Renderer::SetDepthEnable(false);
+		Renderer::SetBlendState(BS_ALPHABLEND);
 		//BoxDrawerDraw(
 		//	SCREEN_WIDTH, SCREEN_HEIGHT, 0,
 		//	Color(0, 0, 0, m_Alpha),
@@ -134,6 +136,10 @@ void FadeTransition::Draw(void)
 			Matrix4x4::CreateTranslation(SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0.0f),
 			Color(0, 0, 0, m_Alpha)
 		);
+
+		// ï`âÊèÛë‘Çå≥Ç…ñﬂÇ∑
+		Renderer::SetBlendState(BS_NONE);
+		Renderer::SetDepthEnable(true);
 	}
 }
 

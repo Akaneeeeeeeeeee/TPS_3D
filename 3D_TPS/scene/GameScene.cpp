@@ -1,7 +1,7 @@
 #include <string>
 #include <array>
 
-#include "CollisionTestScene.h"
+#include "GameScene.h"
 #include "system/debugui.h"
 #include "system/AimOrientation.h"
 #include "system/SphereDrawer.h"
@@ -34,10 +34,8 @@ namespace {
 	static Color   g_manualColor = Color(1, 1, 1, 1);
 }
 
-// --- 以下は元の関数群。ほとんどそのまま。 --- 
-
 // 現在位置のフィールドの高さ表示
-void CollisionTestScene::debugFieldHeight() {
+void GameScene::debugFieldHeight() {
 
 	//ImGui::Begin("debug Field Height");
 
@@ -78,7 +76,7 @@ void CollisionTestScene::debugFieldHeight() {
 
 
 // デバッグフリーカメラ
-void CollisionTestScene::debugFreeCamera()
+void GameScene::debugFreeCamera()
 {
 	ImGui::Begin("debug Free camera");
 
@@ -109,7 +107,7 @@ void CollisionTestScene::debugFreeCamera()
 }
 
 // フィールド再作成
-void CollisionTestScene::debugFieldRemake() {
+void GameScene::debugFieldRemake() {
 
 	ImGui::Begin("debug Field Remake");
 
@@ -139,7 +137,7 @@ void CollisionTestScene::debugFieldRemake() {
 }
 
 // フィールドに凸凹にする
-void CollisionTestScene::debugFieldUnduration() {
+void GameScene::debugFieldUnduration() {
 
 	ImGui::Begin("debug Field Remake with unduration");
 
@@ -172,7 +170,7 @@ void CollisionTestScene::debugFieldUnduration() {
 /**
  * @brief コンストラクタ
  */
-CollisionTestScene::CollisionTestScene()
+GameScene::GameScene()
 {
 }
 
@@ -181,7 +179,7 @@ CollisionTestScene::CollisionTestScene()
  *
  * @param deltatime 前フレームからの経過時間（秒, Time::Deltatime()）
  */
-void CollisionTestScene::Update(const float deltatime)
+void GameScene::Update(const float deltatime)
 {
 	if (m_IsGameOver) { return; }
 
@@ -257,17 +255,20 @@ void CollisionTestScene::Update(const float deltatime)
  *
  * @param deltatime 前フレームからの経過時間（ミリ秒）
  */
-void CollisionTestScene::Draw(void)
+void GameScene::Draw(void)
 {
+	// オブジェクト描画
+	m_pObjectManager->Draw();
+
+	// ワールド軸を描画
 	// 3軸カラー
 	Color axiscol[3] = {
 		Color(1, 0, 0, 1),
 		Color(0, 1, 0, 1),
 		Color(0, 1, 1, 1)
 	};
-
-	// ワールド軸を描画
-	SetLineWidth(1.0f);                    // 太さを設定
+	// 太さを設定
+	SetLineWidth(1.0f);
 	for (int axisno = 0; axisno < 3; axisno++)
 	{
 		Matrix4x4 rotmtx = Matrix4x4::Identity;
@@ -297,14 +298,12 @@ void CollisionTestScene::Draw(void)
 	//	TriangleDrawerDraw(vertices1, Color(1, 0, 0, 1));
 	//	TriangleDrawerDraw(vertices2, Color(1, 1, 0, 1));
 	//}
-
-	m_pObjectManager->Draw();
 }
 
 /**
  * @brief シーンの初期化処理
  */
-void CollisionTestScene::Init(ObjectManager* mgr)
+void GameScene::Init(ObjectManager* mgr)
 {
 	m_pObjectManager = mgr;
 	m_IsGameOver = false;
@@ -424,12 +423,12 @@ void CollisionTestScene::Init(ObjectManager* mgr)
 /**
  * @brief シーンの終了処理
  */
-void CollisionTestScene::Uninit()
+void GameScene::Uninit()
 {
 	Time::GetInstance().SetTimeScale(1.0f);
 }
 
-void CollisionTestScene::ClearEnemies()
+void GameScene::ClearEnemies()
 {
 	for (int i = 0; i < m_EnemyAliveCount; ++i)
 	{
@@ -440,7 +439,7 @@ void CollisionTestScene::ClearEnemies()
 	m_EnemyAliveCount = 0;
 }
 
-bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used)
+bool GameScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<Vector3>& used)
 {
 	// 地形コライダ取得
 	if (!m_TerrainCol)
@@ -457,7 +456,7 @@ bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<V
 	}
 
 	Vector3 xzMin, xzMax;
-	if (!m_TerrainCol->GetWorldXZBounds(xzMin, xzMax)) return false; // 既存前提（なければ固定範囲で代用）
+	if (!m_TerrainCol->GetWorldXZBounds(xzMin, xzMax)) return false;
 
 	auto rng = RandomEngine::tls().stream("EnemySpawn");
 
@@ -488,7 +487,7 @@ bool CollisionTestScene::MakeRandomSpawnPos(Vector3& outPos, const std::vector<V
 	return false;
 }
 
-void CollisionTestScene::SpawnEnemies(int count)
+void GameScene::SpawnEnemies(int count)
 {
 	count = std::clamp(count, 1, static_cast<int>(ENEMYMAX));
 
@@ -528,14 +527,14 @@ void CollisionTestScene::SpawnEnemies(int count)
 	m_EnemyAliveCount = count;
 }
 
-void CollisionTestScene::RebuildEnemies()
+void GameScene::RebuildEnemies()
 {
 	ClearEnemies();
 	int spawnCount = m_MultiEnemy ? m_MultiCount : 1;
 	SpawnEnemies(spawnCount);
 }
 
-void CollisionTestScene::DrawUI(void)
+void GameScene::DrawUI(void)
 {
 	if (!m_pDirectWrite) return;
 
@@ -548,12 +547,6 @@ void CollisionTestScene::DrawUI(void)
 	swprintf_s(timeBuf, L"TIME %02d:%02d", mm, ss);
 
 	m_pDirectWrite->DrawString(timeBuf, { 20.0f, 20.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
-
-	// 参考：ゲームオーバー表示
-	if (m_IsGameOver)
-	{
-		m_pDirectWrite->DrawString(L"GAME OVER", { 400.0f, 200.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
-	}
 
 	// 既存の表示
 	if (m_player)

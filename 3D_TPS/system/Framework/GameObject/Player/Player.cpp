@@ -836,8 +836,6 @@ void Player::Draw(void) const
         // カメラ行列計算＋Renderer へのセット
         m_pCamera->ApplyCamera();
     }
-
-    Character::Draw();
 }
 
 void Player::Uninit(void)
