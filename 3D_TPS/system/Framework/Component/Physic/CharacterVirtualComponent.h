@@ -18,6 +18,7 @@ class PhysicsManager;
 class CharacterVirtualComponent : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(CharacterVirtualComponent, IComponent)
     CharacterVirtualComponent()
         : m_Physics(nullptr)
         , m_Character(nullptr)

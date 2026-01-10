@@ -27,6 +27,7 @@ namespace
 class EnemyAIComponent : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(EnemyAIComponent, IComponent)
     void Init(void) override;
     void Update(const float deltatime) override;
     void Uninit(void) override;

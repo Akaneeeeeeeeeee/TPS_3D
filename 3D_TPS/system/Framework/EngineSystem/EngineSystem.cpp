@@ -10,7 +10,7 @@ void EngineSystems::Init()
     if (m_Inited) return;
     m_Inited = true;
 
-    m_Graphics.Init();
+    //m_Graphics.Init();
 
     m_Shader.Init();
     //m_Asset.Init();

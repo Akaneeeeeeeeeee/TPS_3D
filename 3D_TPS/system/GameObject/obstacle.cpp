@@ -5,6 +5,7 @@
 #include	"Framework/Component/Physic/BoxCollider.h"
 #include	"Framework/Component/Physic/Rigidbody.h"
 #include "system/DebugUI.h"
+#include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 
 void obstacle::Awake()
 {
@@ -15,6 +16,13 @@ void obstacle::Awake()
 	//m_mesh = MeshManager::getMesh<CStaticMesh>("obstaclebox");
 	//m_shader = MeshManager::getShader<CShader>("unlightshader");
 	//m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("obstaclebox");
+
+    // 描画コンポーネント
+    m_RenderComp = AddComponent<StaticMeshRendererComponent>("GoalRenderer");
+    m_RenderComp->SetMeshRendererKey("obstaclebox");     // AssetManagerのMeshRendererキー
+    m_RenderComp->SetShaderKey("unlightshader");      // AssetManagerのShaderキー
+    m_RenderComp->SetTransparent(false);
+
 
 	auto boxcollider = AddComponent<BoxCollider>("fallingboxcollider");
     boxcollider->SetHalfSize(Vector3(GetScale().x, GetScale().y, GetScale().z));
@@ -35,12 +43,12 @@ void obstacle::Update(const float dt) {
 void obstacle::Draw(void) const {
 
 
-	Matrix4x4 mtx = m_Transform.GetWorldMatrix();
+	//Matrix4x4 mtx = m_Transform.GetWorldMatrix();
 
-	Renderer::SetWorldMatrix(&mtx);
+	//Renderer::SetWorldMatrix(&mtx);
 
-	m_shader->SetGPU();
-	m_meshrenderer->Draw();
+	//m_shader->SetGPU();
+	//m_meshrenderer->Draw();
 
 }
 
@@ -50,10 +58,9 @@ void obstacle::Uninit(void)
 }
 
 
-
-
 static bool ComputeMeshBounds(
-    const std::vector<VERTEX_3D>& vertices,
+    const std::vector<VERTEX_SKINNED_GPU>& vertices,
+    //const std::vector<VERTEX_3D>& vertices,
     Vector3& outMin,
     Vector3& outMax
 )

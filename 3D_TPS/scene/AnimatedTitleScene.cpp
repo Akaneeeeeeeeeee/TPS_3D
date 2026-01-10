@@ -14,7 +14,6 @@
 #include "Framework/GameObject/WeatherController/WeatherController.h"
 #include "system/GameObject/obstacle.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
-#include "system/GameObject/Skydome.h"
 #include "Framework/SoundManager/SoundManager.h"
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/GameObject/StreetLight/StreetLight.h"
@@ -191,11 +190,6 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	m_Player = m_pObjectManager->Instantiate<TitlePlayerActor>("PlayerActor", Tag::Player);
 	m_Player->SetPosition(Vector3(1000.0f, 100.0f, -3350.0f));
 	m_Player->SetTerrain(m_Terrain);
-
-	// スカイドーム
-	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
-	skydome->SetTexture("assets/texture/test.jpg");
-	//skydome->SetTexture("assets/texture/haikei.jpg");
 
 	// 天候オブジェクト
 	m_Weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);

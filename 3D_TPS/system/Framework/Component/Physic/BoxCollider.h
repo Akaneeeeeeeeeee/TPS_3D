@@ -21,6 +21,7 @@ class PhysicsManager;
 class BoxCollider : public PhysicsComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(BoxCollider, PhysicsComponent)
     BoxCollider();
     ~BoxCollider() noexcept override = default;
 

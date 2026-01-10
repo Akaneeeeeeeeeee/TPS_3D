@@ -43,8 +43,8 @@ void Game::Init()
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーン開始
-	m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
-	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	m_SceneManager.Init(&m_ObjectManager, "GameScene");
 
 	// 既存の独立物（統一したいなら EngineSystems 側に寄せる）
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&svc.weather);
@@ -106,6 +106,13 @@ void Game::Draw()
 	//m_RenderManager.StartRender();
 
 	auto& svc = m_Engine.GetServices();
+	if (auto* cam = svc.camera.GetMain())
+	{
+		Matrix4x4 view = cam->GetViewMatrix();
+		Matrix4x4 proj = cam->GetProjMatrix();
+		Renderer::SetViewMatrix(&view);
+		Renderer::SetProjectionMatrix(&proj);
+	}
 
 	// 空（ワールドより前）
 	svc.weather.DrawAtmospherePreWorld();
@@ -122,11 +129,12 @@ void Game::Draw()
 	// デバッグ用当たり判定描画
 	//svc.physics.DebugDraw();
 
+	// RenderManagerで「描画コンポーネント」を描く
+	svc.render.CollectRenderInfo();
+	svc.render.RenderAll();
+
 	// 霧（不透明ワールドの後）
 	svc.weather.DrawAtmospherePostWorld();
-
-	/*m_RenderManager.CollectRenderInfo();
-	m_RenderManager.RenderAll();*/
 
 	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
 

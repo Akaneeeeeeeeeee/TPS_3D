@@ -18,6 +18,7 @@ class ThrowComponent;
 class Player final : public Character
 {
 public:
+	DECLARE_GAMEOBJECT_TYPE(Player, Character)
 	Player() = default;
 	Player(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::Player,

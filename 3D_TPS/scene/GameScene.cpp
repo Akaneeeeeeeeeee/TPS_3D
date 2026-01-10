@@ -7,7 +7,6 @@
 #include "system/SphereDrawer.h"
 #include "system/ConeDrawer.h"
 #include "system/LineDrawer.h"
-#include "GameObject/Skydome.h"
 #include "GameObject/Rock.h"
 #include "Framework/GameObject/Goal/Goal.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
@@ -326,10 +325,6 @@ void GameScene::Init(ObjectManager* mgr)
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
 	m_player->SetPosition(Vector3(-300.0f, 210.0f, -100.0f));
 	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
-
-	// スカイドーム
-	auto skydome = m_pObjectManager->Instantiate<Skydome>("skydome", Tag::Object);
-	skydome->SetTexture("assets/texture/haikei.jpg");
 
 	// 天候オブジェクト
 	auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);

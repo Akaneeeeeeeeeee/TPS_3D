@@ -6,6 +6,7 @@ class ParticleComponent;
 class WeatherController : public GameObject
 {
 public:
+	DECLARE_GAMEOBJECT_TYPE(WeatherController, GameObject)
 	WeatherController() = default;
 	WeatherController(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::Player,

@@ -23,7 +23,7 @@ void CStaticMesh::Load(std::string filename, std::string texturedirectory)
 	// 頂点データ作成
 	int meshidx = 0;
 
-	for (const auto& mv : vertices)
+	/*for (const auto& mv : vertices)
 	{
 		for (auto& v : mv)
 		{
@@ -50,7 +50,35 @@ void CStaticMesh::Load(std::string filename, std::string texturedirectory)
 
 			m_vertices.emplace_back(vertex);
 		}
+	}*/
+	for (const auto& mv : vertices)
+	{
+		for (const auto& v : mv)
+		{
+			VERTEX_SKINNED_GPU out{};
+			out.Position = { v.pos.x, v.pos.y, v.pos.z };
+			out.Normal = { v.normal.x, v.normal.y, v.normal.z };
+			out.TexCoord = { v.texcoord.x, v.texcoord.y };
+			out.Diffuse = { v.color.r, v.color.g, v.color.b, v.color.a };
+
+			// 4枠固定でゼロ初期化
+			for (int i = 0; i < 4; ++i)
+			{
+				out.BoneIndex[i] = 0;
+				out.BoneWeight[i] = 0.0f;
+			}
+
+			const int cnt = std::min(v.bonecnt, 4);
+			for (int i = 0; i < cnt; ++i)
+			{
+				out.BoneIndex[i] = v.BoneIndex[i];
+				out.BoneWeight[i] = v.BoneWeight[i];
+			}
+
+			m_vertices.emplace_back(out);
+		}
 	}
+
 
 	// インデックスデータ作成
 	for (const auto& mi : indices)

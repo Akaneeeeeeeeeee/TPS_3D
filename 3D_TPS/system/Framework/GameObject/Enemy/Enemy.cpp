@@ -15,6 +15,7 @@
 #include "system/imgui/imgui.h"
 #include "system/DebugUI.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
+#include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -150,6 +151,12 @@ void Enemy::InitAnimation(void)
 	};
 
 	m_pAnimComp->SetupFromAssets(setup);
+
+	// •`‰æiRenderManager‚Éo‚·j
+	auto* r = AddComponent<SkinnedMeshRendererComponent>("SkinnedRenderer");
+	r->SetMeshKey("Akai");
+	r->SetShaderKey("animshader");
+	r->SetAnimator(m_pAnimComp);
 }
 
 // ----------------------------------------

@@ -152,7 +152,11 @@ void SkinnedAnimationComponent::Update(const float dt)
     // ボーン行列計算
     if (m_AnimObject)
     {
+        // CPU側の BoneCombMatrix.ConstantBufferMemory を更新
         m_AnimObject->UpdateFromAnimator(m_Animator);
+
+        // GPU側の定数バッファへ反映（Map/Unmap）
+        m_AnimObject->GetBoneCombMatrix().Update();
     }
 }
 
@@ -163,15 +167,4 @@ void SkinnedAnimationComponent::Uninit(void)
 
 void SkinnedAnimationComponent::Draw() const
 {
-    if (!m_AnimObject) { return; }
-
-    m_pShader->SetGPU();
-
-    if (m_pOwner)
-    {
-        Matrix4x4 world = m_pOwner->GetWorldMatrix();
-        Renderer::SetWorldMatrix(&world);
-    }
-
-    m_AnimObject->Draw();
 }

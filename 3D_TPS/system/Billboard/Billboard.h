@@ -7,6 +7,7 @@
 class Billboard : public GameObject
 {
 public:
+	DECLARE_GAMEOBJECT_TYPE(Billboard, GameObject)
 	Billboard(ComponentFactory* factory, const uint64_t id,
 		const std::string& name = "", const Tag& tag = Tag::None, 
 		const Transform& transform = Transform::One())

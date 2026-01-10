@@ -14,6 +14,7 @@ struct SpotLightGPU;
 class SpotLightComponent final : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(SpotLightComponent, IComponent)
     enum class AimMode
     {
         OwnerForward, // OwnerのForward方向

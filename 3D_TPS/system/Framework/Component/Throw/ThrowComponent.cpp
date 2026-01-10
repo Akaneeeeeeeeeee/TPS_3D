@@ -284,21 +284,6 @@ float ThrowComponent::SanitizeReleaseNorm(const ThrowTuning& t) const
     return std::max(h, r);
 }
 
-//Vector3 ThrowComponent::ComputeThrowVelocity(const ThrowTuning& t) const
-//{
-//    Vector3 camFwd = GetAimForward();
-//
-//    // 投げ角の制限（必要なら ThrowTuning に持たせてもOK）
-//    constexpr float MIN_ANGLE_DEG = -5.0f;  // 少し下向きは許可
-//    constexpr float MAX_ANGLE_DEG = 60.0f;  // 上向き上限
-//
-//    Vector3 dir = BuildThrowDirFromCameraForward(camFwd, MIN_ANGLE_DEG, MAX_ANGLE_DEG);
-//
-//    // 速さは一定（t.speed を「速さ」にする）
-//    return dir * t.speed;
-//}
-
-
 Vector3 ThrowComponent::ComputeThrowVelocity(const ThrowTuning& t) const
 {
     Vector3 camFwd = GetAimForward();

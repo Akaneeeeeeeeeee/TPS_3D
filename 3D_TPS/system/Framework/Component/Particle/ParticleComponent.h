@@ -10,6 +10,7 @@ class WeatherSystem;
 class ParticleComponent : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(ParticleComponent, IComponent)
     ParticleComponent();
     ~ParticleComponent() override = default;
 

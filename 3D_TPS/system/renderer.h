@@ -44,6 +44,7 @@ struct BONE
     Matrix4x4 OffsetMatrix{};      ///< ボーンオフセット行列
     int idx;                       ///< 配列中のインデックス
     std::vector<WEIGHT> weights;   ///< このボーンが影響を与える頂点とウェイト値のリスト
+    Matrix4x4 BindLocalMatrix{};   // バインド時のローカル
 };
 
 /**
@@ -61,6 +62,17 @@ struct VERTEX_3D
     std::string BoneName[4];     // 各ボーンの名前 20231226
     int bonecnt = 0;             // 影響を与えるボーン数 20231226
 };
+
+struct VERTEX_SKINNED_GPU
+{
+    DirectX::XMFLOAT3 Position;
+    DirectX::XMFLOAT3 Normal;
+    DirectX::XMFLOAT4 Diffuse;
+    DirectX::XMFLOAT2 TexCoord;
+    int32_t BoneIndex[4];
+    float   BoneWeight[4];
+};
+static_assert(sizeof(VERTEX_SKINNED_GPU) == 80);
 
 struct VERTEX
 {

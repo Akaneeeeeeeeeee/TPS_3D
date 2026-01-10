@@ -1,10 +1,20 @@
 ﻿#pragma once
 #include "system/Framework/Application/Entry/main.h"
 #include "system/Framework/Graphics/RenderInfo.h"
+#include "system/Framework/Graphics/GBuffer.h"
 
 class IRenderer;
 class GraphicsDevice;
 class ShaderManager;
+class CShader;
+
+struct CBDeferred
+{
+	Matrix4x4 InvViewT;
+	Matrix4x4 InvProjT;
+	Vector4   CameraWorldPos; // xyz
+	Vector4   Screen;         // xy
+};
 
 /// <summary>
 /// IRenderComponentを管理し描画を担当するクラス
@@ -25,14 +35,31 @@ public:
 	void RenderAll(void);		//! 登録されている全ての描画コンポーネントを描画
 	void EndRender(void);		//! 描画終了処理
 
+	void RenderDeferred(void);   // GBuffer→Lighting→Forward
+
 	void CollectRenderInfo(void);	//! 登録されている全ての描画コンポーネントから描画情報を収集
 
 	// 描画コンポーネントの登録・解除
 	void Register(IRenderer* component);
 	void Unregister(IRenderer* component);
 
+	void InitDeferredShaders(void);
+
+private:
+	void RenderGBufferPass(void);
+	void RenderLightingPass(void);
+
 private:
 	GraphicsDevice* m_pGraphicsDevice = nullptr;	//! GraphicsDeviceへのポインタ
 	std::vector<IRenderer*> m_RenderComponents;		//! レンダラー系コンポーネントのリスト
 	std::vector<RenderInfo> m_RenderInfos;			//! 描画情報のリスト(毎フレーム取得)
+
+	GBuffer m_GBuffer;
+
+	// GBuffer用の通常メッシュシェーダ（mainエントリ）
+	CShader* m_pGBufferShader;
+
+	ComPtr<ID3D11VertexShader> m_FullVS;
+	ComPtr<ID3D11PixelShader>  m_LightPS;
+	ComPtr<ID3D11Buffer>       m_CBDeferred;
 };

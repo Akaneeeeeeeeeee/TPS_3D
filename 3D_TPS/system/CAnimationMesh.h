@@ -46,6 +46,9 @@ public:
 
 	// •`‰æ
 	void Draw();
+
+	CStaticMeshRenderer& GetRenderer() { return m_StaticMeshRenderer; }
+	const CStaticMeshRenderer& GetRenderer() const { return m_StaticMeshRenderer; }
 	
 private:
 	// ƒ{[ƒ“«‘

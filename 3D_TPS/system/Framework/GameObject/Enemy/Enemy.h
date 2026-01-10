@@ -20,6 +20,7 @@ class EnemyHeadIconComponent;
 class Enemy : public Character
 {
 public:
+	DECLARE_GAMEOBJECT_TYPE(Enemy, Character)
 	Enemy() = default;
 	Enemy(ComponentFactory* factory, const uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy,
 		Player* player = nullptr,

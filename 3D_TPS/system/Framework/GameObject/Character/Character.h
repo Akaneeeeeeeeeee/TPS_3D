@@ -25,6 +25,7 @@ class SkinnedAnimationComponent;
 class Character : public GameObject
 {
 public:
+	DECLARE_GAMEOBJECT_TYPE(Character, GameObject);
 	Character() = delete;
 	Character(ComponentFactory* factory, const uint64_t id, 
 		const std::string& name = "", const Tag& tag = Tag::None,

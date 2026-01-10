@@ -8,6 +8,7 @@ class DayNightObserverComponent final
     , public IDayNightListener
 {
 public:
+	DECLARE_COMPONENT_TYPE(DayNightObserverComponent, IComponent)
     // StreetLight “™‚ªó‚¯æ‚èæ‚ğİ’è
     void SetReceiver(IDayNightListener* r)
     {

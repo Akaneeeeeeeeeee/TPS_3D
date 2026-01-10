@@ -57,4 +57,8 @@ public:
 			Renderer::GetDeviceContext()->Unmap(m_IndexBuffer.Get(), 0);
 		}
 	}
+
+	ID3D11Buffer* GetBuffer() const { return m_IndexBuffer.Get(); }
+
+	DXGI_FORMAT GetFormat() const { return DXGI_FORMAT_R32_UINT; }
 };

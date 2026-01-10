@@ -4,6 +4,7 @@
 #include "CSprite.h"
 #include "system/commontypes.h"
 #include "system/Framework/Component/IComponent/IComponent.h"
+#include "system/transform.h"
 
 class CSprite;
 

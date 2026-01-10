@@ -12,6 +12,7 @@ struct RenderInfo;		// 前方宣言
 class IRenderer : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(IRenderer, IComponent)
 	virtual ~IRenderer() = default;
 
 	virtual bool GetRenderInfo(RenderInfo& outInfo) = 0;	//!< 描画に必要な情報を取得する純粋仮想関数

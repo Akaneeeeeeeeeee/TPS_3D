@@ -50,7 +50,8 @@ void CConeMesh::CreateVertex()
 	m_vertices.clear();
 
 	// てっぺんの頂点	
-	VERTEX_3D v{};
+	VERTEX_SKINNED_GPU v{};
+	//VERTEX_3D v{};
 
 	v.Position = Vector3(0.0f, m_height, 0.0f);
 	v.Normal = Vector3(0.0f, 1.0f, 0.0f);
@@ -64,7 +65,8 @@ void CConeMesh::CreateVertex()
 
 		azimuth = (2 * PI * (float)i) / (float)m_division_x;	// 方位角をセット
 
-		VERTEX_3D	v{};
+		VERTEX_SKINNED_GPU	v{};
+		//VERTEX_3D	v{};
 
 		v.Position.x = m_radius * cosf(azimuth);
 		v.Position.y = 0.0f;
@@ -111,7 +113,8 @@ void CConeMesh::CreateVertexTopDown()
 	m_vertices.clear();
 
 	// てっぺんの頂点	
-	VERTEX_3D v{};
+	VERTEX_SKINNED_GPU v{};
+	//VERTEX_3D v{};
 
 	v.Position = Vector3(0.0f, 0.0f, 0.0f);
 	v.Normal = Vector3(0.0f, 1.0f, 0.0f);
@@ -125,7 +128,8 @@ void CConeMesh::CreateVertexTopDown()
 
 		azimuth = (2 * PI * (float)i) / (float)m_division_x;	// 方位角をセット
 
-		VERTEX_3D	v{};
+		VERTEX_SKINNED_GPU	v{};
+		//VERTEX_3D	v{};
 
 		v.Position.x = m_radius * cosf(azimuth);
 		v.Position.y = m_height;

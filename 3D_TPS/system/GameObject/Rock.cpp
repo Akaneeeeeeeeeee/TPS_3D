@@ -1,5 +1,5 @@
 ﻿#include "Rock.h"
-#include "system/Framework/Component/Renderer/MeshRenderer/MeshRenderer.h"
+#include "system/Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 #include "system/meshmanager.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "system/CMesh.h"

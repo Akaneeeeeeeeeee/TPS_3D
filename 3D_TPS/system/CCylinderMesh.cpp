@@ -48,14 +48,22 @@ void CCylinderMesh::CreateVertex() {
 	// 側面の頂点データ（底面）
 	for (unsigned int i = 0; i <= m_division_x; i++) {
 		azimuth = (2 * PI * (float)i) / (float)m_division_x;	// 方位角をセット
-		VERTEX_3D	v{};
+		VERTEX_SKINNED_GPU	v{};
+		//VERTEX_3D	v{};
 
 		v.Position.x = m_radius * cosf(azimuth);
 		v.Position.y = 0.0f;
 		v.Position.z = m_radius * sinf(azimuth);
 
-		v.Normal = v.Position;
-		v.Normal.Normalize();			// 法線ベクトルを正規化	
+		// 法線ベクトルを計算
+		{
+			DirectX::SimpleMath::Vector3 normalVec(v.Position.x, v.Position.y, v.Position.z);
+			normalVec.Normalize();
+			v.Normal.x = normalVec.x;
+			v.Normal.y = normalVec.y;
+			v.Normal.z = normalVec.z;
+		}
+
 		v.Diffuse = m_color;
 
 		m_vertices.emplace_back(v);
@@ -64,7 +72,8 @@ void CCylinderMesh::CreateVertex() {
 	// 側面の頂点データ（上面）
 	for (unsigned int i = 0; i <= m_division_x; i++) {
 		azimuth = (2 * PI * (float)i) / (float)m_division_x;	// 方位角をセット
-		VERTEX_3D	v{};
+		VERTEX_SKINNED_GPU	v{};
+		//VERTEX_3D	v{};
 
 		v.Position.x = m_radius * cosf(azimuth);
 		v.Position.y = m_height;
@@ -92,7 +101,8 @@ void CCylinderMesh::CreateVertex() {
 
 	// 底面中心の頂点を追加
 	{
-		VERTEX_3D v{};
+		VERTEX_SKINNED_GPU v{};
+		//VERTEX_3D v{};
 		v.Position = Vector3(0.0f, 0.0f, 0.0f);
 		v.Normal = Vector3(0.0f, 1.0f, 0.0f);
 		v.Diffuse = m_color;
@@ -111,7 +121,8 @@ void CCylinderMesh::CreateVertex() {
 
 	// 上面中心の頂点を追加
 	{
-		VERTEX_3D v{};
+		VERTEX_SKINNED_GPU v{};
+		//VERTEX_3D v{};
 		v.Position = Vector3(0.0f, m_height, 0.0f);
 		v.Normal = Vector3(0.0f, 1.0f, 0.0f);
 		v.Diffuse = m_color;

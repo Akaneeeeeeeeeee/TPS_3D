@@ -4,6 +4,7 @@
 #include "system/CShader.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Physic/Rigidbody.h"
+#include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 
 void Goal::Awake(void)
 {
@@ -14,6 +15,12 @@ void Goal::Awake(void)
 	//m_mesh = MeshManager::getMesh<CStaticMesh>("goalmesh");
 	//m_meshrenderer = MeshManager::getRenderer<CStaticMeshRenderer>("goalmesh");
 	//m_shader = MeshManager::getShader<CShader>("unlightshader");
+
+	// 描画コンポーネント
+	m_RenderComp = AddComponent<StaticMeshRendererComponent>("GoalRenderer");
+	m_RenderComp->SetMeshRendererKey("goalmesh");     // AssetManagerのMeshRendererキー
+	m_RenderComp->SetShaderKey("unlightshader");      // AssetManagerのShaderキー
+	m_RenderComp->SetTransparent(false);
 
 	// コライダー
 	{
@@ -35,10 +42,10 @@ void Goal::Update(const float delta)
 
 void Goal::Draw(void) const
 {
-	Matrix4x4 mtx = m_Transform.GetWorldMatrix();
-	Renderer::SetWorldMatrix(&mtx);
-	m_shader->SetGPU();
-	m_meshrenderer->Draw();
+	//Matrix4x4 mtx = m_Transform.GetWorldMatrix();
+	//Renderer::SetWorldMatrix(&mtx);
+	//m_shader->SetGPU();
+	//m_meshrenderer->Draw();
 }
 
 void Goal::Uninit(void)

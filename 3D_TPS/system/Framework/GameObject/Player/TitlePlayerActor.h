@@ -14,6 +14,7 @@ class Terrain;
 class TitlePlayerActor : public Character
 {
 public:
+    DECLARE_GAMEOBJECT_TYPE(TitlePlayerActor, Character)
     TitlePlayerActor() = delete;
     TitlePlayerActor(ComponentFactory* factory, const uint64_t id,
         const std::string& name = "TitlePlayer",

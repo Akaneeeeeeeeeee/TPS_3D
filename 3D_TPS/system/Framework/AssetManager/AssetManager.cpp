@@ -50,6 +50,10 @@ void AssetManager::Init()
             terrainMesh->Load("assets/model/factory/factoryterrainmesh.fbx",
                 "assets/model/factory");
             RegisterMesh("terrainmesh", std::move(terrainMesh));
+            /*auto terrainMesh = std::make_unique<CStaticMesh>();
+            terrainMesh->Load("assets/model/factory/factoryterrainmesh.fbx",
+                "assets/model/factory");
+            RegisterMesh("terrainmesh", std::move(terrainMesh));*/
 
             auto terrainRenderer = std::make_unique<CStaticMeshRenderer>();
             auto* meshPtr = GetMesh<CStaticMesh>("terrainmesh");
@@ -87,40 +91,53 @@ void AssetManager::Init()
     // ==== AnimationMesh / AnimationData（例：Akai）====
     {
         // スキンメッシュ
-        auto akaiMesh = std::make_unique<CAnimationMesh>();
-        akaiMesh->Load("assets/model/akai/akai.fbx",
-            "assets/model/akai/");
-        RegisterMesh("Akai", std::move(akaiMesh));
+        //auto akaiMesh = std::make_unique<CAnimationMesh>();
+        //akaiMesh->Load("assets/model/akai/akai.fbx",
+        //    "assets/model/akai/");
+        //RegisterMesh("Akai", std::move(akaiMesh));
 
-        /*auto test = std::make_unique<CAnimationMesh>();
-        test->Load("assets/model/akai/uploads_files_2398597_FBX/SK_ScifiSoldierUE4.fbx",
-            "assets/model/akai/uploads_files_2398597_Textures/");
-        RegisterMesh("test", std::move(test));*/
+       /* auto zombieMesh = std::make_unique<CAnimationMesh>();
+        zombieMesh->Load("assets/model/akai/FreeTestCharacterAsunaFBX/Character/FreeTestCharacterAsuna.fbx",
+            "assets/model/akai/FreeTestCharacterAsunaFBX/Textures/");
+        RegisterMesh("Akai", std::move(zombieMesh));*/
+
+        auto test = std::make_unique<CAnimationMesh>();
+        test->Load("assets/model/SciFi_Solider/Model/SK_ScifiSoldierUE4.fbx",
+            "assets/model/SciFi_Solider/Textures/");
+        RegisterMesh("Akai", std::move(test));
 
         // 各アニメーション
         auto akaiIdle = std::make_unique<CAnimationData>();
-        akaiIdle->LoadAnimation("assets/model/akai/Akai_Idle.fbx",
+        akaiIdle->LoadAnimation("assets/model/SciFi_Solider/Animation/UnarmedIdle01.fbx",
             "Akai_Idle");
         RegisterAnimationData("Akai_Idle", std::move(akaiIdle));
+        //auto akaiIdle = std::make_unique<CAnimationData>();
+        //akaiIdle->LoadAnimation("assets/model/akai/Akai_Idle.fbx",
+        //    "Akai_Idle");
+        //RegisterAnimationData("Akai_Idle", std::move(akaiIdle));
 
+        /*auto akaiRun = std::make_unique<CAnimationData>();
+        akaiRun->LoadAnimation("assets/model/akai/FreeTestCharacterAsunaFBX/FreeTestAnimations/003Run.fbx",
+            "Akai_Run");
+        RegisterAnimationData("Akai_Run", std::move(akaiRun));*/
         auto akaiRun = std::make_unique<CAnimationData>();
-        akaiRun->LoadAnimation("assets/model/akai/Akai_Run.fbx",
+        akaiRun->LoadAnimation("assets/model/SciFi_Solider/Animation/StandardRun.fbx",
             "Akai_Run");
         RegisterAnimationData("Akai_Run", std::move(akaiRun));
 
         auto walk = std::make_unique<CAnimationData>();
-        walk->LoadAnimation("assets/model/akai/Walking.fbx",
+        walk->LoadAnimation("assets/model/SciFi_Solider/Animation/Walking.fbx",
             "Walking");
         RegisterAnimationData("Walking", std::move(walk));
 
         // Crouching_Idle, Crouched_Walking, など
 		auto crouchIdle = std::make_unique<CAnimationData>();
-		crouchIdle->LoadAnimation("assets/model/akai/Crouching_Idle.fbx",
+		crouchIdle->LoadAnimation("assets/model/SciFi_Solider/Animation/CrouchingIdle.fbx",
 			"Crouching_Idle");
 		RegisterAnimationData("Crouching_Idle", std::move(crouchIdle));
 
 		auto crouchWalk = std::make_unique<CAnimationData>();
-		crouchWalk->LoadAnimation("assets/model/akai/Crouched_Walking.fbx",
+		crouchWalk->LoadAnimation("assets/model/SciFi_Solider/Animation/CrouchedWalking.fbx",
 			"Crouched_Walking");
 		RegisterAnimationData("Crouched_Walking", std::move(crouchWalk));
 

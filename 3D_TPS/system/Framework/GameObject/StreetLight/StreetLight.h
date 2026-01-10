@@ -14,6 +14,7 @@ class DayNightObserverComponent;
 class StreetLight final : public GameObject, public IDayNightListener
 {
 public:
+    DECLARE_GAMEOBJECT_TYPE(StreetLight, GameObject)
     // ObjectManager/ComponentFactory の作りに合わせてコンストラクタは GameObject と同形にする
     StreetLight(ComponentFactory* factory,
         const uint64_t id,

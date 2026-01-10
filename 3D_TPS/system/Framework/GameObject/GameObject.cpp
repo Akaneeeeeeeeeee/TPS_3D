@@ -24,24 +24,31 @@ GameObject::GameObject(ComponentFactory* factory,
 
 }
 
+// 名前指定でのコンポーネント削除
 void GameObject::RemoveComponent(const std::string& name)
 {
 	// コンポーネント探索
 	auto it = m_Components.find(name);
 	if (it == m_Components.end()) { return; }
 
-	// 見つかったら削除
-	IComponent* comp = it->second.get();
+    it->second->Destroy(); // 予約だけ
+}
 
-	// 初期化キューからも除外
-	m_InitializeQueue.erase(
-		std::remove(m_InitializeQueue.begin(), m_InitializeQueue.end(), comp),
-		m_InitializeQueue.end()
-	);
+inline void GameObject::RemoveFromTypeIndex(IComponent* c)
+{
+	if (!c) { return; }
 
-	comp->Uninit();
-	comp->Detach();
-	m_Components.erase(it);
+	// 型IDでインデックスされているコンテナから削除
+	auto tid = c->GetTypeId();
+	auto it = m_ComponentsByType.find(tid);
+	if (it == m_ComponentsByType.end()) { return; }
+
+	auto& v = it->second;
+	v.erase(std::remove(v.begin(), v.end(), c), v.end());
+	if (v.empty()) 
+	{
+		m_ComponentsByType.erase(it);
+	}
 }
 
 // 保留中の初期化コンポーネントを初期化する
@@ -62,16 +69,72 @@ void GameObject::FlushInitializeQueue(void)
 	m_InitializeQueue.clear();
 }
 
+// 指定型バケットからコンポーネントを削除するヘルパ
+void GameObject::EraseFromBucket(IComponent::TypeId tid, IComponent* c)
+{
+	auto it = m_ComponentsByType.find(tid);
+	if (it == m_ComponentsByType.end()) { return; }
+
+	auto& v = it->second;
+	v.erase(std::remove(v.begin(), v.end(), c), v.end());
+	if (v.empty())
+	{
+		m_ComponentsByType.erase(it);
+	}
+}
+
+void GameObject::IndexComponent(IComponent* c)
+{
+	if (!c) { return; }
+
+	// 1) 実型バケット
+	m_ComponentsByType[c->GetTypeId()].push_back(c);
+
+	// 2) 基底バケット（欲しいものだけ追加）
+	if (c->IsA<IRenderer>())
+		m_ComponentsByType[IComponent::TypeIdOf<IRenderer>()].push_back(c);
+
+	if (c->IsA<PhysicsComponent>())
+		m_ComponentsByType[IComponent::TypeIdOf<PhysicsComponent>()].push_back(c);
+}
+
+void GameObject::UnindexComponent(IComponent* c)
+{
+	if (!c) { return; }
+
+	// 実型
+	EraseFromBucket(c->GetTypeId(), c);
+
+	// 基底（IndexComponent と同じ条件で抜く）
+	if (c->IsA<IRenderer>())
+		EraseFromBucket(IComponent::TypeIdOf<IRenderer>(), c);
+
+	if (c->IsA<PhysicsComponent>())
+		EraseFromBucket(IComponent::TypeIdOf<PhysicsComponent>(), c);
+}
+
+
 // 破棄予約されたコンポーネントを破棄する
 void GameObject::FlushDestroyComponents(void)
 {
 	// 破棄予約されたコンポーネントを破棄する
 	for (auto it = m_Components.begin(); it != m_Components.end(); )
 	{
-		if (it->second->IsDestroyRequested())
+		IComponent* c = it->second.get();
+
+		if (c && c->IsDestroyRequested())
 		{
-			it->second->Uninit();
-			it->second->Detach();
+			// 型索引から除外
+			UnindexComponent(c);
+
+			// 初期化キュー側にも残っている可能性があるので先に掃除
+			m_InitializeQueue.erase(
+				std::remove(m_InitializeQueue.begin(), m_InitializeQueue.end(), c),
+				m_InitializeQueue.end()
+			);
+
+			c->Uninit();
+			c->Detach();
 			it = m_Components.erase(it);
 		}
 		else
@@ -79,6 +142,7 @@ void GameObject::FlushDestroyComponents(void)
 			++it;
 		}
 	}
+
 	// 初期化キュー側にも残っている可能性があるので掃除
 	m_InitializeQueue.erase(
 		std::remove_if(
@@ -201,4 +265,5 @@ void GameObject::BaseUninit(void)
 	}
 	m_Components.clear();
 	m_InitializeQueue.clear();
+	m_ComponentsByType.clear();
 }
