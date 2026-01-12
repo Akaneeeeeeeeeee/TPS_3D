@@ -167,13 +167,23 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* an
 		if (timeInTicks < 0.0) timeInTicks += duration;
 	}
 
+
+	int hit = 0;
+	int miss = 0;
+
 	// 2) 各チャンネルごとに適切なキーを選んで補間
 	for (unsigned int c = 0; c < animation->mNumChannels; ++c)
 	{
 		aiNodeAnim* nodeAnim = animation->mChannels[c];
+		//auto itB = m_BoneDictionary.find(nodeAnim->mNodeName.C_Str());
+		//if (itB == m_BoneDictionary.end())
+		//	continue;
 		auto itB = m_BoneDictionary.find(nodeAnim->mNodeName.C_Str());
-		if (itB == m_BoneDictionary.end())
-			continue;
+
+		const std::string name = nodeAnim->mNodeName.C_Str();
+		if (m_BoneDictionary.find(name) != m_BoneDictionary.end())
+			++hit;
+		else { ++miss; continue; }
 
 		BONE& bone = itB->second;
 
@@ -214,6 +224,9 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* an
 
 		bone.AnimationMatrix = S * R * T;
 	}
+	std::cout << "[AnimMap] name=" << animation->mName.C_Str()
+		<< " channels=" << animation->mNumChannels
+		<< " hit=" << hit << " miss=" << miss << "\n";
 
 	// 3) 階層を考慮してボーン最終行列を作る
 	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix4x4::Identity);

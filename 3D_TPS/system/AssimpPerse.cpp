@@ -5,6 +5,7 @@
 #include	"CTexture.h"
 #include	"AssimpPerse.h"
 #include	"CTreeNode.h"
+#include	<fstream>
 
 #pragma comment(lib, "assimp-vc143-mtd.lib")
 
@@ -19,6 +20,17 @@ static void DumpSceneSummary(const aiScene* s)
 		<< "  animations : " << s->mNumAnimations << "\n"
 		<< "  cameras    : " << s->mNumCameras << "\n"
 		<< "  lights     : " << s->mNumLights << "\n";
+}
+static void DumpTex(aiMaterial* mat, aiTextureType type, const char* label)
+{
+	unsigned n = mat->GetTextureCount(type);
+	std::cout << "  " << label << " = " << n << "\n";
+	for (unsigned i = 0; i < n; ++i)
+	{
+		aiString p;
+		if (mat->GetTexture(type, i, &p) == AI_SUCCESS)
+			std::cout << "    [" << i << "] " << p.C_Str() << "\n";
+	}
 }
 
 namespace GM31 {namespace GE {namespace {}
@@ -349,6 +361,19 @@ namespace myAssimp{
 					shiness = 0.0f;
 			}
 
+			// マテリアル情報ダンプ
+			std::cout << "[Material] " << mtrlname << "\n";
+			DumpTex(material, aiTextureType_BASE_COLOR, "BASE_COLOR");
+			DumpTex(material, aiTextureType_DIFFUSE, "DIFFUSE");
+			DumpTex(material, aiTextureType_NORMALS, "NORMALS");
+			DumpTex(material, aiTextureType_HEIGHT, "HEIGHT");
+			DumpTex(material, aiTextureType_METALNESS, "METALNESS");
+			DumpTex(material, aiTextureType_DIFFUSE_ROUGHNESS, "ROUGHNESS");
+			DumpTex(material, aiTextureType_AMBIENT_OCCLUSION, "AO");
+			DumpTex(material, aiTextureType_EMISSIVE, "EMISSIVE");
+			DumpTex(material, aiTextureType_OPACITY, "OPACITY");
+			DumpTex(material, aiTextureType_UNKNOWN, "UNKNOWN");
+
 			// このマテリアルに紐づいているディフューズテクスチャ数分ループ
 			std::vector<std::string> texpaths{};
 
@@ -460,6 +485,18 @@ namespace myAssimp{
 	{
 		// シーン情報構築
 		Assimp::Importer importer;
+
+		std::cout << "[Assimp] filename(size)=" << filename.size()
+			<< " strlen=" << strlen(filename.c_str()) << "\n";
+		std::cout << "[Assimp] filename=" << filename << "\n";
+
+		std::error_code ec;
+		auto abs = std::filesystem::absolute(filename, ec);
+		std::cout << "[Assimp] abs=" << abs.string() << " ec=" << ec.message() << "\n";
+		std::cout << "[Assimp] exists=" << std::filesystem::exists(abs) << "\n";
+
+		std::ifstream ifs(abs, std::ios::binary);
+		std::cout << "[Assimp] can_open=" << ifs.good() << "\n";
 
 		// シーン情報を構築
 		const aiScene* pScene = importer.ReadFile(

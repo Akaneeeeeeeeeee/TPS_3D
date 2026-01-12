@@ -6,6 +6,7 @@
 #include "Framework/GameObject/Terrain/Terrain.h"
 #include <cmath>
 #include "Framework/Component/Physic/StaticMeshCollider.h"
+#include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
 
 namespace
 {
@@ -38,51 +39,50 @@ void TitlePlayerActor::Awake(void)
 	// ---- 見た目（スキン） ----
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("TitleSkinnedAnim");
 
-	// メッシュ名はあなたのアセット名に合わせる
-	// 例：Playerで使ってた "Akai" を流用
-	CAnimationMesh* mesh = am.GetMesh<CAnimationMesh>("Akai");
-	m_pAnimComp->SetMesh(mesh);
+	// 1) コンポーネント追加
+	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
-	CShader* shader = am.GetShader<CShader>("animshader");
-	m_pAnimComp->SetShader(shader);
+	SkinnedAnimSetup setup{};
+	setup.meshName = "Akai";
+	setup.shaderName = "animshader";
+	setup.clips = {
+		{ AnimType::Covered_Idle,       "Cover_Idle",         "Cover_Idle",         0, 1.0f },
+		{ AnimType::StoneThrow,       "StoneThrow",          "StoneThrow",          0, 1.0f },
+		{ AnimType::CrouchWalk, "Title_Sneaking", "Title_Sneaking", 0, 1.0f },
+		{ AnimType::Check_OverWall, "checkOverWall",       "checkOverWall",       0, 1.0f },
+		{ AnimType::Run,        "Akai_Run",         "Akai_Run",         0, 1.0f },
+		{ AnimType::Crouch,     "Crouching_Idle",   "Crouching_Idle",   0, 1.0f },
+	};
 
-	// ---- クリップ取得 ----
-	// あなたの Player の取り方をそのまま使う
-	m_Idle = am.GetAnimationData<CAnimationData>("Cover_Idle")->GetAnimation("Cover_Idle", 0);
-	m_CrouchWalk = am.GetAnimationData<CAnimationData>("Crouched_Walking")->GetAnimation("Crouched_Walking", 0);
-	m_CheckOverWall = am.GetAnimationData<CAnimationData>("checkOverWall")->GetAnimation("checkOverWall", 0);
-	m_Run = am.GetAnimationData<CAnimationData>("Akai_Run")->GetAnimation("Akai_Run", 0);
-	// 進行方向に体の正面を向けてくるアニメーション
-	m_CoveredCrouchWalk = am.GetAnimationData<CAnimationData>("Title_Sneaking")->GetAnimation("Title_Sneaking", 0);
-	// 石を投げるアニメーション
-	m_ThrowStone = am.GetAnimationData<CAnimationData>("StoneThrow")->GetAnimation("StoneThrow", 0);
-
-	// 初期
-	if (m_pAnimComp && m_Idle)
-	{
-		m_pAnimComp->SetClip(AnimType::Covered_Idle, m_Idle);
-		m_pAnimComp->SetClip(AnimType::StoneThrow, m_ThrowStone);
-		m_pAnimComp->SetClip(AnimType::CrouchWalk, m_CoveredCrouchWalk);
-		m_pAnimComp->SetClip(AnimType::Check_OverWall, m_CheckOverWall);
-		m_pAnimComp->SetClip(AnimType::Run, m_Run);
-		m_pAnimComp->Play(AnimType::CrouchWalk, BLEND_SEC);
-		m_pAnimComp->SetPlaybackSpeed(1.0f);
-	}
+	// 2) アセット情報からセットアップ
+	m_pAnimComp->SetupFromAssets(setup);
 
 	// タイトル用は台本で動かすので、MoveSpeedは演出値に
 	m_MoveSpeed = TITLE_WALK_SPEED;
 
 	// カメラ追加
-	m_pCamera = this->AddComponent<CameraComponent>("TitleCameraComponent");
-	Vector3 campos = this->GetPosition() - Vector3(0.0f, 100.0f, 550.0f);
-	m_pCamera->SetPosition(campos);
-	// 低い位置から、少し離れて見上げる
-	m_pCamera->SetLookAt(CAMERA_LOOKAT_POSITION);
-	m_pCamera->SetMode(CameraComponent::Mode::Direct);
+	{
+		m_pCamera = this->AddComponent<CameraComponent>("TitleCameraComponent");
+		Vector3 campos = this->GetPosition() - Vector3(0.0f, 100.0f, 550.0f);
+		m_pCamera->SetPosition(campos);
+		// 低い位置から、少し離れて見上げる
+		m_pCamera->SetLookAt(CAMERA_LOOKAT_POSITION);
+		m_pCamera->SetMode(CameraComponent::Mode::Direct);
+	}
 
 	// CharacterVirtual 必須（地形当たり判定のため）
-	m_pCharaVirtualComp = AddComponent<CharacterVirtualComponent>("TitleCharacterVirtualComponent");
-	m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALF_HEIGHT, PLAYER_CAPSULE_RADIUS);
+	{
+		m_pCharaVirtualComp = AddComponent<CharacterVirtualComponent>("TitleCharacterVirtualComponent");
+		m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALF_HEIGHT, PLAYER_CAPSULE_RADIUS);
+	}
+
+	// 描画（RenderManagerに出す）
+	{
+		auto* r = AddComponent<SkinnedMeshRendererComponent>("SkinnedRenderer");
+		r->SetMeshKey("Akai");
+		r->SetShaderKey("animshader");
+		r->SetAnimator(m_pAnimComp);    // アニメーターをセット
+	}
 
 	m_MoveDir = Vector3(0.5f, 0.0f, -0.75f);
 	m_MoveAmount = 1.0f;
@@ -194,8 +194,11 @@ void TitlePlayerActor::Update(const float dt)
 		m_Transform.SetRotation(Quaternion::CreateFromAxisAngle(UP, yaw));
 	}
 
-	// ---- ここで CharacterVirtualComponent::Update が走る ----
-	GameObject::Update(dt);
+	// カメラ更新
+	if (m_pCamera)
+	{
+		m_pCamera->ApplyCamera();
+	}
 
 	// ---- アニメ ----
 	ApplyAnimation(dt);
@@ -203,11 +206,6 @@ void TitlePlayerActor::Update(const float dt)
 
 void TitlePlayerActor::Draw(void) const
 {
-	if (m_pCamera)
-	{
-		m_pCamera->ApplyCamera();
-	}
-	Character::Draw();
 }
 
 void TitlePlayerActor::Uninit(void)
@@ -265,7 +263,7 @@ void TitlePlayerActor::ApplyAnimation(float dt)
 		break;
 
 	case TitleAnim::Walk:
-		// あなたのクリップ登録に合わせる：Walk ではなく CrouchWalk を再生
+		// Walk ではなく CrouchWalk を再生
 		m_pAnimComp->Play(AnimType::CrouchWalk, BLEND_SEC);
 		break;
 

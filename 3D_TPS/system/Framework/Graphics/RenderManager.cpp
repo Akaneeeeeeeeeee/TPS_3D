@@ -206,11 +206,7 @@ void RenderManager::Render(const RenderInfo& info)
 
 	for (const auto& di : *info.items)
 	{
-		if (di.bones)   
-		{
-			di.bones->SetGPU();   // b5
-			di.bones->Update(); // 忘れずに
-		}
+		if (di.bones)	 di.bones->SetGPU();	// b5
 		if (di.material) di.material->SetGPU(); // b3
 		if (di.diffuse)  di.diffuse->SetGPU();  // SRV
 

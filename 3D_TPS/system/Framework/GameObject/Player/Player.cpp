@@ -248,7 +248,7 @@ void Player::Awake(void)
 	r->SetShaderKey("animshader");
 	r->SetAnimator(m_pAnimComp);    // アニメーターをセット
 
-	//SetScale(Vector3(100.0f, 100.0f, 100.0f));
+	//SetScale(Vector3(10.0f, 10.0f, 10.0f));
 }
 
 void Player::Start(void)

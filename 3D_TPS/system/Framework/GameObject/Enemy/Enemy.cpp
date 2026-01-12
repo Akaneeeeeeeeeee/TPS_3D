@@ -137,13 +137,13 @@ void Enemy::InitAnimation(void)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	SkinnedAnimSetup setup{};
-	setup.meshName = "Akai";
+	setup.meshName = "Solider";
 	setup.shaderName = "animshader";
 
 	setup.clips = {
-		{ AnimType::Idle,               "Akai_Idle",    "Akai_Idle",    0, 1.0f },
-		{ AnimType::Walk,               "Walking",      "Walking",      0, 1.0f },
-		{ AnimType::Run,                "Akai_Run",     "Akai_Run",     0, 1.0f },
+		{ AnimType::Idle,               "Solider_Idle",    "Solider_Idle",    0, 1.0f },
+		{ AnimType::Walk,               "Solider_Walking", "Solider_Walking",      0, 1.0f },
+		{ AnimType::Run,                "Solider_Run",     "Solider_Run",     0, 1.0f },
 		{ AnimType::Surprise_RightTurn, "Right_Turn",   "Right_Turn",   0, 1.0f },
 		{ AnimType::Surprise_LeftTurn,  "Left_Turn",    "Left_Turn",    0, 1.0f },
 		{ AnimType::LookAround,         "LookAround",   "LookAround",   0, 1.0f },
@@ -154,7 +154,7 @@ void Enemy::InitAnimation(void)
 
 	// ï`âÊÅiRenderManagerÇ…èoÇ∑Åj
 	auto* r = AddComponent<SkinnedMeshRendererComponent>("SkinnedRenderer");
-	r->SetMeshKey("Akai");
+	r->SetMeshKey("Solider");
 	r->SetShaderKey("animshader");
 	r->SetAnimator(m_pAnimComp);
 }
