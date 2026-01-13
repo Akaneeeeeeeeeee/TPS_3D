@@ -85,10 +85,10 @@ float3 SkyWorldDirFromUV(float2 uv)
     ndc.y = -ndc.y;
 
     float4 clip = float4(ndc, 1.0, 1.0);
-    float4 view = mul(gSkyInvProjT, clip);
+    float4 view = mul(clip, gSkyInvProjT);
     view.xyz /= max(view.w, 1e-6);
 
-    float4 w = mul(gSkyInvViewT, float4(view.xyz, 0.0));
+    float4 w = mul(float4(view.xyz, 0.0), gSkyInvViewT);
     return normalize(w.xyz);
 }
 

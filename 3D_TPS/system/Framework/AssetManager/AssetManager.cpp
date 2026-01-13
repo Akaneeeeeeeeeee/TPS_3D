@@ -17,15 +17,27 @@ void AssetManager::Init()
 {
     // ==== Shader ====
     {
+		// 光源なしシェーダー
         auto unlit = std::make_unique<CShader>();
         unlit->Create("shader/vertexLightingVS.hlsl",
             "shader/vertexLightingPS.hlsl");
         RegisterShader("unlightshader", std::move(unlit));
 
+		// アニメーション用シェーダー
         auto anim = std::make_unique<CShader>();
         anim->Create("shader/vertexLightingOneSkinVS.hlsl",
             "shader/vertexLightingPS.hlsl");
         RegisterShader("animshader", std::move(anim));
+
+        // GBuffer（静的）
+        auto gbufStatic = std::make_unique<CShader>();
+        gbufStatic->Create("shader/GBufferVS.hlsl", "shader/GBufferPS.hlsl");
+        RegisterShader("gbuffer_static", std::move(gbufStatic));
+
+        // GBuffer（スキン）
+        auto gbufSkin = std::make_unique<CShader>();
+        gbufSkin->Create("shader/GBufferOneSkinVS.hlsl", "shader/GBufferPS.hlsl");
+        RegisterShader("gbuffer_skin", std::move(gbufSkin));
     }
 
     // ==== Static Mesh ＋ Renderer ====

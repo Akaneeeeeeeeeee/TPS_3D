@@ -212,9 +212,9 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	lightObj->SetPosition(Vector3(1900.0f, 100.0f, -3650.0f));
 	// 地面の明るい円半径を直接指定
 	lightObj->SetGroundCircle(
-		/*groundRadius=*/600.0f,
+		/*groundRadius=*/150.0f,
 		/*groundY=*/0.0f,
-		/*topRadiusMin=*/80.0f,   // 上面の“口径”を確保
+		/*topRadiusMin=*/10.0f,   // 上面の“口径”を確保
 		/*innerRatio=*/0.6f       // 中心が強い範囲
 	);
 

@@ -68,22 +68,27 @@ float3 WorldPosFromDepth(float2 uv, float depth01)
     ndc.y = -ndc.y;
     float4 clip = float4(ndc, depth01, 1.0);
 
-    // あなたは C++ 側で Transpose して送ってる前提なので「行列×ベクトル」
-    float4 view = mul(InvProjT, clip);
+    float4 view = mul(clip, InvProjT);
     view.xyz /= max(view.w, 1e-6);
 
-    float4 w = mul(InvViewT, float4(view.xyz, 1.0));
+    float4 w = mul(float4(view.xyz, 1.0), InvViewT);
     return w.xyz;
 }
 
-float4 PS_Lighting(float4 pos : SV_Position, float2 uv : TEXCOORD0) : SV_Target
+float4 PS_Lighting(float4 pos : SV_Position, float2 uvs : TEXCOORD0) : SV_Target
 {
+    float2 uv = saturate(uvs);
     float4 al = GAlbedo.SampleLevel(Samp, uv, 0);
     float4 nr = GNormalR.SampleLevel(Samp, uv, 0);
     float4 em = GEmissive.SampleLevel(Samp, uv, 0);
 
     float depth01 = DepthTex.SampleLevel(Samp, uv, 0).r;
-
+    // depthが1に近い＝何も描かれてない → alpha=0で下地（空）を残す
+    if (depth01 >= 0.99999)
+    {
+        return float4(0, 0, 0, 0); // α=0で下地を残す
+    }
+    
     float3 N = normalize(nr.xyz * 2.0 - 1.0);
     float rough = saturate(nr.w);
 
@@ -127,13 +132,28 @@ float4 PS_Lighting(float4 pos : SV_Position, float2 uv : TEXCOORD0) : SV_Target
         float angle01 = saturate((cosAng - outerCos) / max(innerCos - outerCos, 1e-6));
         float dist01 = 1.0 - (dist - nearD) / max(range - nearD, 1e-6);
         dist01 = saturate(dist01);
-
+        dist01 *= dist01;   // 距離減衰を二乗で落とす
+        
+        float3 Ls = normalize(lp - worldPos);   // ピクセル→ライト
+        float ndlS = saturate(dot(N, Ls));      // 面の向き
         float atten = angle01 * dist01 * intensity;
+        ndlS = max(ndlS, 0.2); // テスト
+        atten *= ndlS;
         col += al.rgb * (s.Color.rgb * atten);
     }
 
     // emission add
     col += em.rgb;
+    
+    // depthが1に近い＝何も描かれてない → alpha=0で下地（空）を残す
+    float mask = (depth01 < 0.999999) ? 1.0 : 0.0;
 
-    return float4(col, 1.0);
+    return float4(col, mask);
+    // 0番スポットだけ確認
+    //SpotLightGPU s = SpotLights[0];
+    //float3 lp = s.Position.xyz;
+    //float range = s.Params1.x;
+
+    //float dist = length(worldPos - lp);
+    //return float4(dist / range, 0, 0, 1);
 }

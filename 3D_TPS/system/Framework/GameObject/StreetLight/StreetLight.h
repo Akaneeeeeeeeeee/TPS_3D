@@ -49,7 +49,7 @@ private:
         bool  nightOnly = true;
 
         Color color = Color(1, 0.95f, 0.8f, 1);
-        float intensity = 6.0f;
+        float intensity = 26.0f;
 
         // 自動フィット
         bool  useGroundFit = false;

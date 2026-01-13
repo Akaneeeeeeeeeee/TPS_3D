@@ -181,9 +181,6 @@
     <Filter Include="ソース ファイル\MyFramework\Component\Throw">
       <UniqueIdentifier>{1bc930ad-2bf2-49c7-aaba-82022ff02204}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\EngineContext">
-      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\Component\StateIcon">
       <UniqueIdentifier>{1b594347-e51e-4838-9c4f-6d82e0978f04}</UniqueIdentifier>
     </Filter>
@@ -192,6 +189,9 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\Component\UI">
       <UniqueIdentifier>{ceeb3eb0-a07f-4e91-beb2-d49bb0e27345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\EngineSystem">
+      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -589,13 +589,13 @@
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\SoundManager\sound.h">
       <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\EngineSystem\GameFeatureSystems.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\SphereCollider.h">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
@@ -622,7 +622,7 @@
       <Filter>ソース ファイル\MyFramework\WeatherSystem</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\GBuffer.h">
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
@@ -930,7 +930,7 @@
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\EngineSystem\EngineSystem.cpp">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
@@ -1004,6 +1004,15 @@
       <Filter>リソース ファイル</Filter>
     </FxCompile>
     <FxCompile Include="shader\FullscreenTriVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\GBufferVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\GBufferOneSkinVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\GBufferPS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
   </ItemGroup>

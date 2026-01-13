@@ -70,7 +70,16 @@ void GBuffer::Begin(ID3D11DeviceContext* ctx, ID3D11DepthStencilView* dsv)
     vp.MaxDepth = 1;
     ctx->RSSetViewports(1, &vp);
 
-    for (int i = 0; i < RT_COUNT; i++) ClearRT(ctx, m_RTV[i].Get());
+	// レンダーターゲットクリア
+    for (int i = 0; i < RT_COUNT; i++)
+    {
+        ClearRT(ctx, m_RTV[i].Get());
+    }
+	// Depth クリア
+    if (dsv)
+    {
+        ctx->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    }
 }
 
 void GBuffer::End(ID3D11DeviceContext* ctx)

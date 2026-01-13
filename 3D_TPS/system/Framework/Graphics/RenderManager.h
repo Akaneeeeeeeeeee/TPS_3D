@@ -44,7 +44,7 @@ public:
 	void Unregister(IRenderer* component);
 
 	void InitDeferredShaders(void);
-
+	void RenderTransparentForwardPass();
 private:
 	void RenderGBufferPass(void);
 	void RenderLightingPass(void);
@@ -57,7 +57,8 @@ private:
 	GBuffer m_GBuffer;
 
 	// GBuffer用の通常メッシュシェーダ（mainエントリ）
-	CShader* m_pGBufferShader;
+	CShader* m_pGBufferStatic = nullptr;
+	CShader* m_pGBufferSkin = nullptr;
 
 	ComPtr<ID3D11VertexShader> m_FullVS;
 	ComPtr<ID3D11PixelShader>  m_LightPS;

@@ -114,7 +114,7 @@ void Game::Draw()
 		Renderer::SetProjectionMatrix(&proj);
 	}
 
-	// 空（ワールドより前）
+	// 1) 空（backbufferへ）
 	svc.weather.DrawAtmospherePreWorld();
 
 	// シーンの描画
@@ -129,16 +129,14 @@ void Game::Draw()
 	// デバッグ用当たり判定描画
 	//svc.physics.DebugDraw();
 
-	// RenderManagerで「描画コンポーネント」を描く
-	svc.render.CollectRenderInfo();
-	svc.render.RenderAll();
+	// 2) 遅延描画（GBuffer→Lighting→(透明Forwardは後で)）
+	svc.render.RenderDeferred();
 
-	// 霧（不透明ワールドの後）
+	// 3) 霧（backbufferへ合成）
 	svc.weather.DrawAtmospherePostWorld();
 
+	// 4) UI
 	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-	// UI描画
 	m_SceneManager.DrawUI();
 
 	// 遷移フェードを最後に描く

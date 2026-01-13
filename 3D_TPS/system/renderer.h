@@ -209,6 +209,9 @@ private:
 	// 深度バッファのSRVを保持する（合成で使うため）
     static ComPtr<ID3D11ShaderResourceView> m_DepthSRV;
 
+	// 深度ステンシルステート（読み取り専用）
+    static ComPtr<ID3D11DepthStencilState> m_DepthStateReadOnly;
+
 public:
     static void Init();
     static void Uninit();
@@ -243,4 +246,10 @@ public:
 
     // 合成で backbuffer の RTV が欲しい
     static ID3D11RenderTargetView* GetRTV() { return m_RenderTargetView.Get(); }
+    static ID3D11DepthStencilView* GetDSV() { return m_DepthStencilView.Get(); }
+
+    // Clearしないで RTV/DSV/Viewport を戻す
+    static void BindBackbuffer(bool setViewport = true);
+
+    static void SetDepthReadOnly(bool enable);
 };

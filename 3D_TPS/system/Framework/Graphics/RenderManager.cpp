@@ -5,6 +5,7 @@
 #include "system/Framework/Window/Window.h"
 #include "system/CShader.h"
 #include "system/CTexture.h"
+#include "system/Framework/AssetManager/AssetManager.h"
 
 static ComPtr<ID3DBlob> Compile(const wchar_t* path, const char* entry, const char* target)
 {
@@ -56,6 +57,17 @@ void RenderManager::InitDeferredShaders(void)
 	auto ps = Compile(L"shader/DeferredLighting.hlsl", "PS_Lighting", "ps_5_0");
 	dev->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), nullptr, m_LightPS.GetAddressOf());
 
+	// GBuffer用シェーダー取得
+	auto& am = AssetManager::GetInstance();
+	m_pGBufferStatic = am.GetShader<CShader>("gbuffer_static");
+	m_pGBufferSkin = am.GetShader<CShader>("gbuffer_skin");
+
+	// シェーダー取得確認
+	if (!m_pGBufferStatic || !m_pGBufferSkin)
+	{
+		throw std::runtime_error("RenderManager::InitDeferredShaders failed to get GBuffer shaders.");
+	}
+
 	D3D11_BUFFER_DESC bd{};
 	bd.ByteWidth = sizeof(CBDeferred);
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -78,14 +90,12 @@ bool RenderManager::Init(GraphicsDevice* graphicsDevice)
 {
 	if (graphicsDevice == nullptr) { return false; }
 
-	// DI
-	//this->m_pGraphicsDevice = graphicsDevice;
-
+	// GBufferの初期化
 	auto* dev = Renderer::GetDevice();
 	m_GBuffer.Create(dev, Window::GetInstance().GetWidth(), Window::GetInstance().GetHeight());
 
-	// gbufferVS/PS は main エントリでOK
-	//m_pGBufferShader.Create("shader/gbufferVS.hlsl", "shader/gbufferPS.hlsl");
+	// Deferred用シェーダーの初期化
+	InitDeferredShaders();
 	return true;
 }
 
@@ -192,16 +202,11 @@ void RenderManager::Render(const RenderInfo& info)
 	Matrix4x4 w = info.world;
 	Renderer::SetWorldMatrix(&w);
 
-	// phase
+	// phaseのみ
 	if (info.phase == RenderPhase::OpaqueGBuffer)
 	{
 		Renderer::SetDepthEnable(true);
 		Renderer::SetBlendState(BS_NONE);
-	}
-	else
-	{
-		Renderer::SetDepthEnable(true);          // 半透明で深度テストしたいならtrue
-		Renderer::SetBlendState(BS_ALPHABLEND);  // 透過
 	}
 
 	for (const auto& di : *info.items)
@@ -211,12 +216,6 @@ void RenderManager::Render(const RenderInfo& info)
 		if (di.diffuse)  di.diffuse->SetGPU();  // SRV
 
 		ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
-	}
-
-	// 透過のあとに戻すなら（安全側）
-	if (info.phase == RenderPhase::TransparentForward)
-	{
-		Renderer::SetBlendState(BS_NONE);
 	}
 }
 
@@ -242,31 +241,24 @@ void RenderManager::RenderDeferred()
 {
 	CollectRenderInfo();
 
-	RenderGBufferPass();     // 2) 不透明を書き溜め
-	RenderLightingPass();    // 3) ライトを当てる
-
-	// 4) 透明（必要なら m_RenderInfos の TransparentForward をここで従来描画）
+	// 2) 不透明を書き溜め
+	RenderGBufferPass();
+	// 3) ライトを当てる
+	RenderLightingPass();
+	// 4) 透明
+	RenderTransparentForwardPass();
 }
 
 void RenderManager::RenderGBufferPass()
 {
 	auto* ctx = Renderer::GetDeviceContext();
 
-	// Depthは Renderer が持ってる DSV を使う（今の設計のまま）
-	// もし DSV getter が無いなら Renderer に GetDSV() を1本足すのが安全
-	// 今回は OMGetRenderTargets で拾うより、Renderer側に GetDSV() を足すのが推奨。
-	ID3D11RenderTargetView* dummyRTV = nullptr;
-	ID3D11DepthStencilView* dsv = nullptr;
-	ctx->OMGetRenderTargets(1, &dummyRTV, &dsv);
-
-	m_GBuffer.Begin(ctx, dsv);
+	// RendererのDSVを使ってMRTへ
+	m_GBuffer.Begin(ctx, Renderer::GetDSV());
 
 	// GBufferではライト不要、半透明も不要
 	Renderer::SetDepthEnable(true);
 	Renderer::SetBlendState(BS_NONE);
-
-	// GBuffer用シェーダをセット
-	m_pGBufferShader->SetGPU();
 
 	// infoを回す
 	for (const auto& ri : m_RenderInfos)
@@ -285,17 +277,20 @@ void RenderManager::RenderGBufferPass()
 
 		for (const auto& di : *ri.items)
 		{
-			if (di.bones) di.bones->SetGPU();
-			if (di.material) di.material->SetGPU();
-			if (di.diffuse)  di.diffuse->SetGPU();
+			// ここで静的/スキンを切替
+			if (di.bones) m_pGBufferSkin->SetGPU();
+			else          m_pGBufferStatic->SetGPU();
+
+			if (di.bones)    di.bones->SetGPU();     // b5
+			if (di.material) di.material->SetGPU();  // b3
+			if (di.diffuse)  di.diffuse->SetGPU();   // t0 (TextureEnableもb3)
 
 			ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
 		}
 	}
 
-	// 参照カウント解放（OMGetRenderTargetsしたので）
-	if (dummyRTV) dummyRTV->Release();
-	if (dsv) dsv->Release();
+	// backbufferへ戻す（Clearしない）
+	Renderer::BindBackbuffer(true);
 }
 
 void RenderManager::RenderLightingPass()
@@ -354,9 +349,10 @@ void RenderManager::RenderLightingPass()
 	ctx->PSSetShaderResources(0, 4, srvs);
 
 	Renderer::SetDepthEnable(false);
-	Renderer::SetBlendState(BS_NONE);
+	Renderer::SetBlendState(BS_ALPHABLEND);
 
 	ctx->Draw(3, 0);
+	Renderer::SetBlendState(BS_NONE);
 
 	// SRV解除（次のパス衝突防止）
 	ID3D11ShaderResourceView* nulls[4] = { nullptr, nullptr, nullptr, nullptr };
@@ -374,3 +370,25 @@ void RenderManager::EndRender(void)
 	Renderer::End();
 }
 
+void RenderManager::RenderTransparentForwardPass()
+{
+	auto* ctx = Renderer::GetDeviceContext();
+
+	// backbuffer + DSV に戻す
+	Renderer::BindBackbuffer(true);
+
+	// 深度テストON / 深度書き込みOFF
+	Renderer::SetDepthReadOnly(true);
+	Renderer::SetBlendState(BS_ALPHABLEND);
+
+	// 透明だけ描く
+	for (const auto& ri : m_RenderInfos)
+	{
+		if (ri.phase != RenderPhase::TransparentForward) continue;
+		Render(ri); // 既存のRenderでOK（Blend/Depthは上で固定）
+	}
+
+	// 深度テスト/書き込みON、ブレンド無しに戻す
+	Renderer::SetDepthEnable(true);
+	Renderer::SetBlendState(BS_NONE);
+}

@@ -74,7 +74,7 @@ void StreetLight::ApplyPendingToSpot()
 {
     if (!m_Spot) return;
 
-    // ★ここで SetEnabled はしない（最終決定は RefreshLighting のみ）
+    // ここで SetEnabled はしない（最終決定は RefreshLighting のみ）
     m_Spot->SetColor(m_Pending.color);
     m_Spot->SetIntensity(m_Pending.intensity);
 

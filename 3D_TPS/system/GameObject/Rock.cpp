@@ -11,6 +11,7 @@
 #include "Framework/ObjectManager/ObjectManager.h"
 #include "Sound/WorldSoundEvent.h"
 #include "Framework/SoundManager/SoundManager.h"
+#include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 
 Rock::Rock(ComponentFactory* factory, const uint64_t id,
 	const std::string& name, const Tag& tag,
@@ -112,6 +113,13 @@ void Rock::Awake(void)
 	m_RB->SetBodyType(Rigidbody::Dynamic);
 	m_RB->SetObjectLayer(Layers::MOVING); // Terrain/Character との設計に合わせる
 	m_RB->SetMaxLinearVelocity(5000.0f, /*applyNow=*/false);
+
+	// 描画コンポーネント
+	m_pRenderComp = AddComponent<StaticMeshRendererComponent>("RockRenderer");
+	m_pRenderComp->SetMeshRendererKey("Rock");
+	m_pRenderComp->SetShaderKey("unlightshader");
+	m_pRenderComp->SetTransparent(false);
+
 }
 
 void Rock::Update(const float deltatime)
@@ -138,12 +146,6 @@ void Rock::Update(const float deltatime)
 
 void Rock::Draw(void) const
 {
-	Matrix4x4 mtx = m_Transform.GetWorldMatrix();
-
-	Renderer::SetWorldMatrix(&mtx);
-
-	m_Shader->SetGPU();
-	m_MeshRenderer->Draw();
 }
 
 void Rock::Uninit(void)

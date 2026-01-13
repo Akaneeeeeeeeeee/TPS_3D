@@ -368,13 +368,16 @@ void GameScene::Init(ObjectManager* mgr)
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
 
 		// ŠX“”
-		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight1", Tag::Object);
+		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight1", Tag::Light);
+		//streetLight->SetNightOnly(false);
+		//streetLight->SetEnabled(true);
+		//streetLight->SetIntensity(200.0f); // –Ú‹Šm”F—p‚É‹É’[‚Éã‚°‚é
 		streetLight->SetPosition(Vector3(-300.0f, 400.0f, -100.0f));
 		// ’n–Ê‚Ì–¾‚é‚¢‰~”¼Œa‚ğ’¼Úw’è
 		streetLight->SetGroundCircle(
-			/*groundRadius=*/600.0f,
+			/*groundRadius=*/150.0f,
 			/*groundY=*/0.0f,
-			/*topRadiusMin=*/80.0f,   // ã–Ê‚ÌgŒûŒah‚ğŠm•Û
+			/*topRadiusMin=*/10.0f,   // ã–Ê‚ÌgŒûŒah‚ğŠm•Û
 			/*innerRatio=*/0.6f       // ’†S‚ª‹­‚¢”ÍˆÍ
 		);
 	}

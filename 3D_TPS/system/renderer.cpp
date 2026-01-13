@@ -70,6 +70,7 @@ ComPtr<ID3D11Buffer> Renderer::m_LightBuffer;
 
 ComPtr<ID3D11DepthStencilState> Renderer::m_DepthStateEnable;
 ComPtr<ID3D11DepthStencilState> Renderer::m_DepthStateDisable;
+ComPtr<ID3D11DepthStencilState> Renderer::m_DepthStateReadOnly;
 
 ComPtr<ID3D11BlendState> Renderer::m_BlendState[MAX_BLENDSTATE];
 ComPtr<ID3D11BlendState> Renderer::m_BlendStateATC;
@@ -238,6 +239,11 @@ void Renderer::Init()
 	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	// 1～7も同じ設定にする（MRTで書けるように）
+	for (int i = 1; i < 8; ++i)
+	{
+		BlendDesc.RenderTarget[i] = BlendDesc.RenderTarget[0];
+	}
 
 	m_Device->CreateBlendState(&BlendDesc, m_BlendState[0].GetAddressOf());
 	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -253,19 +259,27 @@ void Renderer::Init()
 	SetBlendState(BS_ALPHABLEND);
 
 	// --- 深度ステンシルステートの設定 ---
+	// 通常有効
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = TRUE;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	depthStencilDesc.StencilEnable = FALSE;
-
 	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateEnable.GetAddressOf());
 
+	// 無効
 	depthStencilDesc.DepthEnable = FALSE;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateDisable.GetAddressOf());
-
 	m_DeviceContext->OMSetDepthStencilState(m_DepthStateEnable.Get(), 0);
+
+	// 読み取り専用（深度テストON、書き込みOFF）
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	depthStencilDesc.StencilEnable = FALSE;
+
+	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateReadOnly.GetAddressOf());
 
 	// --- サンプラーステート設定 ---
 	D3D11_SAMPLER_DESC samplerDesc{};
@@ -637,6 +651,12 @@ void Renderer::SetDepthAllwaysWrite()
 	}
 }
 
+void Renderer::SetDepthReadOnly(bool enable)
+{
+	m_DeviceContext->OMSetDepthStencilState(
+		enable ? m_DepthStateReadOnly.Get() : m_DepthStateEnable.Get(), 0);
+}
+
 /**
  * @brief スポットライト情報をシェーダーにセットします。
  * @param lights スポットライト配列へのポインタ
@@ -671,3 +691,23 @@ void Renderer::SetSpotLights(const SpotLightGPU* lights, int count)
 	m_DeviceContext->PSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
 }
 
+/*
+* @brief バックバッファとデプスステンシルをレンダーターゲットにバインドします。
+ * @param setViewport trueならビューポートも設定する
+ */
+void Renderer::BindBackbuffer(bool setViewport)
+{
+	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
+
+	if (setViewport)
+	{
+		D3D11_VIEWPORT vp{};
+		vp.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
+		vp.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
+		m_DeviceContext->RSSetViewports(1, &vp);
+	}
+}

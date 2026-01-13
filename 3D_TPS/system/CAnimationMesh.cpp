@@ -224,9 +224,9 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* an
 
 		bone.AnimationMatrix = S * R * T;
 	}
-	std::cout << "[AnimMap] name=" << animation->mName.C_Str()
-		<< " channels=" << animation->mNumChannels
-		<< " hit=" << hit << " miss=" << miss << "\n";
+	//std::cout << "[AnimMap] name=" << animation->mName.C_Str()
+	//	<< " channels=" << animation->mNumChannels
+	//	<< " hit=" << hit << " miss=" << miss << "\n";
 
 	// 3) 階層を考慮してボーン最終行列を作る
 	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix4x4::Identity);
