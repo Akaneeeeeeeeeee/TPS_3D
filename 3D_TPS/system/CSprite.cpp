@@ -228,9 +228,10 @@ void CSprite::Draw(Matrix4x4 world, Matrix4x4 view, Matrix4x4 proj) const
 	);
 }
 
-void CSprite::DrawRaw(Matrix4x4& world) const
+void CSprite::DrawRaw(const Matrix4x4& world) const
 {
-	Renderer::SetWorldMatrix(&world);
+	Matrix4x4 w = world;
+	Renderer::SetWorldMatrix(&w);
 
 	ID3D11DeviceContext* devicecontext = Renderer::GetDeviceContext();
 	devicecontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);

@@ -20,7 +20,6 @@ void EngineSystems::Init()
 
     m_Physics.Init();
 
-	m_UI.Init();
 #ifdef _DEBUG
 	m_Physics.SetCameraManager(&m_Camera);
 #endif

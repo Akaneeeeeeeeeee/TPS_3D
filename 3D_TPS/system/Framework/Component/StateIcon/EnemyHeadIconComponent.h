@@ -2,6 +2,7 @@
 #include <string>
 
 #include "Framework/Component/IComponent/IComponent.h"
+#include "Framework/Component/Renderer/SpriteRenderer/ISpriteSource.h"
 #include "commontypes.h"
 #include "system/CSprite.h"
 
@@ -9,7 +10,7 @@ class CameraComponent;
 class EnemyAIComponent;
 class CSprite;
 
-class EnemyHeadIconComponent final : public IComponent
+class EnemyHeadIconComponent final : public IComponent, public ISpriteSource
 {
 public:
 	DECLARE_COMPONENT_TYPE(EnemyHeadIconComponent, IComponent)
@@ -38,9 +39,13 @@ public:
     // ※ IComponent に Draw が無い場合は、下の「呼び出し口」案のどれかを使う
     void Draw(void) const;
 
-    bool IsVisible() const { return PickIcon() != IconKind::None; }
     const CSprite* GetCurrentSprite() const { return GetSprite(PickIcon()); }
     const Matrix4x4& GetWorld() const { return m_World; }
+
+    // ISpriteSource
+    bool IsVisible() const override { return PickIcon() != IconKind::None; }
+    const CSprite* GetSprite() const override { return GetCurrentSprite(); }
+    Matrix4x4 GetWorld(int /*screenW*/, int /*screenH*/) const override { return m_World; }
 
 private:
     enum class IconKind { None, Question, Alert };

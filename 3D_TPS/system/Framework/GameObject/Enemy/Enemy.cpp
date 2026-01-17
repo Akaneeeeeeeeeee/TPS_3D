@@ -16,7 +16,7 @@
 #include "system/DebugUI.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
-#include "Framework/Component/Renderer/SpriteRenderer/BillboardSpriteRenderer.h"
+#include "Framework/Component/Renderer/SpriteRenderer/UISpriteRenderer.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -254,11 +254,18 @@ void Enemy::InitComponents()
 		hearingComp->SetEnemyAI(m_AIComp);
 	}
 
-	// EnemyHeadIconComponent
+	// EnemyHeadIconComponent + BillboardSpriteRenderer
 	{
-		m_Billboard = AddComponent<BillboardSpriteRenderer>("Billboard");
 		m_HeadIcon = AddComponent<EnemyHeadIconComponent>("HeadIcon");
+
+		m_UISprite = AddComponent<UISpriteRenderer>("HeadIconRenderer");
+		m_UISprite->SetPhase(RenderPhase::OverlayWorld);
+		m_UISprite->SetSource(m_HeadIcon);
+		m_UISprite->SetDepthTest(false);
+		m_UISprite->SetLayer(0);
+		m_UISprite->SetOrder(0);
 	}
+
 }
 
 void Enemy::Update(const float deltatime)

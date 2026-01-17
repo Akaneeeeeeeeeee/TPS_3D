@@ -18,6 +18,7 @@
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/GameObject/StreetLight/StreetLight.h"
 #include "Framework/Component/UI/UIImageComponent.h"
+#include "Framework/Component/Renderer/SpriteRenderer/UISpriteRenderer.h"
 
 // 指定方向ベクトルから Yaw 回転を求める（XZ平面投影、正規化済み前提）
 static Quaternion YawQuatFromDirXZ(const Vector3& dir)
@@ -240,7 +241,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	auto& r = img->Rect();
 
 	// 画面中央に置く
-	r.anchor = { 1.0f, 0.f };          // 基準点：画面中央
+	r.anchor = { 0.5f, 0.5f };          // 基準点：画面中央
 	r.anchoredPosPx = { 0.0f, 0.0f };   // 基準点からの差分(px)
 	r.sizePx = { 800.0f, 400.0f };      // 表示サイズ(px)
 	r.pivot = { 0.5f, 0.5f };          // 自分の中心を基準
@@ -249,6 +250,13 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	r.layer = 100;
 	r.order = 0;
 	r.visible = true;
+
+	// 描画依頼を投げるrendererを追加
+	auto* uiR = uiObj->AddComponent<UISpriteRenderer>("UIRenderer");
+	uiR->SetSource(img);
+	uiR->SetPhase(RenderPhase::Overlay2D);
+	uiR->SetLayer(r.layer);
+	uiR->SetOrder(r.order);
 
 #ifdef _DEBUG
 	// ローカル軸表示用線分の初期化

@@ -6,6 +6,7 @@
 #include "system/CShader.h"
 #include "system/CTexture.h"
 #include "system/CMaterial.h"
+#include "system/CSprite.h"
 #include "system/Framework/AssetManager/AssetManager.h"
 #include "renderer.h"
 #include "BoneCombMatrix.h"
@@ -140,24 +141,6 @@ void RenderManager::StartRender(void)
 }
 
 // 描画情報収集
-//void RenderManager::CollectRenderInfo(void)
-//{
-//	m_RenderInfos.clear(); // 前のフレームの描画情報をクリア
-//	for (auto& component : m_RenderComponents)
-//	{
-//		// コンポーネントが存在し、有効な場合のみ描画情報を取得
-//		if (component && component->GetIsValid())
-//		{
-//			RenderInfo info;
-//			// 取得できた場合は描画情報リストに追加
-//			if (component->GetRenderInfo(info))
-//			{
-//				m_RenderInfos.push_back(info); // 描画情報をリストに追加
-//			}
-//		}
-//	}
-//}
-
 void RenderManager::CollectRenderPackets()
 {
 	m_Packets.clear();
@@ -233,6 +216,8 @@ void RenderManager::RenderDeferred()
 	RenderLightingPass();
 	// 4) 透明
 	RenderTransparentForwardPass();
+	// 5) オーバーレイ（ワールド空間）
+	RenderOverlayWorldPass();
 }
 
 void RenderManager::RenderGBufferPass()
@@ -433,4 +418,68 @@ void RenderManager::DrawMeshForward(const MeshDraw& md)
 
 		ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
 	}
+}
+
+
+void RenderManager::RenderOverlayWorldPass()
+{
+	Renderer::BindBackbuffer(true);
+	Renderer::SetBlendState(BS_ALPHABLEND);
+
+	// OverlayWorldだけ抽出してsortKey順
+	std::vector<const RenderPacket*> list;
+	list.reserve(m_Packets.size());
+	for (auto& p : m_Packets)
+		if (p.phase == RenderPhase::OverlayWorld) list.push_back(&p);
+
+	std::stable_sort(list.begin(), list.end(),
+		[](const RenderPacket* a, const RenderPacket* b) { return a->sortKey < b->sortKey; });
+
+	for (auto* pp : list)
+	{
+		if (pp->type != DrawType::SpriteBillboard) continue;
+
+		const SpriteDraw& sd = std::get<SpriteDraw>(pp->payload);
+
+		// packetに従う（多くはfalse）
+		Renderer::SetDepthEnable(pp->depthTest);
+
+		// sprite側が world セットするなら DrawRaw(world) でOK
+		sd.sprite->DrawRaw(sd.world);
+	}
+
+	Renderer::SetDepthEnable(true);
+	Renderer::SetBlendState(BS_NONE);
+}
+
+void RenderManager::RenderOverlay2DPass()
+{
+	//Renderer::BindBackbuffer(true);
+
+	Renderer::SetDepthEnable(false);
+	Renderer::SetBlendState(BS_ALPHABLEND);
+	Renderer::DisableCulling(false);
+
+	// UI投影はここで1回だけ
+	Renderer::SetWorldViewProjection2D();
+
+	std::vector<const RenderPacket*> list;
+	list.reserve(m_Packets.size());
+	for (auto& p : m_Packets)
+		if (p.phase == RenderPhase::Overlay2D) list.push_back(&p);
+
+	std::stable_sort(list.begin(), list.end(),
+		[](const RenderPacket* a, const RenderPacket* b) { return a->sortKey < b->sortKey; });
+
+	for (auto* pp : list)
+	{
+		if (pp->type != DrawType::Sprite2D) continue;
+
+		const SpriteDraw& sd = std::get<SpriteDraw>(pp->payload);
+		sd.sprite->DrawRaw(sd.world);
+	}
+
+	Renderer::DisableCulling(true);
+	Renderer::SetBlendState(BS_NONE);
+	Renderer::SetDepthEnable(true);
 }

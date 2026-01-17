@@ -121,26 +121,28 @@ void FadeTransition::Update(const float deltaTime)
  */
 void FadeTransition::Draw(void)
 {
-	if (m_Phase != Phase::None)
-	{
-		// 2Dï`âÊÉÇÅ[ÉhÇ…ê›íË
-		Renderer::SetWorldViewProjection2D();
-		Renderer::SetDepthEnable(false);
-		Renderer::SetBlendState(BS_ALPHABLEND);
-		//BoxDrawerDraw(
-		//	SCREEN_WIDTH, SCREEN_HEIGHT, 0,
-		//	Color(0, 0, 0, m_Alpha),
-		//	SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0
-		//);
-		m_Box.Draw(
-			Matrix4x4::CreateTranslation(SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0.0f),
-			Color(0, 0, 0, m_Alpha)
-		);
+	if (m_Phase == Phase::None) { return; }
 
-		// ï`âÊèÛë‘Çå≥Ç…ñﬂÇ∑
-		Renderer::SetBlendState(BS_NONE);
-		Renderer::SetDepthEnable(true);
-	}
+	// 2Dï`âÊÉÇÅ[ÉhÇ…ê›íË
+	Renderer::BindBackbuffer(true);
+	Renderer::DisableCulling(false);
+	Renderer::SetWorldViewProjection2D();
+	Renderer::SetDepthEnable(false);
+	Renderer::SetBlendState(BS_ALPHABLEND);
+	//BoxDrawerDraw(
+	//	SCREEN_WIDTH, SCREEN_HEIGHT, 0,
+	//	Color(0, 0, 0, m_Alpha),
+	//	SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0
+	//);
+	m_Box.Draw(
+		Matrix4x4::CreateTranslation(SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f, 0.0f),
+		Color(0, 0, 0, m_Alpha)
+	);
+
+	// ï`âÊèÛë‘Çå≥Ç…ñﬂÇ∑
+	Renderer::DisableCulling(true);
+	Renderer::SetBlendState(BS_NONE);
+	Renderer::SetDepthEnable(true);
 }
 
 /**

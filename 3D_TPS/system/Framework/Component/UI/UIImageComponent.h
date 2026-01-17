@@ -1,10 +1,12 @@
 #pragma once
 #include "Framework/Component/IComponent/IComponent.h"
+#include "Framework/Component/Renderer/SpriteRenderer/ISpriteSource.h"
 #include "CSprite.h"
+#include "transform.h"
 
 class UIManager;
 
-class UIImageComponent final : public IComponent
+class UIImageComponent final : public IComponent, public ISpriteSource
 {
 public:
     // UI用Transform（RectTransform相当）を「コンポーネント内に内包」
@@ -31,7 +33,6 @@ public:
         bool visible = true;
     };
 
-public:
     // AddComponent("Image", texPath) を想定
     explicit UIImageComponent(const std::string& texPath)
         : m_TexPath(texPath) {
@@ -41,26 +42,37 @@ public:
     UITransform& Rect() { return m_Rect; }
     const UITransform& Rect() const { return m_Rect; }
 
-    // 任意：テクスチャ差し替え
-    void SetTexture(const std::string& texPath)
+    // RenderPacket用のワールド行列生成（2D座標）
+    Matrix4x4 BuildWorld2D(int screenW, int screenH) const;
+    // ISpriteSource
+    bool IsVisible() const override
     {
-        m_TexPath = texPath;
-        m_RequestReinit = true;
+        return m_Inited && GetIsValid() && !IsDestroyRequested() && m_Rect.visible;
     }
 
-    // UIManager が使う
-    bool ShouldDrawUI() const;
-    void DrawUI(int screenW, int screenH) const;
-    int  GetLayer() const { return m_Rect.layer; }
-    int  GetOrder() const { return m_Rect.order; }
+    const CSprite* GetSprite() const override { return &m_Sprite; }
+
+    Matrix4x4 GetWorld(int screenW, int screenH) const override
+    {
+        // centerPx を左上原点の座標としてそのまま使う
+        Vector2 centerPx = CalcCenterPx(screenW, screenH);
+
+        SRT srt;
+        srt.scale = Vector3(m_Rect.sizePx.x, m_Rect.sizePx.y, 1.0f);
+        srt.rot = Vector3(0.0f, 0.0f, m_Rect.rotZRad);
+        srt.pos = Vector3(centerPx.x, centerPx.y, 0.0f);
+        return srt.GetMatrix();
+    }
+
+    int GetLayer() const { return m_Rect.layer; }
+    int GetOrder() const { return m_Rect.order; }
 
     // IComponent
+    void Attach(EngineServices&) override {}   // UIManager登録をやめる
+    void Detach() override {}
     void Init() override;
-    void Update(const float /*deltatime*/) override;
+    void Update(float) override;
     void Uninit() override {}
-
-    void Attach(EngineServices& context) override;
-    void Detach() override;
 
 private:
     // 画面ピクセル(左上原点) → Renderer2D座標 へ変換
@@ -70,8 +82,6 @@ private:
     Vector2 CalcCenterPx(int screenW, int screenH) const;
 
 private:
-    UIManager* m_pUI = nullptr;
-
     UITransform m_Rect;
 
     CSprite m_Sprite;

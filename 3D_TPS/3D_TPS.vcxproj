@@ -205,7 +205,8 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.h" />
-    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.h" />
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h" />
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
     <ClInclude Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.h" />
     <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />
@@ -415,7 +416,7 @@
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.cpp" />
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp" />
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
     <ClCompile Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />

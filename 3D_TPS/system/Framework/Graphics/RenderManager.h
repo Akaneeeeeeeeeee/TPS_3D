@@ -35,8 +35,8 @@ public:
 	//void RenderAll(void);		//! 登録されている全ての描画コンポーネントを描画
 	void RenderDeferred(void);   // GBuffer→Lighting→Forward
 	void CollectRenderPackets(void);
-	//void RenderOverlayWorldPass(void);
-	//void RenderOverlay2DPass();
+	void RenderOverlayWorldPass(void);
+	void RenderOverlay2DPass();
 	void EndRender(void);		//! 描画終了処理
 
 	// 描画コンポーネントの登録・解除

@@ -8,6 +8,7 @@
 #include "system/utility.h"
 #include "system/AimOrientation.h"
 #include "system/Framework/Component/UI/UIImageComponent.h"
+#include "system/Framework/Component/Renderer/SpriteRenderer/UISpriteRenderer.h"
 #include "ResultScene.h"
 
 /**
@@ -64,24 +65,24 @@ void ResultScene::Init(ObjectManager* _Mgr)
 		Transform::One()
 	);
 
-	UIImageComponent* img = uiObj->AddComponent<UIImageComponent>(
-		"Image",
-		tex
-	);
+	auto* img = uiObj->AddComponent<UIImageComponent>("Image", tex);
 
-	// UITransform（内包Rect）をセット
+	// 画面中央など
 	auto& r = img->Rect();
-
-	// 画面中央に置く
-	r.anchor = { 1.0f, 0.f };          // 基準点：画面中央
-	r.anchoredPosPx = { 0.0f, 0.0f };   // 基準点からの差分(px)
-	r.sizePx = { SCREEN_WIDTH, SCREEN_HEIGHT };      // 表示サイズ(px)
-	r.pivot = { 0.5f, 0.5f };          // 自分の中心を基準
-	r.rotZRad = 0.0f;
-
+	r.anchor = { 0.5f, 0.5f };
+	r.anchoredPosPx = { 0, 0 };
+	r.sizePx = { SCREEN_WIDTH, SCREEN_HEIGHT };
+	r.pivot = { 0.5f, 0.5f };
 	r.layer = 100;
 	r.order = 0;
 	r.visible = true;
+
+	// 描画依頼を投げるrendererを追加
+	auto* uiR = uiObj->AddComponent<UISpriteRenderer>("UIRenderer");
+	uiR->SetSource(img);
+	uiR->SetPhase(RenderPhase::Overlay2D);
+	uiR->SetLayer(r.layer);
+	uiR->SetOrder(r.order);
 }
 
 /**

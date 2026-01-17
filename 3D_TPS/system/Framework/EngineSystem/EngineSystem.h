@@ -28,7 +28,6 @@ struct EngineServices
 	WeatherSystem& weather;
 	CameraManager& camera;
 	LightSystem& light;
-	UIManager& ui;
 	//SoundSystem& sound;
 };
 
@@ -59,12 +58,11 @@ private:
 	WeatherSystem  m_Weather;
 	PhysicsManager m_Physics;
 	LightSystem    m_Light;
-	UIManager      m_UI;
 	//SoundSystem    m_Sound;
 
 	EngineServices m_Services {
 		m_Render, m_Shader, m_Asset.GetInstance(),
-		m_Physics, m_Weather, m_Camera, m_Light, m_UI //m_Sound
+		m_Physics, m_Weather, m_Camera, m_Light, //m_Sound
 	};
 
 	bool m_Inited = false;

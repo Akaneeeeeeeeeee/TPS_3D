@@ -139,10 +139,10 @@ void Game::Draw()
 
 
 	// 4) UI
-	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
 	m_SceneManager.DrawUI();
 
 	// 遷移フェードを最後に描く
+	svc.render.RenderOverlay2DPass();
 	m_SceneManager.DrawTransition();
 
 	// ポーズUIを上に重ねる

@@ -627,11 +627,14 @@
     <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.h">
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.h">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Game\GameResult.h">
       <Filter>ソース ファイル\MyFramework\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -968,7 +971,7 @@
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.cpp">
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
