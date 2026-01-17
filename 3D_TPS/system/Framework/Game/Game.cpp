@@ -32,7 +32,7 @@ void Game::Init()
 	m_GameFeatures.Init(svc);
 
 	// 初期天候
-	svc.weather.SetWeather(WeatherType::HeavyRain, 0.0f);
+	svc.weather.SetWeather(WeatherType::Clear, 0.0f);
 	svc.physics.SetObjectManager(&m_ObjectManager);
 
 	// ComponentFactory は EngineServices を注入
@@ -110,8 +110,9 @@ void Game::Draw()
 	{
 		Matrix4x4 view = cam->GetViewMatrix();
 		Matrix4x4 proj = cam->GetProjMatrix();
-		Renderer::SetViewMatrix(&view);
-		Renderer::SetProjectionMatrix(&proj);
+		/*Renderer::SetViewMatrix(&view);
+		Renderer::SetProjectionMatrix(&proj);*/
+		cam->ApplyCamera();
 	}
 
 	// 1) 空（backbufferへ）
@@ -120,8 +121,6 @@ void Game::Draw()
 	// シーンの描画
 	m_SceneManager.DrawWorld();
 	m_GameFeatures.DrawWorld();
-	// todo:ここは後から描画機能に責任を持たせる
-	SoundWaveVisualizer::GetInstance().DrawWorld();
 
 	// 天候パーティクル描画
 	svc.weather.DrawParticles();
@@ -134,6 +133,10 @@ void Game::Draw()
 
 	// 3) 霧（backbufferへ合成）
 	svc.weather.DrawAtmospherePostWorld();
+
+	// todo:ここは後から描画機能に責任を持たせる
+	SoundWaveVisualizer::GetInstance().DrawWorld();
+
 
 	// 4) UI
 	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);

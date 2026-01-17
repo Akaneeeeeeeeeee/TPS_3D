@@ -149,11 +149,4 @@ float4 PS_Lighting(float4 pos : SV_Position, float2 uvs : TEXCOORD0) : SV_Target
     float mask = (depth01 < 0.999999) ? 1.0 : 0.0;
 
     return float4(col, mask);
-    // 0番スポットだけ確認
-    //SpotLightGPU s = SpotLights[0];
-    //float3 lp = s.Position.xyz;
-    //float range = s.Params1.x;
-
-    //float dist = length(worldPos - lp);
-    //return float4(dist / range, 0, 0, 1);
 }

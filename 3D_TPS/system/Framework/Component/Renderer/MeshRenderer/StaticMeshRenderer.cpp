@@ -5,43 +5,42 @@
 #include "system/CShader.h"
 #include "Framework/GameObject/GameObject.h"
 
-bool StaticMeshRendererComponent::GetRenderInfo(RenderInfo& outInfo)
-{
-    if (!GetIsValid() || !m_pOwner) return false;
-    if (m_MeshRendererKey.empty() || m_ShaderKey.empty()) return false;
 
-    // Asset から参照を取得
+void StaticMeshRendererComponent::CollectRenderPackets(std::vector<RenderPacket>& out)
+{
+    if (!GetIsValid() || !m_pOwner) return;
+
     auto& assets = AssetManager::GetInstance();
     auto* r = assets.GetMeshRenderer<CStaticMeshRenderer>(m_MeshRendererKey);
     auto* s = assets.GetShader<CShader>(m_ShaderKey);
+    if (!r || !s) return;
 
-    if (!r || !s) return false;
-
-    // サブセット→DrawItem 生成（メンバに保持）
     BuildDrawItems(*r);
-    if (m_DrawItems.empty()) return false;
+    if (m_DrawItems.empty()) return;
 
-    // VB/IB（CStaticMeshRenderer に getter を追加してある前提）
-    outInfo.vertexBuffer = r->GetVB();
-    outInfo.indexBuffer = r->GetIB();
-    outInfo.stride = sizeof(VERTEX_SKINNED_GPU); // 頂点構造体に合わせる
-    //outInfo.stride = sizeof(VERTEX_3D); // 頂点構造体に合わせる
-    outInfo.indexFormat = r->GetIndexFormat();
-    outInfo.topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    MeshDraw md{};
+    md.vb = r->GetVB();
+    md.ib = r->GetIB();
+    md.stride = sizeof(VERTEX_SKINNED_GPU);
+    md.indexFormat = r->GetIndexFormat();
+    md.topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    md.world = m_pOwner->GetWorldMatrix();
+    md.shader = s;
+    md.items = std::span<const DrawItem>(m_DrawItems.data(), m_DrawItems.size());
 
-    // ワールド行列（あなたのGameObjectに合わせて取得）
-    outInfo.world = m_pOwner->GetWorldMatrix(); // ←無ければ Transform から作る関数に差し替え
+    RenderPacket p{};
+    p.phase = m_IsTransparent ? RenderPhase::TransparentForward : RenderPhase::OpaqueGBuffer;
+    p.type = DrawType::Mesh;
+    p.blend = m_IsTransparent ? BlendMode::Alpha : BlendMode::None;
+    p.depthTest = true;
+    p.depthWrite = !m_IsTransparent;
+    p.cull = true;
+    p.sortKey = 0; // いまは不要なら0でOK
+    p.payload = md;
 
-    outInfo.shader = s;
-
-    // items はメンバ vector のアドレス（寿命保証）
-    outInfo.items = &m_DrawItems;
-
-    // パス設定
-    outInfo.phase = m_IsTransparent ? RenderPhase::TransparentForward : RenderPhase::OpaqueGBuffer;
-
-    return true;
+    out.push_back(std::move(p));
 }
+
 
 void StaticMeshRendererComponent::BuildDrawItems(const CStaticMeshRenderer& renderer)
 {

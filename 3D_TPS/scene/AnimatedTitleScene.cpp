@@ -224,7 +224,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	// タイトル画像の生成
 	m_TitleImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/SilentEchoT1.png");
 
-	// UI専用オブジェクト（Tagは何でもOK）
+	// UI専用オブジェクト
 	auto* uiObj = m_pObjectManager->Instantiate<GameObject>(
 		"UI_TitleLogo",
 		Tag::Object,              // Tag::UI があるならそれでもOK

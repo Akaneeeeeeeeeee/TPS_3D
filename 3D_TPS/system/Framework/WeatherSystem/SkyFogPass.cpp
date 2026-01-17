@@ -1,4 +1,4 @@
-#include "SkyFogPass.h"
+ï»¿#include "SkyFogPass.h"
 #include "renderer.h" // Renderer
 #include <d3dcompiler.h>
 #include <vector>
@@ -165,7 +165,7 @@ static ComPtr<ID3DBlob> Compile(const wchar_t* path, const char* entry, const ch
     {
         std::string msg = "D3DCompileFromFile failed.\n";
         msg += "file: ";
-        // wchar->utf8 •ÏŠ·‚Í–Ê“|‚È‚Ì‚ÅA‚Æ‚è‚ ‚¦‚¸ entry/target ‚ğo‚·
+        // wchar->utf8 å¤‰æ›ã¯é¢å€’ãªã®ã§ã€ã¨ã‚Šã‚ãˆãš entry/target ã‚’å‡ºã™
         msg += " entry: ";  msg += entry;
         msg += " target: "; msg += target;
         msg += "\n";
@@ -181,7 +181,7 @@ static ComPtr<ID3DBlob> Compile(const wchar_t* path, const char* entry, const ch
     return blob;
 }
 
-// ---- CBiHLSL‚Æˆê’v‚³‚¹‚éj----
+// ---- CBï¼ˆHLSLã¨ä¸€è‡´ã•ã›ã‚‹ï¼‰----
 struct CBSky
 {
     Vector4 Zenith;
@@ -199,13 +199,16 @@ struct CBSky
 
 struct CBFog
 {
-    Vector4 FogColor_Density; // rgb, a=density
-    Vector4 LightDir;         // xyziŒõ‚ª”ò‚ñ‚Å‚­‚éŒü‚«j
-    Vector4 Params;           // x=nearSteps, y=farSwitchDist, z=maxDist, w=noiseStr
-    Vector4 CameraWorldPos;   // xyz
+    Vector4 FogColor_Density;   // rgb, a=density
+    Vector4 LightDir;           // xyzï¼ˆå…‰ãŒé£›ã‚“ã§ãã‚‹å‘ãï¼‰
+    Vector4 Params;             // x=nearSteps, y=farSwitchDist, z=maxDist, w=noiseStr
+    Vector4 CameraWorldPos;     // xyz
     Matrix4x4 InvViewT;
     Matrix4x4 InvProjT;
-    Vector4 Screen;           // xy full
+    Vector4 Screen;             // xy full
+    Vector4 FogDist;            // x=start, y=end, z=power, w=strength
+	Vector4 FogVolDist;         // volumetric fog: x=start, y=end
+	Vector4 BeamParams;
 };
 
 void SkyFogPass::Init(ID3D11Device* dev, ID3D11DeviceContext* ctx, int w, int h)
@@ -231,7 +234,7 @@ void SkyFogPass::UpdateFromWeather(const WeatherSystem& ws)
     if (sDirToSun.LengthSquared() < 1e-6f) sDirToSun = Vector3(0, 1, 0);
     sDirToSun.Normalize();
 
-    // ‘¾—zFi‹­‚³‚İj
+    // å¤ªé™½è‰²ï¼ˆå¼·ã•è¾¼ã¿ï¼‰
     sSunColor = ws.GetSun().lightColor * ws.GetSun().lightIntensity;
 
     sFogDensity = ws.GetFogDensity();
@@ -251,7 +254,7 @@ void SkyFogPass::UploadSkyCB()
 {
     CBSky cb{};
 
-    // 4’iŠKƒvƒŠƒZƒbƒgi’l‚Í’²®‘O’ñj
+    // 4æ®µéšãƒ—ãƒªã‚»ãƒƒãƒˆï¼ˆå€¤ã¯èª¿æ•´å‰æï¼‰
     float h = sHours;
     while (h < 0) h += 24.0f;
     while (h >= 24) h -= 24.0f;
@@ -282,10 +285,10 @@ void SkyFogPass::UploadSkyCB()
     cb.SunDir_Size = Vector4(sDirToSun.x, sDirToSun.y, sDirToSun.z, 0.02f);
     cb.SunColor_Glow = Vector4(sSunColor.R(), sSunColor.G(), sSunColor.B(), 1.0f);
 
-    // ‰_F‚ğ fog F‚ÉŠñ‚¹‚Ä“éõ‚Ü‚¹‚é
+    // é›²è‰²ã‚’ fog è‰²ã«å¯„ã›ã¦é¦´æŸ“ã¾ã›ã‚‹
     cb.FogColor_Blend = Vector4(sFogColor.x, sFogColor.y, sFogColor.z, 0.6f);
 
-    // ‹ó‚¾‚¯ƒrƒlƒbƒg
+    // ç©ºã ã‘ãƒ“ãƒãƒƒãƒˆ
     cb.Vignette = Vector4(0.35f, 2.2f, 0, 0);
 
     float timeSec = (h / 24.0f) * 86400.0f;
@@ -305,21 +308,57 @@ void SkyFogPass::UploadSkyCB()
     sCtx->UpdateSubresource(sCBSky.Get(), 0, nullptr, &cb, 0, 0);
 }
 
+
 void SkyFogPass::UploadFogCB()
 {
     CBFog cb{};
 
+    // ä½“ç©ãƒ•ã‚©ã‚°ã®åŸºæœ¬å¯†åº¦ï¼ˆå¤©å€™ï¼‰
     cb.FogColor_Density = Vector4(sFogColor.x, sFogColor.y, sFogColor.z, sFogDensity);
 
-    // WeatherSystem ‚ª SetLight ‚µ‚Ä‚¢‚é•ûŒü‚ğg‚¤iŒõ‚ª”ò‚ñ‚Å‚­‚éŒü‚«j
     LIGHT L = Renderer::GetLight();
     cb.LightDir = Vector4(L.Direction.x, L.Direction.y, L.Direction.z, 0);
 
+	// -------------------------
+	// ä½“ç©ãƒ•ã‚©ã‚°ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+	// -------------------------
     cb.Params = Vector4(
-        16.0f,   // nearSteps
-        120.0f,  // farSwitchDist
-        600.0f,  // maxDist
-        1.0f     // noiseStr
+        sTuning.fogNearSteps,        // nearSteps
+        sTuning.fogFarSwitchDist,    // farSwitchDist
+        sTuning.fogMaxDist,          // maxDistVol
+        sTuning.fogNoiseStrength     // noiseStr
+    );
+
+    cb.BeamParams = Vector4(
+        12000.0f,  // beamMaxDist â† æŸ±ã¯ã“ã“ã¾ã§
+        20.0f,     // beamStepLenWanted
+        0.0008f,   // kBeam
+        0.6f       // beamTint
+    );
+
+    // -------------------------
+    // è·é›¢ãƒ•ã‚©ã‚°ï¼ˆç”»é¢å…¨ä½“ã®ãƒ•ã‚§ãƒ¼ãƒ‰ï¼‰â€»æ™´ã‚Œã§ã‚‚å°‘ã—ã ã‘æ¬²ã—ã„ãªã‚‰ base ã‚’å…¥ã‚Œã‚‹
+    // -------------------------
+    cb.FogDist = Vector4(
+        /*start*/  600.0f,   // â†ã“ã“ãŒã€Œéœ§ãŒã‹ã‹ã‚Šå§‹ã‚ã‚‹è·é›¢ã€
+        /*end*/    6000.0f,
+        /*power*/  1.2f,
+        /*strength*/ 0.15f   // æ™´ã‚ŒåŸºæº–ï¼ˆ0.05ï½0.25ï¼‰
+    );
+
+    // å¤©å€™ã§è¶³ã™ï¼ˆLightRain/HeavyRain ã‚’æ¿ƒãã—ãŸã„ãªã‚‰ä¿‚æ•°ã‚’ä¸Šã’ã‚‹ï¼‰
+    const float weatherAdd = 0.25f * std::clamp(sFogDensity / 0.02f, 0.0f, 1.0f);
+    cb.FogDist.w = std::clamp(cb.FogDist.w + weatherAdd, 0.0f, 1.0f);
+
+    // -------------------------
+    // â˜…ä½“ç©ãƒ•ã‚©ã‚°è·é›¢ãƒ•ã‚§ãƒ¼ãƒ‰ï¼ˆè¿‘è·é›¢ã‚’è–„ãï¼‰
+    // ä¾‹ï¼šã‚­ãƒ£ãƒ©ä»˜è¿‘ã¯è–„ã„â†’ä¸­è·é›¢ã‹ã‚‰æœ¬æ¥ã®å¯†åº¦ã¸
+    // -------------------------
+    cb.FogVolDist = Vector4(
+        /*start*/  400.0f,   // â†ä½“ç©ãƒ•ã‚©ã‚°ãŒåŠ¹ãå§‹ã‚ã‚‹è·é›¢
+        /*end*/    1400.0f,  // â†ã“ã“ã§100%ã¾ã§åˆ°é”
+        /*power*/  1.0f,
+        /*strength*/ 1.0f
     );
 
     Matrix4x4 view = Renderer::GetViewMatrix();
@@ -327,7 +366,6 @@ void SkyFogPass::UploadFogCB()
     Matrix4x4 invView = view.Invert();
     Matrix4x4 invProj = proj.Invert();
 
-    // ƒJƒƒ‰ˆÊ’uiworldj
     Vector3 camPos = invView.Translation();
     cb.CameraWorldPos = Vector4(camPos.x, camPos.y, camPos.z, 0);
 
@@ -338,6 +376,7 @@ void SkyFogPass::UploadFogCB()
     sCtx->UpdateSubresource(sCBFog.Get(), 0, nullptr, &cb, 0, 0);
 }
 
+
 void SkyFogPass::DrawSky()
 {
     D3D11StateBackup bk;
@@ -345,7 +384,7 @@ void SkyFogPass::DrawSky()
 
     UploadSkyCB();
 
-    // Sky ‚Í GS ‚È‚Ç‚ğˆê“I‚ÉŠO‚µ‚Ä•`‚­
+    // Sky ã¯ GS ãªã©ã‚’ä¸€æ™‚çš„ã«å¤–ã—ã¦æã
     sCtx->GSSetShader(nullptr, nullptr, 0);
     sCtx->HSSetShader(nullptr, nullptr, 0);
     sCtx->DSSetShader(nullptr, nullptr, 0);
@@ -373,7 +412,7 @@ void SkyFogPass::DrawSky()
     ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
     sCtx->PSSetShaderResources(0, 1, nullSRV);
 
-    // ‚±‚±‚ÅŒ³‚Ìó‘Ô‚É–ß‚·i’nŒ`‚ªo‚È‚­‚È‚é‚Ì‚ğ–h‚®j
+    // ã“ã“ã§å…ƒã®çŠ¶æ…‹ã«æˆ»ã™ï¼ˆåœ°å½¢ãŒå‡ºãªããªã‚‹ã®ã‚’é˜²ãï¼‰
     bk.Restore(sCtx);
     bk.Release();
 }
@@ -382,12 +421,12 @@ void SkyFogPass::DrawFog()
 {
     UploadFogCB();
 
-    // Œ»İ‚ÌRTV/DSV‚ğ‘Ş”ğiŒã‚Å–ß‚·j
+    // ç¾åœ¨ã®RTV/DSVã‚’é€€é¿ï¼ˆå¾Œã§æˆ»ã™ï¼‰
     ID3D11RenderTargetView* savedRTV = nullptr;
     ID3D11DepthStencilView* savedDSV = nullptr;
     sCtx->OMGetRenderTargets(1, &savedRTV, &savedDSV);
 
-    // ---- ’á‰ğ‘œ“x fog ì¬iDepthSRV ‚ğ“Ç‚Ş‚Ì‚Å DSV ‚Í•K‚¸ŠO‚·j----
+    // ---- ä½è§£åƒåº¦ fog ä½œæˆï¼ˆDepthSRV ã‚’èª­ã‚€ã®ã§ DSV ã¯å¿…ãšå¤–ã™ï¼‰----
     {
         ID3D11RenderTargetView* rtv = sFogLowRTV.Get();
         sCtx->OMSetRenderTargets(1, &rtv, nullptr);
@@ -429,9 +468,9 @@ void SkyFogPass::DrawFog()
         sCtx->PSSetShaderResources(1, 2, nulls);
     }
 
-    // ---- ‡¬isavedRTV ‚É–ß‚µ‚ÄAfog ‚ğƒAƒ‹ƒtƒ@ƒuƒŒƒ“ƒhj----
+    // ---- åˆæˆï¼ˆsavedRTV ã«æˆ»ã—ã¦ã€fog ã‚’ã‚¢ãƒ«ãƒ•ã‚¡ãƒ–ãƒ¬ãƒ³ãƒ‰ï¼‰----
     {
-        // ‚±‚±‚à DepthSRV ‚ğ“Ç‚Ş‚Ì‚Å DSV ‚ÍŠO‚·
+        // ã“ã“ã‚‚ DepthSRV ã‚’èª­ã‚€ã®ã§ DSV ã¯å¤–ã™
         sCtx->OMSetRenderTargets(1, &savedRTV, nullptr);
 
         D3D11_VIEWPORT vp{};
@@ -472,7 +511,7 @@ void SkyFogPass::DrawFog()
         sCtx->PSSetShaderResources(3, 3, nulls);
     }
 
-    // ‘Ş”ğ‚µ‚Ä‚¢‚½RTV/DSV‚ğ–ß‚·i‚±‚ÌŒã‚ÌUI/ƒfƒoƒbƒO‚ª‰ó‚ê‚È‚¢j
+    // é€€é¿ã—ã¦ã„ãŸRTV/DSVã‚’æˆ»ã™ï¼ˆã“ã®å¾Œã®UI/ãƒ‡ãƒãƒƒã‚°ãŒå£Šã‚Œãªã„ï¼‰
     sCtx->OMSetRenderTargets(1, &savedRTV, savedDSV);
 
     if (savedRTV) savedRTV->Release();

@@ -99,8 +99,8 @@ private:
     }
 
 private:
-    CSprite  m_Sprite{};
     Vector2  m_SizePx = Vector2(0, 0);
+    CSprite  m_Sprite{};
 
     UIAnchor m_Anchor = UIAnchor::Center;
     Vector2  m_PosPx = Vector2(0, 0);   // アンカーからのオフセット(px)

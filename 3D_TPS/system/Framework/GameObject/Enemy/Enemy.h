@@ -9,6 +9,7 @@ class EnemyAIComponent;
 class Terrain;
 class StaticMeshCollider;
 class EnemyHeadIconComponent;
+class BillboardSpriteRenderer;
 
 /*
 * @brief	敵クラス
@@ -56,6 +57,7 @@ private:
 	StaticMeshCollider* m_pTerrainCollider;
 	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
+	BillboardSpriteRenderer* m_Billboard = nullptr;
 	EnemyHeadIconComponent* m_HeadIcon = nullptr;
 
 	std::vector<Vector3> m_RequestedWayPoints; // シーンなど外部から指定された巡回点

@@ -7,10 +7,8 @@
 #include "system/DebugUI.h"
 #include "system/utility.h"
 #include "system/AimOrientation.h"
-
+#include "system/Framework/Component/UI/UIImageComponent.h"
 #include "ResultScene.h"
-
-
 
 /**
  * @brief コンストラクタ
@@ -41,18 +39,6 @@ void ResultScene::Update(const float deltatime)
  */
 void ResultScene::Draw(void)
 {
-
-	// 描画時に使用する行列にまとめる
-	m_mtxWorld = Matrix4x4::Identity;
-
-	Renderer::SetWorldMatrix(&m_mtxWorld);
-
-	// タイトル画像の描画
-	Vector3 pos = Vector3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 1.0f);
-	Vector3 rot = Vector3(0.0f, 0.0f, 0.0f);
-	Vector3 scale = Vector3(1.0f, 1.0f, 1.0f);
-	m_ResultImage->Draw(scale, rot, pos);
-	//m_ResultImage->Draw(m_mtxWorld);
 }
 
 /**
@@ -61,8 +47,41 @@ void ResultScene::Draw(void)
 void ResultScene::Init(ObjectManager* _Mgr)
 {
 
-	// リザルト画像の生成
-	m_ResultImage = std::make_unique<CSprite>(SCREEN_WIDTH, SCREEN_HEIGHT, "assets/texture/Images/GameOver.jpg");
+	m_pObjectManager = _Mgr;
+
+	ResultType t = ResultType::None;
+	if (m_pObjectManager) t = m_pObjectManager->GetGameResult();
+
+	const char* tex = "assets/texture/default.png"; // デフォルト
+	if (t == ResultType::Clear)  tex = "assets/texture/Images/GameClear.jpg";
+	if (t == ResultType::Found)  tex = "assets/texture/Images/GameOver.jpg";
+	if (t == ResultType::TimeUp) tex = "assets/texture/Images/TimeUp.jpg";
+
+	// UI専用オブジェクト
+	auto* uiObj = m_pObjectManager->Instantiate<GameObject>(
+		"UI_TitleLogo",
+		Tag::Object,              // Tag::UI があるならそれでもOK
+		Transform::One()
+	);
+
+	UIImageComponent* img = uiObj->AddComponent<UIImageComponent>(
+		"Image",
+		tex
+	);
+
+	// UITransform（内包Rect）をセット
+	auto& r = img->Rect();
+
+	// 画面中央に置く
+	r.anchor = { 1.0f, 0.f };          // 基準点：画面中央
+	r.anchoredPosPx = { 0.0f, 0.0f };   // 基準点からの差分(px)
+	r.sizePx = { SCREEN_WIDTH, SCREEN_HEIGHT };      // 表示サイズ(px)
+	r.pivot = { 0.5f, 0.5f };          // 自分の中心を基準
+	r.rotZRad = 0.0f;
+
+	r.layer = 100;
+	r.order = 0;
+	r.visible = true;
 }
 
 /**

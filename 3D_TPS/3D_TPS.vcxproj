@@ -205,8 +205,9 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h" />
     <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
-    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h" />
+    <ClInclude Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.h" />
     <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />
     <ClInclude Include="system\Framework\Component\Throw\ThrowComponent.h" />
     <ClInclude Include="system\Framework\Component\UI\UIImageComponent.h" />
@@ -221,6 +222,7 @@
     <ClInclude Include="system\Framework\GameObject\StreetLight\StreetLight.h" />
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
+    <ClInclude Include="system\Framework\Game\GameResult.h" />
     <ClInclude Include="system\Framework\Graphics\GBuffer.h" />
     <ClInclude Include="system\Framework\LightSystem\LightSystem.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
@@ -413,8 +415,9 @@
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.cpp" />
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
-    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Transform\Transform.cpp" />

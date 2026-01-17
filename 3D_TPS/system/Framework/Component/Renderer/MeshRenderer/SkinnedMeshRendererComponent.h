@@ -38,7 +38,8 @@ public:
 
     void SetAnimator(SkinnedAnimationComponent* anim) { m_Anim = anim; }
 
-    bool GetRenderInfo(RenderInfo& outInfo) override;
+    //bool GetRenderInfo(RenderInfo& outInfo) override;
+	void CollectRenderPackets(std::vector<RenderPacket>& out) override;
 
 private:
     void BuildDrawItems(const class CStaticMeshRenderer& r);

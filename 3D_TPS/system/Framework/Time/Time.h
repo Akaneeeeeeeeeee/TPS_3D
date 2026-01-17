@@ -19,7 +19,6 @@ public:
     {
         DebugUI::RedistDebugFunction(std::bind(&Time::DebugUI, this));
 	}
-    float GetTimeScale() const { return m_TimeScale; }
     void DebugUI(void)
     {
         ImGui::Begin("Time Settings");
@@ -49,6 +48,7 @@ public:
     float Totaltime(void) const { return m_TotalTime; }
     float UnscaledTotaltime(void) const { return m_UnscaledTotalTime; }
 
+    float GetTimeScale() const { return m_TimeScale; }
     void SetTimeScale(float scale) {
         m_TimeScale = std::max(scale, 0.0f);
     }

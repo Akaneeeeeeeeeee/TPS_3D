@@ -3,6 +3,7 @@
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/Factory/GameObjectFactory.h"
+#include "system/Framework/Game/GameResult.h"
 
 /**
  * @brief オブジェクトを管理するクラス
@@ -74,8 +75,14 @@ public:
 
 	void DestroySceneObjects(const std::string& sceneName);
 
+	void SetGameResult(ResultType t) { m_Result.type = t; }
+	ResultType GetGameResult() const { return m_Result.type; }
+	void ClearGameResult() { m_Result = {}; }
+
 private:
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
+
+	GameResult m_Result{};
 
 	GameObjectFactory* m_ObjectFactory;
 	std::string m_CurrentSceneName;		// 「今のシーン名」

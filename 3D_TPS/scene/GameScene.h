@@ -164,8 +164,9 @@ private:
 	bool m_IsGameOver = false;
 
 	// ƒvƒŒƒCƒ„[‚ğŒ©‚Â‚¯‚½“G
-	Enemy* m_FoundByEnemy = nullptr;
-	bool   m_CameraFocusIssued = false;
+	Enemy*	m_FoundByEnemy = nullptr;
+	bool	m_CameraFocusIssued = false;
+	bool	m_InFoundSequence = false;
 };
 
 REGISTER_SCENE(GameScene)

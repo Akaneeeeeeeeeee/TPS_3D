@@ -237,6 +237,7 @@ public:
     static void SetFillMode(D3D11_FILL_MODE FillMode);
 
     static void SetSpotLights(const SpotLightGPU* lights, int count);
+	static ID3D11Buffer* GetSpotLightBuffer() { return m_SpotLightBuffer.Get(); }
 
     static LIGHT GetLight();
     static const Matrix4x4& GetViewMatrix() { return m_CurrentView; }

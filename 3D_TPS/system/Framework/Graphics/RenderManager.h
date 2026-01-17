@@ -31,28 +31,33 @@ public:
 	void Uninit(void);			//! 終了処理
 
 	void StartRender(void);		//! 描画開始処理
-	void Render(const RenderInfo& info);	//! 描画コンポーネント1つ分の描画(これをinfoコンテナ数分ループさせる)
-	void RenderAll(void);		//! 登録されている全ての描画コンポーネントを描画
-	void EndRender(void);		//! 描画終了処理
-
+	//void Render(const RenderInfo& info);	//! 描画コンポーネント1つ分の描画(これをinfoコンテナ数分ループさせる)
+	//void RenderAll(void);		//! 登録されている全ての描画コンポーネントを描画
 	void RenderDeferred(void);   // GBuffer→Lighting→Forward
-
-	void CollectRenderInfo(void);	//! 登録されている全ての描画コンポーネントから描画情報を収集
+	void CollectRenderPackets(void);
+	//void RenderOverlayWorldPass(void);
+	//void RenderOverlay2DPass();
+	void EndRender(void);		//! 描画終了処理
 
 	// 描画コンポーネントの登録・解除
 	void Register(IRenderer* component);
 	void Unregister(IRenderer* component);
 
 	void InitDeferredShaders(void);
-	void RenderTransparentForwardPass();
+
 private:
 	void RenderGBufferPass(void);
 	void RenderLightingPass(void);
+	void RenderTransparentForwardPass(void);
+
+	// 共通のメッシュ描画
+	void DrawMeshForward(const MeshDraw& md);
+	void DrawMeshGBuffer(const MeshDraw& md);
 
 private:
 	GraphicsDevice* m_pGraphicsDevice = nullptr;	//! GraphicsDeviceへのポインタ
 	std::vector<IRenderer*> m_RenderComponents;		//! レンダラー系コンポーネントのリスト
-	std::vector<RenderInfo> m_RenderInfos;			//! 描画情報のリスト(毎フレーム取得)
+	std::vector<RenderPacket> m_Packets;			//! 描画情報のリスト(毎フレーム取得)
 
 	GBuffer m_GBuffer;
 

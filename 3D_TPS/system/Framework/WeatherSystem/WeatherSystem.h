@@ -65,6 +65,9 @@ struct SunState
     // 例: 600.0f → 現実 10 分でゲーム内 24 時間が 1 周
     float   dayLengthSec = 600.0f;
 
+    // 太陽の回り込み（東西方向）
+    float azimuthRad = 45.0f * (PI / 180.0f);
+
     // 「世界 → 太陽」方向ベクトル（空のどちら側に太陽があるか）
     Vector3 dirToSun = Vector3(0.0f, 1.0f, 0.0f);
 
@@ -104,7 +107,7 @@ inline WeatherParticleParams MakePreset(WeatherType type)
         p.rainDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 
         p.sandEmitRate = 0.0f;
-        p.fogDensity = 0.002f;
+        p.fogDensity = 0.001f;
         p.fogColor = XMFLOAT3(0.7f, 0.7f, 0.8f);
         break;
 
@@ -117,7 +120,7 @@ inline WeatherParticleParams MakePreset(WeatherType type)
         p.rainDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 
         p.sandEmitRate = 0.0f;
-        p.fogDensity = 0.006f;
+        p.fogDensity = 0.004f;
         p.fogColor = XMFLOAT3(0.6f, 0.6f, 0.7f);
         break;
 
@@ -134,7 +137,7 @@ inline WeatherParticleParams MakePreset(WeatherType type)
         p.sandMinHeight = 0.0f;
         p.sandMaxHeight = 300.0f;
 
-        p.fogDensity = 0.01f;
+        p.fogDensity = 0.004f;
         p.fogColor = XMFLOAT3(0.8f, 0.7f, 0.4f);
         break;
     }

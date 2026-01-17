@@ -1,4 +1,4 @@
-#include "StateIconComponent.h"
+#include "EnemyHeadIconComponent.h"
 #include "system/renderer.h"
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/Component/AI/EnemyAIComponent.h"
@@ -105,17 +105,4 @@ void EnemyHeadIconComponent::Update(const float /*dt*/)
 
 void EnemyHeadIconComponent::Draw(void) const
 {
-    if (!m_pCamera) return;
-
-    const IconKind kind = PickIcon();
-    const CSprite* sp = GetSprite(kind);
-    if (!sp) return;
-
-    Renderer::SetDepthEnable(false);
-    Renderer::SetBlendState(BS_ALPHABLEND);
-    Renderer::DisableCulling(false);
-    sp->Draw(m_World, m_pCamera->GetViewMatrix(), m_pCamera->GetProjMatrix());
-    Renderer::DisableCulling(true);
-    Renderer::SetBlendState(BS_NONE);
-    Renderer::SetDepthEnable(true);
 }

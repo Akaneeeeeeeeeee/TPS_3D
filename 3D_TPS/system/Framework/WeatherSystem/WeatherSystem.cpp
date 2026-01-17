@@ -353,10 +353,16 @@ void WeatherSystem::UpdateSunDirection()
     float angle = (m_Sun.timeOfDayHours / 24.0f) * DirectX::XM_2PI
         - DirectX::XM_PIDIV2;
 
+    // elevation（高さ）と horizontal（地平面成分）
+    float y = std::sinf(angle);   // 高さ（-1..+1）
+    float h = std::cosf(angle);   // 地平面成分（-1..+1）
+
+    const float az = m_Sun.azimuthRad; // 方位角
+
     Vector3 dirToSun;
-    dirToSun.x = 0.0f;
-    dirToSun.y = std::sinf(angle); // 高さ
-    dirToSun.z = std::cosf(angle); // 前後方向
+    dirToSun.x = h * std::sinf(az);
+    dirToSun.z = h * std::cosf(az);
+    dirToSun.y = y;
     dirToSun.Normalize();
 
     // 空に向かう向き
@@ -452,7 +458,7 @@ void WeatherSystem::Init(void)
 	C3DShape::Init();
 	DebugUI::RedistDebugFunction([this]() { this->DebugImGui(); });
 
-    // ★ここで初期化（Renderer::Init の後に呼ばれる前提）
+    // ここで初期化（Renderer::Init の後に呼ばれる前提）
     SkyFogPass::Init(
         Renderer::GetDevice(),
         Renderer::GetDeviceContext(),

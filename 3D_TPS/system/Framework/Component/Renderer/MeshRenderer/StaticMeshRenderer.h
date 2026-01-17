@@ -37,7 +37,8 @@ public:
     // 半透明にしたい場合（とりあえずここで切替）
     void SetTransparent(bool isTransparent) { m_IsTransparent = isTransparent; }
 
-    bool GetRenderInfo(RenderInfo& outInfo) override;
+    //bool GetRenderInfo(RenderInfo& outInfo) override;
+	void CollectRenderPackets(std::vector<RenderPacket>& out) override;
 
 private:
     // サブセット情報から DrawItem を組み立てる

@@ -73,12 +73,6 @@
     <Filter Include="ソース ファイル\MyFramework\Component\IComponent">
       <UniqueIdentifier>{74b4ad61-0dc9-41ad-ac53-0b41c803476c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Component\IRenderer">
-      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Component\MeshRenderer">
-      <UniqueIdentifier>{79e534d6-6e10-4f75-a981-4e229bdbdc7c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\GraphicsSystem">
       <UniqueIdentifier>{d3c78b8c-6a5d-4623-b1e4-b324918a8282}</UniqueIdentifier>
     </Filter>
@@ -192,6 +186,9 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\EngineSystem">
       <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Renderer">
+      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -406,16 +403,13 @@
       <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\IRenderer\IRenderer.h">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderManager.h">
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\GraphicsDevice.h">
       <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.h">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClInclude>
     <ClInclude Include="system\MyIndexBuffer.h">
       <Filter>ソース ファイル\MyFramework\Buffer</Filter>
@@ -565,7 +559,7 @@
       <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Light\SpotLightComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\Light</Filter>
@@ -606,7 +600,7 @@
     <ClInclude Include="system\Framework\Time\CountDownTimer.h">
       <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h">
+    <ClInclude Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\UIManager\UIManager.h">
@@ -627,8 +621,17 @@
     <ClInclude Include="system\Framework\Graphics\GBuffer.h">
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.h">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Game\GameResult.h">
+      <Filter>ソース ファイル\MyFramework\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -792,16 +795,13 @@
       <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\IRenderer\IRenderer.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Graphics\RenderManager.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Cube\Cube.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\Box</Filter>
@@ -912,7 +912,7 @@
       <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Light\SpotLightComponent.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Light</Filter>
@@ -944,7 +944,7 @@
     <ClCompile Include="system\DirectWrite.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp">
+    <ClCompile Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.cpp">
       <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\UIManager\UIManager.cpp">
@@ -963,7 +963,13 @@
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\BillboardSpriteRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@ class CSprite;
 class EnemyHeadIconComponent final : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(EnemyHeadIconComponent, IComponent)
     EnemyHeadIconComponent();
     ~EnemyHeadIconComponent() override;
 
@@ -36,6 +37,10 @@ public:
 
     // ※ IComponent に Draw が無い場合は、下の「呼び出し口」案のどれかを使う
     void Draw(void) const;
+
+    bool IsVisible() const { return PickIcon() != IconKind::None; }
+    const CSprite* GetCurrentSprite() const { return GetSprite(PickIcon()); }
+    const Matrix4x4& GetWorld() const { return m_World; }
 
 private:
     enum class IconKind { None, Question, Alert };

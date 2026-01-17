@@ -5,7 +5,10 @@
 #include "system/Framework/Window/Window.h"
 #include "system/CShader.h"
 #include "system/CTexture.h"
+#include "system/CMaterial.h"
 #include "system/Framework/AssetManager/AssetManager.h"
+#include "renderer.h"
+#include "BoneCombMatrix.h"
 
 static ComPtr<ID3DBlob> Compile(const wchar_t* path, const char* entry, const char* target)
 {
@@ -103,7 +106,7 @@ void RenderManager::Uninit(void)
 {
 	// 描画コンポーネントリストと描画情報コンテナを単純にクリア（各コンポーネントのUninitは呼ばない）
 	m_RenderComponents.clear();
-	m_RenderInfos.clear();
+	m_Packets.clear();
 
 	// 依存性の解消
 	m_pGraphicsDevice = nullptr;
@@ -137,109 +140,92 @@ void RenderManager::StartRender(void)
 }
 
 // 描画情報収集
-void RenderManager::CollectRenderInfo(void)
+//void RenderManager::CollectRenderInfo(void)
+//{
+//	m_RenderInfos.clear(); // 前のフレームの描画情報をクリア
+//	for (auto& component : m_RenderComponents)
+//	{
+//		// コンポーネントが存在し、有効な場合のみ描画情報を取得
+//		if (component && component->GetIsValid())
+//		{
+//			RenderInfo info;
+//			// 取得できた場合は描画情報リストに追加
+//			if (component->GetRenderInfo(info))
+//			{
+//				m_RenderInfos.push_back(info); // 描画情報をリストに追加
+//			}
+//		}
+//	}
+//}
+
+void RenderManager::CollectRenderPackets()
 {
-	m_RenderInfos.clear(); // 前のフレームの描画情報をクリア
-	for (auto& component : m_RenderComponents)
+	m_Packets.clear();
+	for (auto* c : m_RenderComponents)
 	{
-		// コンポーネントが存在し、有効な場合のみ描画情報を取得
-		if (component && component->GetIsValid())
-		{
-			RenderInfo info;
-			// 取得できた場合は描画情報リストに追加
-			if (component->GetRenderInfo(info))
-			{
-				m_RenderInfos.push_back(info); // 描画情報をリストに追加
-			}
-		}
+		if (!c || !c->GetIsValid()) continue;
+		c->CollectRenderPackets(m_Packets);
 	}
 }
 
 // 描画コンポーネント1つ分の描画
 //void RenderManager::Render(const RenderInfo& info)
 //{
-//	auto context = m_pGraphicsDevice->GetContext();
-//	// 頂点バッファの設定
+//	if (!info.vertexBuffer || !info.indexBuffer || !info.items || !info.shader) { return; }
+//
+//	//auto* ctx = m_pGraphicsDevice->GetContext();
+//	auto* ctx = Renderer::GetDeviceContext();
+//
 //	UINT offset = 0;
-//	context->IASetVertexBuffers(0, 1, &info.vertexBuffer, &info.stride, &offset);
-//	// インデックスバッファの設定
-//	context->IASetIndexBuffer(info.indexBuffer, info.indexFormat, 0);
-//	// ワールド変換行列をシェーダーに渡す（将来: 定数バッファにまとめて渡す）
-//	// 将来: シェーダーマネージャーからシェーダーを取得してセットする
-//	if (info.vs) {
-//		info.vs->Bind();
+//	ctx->IASetPrimitiveTopology(info.topology);
+//	ctx->IASetVertexBuffers(0, 1, &info.vertexBuffer, &info.stride, &offset);
+//	ctx->IASetIndexBuffer(info.indexBuffer, info.indexFormat, 0);
+//
+//	// シェーダセット（VS/PS/GS/レイアウト）
+//	info.shader->SetGPU();
+//
+//	// world
+//	Matrix4x4 w = info.world;
+//	Renderer::SetWorldMatrix(&w);
+//
+//	// phaseのみ
+//	if (info.phase == RenderPhase::OpaqueGBuffer)
+//	{
+//		Renderer::SetDepthEnable(true);
+//		Renderer::SetBlendState(BS_NONE);
 //	}
-//	if (info.ps) {
-//		info.ps->Bind();
+//
+//	for (const auto& di : *info.items)
+//	{
+//		if (di.bones)	 di.bones->SetGPU();	// b5
+//		if (di.material) di.material->SetGPU(); // b3
+//		if (di.diffuse)  di.diffuse->SetGPU();  // SRV
+//
+//		ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
 //	}
-//	// 描画コール
-//	context->DrawIndexed(info.indexCount, 0, 0);
-//	// シェーダーのアンバインド（将来: シェーダーマネージャーにアンバインド処理を追加する）
-//	if (info.vs) {
-//		info.vs->Unbind();
-//	}
-//	if (info.ps) {
-//		info.ps->Unbind();
+//}
+//
+//
+//
+///// <summary>
+///// @brief 登録されている全ての描画コンポーネントを描画する
+///// 各コンポーネントのRender()メソッドを呼び出すことで、実際の描画処理を行う
+///// 
+///// 所有オブジェクトからタグを見て描画順変えれそう
+///// 描画順のソートもここで行うことができるが、現在は単純に登録された順に描画している
+///// </summary>
+//void RenderManager::RenderAll(void)
+//{
+//	// 描画情報リストをループして各コンポーネントの描画を実行
+//	for (auto& info : m_RenderInfos)
+//	{
+//		this->Render(info);
 //	}
 //}
 
-void RenderManager::Render(const RenderInfo& info)
-{
-	if (!info.vertexBuffer || !info.indexBuffer || !info.items || !info.shader) { return; }
-
-	//auto* ctx = m_pGraphicsDevice->GetContext();
-	auto* ctx = Renderer::GetDeviceContext();
-
-	UINT offset = 0;
-	ctx->IASetPrimitiveTopology(info.topology);
-	ctx->IASetVertexBuffers(0, 1, &info.vertexBuffer, &info.stride, &offset);
-	ctx->IASetIndexBuffer(info.indexBuffer, info.indexFormat, 0);
-
-	// シェーダセット（VS/PS/GS/レイアウト）
-	info.shader->SetGPU();
-
-	// world
-	Matrix4x4 w = info.world;
-	Renderer::SetWorldMatrix(&w);
-
-	// phaseのみ
-	if (info.phase == RenderPhase::OpaqueGBuffer)
-	{
-		Renderer::SetDepthEnable(true);
-		Renderer::SetBlendState(BS_NONE);
-	}
-
-	for (const auto& di : *info.items)
-	{
-		if (di.bones)	 di.bones->SetGPU();	// b5
-		if (di.material) di.material->SetGPU(); // b3
-		if (di.diffuse)  di.diffuse->SetGPU();  // SRV
-
-		ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
-	}
-}
-
-
-
-/// <summary>
-/// @brief 登録されている全ての描画コンポーネントを描画する
-/// 各コンポーネントのRender()メソッドを呼び出すことで、実際の描画処理を行う
-/// 
-/// 所有オブジェクトからタグを見て描画順変えれそう
-/// 描画順のソートもここで行うことができるが、現在は単純に登録された順に描画している
-/// </summary>
-void RenderManager::RenderAll(void)
-{
-	// 描画情報リストをループして各コンポーネントの描画を実行
-	for (auto& info : m_RenderInfos)
-	{
-		this->Render(info);
-	}
-}
-
 void RenderManager::RenderDeferred()
 {
-	CollectRenderInfo();
+	CollectRenderPackets();
 
 	// 2) 不透明を書き溜め
 	RenderGBufferPass();
@@ -261,32 +247,13 @@ void RenderManager::RenderGBufferPass()
 	Renderer::SetBlendState(BS_NONE);
 
 	// infoを回す
-	for (const auto& ri : m_RenderInfos)
+	for (const auto& p : m_Packets)
 	{
-		if (ri.phase != RenderPhase::OpaqueGBuffer) continue;
-		if (!ri.vertexBuffer || !ri.indexBuffer || !ri.items) continue;
+		if (p.phase != RenderPhase::OpaqueGBuffer) continue;
+		if (p.type != DrawType::Mesh) continue;
 
-		UINT offset = 0;
-		ctx->IASetPrimitiveTopology(ri.topology);
-		ctx->IASetVertexBuffers(0, 1, &ri.vertexBuffer, &ri.stride, &offset);
-		ctx->IASetIndexBuffer(ri.indexBuffer, ri.indexFormat, 0);
-
-		// 既存の b0/b1/b2 を使う（Renderer::SetViewMatrix/SetProjectionMatrix はどこかで済んでる前提）
-		Matrix4x4 w = ri.world;
-		Renderer::SetWorldMatrix(&w);
-
-		for (const auto& di : *ri.items)
-		{
-			// ここで静的/スキンを切替
-			if (di.bones) m_pGBufferSkin->SetGPU();
-			else          m_pGBufferStatic->SetGPU();
-
-			if (di.bones)    di.bones->SetGPU();     // b5
-			if (di.material) di.material->SetGPU();  // b3
-			if (di.diffuse)  di.diffuse->SetGPU();   // t0 (TextureEnableもb3)
-
-			ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
-		}
+		const MeshDraw& md = std::get<MeshDraw>(p.payload);
+		DrawMeshGBuffer(md);
 	}
 
 	// backbufferへ戻す（Clearしない）
@@ -361,8 +328,6 @@ void RenderManager::RenderLightingPass()
 	Renderer::SetDepthEnable(true);
 }
 
-
-
 // 描画終了処理
 void RenderManager::EndRender(void)
 {
@@ -382,13 +347,90 @@ void RenderManager::RenderTransparentForwardPass()
 	Renderer::SetBlendState(BS_ALPHABLEND);
 
 	// 透明だけ描く
-	for (const auto& ri : m_RenderInfos)
+	for (const auto& p : m_Packets)
 	{
-		if (ri.phase != RenderPhase::TransparentForward) continue;
-		Render(ri); // 既存のRenderでOK（Blend/Depthは上で固定）
+		if (p.phase != RenderPhase::TransparentForward) continue;
+		if (p.type != DrawType::Mesh) continue;
+
+		const MeshDraw& md = std::get<MeshDraw>(p.payload);
+		DrawMeshForward(md);
 	}
 
 	// 深度テスト/書き込みON、ブレンド無しに戻す
 	Renderer::SetDepthEnable(true);
 	Renderer::SetBlendState(BS_NONE);
+}
+
+void RenderManager::DrawMeshGBuffer(const MeshDraw& md)
+{
+	if (!md.vb || !md.ib) return;
+
+	auto* ctx = Renderer::GetDeviceContext();
+
+	UINT offset = 0;
+	ctx->IASetPrimitiveTopology(md.topology);
+	ctx->IASetVertexBuffers(0, 1, &md.vb, &md.stride, &offset);
+	ctx->IASetIndexBuffer(md.ib, md.indexFormat, 0);
+
+	// skinned判定（itemsにbonesがあるか）
+	bool isSkinned = false;
+	for (const auto& di : md.items) { if (di.bones) { isSkinned = true; break; } }
+	(isSkinned ? m_pGBufferSkin : m_pGBufferStatic)->SetGPU();
+
+	Matrix4x4 w = md.world;
+	Renderer::SetWorldMatrix(&w);
+
+	for (const auto& di : md.items)
+	{
+		if (di.bones)    di.bones->SetGPU();
+		if (di.material) di.material->SetGPU();
+		if (di.diffuse)  di.diffuse->SetGPU();
+		ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
+	}
+}
+
+void RenderManager::DrawMeshForward(const MeshDraw& md)
+{
+	if (!md.vb || !md.ib || !md.shader) return;
+
+	auto* ctx = Renderer::GetDeviceContext();
+
+	// IA
+	UINT offset = 0;
+	ctx->IASetPrimitiveTopology(md.topology);
+	ctx->IASetVertexBuffers(0, 1, &md.vb, &md.stride, &offset);
+	ctx->IASetIndexBuffer(md.ib, md.indexFormat, 0);
+
+	// Forward用のシェーダ（通常のVS/PS/GS/レイアウト）
+	// ※CShader::SetGPU がGSもセットするなら、前のパスの残骸があっても上書きされる
+	md.shader->SetGPU();
+
+	// World
+	Matrix4x4 w = md.world;
+	Renderer::SetWorldMatrix(&w);
+
+	// サブセット描画
+	// items は std::span<const DrawItem> 前提（あなたの最新版）
+	for (const auto& di : md.items)
+	{
+		if (di.bones)
+		{
+			// Skin: VS b5
+			di.bones->SetGPU();
+		}
+
+		if (di.material)
+		{
+			// Material: b3
+			di.material->SetGPU();
+		}
+
+		if (di.diffuse)
+		{
+			// Texture SRV
+			di.diffuse->SetGPU();
+		}
+
+		ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
+	}
 }

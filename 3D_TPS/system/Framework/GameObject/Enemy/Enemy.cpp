@@ -9,13 +9,14 @@
 #include "system/RandomEngine.h"
 #include "Framework/Component/AI/EnemyHearingComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
-#include "Framework/Component/StateIcon/StateIconComponent.h"
+#include "Framework/Component/StateIcon/EnemyHeadIconComponent.h"
 #include "system/meshmanager.h"
 #include "system/Framework/Time/Time.h"
 #include "system/imgui/imgui.h"
 #include "system/DebugUI.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
+#include "Framework/Component/Renderer/SpriteRenderer/BillboardSpriteRenderer.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -255,6 +256,7 @@ void Enemy::InitComponents()
 
 	// EnemyHeadIconComponent
 	{
+		m_Billboard = AddComponent<BillboardSpriteRenderer>("Billboard");
 		m_HeadIcon = AddComponent<EnemyHeadIconComponent>("HeadIcon");
 	}
 }

@@ -197,9 +197,12 @@ void GameScene::Update(const float deltatime)
 				m_CameraFocusIssued = true;
 				m_FoundByEnemy = enemy;
 
+				m_InFoundSequence = true;
+				if (m_pObjectManager && m_pObjectManager->GetGameResult() == ResultType::None)
+					m_pObjectManager->SetGameResult(ResultType::Found);
+
 				Vector3 t = enemy->GetTransform().GetPosition();
 				t.y += 140.0f; // 敵の頭あたり（調整）
-
 				m_player->StartForceLookAt(t, /*turnSpeed=*/20.0f, /*freezePos=*/true);
 				break;
 			}
@@ -207,33 +210,53 @@ void GameScene::Update(const float deltatime)
 	}
 
 	// --- 2) 射撃モーションが終わったら遷移 ---
-	for (auto& enemy : m_enemies)
+	if (m_InFoundSequence)
 	{
-		if (!enemy) continue;
-
-		if (enemy->IsSceneTransitionRequested())
+		if (m_FoundByEnemy && m_FoundByEnemy->IsSceneTransitionRequested())
 		{
 			SetChangeScene(true);
 			SetNextSceneName("ResultScene");
-			return;
+		}
+		return; // Found中はここで終わり（制限時間も止まる）
+	}
+	else
+	{
+		for (auto& enemy : m_enemies)
+		{
+			if (!enemy) continue;
+			if (enemy->IsSceneTransitionRequested())
+			{
+				SetChangeScene(true);
+				SetNextSceneName("ResultScene");
+				return;
+			}
 		}
 	}
+
+	// Found 演出中は制限時間を止め、時間切れ/クリア判定もしない
+	if (m_InFoundSequence) { return; }
 
 	// タイマー更新（dt=0 なら止まる）
 	m_Limit.Update(deltatime);
 
-	// 時間切れ
-	if (m_Limit.IsTimeout())
+	// ゴール到達判定（クリア優先）
+	if (m_Goal->IsReached())
 	{
-		m_IsGameOver = true;
+		if (m_pObjectManager) m_pObjectManager->SetGameResult(ResultType::Clear);
+
 		SetChangeScene(true);
-		SetNextSceneName("ResultScene"); // ゲームオーバー先に合わせる
+		SetNextSceneName("ResultScene");
 		return;
 	}
 
-	// ゴール到達判定
-	if (m_Goal->IsReached())
+	// 時間切れ
+	if (m_Limit.IsTimeout())
 	{
+		// クリアが既に確定してるなら上書きしない（同フレーム対策）
+		if (m_pObjectManager && m_pObjectManager->GetGameResult() != ResultType::Clear)
+			m_pObjectManager->SetGameResult(ResultType::TimeUp);
+
+		m_IsGameOver = true;
 		SetChangeScene(true);
 		SetNextSceneName("ResultScene");
 		return;
@@ -245,7 +268,6 @@ void GameScene::Update(const float deltatime)
 		m_RequestRebuildEnemies = false;
 		RebuildEnemies();
 	}
-
 }
 
 
@@ -305,7 +327,13 @@ void GameScene::Draw(void)
 void GameScene::Init(ObjectManager* mgr)
 {
 	m_pObjectManager = mgr;
+	// 前回のゲーム結果をクリア
+	if (m_pObjectManager) m_pObjectManager->ClearGameResult();
 	m_IsGameOver = false;
+	m_InFoundSequence = false;
+	m_CameraFocusIssued = false;
+	m_FoundByEnemy = nullptr;
+	m_RequestRebuildEnemies = false;
 	m_Limit.Start(120.0f);
 
 	// ローカル軸表示用線分の初期化
@@ -356,13 +384,14 @@ void GameScene::Init(ObjectManager* mgr)
 		}
 		
 		// 障害物
-		auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
-		//// 落下テスト用
-		////obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
-		////obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
-		obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
-		obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
-		m_obstacles[0] = obstacleObj;
+		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
+
+		// 落下テスト用
+		//obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
+		//obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
+		//obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
+		//obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
+		//m_obstacles[0] = obstacleObj;
 
 		// 敵
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
@@ -546,6 +575,7 @@ void GameScene::DrawUI(void)
 
 	m_pDirectWrite->DrawString(timeBuf, { 20.0f, 20.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
 
+#if _DEBUG
 	// 既存の表示
 	if (m_player)
 	{
@@ -554,4 +584,5 @@ void GameScene::DrawUI(void)
 		swprintf_s(buf, L"Player (%.1f, %.1f, %.1f)", p.x, p.y, p.z);
 		m_pDirectWrite->DrawString(buf, { 20.0f, 50.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
 	}
+#endif
 }
