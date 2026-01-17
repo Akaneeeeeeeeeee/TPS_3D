@@ -9,12 +9,14 @@
 #include "system/RandomEngine.h"
 #include "Framework/Component/AI/EnemyHearingComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
-#include "Framework/Component/StateIcon/StateIconComponent.h"
+#include "Framework/Component/StateIcon/EnemyHeadIconComponent.h"
 #include "system/meshmanager.h"
 #include "system/Framework/Time/Time.h"
 #include "system/imgui/imgui.h"
 #include "system/DebugUI.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
+#include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
+#include "Framework/Component/Renderer/SpriteRenderer/UISpriteRenderer.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
@@ -136,13 +138,13 @@ void Enemy::InitAnimation(void)
 	m_pAnimComp = AddComponent<SkinnedAnimationComponent>("SkinnedAnim");
 
 	SkinnedAnimSetup setup{};
-	setup.meshName = "Akai";
+	setup.meshName = "Solider";
 	setup.shaderName = "animshader";
 
 	setup.clips = {
-		{ AnimType::Idle,               "Akai_Idle",    "Akai_Idle",    0, 1.0f },
-		{ AnimType::Walk,               "Walking",      "Walking",      0, 1.0f },
-		{ AnimType::Run,                "Akai_Run",     "Akai_Run",     0, 1.0f },
+		{ AnimType::Idle,               "Solider_Idle",    "Solider_Idle",    0, 1.0f },
+		{ AnimType::Walk,               "Solider_Walking", "Solider_Walking",      0, 1.0f },
+		{ AnimType::Run,                "Solider_Run",     "Solider_Run",     0, 1.0f },
 		{ AnimType::Surprise_RightTurn, "Right_Turn",   "Right_Turn",   0, 1.0f },
 		{ AnimType::Surprise_LeftTurn,  "Left_Turn",    "Left_Turn",    0, 1.0f },
 		{ AnimType::LookAround,         "LookAround",   "LookAround",   0, 1.0f },
@@ -150,6 +152,12 @@ void Enemy::InitAnimation(void)
 	};
 
 	m_pAnimComp->SetupFromAssets(setup);
+
+	// 描画（RenderManagerに出す）
+	auto* r = AddComponent<SkinnedMeshRendererComponent>("SkinnedRenderer");
+	r->SetMeshKey("Solider");
+	r->SetShaderKey("animshader");
+	r->SetAnimator(m_pAnimComp);
 }
 
 // ----------------------------------------
@@ -163,13 +171,6 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 		m_EndPos = Vector3(-300.0f, 210.0f, -540.0f);
 		};
 
-	//if (!m_pTerrain)
-	//{
-	//	SetDefaultPatrol();
-	//	m_Transform.SetPosition(m_StartPos);
-	//	return;
-	//}
-
 	// StaticMeshCollider から AABB と高さサンプルを取る
 	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
 	if (!m_pTerrainCollider)
@@ -179,9 +180,9 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 		return;
 	}
 
-#ifdef _DEBUG
-	SetDefaultPatrol();
-#else
+//#ifdef _DEBUG
+//	SetDefaultPatrol();
+//#else
 	Vector3 xzMin, xzMax;
 	if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
 	{
@@ -220,7 +221,7 @@ void Enemy::InitPatrolPoints(RandomEngine& rng)
 	{
 		SetDefaultPatrol();
 	}
-#endif
+//#endif
 
 	// 実際の Transform を開始地点に合わせる
 	m_Transform.SetPosition(m_StartPos);
@@ -253,10 +254,18 @@ void Enemy::InitComponents()
 		hearingComp->SetEnemyAI(m_AIComp);
 	}
 
-	// EnemyHeadIconComponent
+	// EnemyHeadIconComponent + BillboardSpriteRenderer
 	{
 		m_HeadIcon = AddComponent<EnemyHeadIconComponent>("HeadIcon");
+
+		m_UISprite = AddComponent<UISpriteRenderer>("HeadIconRenderer");
+		m_UISprite->SetPhase(RenderPhase::OverlayWorld);
+		m_UISprite->SetSource(m_HeadIcon);
+		m_UISprite->SetDepthTest(false);
+		m_UISprite->SetLayer(0);
+		m_UISprite->SetOrder(0);
 	}
+
 }
 
 void Enemy::Update(const float deltatime)
@@ -459,7 +468,6 @@ void Enemy::SetWayPoints(const Vector3& start, const Vector3& end)
 	}
 }
 
-
 void Enemy::OnFoundPlayer(void)
 {
 	// すでに演出中なら何もしない
@@ -505,8 +513,6 @@ void Enemy::OnFoundPlayer(void)
 	// 3) スローモーション演出
 	Time::GetInstance().SetTimeScale(0.5f);
 }
-
-
 
 void Enemy::DebugImGui(void)
 {

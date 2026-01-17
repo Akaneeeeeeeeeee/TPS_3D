@@ -10,12 +10,14 @@ void CLineMesh::Init(
 	m_direction = direction;
 	m_length = length;
 
-	VERTEX_3D v1{};
+	VERTEX_SKINNED_GPU v1{};
+	//VERTEX_3D v1{};
 	v1.Position = p1;
 	v1.Diffuse = m_color;
 	m_vertices.emplace_back(v1);
 
-	VERTEX_3D v2{};
+	VERTEX_SKINNED_GPU v2{};
+	//VERTEX_3D v2{};
 
 	direction.Normalize();
 

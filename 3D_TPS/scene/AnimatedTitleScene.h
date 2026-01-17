@@ -19,9 +19,7 @@ namespace {
 	static constexpr uint32_t OBSTACLEMAX = 10;
 }
 
-
-
-// AnimatedTitleScene.h か .cpp 内に置いてOK（まずは）
+// タイトル画面の台本制御
 class TitleScript
 {
 public:
@@ -77,10 +75,6 @@ private:
 
 	void StopAndCheckOverWall(void);
 };
-
-
-
-
 
 
 /**

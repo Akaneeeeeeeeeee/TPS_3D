@@ -8,6 +8,7 @@
 class ThrowComponent final : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(ThrowComponent, IComponent)
     void Init() override;
     void Update(float dt) override {};
     void LateUpdate(float dt) override;

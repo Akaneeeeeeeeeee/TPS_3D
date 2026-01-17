@@ -7,6 +7,7 @@
 #include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Sound/SoundWaveVisualizer.h"
 #include "Framework/Time/Time.h"
+#include "system/Framework/WeatherSystem/SkyFogPass.h"
 
 /**
 * @brief
@@ -26,12 +27,12 @@ void Game::Init()
 	// エンジン共通初期化
 	m_Engine.Init();
 	auto& svc = m_Engine.GetServices();
-	
+
 	// ゲーム固有のシステム初期化
 	m_GameFeatures.Init(svc);
 
 	// 初期天候
-	svc.weather.SetWeather(WeatherType::HeavyRain, 0.0f);
+	svc.weather.SetWeather(WeatherType::Clear, 0.0f);
 	svc.physics.SetObjectManager(&m_ObjectManager);
 
 	// ComponentFactory は EngineServices を注入
@@ -42,8 +43,8 @@ void Game::Init()
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーン開始
-	m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
-	//m_SceneManager.Init(&m_ObjectManager, "CollisionTestScene");
+	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	m_SceneManager.Init(&m_ObjectManager, "GameScene");
 
 	// 既存の独立物（統一したいなら EngineSystems 側に寄せる）
 	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&svc.weather);
@@ -104,34 +105,45 @@ void Game::Draw()
 	Renderer::Begin();
 	//m_RenderManager.StartRender();
 
-	// シーンマネージャの描画
-	m_SceneManager.Draw();
+	auto& svc = m_Engine.GetServices();
+	if (auto* cam = svc.camera.GetMain())
+	{
+		Matrix4x4 view = cam->GetViewMatrix();
+		Matrix4x4 proj = cam->GetProjMatrix();
+		/*Renderer::SetViewMatrix(&view);
+		Renderer::SetProjectionMatrix(&proj);*/
+		cam->ApplyCamera();
+	}
 
+	// 1) 空（backbufferへ）
+	svc.weather.DrawAtmospherePreWorld();
+
+	// シーンの描画
+	m_SceneManager.DrawWorld();
 	m_GameFeatures.DrawWorld();
 
-	// todo:ここは後から描画機能に責任を持たせる
-	SoundWaveVisualizer::GetInstance().DrawWorld();
-
-	auto& svc = m_Engine.GetServices();
+	// 天候パーティクル描画
+	svc.weather.DrawParticles();
 
 	// デバッグ用当たり判定描画
 	//svc.physics.DebugDraw();
 
-	svc.weather.DebugDrawParticles();
-	svc.weather.DebugDrawSun();
+	// 2) 遅延描画（GBuffer→Lighting→(透明Forwardは後で)）
+	svc.render.RenderDeferred();
 
-	/*m_RenderManager.CollectRenderInfo();
-	m_RenderManager.RenderAll();*/
+	// 3) 霧（backbufferへ合成）
+	svc.weather.DrawAtmospherePostWorld();
 
-	// デバッグUIの描画
-#ifdef _DEBUG
-	DebugUI::Render();
-#endif // _DEBUG
+	// todo:ここは後から描画機能に責任を持たせる
+	SoundWaveVisualizer::GetInstance().DrawWorld();
 
-	svc.ui.Draw(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-	// UI描画
+	// 4) UI
 	m_SceneManager.DrawUI();
+
+	// 遷移フェードを最後に描く
+	svc.render.RenderOverlay2DPass();
+	m_SceneManager.DrawTransition();
 
 	// ポーズUIを上に重ねる
 	if (m_IsPaused)
@@ -154,7 +166,13 @@ void Game::Draw()
 		// 描画しきった後に切り替え確定
 		m_SceneManager.CommitSceneChange();
 	}
-	
+
+
+	// デバッグUIの描画
+#ifdef _DEBUG
+	DebugUI::Render();
+#endif // _DEBUG
+
 	// レンダリング後処理
 	//m_RenderManager.EndRender();
 	Renderer::End();

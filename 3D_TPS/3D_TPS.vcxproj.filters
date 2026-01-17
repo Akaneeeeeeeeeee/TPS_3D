@@ -73,12 +73,6 @@
     <Filter Include="ソース ファイル\MyFramework\Component\IComponent">
       <UniqueIdentifier>{74b4ad61-0dc9-41ad-ac53-0b41c803476c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Component\IRenderer">
-      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\MyFramework\Component\MeshRenderer">
-      <UniqueIdentifier>{79e534d6-6e10-4f75-a981-4e229bdbdc7c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\GraphicsSystem">
       <UniqueIdentifier>{d3c78b8c-6a5d-4623-b1e4-b324918a8282}</UniqueIdentifier>
     </Filter>
@@ -181,9 +175,6 @@
     <Filter Include="ソース ファイル\MyFramework\Component\Throw">
       <UniqueIdentifier>{1bc930ad-2bf2-49c7-aaba-82022ff02204}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\MyFramework\EngineContext">
-      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\MyFramework\Component\StateIcon">
       <UniqueIdentifier>{1b594347-e51e-4838-9c4f-6d82e0978f04}</UniqueIdentifier>
     </Filter>
@@ -192,6 +183,12 @@
     </Filter>
     <Filter Include="ソース ファイル\MyFramework\Component\UI">
       <UniqueIdentifier>{ceeb3eb0-a07f-4e91-beb2-d49bb0e27345}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\EngineSystem">
+      <UniqueIdentifier>{d84dc098-3de6-473a-8b45-8ba0374c8450}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\Renderer">
+      <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -309,9 +306,6 @@
     <ClInclude Include="system\imgui\imstb_truetype.h">
       <Filter>ソース ファイル\system\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="scene\SkeltalmeshScene.h">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\Window\Window.h">
       <Filter>ソース ファイル\MyFramework\Window</Filter>
     </ClInclude>
@@ -363,9 +357,6 @@
     <ClInclude Include="system\Framework\Application\Entry\main.h">
       <Filter>ソース ファイル\MyFramework\エントリーポイント</Filter>
     </ClInclude>
-    <ClInclude Include="scene\TitleScene.h">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\AssetManager\AssetManager.h">
       <Filter>ソース ファイル\MyFramework\Manager\AssetManager</Filter>
     </ClInclude>
@@ -412,19 +403,13 @@
       <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\IRenderer\IRenderer.h">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\RenderManager.h">
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Graphics\GraphicsDevice.h">
       <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.h">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
-    </ClInclude>
-    <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
     </ClInclude>
     <ClInclude Include="system\MyIndexBuffer.h">
       <Filter>ソース ファイル\MyFramework\Buffer</Filter>
@@ -453,9 +438,6 @@
     <ClInclude Include="system\GameObject\Rock.h">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="system\GameObject\Skydome.h">
-      <Filter>ソース ファイル\system\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="system\GameObject\Field.h">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClInclude>
@@ -464,9 +446,6 @@
     </ClInclude>
     <ClInclude Include="system\stb_perlin.h">
       <Filter>ソース ファイル\system</Filter>
-    </ClInclude>
-    <ClInclude Include="scene\TestScene.h">
-      <Filter>ソース ファイル\Scene</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Time\Time.h">
       <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
@@ -492,7 +471,7 @@
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
     </ClInclude>
-    <ClInclude Include="scene\CollisionTestScene.h">
+    <ClInclude Include="scene\GameScene.h">
       <Filter>ソース ファイル\Scene</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\TerrainCollider.h">
@@ -564,9 +543,6 @@
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h">
       <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
     </ClInclude>
-    <ClInclude Include="system\meshmanager.h">
-      <Filter>ソース ファイル\system</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\GameObject\Goal\Goal.h">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClInclude>
@@ -583,7 +559,7 @@
       <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Light\SpotLightComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\Light</Filter>
@@ -607,13 +583,13 @@
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\SoundManager\sound.h">
       <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\EngineSystem\GameFeatureSystems.h">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Physic\SphereCollider.h">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
@@ -624,7 +600,7 @@
     <ClInclude Include="system\Framework\Time\CountDownTimer.h">
       <Filter>ソース ファイル\MyFramework\Manager\Time</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\Component\StateIcon\StateIconComponent.h">
+    <ClInclude Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\UIManager\UIManager.h">
@@ -635,6 +611,30 @@
     </ClInclude>
     <ClInclude Include="system\Framework\ColliderManager\collision.h">
       <Filter>ソース ファイル\system</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\WeatherSystem\SkyFogPass.h">
+      <Filter>ソース ファイル\MyFramework\WeatherSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Graphics\RenderInfo.h">
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Graphics\GBuffer.h">
+      <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Game\GameResult.h">
+      <Filter>ソース ファイル\MyFramework\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -719,9 +719,6 @@
     <ClCompile Include="system\imgui\imgui_widgets.cpp">
       <Filter>ソース ファイル\system\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="scene\SkeltalmeshScene.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="system\Framework\Window\Window.cpp">
       <Filter>ソース ファイル\MyFramework\Window</Filter>
     </ClCompile>
@@ -757,9 +754,6 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Application\Entry\main.cpp">
       <Filter>ソース ファイル\MyFramework\エントリーポイント</Filter>
-    </ClCompile>
-    <ClCompile Include="scene\TitleScene.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\AssetManager\AssetManager.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\AssetManager</Filter>
@@ -804,16 +798,13 @@
       <Filter>ソース ファイル\MyFramework\Component\IComponent</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\IRenderer\IRenderer.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Graphics\RenderManager.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Graphics\GraphicsDevice.cpp">
       <Filter>ソース ファイル\MyFramework\GraphicsSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\MeshRenderer.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\MeshRenderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Cube\Cube.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\Box</Filter>
@@ -830,17 +821,11 @@
     <ClCompile Include="system\GameObject\Rock.cpp">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="system\GameObject\Skydome.cpp">
-      <Filter>ソース ファイル\system\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="system\TriangleDrawer.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
     <ClCompile Include="system\stbperlin.cpp">
       <Filter>ソース ファイル\system</Filter>
-    </ClCompile>
-    <ClCompile Include="scene\TestScene.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\PhysicsManager</Filter>
@@ -857,7 +842,7 @@
     <ClCompile Include="system\Framework\Component\Physic\Rigidbody.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
-    <ClCompile Include="scene\CollisionTestScene.cpp">
+    <ClCompile Include="scene\GameScene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\TerrainCollider.cpp">
@@ -917,9 +902,6 @@
     <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp">
       <Filter>ソース ファイル\MyFramework\GameObject\WeatherController</Filter>
     </ClCompile>
-    <ClCompile Include="system\meshmanager.cpp">
-      <Filter>ソース ファイル\system</Filter>
-    </ClCompile>
     <ClCompile Include="system\Framework\GameObject\Goal\Goal.cpp">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClCompile>
@@ -933,7 +915,7 @@
       <Filter>ソース ファイル\MyFramework\GameObject\Player</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp">
-      <Filter>ソース ファイル\MyFramework\Component\IRenderer</Filter>
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Light\SpotLightComponent.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Light</Filter>
@@ -951,7 +933,7 @@
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\EngineSystem\EngineSystem.cpp">
-      <Filter>ソース ファイル\MyFramework\EngineContext</Filter>
+      <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
@@ -965,7 +947,7 @@
     <ClCompile Include="system\DirectWrite.cpp">
       <Filter>ソース ファイル\system</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\Component\StateIcon\StateIconComponent.cpp">
+    <ClCompile Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.cpp">
       <Filter>ソース ファイル\MyFramework\Component\StateIcon</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\UIManager\UIManager.cpp">
@@ -976,6 +958,21 @@
     </ClCompile>
     <ClCompile Include="system\Framework\ColliderManager\collision.cpp">
       <Filter>ソース ファイル\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\WeatherSystem\SkyFogPass.cpp">
+      <Filter>ソース ファイル\MyFramework\WeatherSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Graphics\GBuffer.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\RenderManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\SkinnedMeshRendererComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\MeshRenderer\StaticMeshRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1015,5 +1012,25 @@
     <FxCompile Include="shader\instancedLineVS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
+    <FxCompile Include="shader\FullscreenTriVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\GBufferVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\GBufferOneSkinVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\GBufferPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\SkyFog.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="shader\DeferredLighting.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </None>
   </ItemGroup>
 </Project>

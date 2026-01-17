@@ -7,6 +7,8 @@
 #include	"Framework/Scene/IScene.h"
 #include	"Framework/GameObject/GameObject.h"
 
+class StaticMeshRendererComponent;
+
 class obstacle : public GameObject {
 
 public:
@@ -31,6 +33,8 @@ private:
 	CStaticMesh*			m_mesh{};
 	CStaticMeshRenderer*	m_meshrenderer{};
 	CShader*				m_shader{};
+
+	StaticMeshRendererComponent* m_RenderComp = nullptr;
 
 	// オーナーSCENE
 	IScene* m_ownerscene = nullptr;

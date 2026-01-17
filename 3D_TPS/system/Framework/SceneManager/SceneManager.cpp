@@ -35,7 +35,6 @@ void SceneManager::Init(ObjectManager* object_manager, const std::string& first_
 #ifdef _DEBUG
 	DebugUI::RedistDebugFunction([this]() { this->DebugImGui(); });
 #endif
-
 }
 
 /*
@@ -195,14 +194,17 @@ void SceneManager::Update(float delta_time)
 		}
 	}
 }
-void SceneManager::Draw()
+void SceneManager::DrawWorld(void)
 {
 	// シーン描画
 	if (m_CurrentScene)
 	{
 		m_CurrentScene->Draw();
 	}
+}
 
+void SceneManager::DrawTransition(void)
+{
 	// 遷移演出描画（フェードなど）
 	if (m_IsSceneChanging && m_Transition)
 	{
@@ -248,6 +250,7 @@ void SceneManager::CommitSceneChange(void)
 	// 新シーンのオブジェクト初期化キューを消化
 	if (m_pObjectManager)
 	{
+		m_pObjectManager->FlushSpawnQueue();
 		m_pObjectManager->FlushAwakeQueue();
 		m_pObjectManager->FlushStartQueue();
 	}

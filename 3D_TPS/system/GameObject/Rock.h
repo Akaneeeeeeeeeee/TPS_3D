@@ -8,6 +8,7 @@ class CStaticMeshRenderer;
 class CShader;
 class SphereCollider;
 class Rigidbody;
+class StaticMeshRendererComponent;
 
 /*
 * @brief	Rockクラス
@@ -43,6 +44,8 @@ private:
 	// 物理
 	SphereCollider* m_Sphere = nullptr;
 	Rigidbody* m_RB = nullptr;
+
+	StaticMeshRendererComponent* m_pRenderComp = nullptr;
 
 	std::optional<Vector3> m_PendingVel;	// 速度
 	std::optional<Vector3> m_PendingAngVel;	// 角速度

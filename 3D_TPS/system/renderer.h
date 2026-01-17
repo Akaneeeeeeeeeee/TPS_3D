@@ -44,6 +44,7 @@ struct BONE
     Matrix4x4 OffsetMatrix{};      ///< ボーンオフセット行列
     int idx;                       ///< 配列中のインデックス
     std::vector<WEIGHT> weights;   ///< このボーンが影響を与える頂点とウェイト値のリスト
+    Matrix4x4 BindLocalMatrix{};   // バインド時のローカル
 };
 
 /**
@@ -61,6 +62,17 @@ struct VERTEX_3D
     std::string BoneName[4];     // 各ボーンの名前 20231226
     int bonecnt = 0;             // 影響を与えるボーン数 20231226
 };
+
+struct VERTEX_SKINNED_GPU
+{
+    DirectX::XMFLOAT3 Position;
+    DirectX::XMFLOAT3 Normal;
+    DirectX::XMFLOAT4 Diffuse;
+    DirectX::XMFLOAT2 TexCoord;
+    int32_t BoneIndex[4];
+    float   BoneWeight[4];
+};
+static_assert(sizeof(VERTEX_SKINNED_GPU) == 80);
 
 struct VERTEX
 {
@@ -193,6 +205,13 @@ private:
 
     static ComPtr<ID3D11Buffer> m_SpotLightBuffer;
     static CBSpotLights m_SpotLightCB;
+
+	// 深度バッファのSRVを保持する（合成で使うため）
+    static ComPtr<ID3D11ShaderResourceView> m_DepthSRV;
+
+	// 深度ステンシルステート（読み取り専用）
+    static ComPtr<ID3D11DepthStencilState> m_DepthStateReadOnly;
+
 public:
     static void Init();
     static void Uninit();
@@ -218,8 +237,20 @@ public:
     static void SetFillMode(D3D11_FILL_MODE FillMode);
 
     static void SetSpotLights(const SpotLightGPU* lights, int count);
+	static ID3D11Buffer* GetSpotLightBuffer() { return m_SpotLightBuffer.Get(); }
 
     static LIGHT GetLight();
     static const Matrix4x4& GetViewMatrix() { return m_CurrentView; }
     static const Matrix4x4& GetProjectionMatrix() { return m_CurrentProjection; }
+
+    static ID3D11ShaderResourceView* GetDepthSRV() { return m_DepthSRV.Get(); }
+
+    // 合成で backbuffer の RTV が欲しい
+    static ID3D11RenderTargetView* GetRTV() { return m_RenderTargetView.Get(); }
+    static ID3D11DepthStencilView* GetDSV() { return m_DepthStencilView.Get(); }
+
+    // Clearしないで RTV/DSV/Viewport を戻す
+    static void BindBackbuffer(bool setViewport = true);
+
+    static void SetDepthReadOnly(bool enable);
 };

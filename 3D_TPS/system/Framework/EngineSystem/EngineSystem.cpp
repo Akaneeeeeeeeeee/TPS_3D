@@ -10,7 +10,7 @@ void EngineSystems::Init()
     if (m_Inited) return;
     m_Inited = true;
 
-    m_Graphics.Init();
+    //m_Graphics.Init();
 
     m_Shader.Init();
     //m_Asset.Init();
@@ -20,7 +20,6 @@ void EngineSystems::Init()
 
     m_Physics.Init();
 
-	m_UI.Init();
 #ifdef _DEBUG
 	m_Physics.SetCameraManager(&m_Camera);
 #endif

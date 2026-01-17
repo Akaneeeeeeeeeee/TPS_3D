@@ -4,6 +4,7 @@
 class CStaticMesh;
 class CStaticMeshRenderer;
 class CShader;
+class StaticMeshRendererComponent;
 
 /*
 * @brief	ƒS[ƒ‹ƒNƒ‰ƒX
@@ -38,6 +39,8 @@ private:
 	CStaticMesh* m_mesh{};
 	CStaticMeshRenderer* m_meshrenderer{};
 	CShader* m_shader{};
+
+	StaticMeshRendererComponent* m_RenderComp = nullptr;
 
 	bool m_Reached = false;
 };

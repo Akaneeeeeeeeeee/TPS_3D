@@ -4,6 +4,7 @@
 #include "CSprite.h"
 #include "system/commontypes.h"
 #include "system/Framework/Component/IComponent/IComponent.h"
+#include "system/transform.h"
 
 class CSprite;
 
@@ -98,8 +99,8 @@ private:
     }
 
 private:
-    CSprite  m_Sprite{};
     Vector2  m_SizePx = Vector2(0, 0);
+    CSprite  m_Sprite{};
 
     UIAnchor m_Anchor = UIAnchor::Center;
     Vector2  m_PosPx = Vector2(0, 0);   // アンカーからのオフセット(px)

@@ -5,8 +5,33 @@
 #include	"CTexture.h"
 #include	"AssimpPerse.h"
 #include	"CTreeNode.h"
+#include	<fstream>
 
 #pragma comment(lib, "assimp-vc143-mtd.lib")
+
+// GetModelData() の ReadFile 直後
+static void DumpSceneSummary(const aiScene* s)
+{
+	std::cout
+		<< "[Scene]\n"
+		<< "  meshes     : " << s->mNumMeshes << "\n"
+		<< "  materials  : " << s->mNumMaterials << "\n"
+		<< "  textures(embedded): " << s->mNumTextures << "\n"
+		<< "  animations : " << s->mNumAnimations << "\n"
+		<< "  cameras    : " << s->mNumCameras << "\n"
+		<< "  lights     : " << s->mNumLights << "\n";
+}
+static void DumpTex(aiMaterial* mat, aiTextureType type, const char* label)
+{
+	unsigned n = mat->GetTextureCount(type);
+	std::cout << "  " << label << " = " << n << "\n";
+	for (unsigned i = 0; i < n; ++i)
+	{
+		aiString p;
+		if (mat->GetTexture(type, i, &p) == AI_SUCCESS)
+			std::cout << "    [" << i << "] " << p.C_Str() << "\n";
+	}
+}
 
 namespace GM31 {namespace GE {namespace {}
 namespace myAssimp{
@@ -57,6 +82,10 @@ namespace myAssimp{
 	{
 		BONE bone{};
 
+		bone.bonename = node->mName.C_Str();
+		// バインド時のローカル変換を保存しておく
+		bone.AnimationMatrix = node->mTransformation;
+
 		// ボーン名で参照できるように空のボーン情報をセットする
 		g_BoneDictionary[node->mName.C_Str()] = bone;
 
@@ -72,20 +101,34 @@ namespace myAssimp{
 	std::vector<BONE> GetBonesPerMesh(const aiMesh* mesh)
 	{
 		std::vector<BONE> bones;		// このサブセットメッシュで使用されているボーンコンテナ
-
+		const std::string meshname = mesh->mName.C_Str();
 		// ボーン数分ループ
 		for (unsigned int bidx = 0; bidx < mesh->mNumBones; bidx++) {
 
+			//BONE bone{};
+
+			////// ボーン名取得
+			//bone.bonename = std::string(mesh->mBones[bidx]->mName.C_Str());
+
+			//// メッシュノード名
+			//bone.meshname = std::string(mesh->mBones[bidx]->mNode->mName.C_Str());
+
+			//// アーマチュアノード名
+			//bone.armaturename = std::string(mesh->mBones[bidx]->mArmature->mName.C_Str());
+
+			const aiBone* ab = mesh->mBones[bidx];
 			BONE bone{};
+			bone.bonename = std::string(ab->mName.C_Str());
 
-			// ボーン名取得
-			bone.bonename = std::string(mesh->mBones[bidx]->mName.C_Str());
+			// ★ここが重要：mNodeを使わない
+			bone.meshname = meshname;
 
-			// メッシュノード名
-			bone.meshname = std::string(mesh->mBones[bidx]->mNode->mName.C_Str());
+			// armature は無いことがあるのでガード
+			if (ab->mArmature)
+				bone.armaturename = std::string(ab->mArmature->mName.C_Str());
+			else
+				bone.armaturename.clear();
 
-			// アーマチュアノード名
-			bone.armaturename = std::string(mesh->mBones[bidx]->mArmature->mName.C_Str());
 
 			// デバッグ用
 			std::cout << bone.bonename
@@ -123,40 +166,104 @@ namespace myAssimp{
 	void SetBoneDataToVertices() {
 
 		// ボーンインデックスを初期化
-		for (auto& vtbl : g_vertices) {
-			for (auto& v : vtbl) {
+//		for (auto& vtbl : g_vertices) {
+//			for (auto& v : vtbl) {
+//				v.bonecnt = 0;
+//				for (int b = 0; b < 4; b++) {
+//					v.BoneIndex[b] = 0;
+//					//v.BoneIndex[b] = -1;
+//					v.BoneWeight[b] = 0.0f;
+//					v.BoneName[b] = "";
+//				}
+//			}
+//		}
+//
+//		// メッシュ毎のボーンコンテナ
+//		int subsetid = 0;
+//		for (auto& bones : g_BonesPerMeshes) {
+//
+//			// このスタティックメッシュ内の頂点データのスタート位置を取得
+////			int vertexbase = g_subsets[subsetid].VertexBase;
+//
+//			// このサブセット内のボーンをひとつづつ取り出す
+//			for (auto& bone : bones)
+//			{
+//				for (auto& w : bone.weights) {
+//					int& idx = g_vertices[subsetid][w.vertexindex].bonecnt;
+//					if (idx >= 4) continue;	// ボーン数が4を超えたら無視する
+//
+//					g_vertices[subsetid][w.vertexindex].BoneName[idx] = w.bonename;	// ボーン名をセット
+//					g_vertices[subsetid][w.vertexindex].BoneWeight[idx] = w.weight;	// weight値をセット
+//					g_vertices[subsetid][w.vertexindex].BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
+//
+//					//ボーンの配列番号をセット
+//					idx++;
+//					assert(idx <= 4);
+//				}
+//			}
+//			subsetid++;				// 次のメッシュへ
+//		}
+		// 1) 初期化（必ずここでゼロクリア）
+		for (auto& vtbl : g_vertices)
+		{
+			for (auto& v : vtbl)
+			{
 				v.bonecnt = 0;
-				for (int b = 0; b < 4; b++) {
-					v.BoneIndex[b] = -1;
-					v.BoneWeight[b] = 0.0f;
-					v.BoneName[b] = "";
+				for (int i = 0; i < 4; ++i)
+				{
+					v.BoneIndex[i] = 0;     // -1禁止（安全）
+					v.BoneWeight[i] = 0.0f;
+					v.BoneName[i].clear();
 				}
 			}
 		}
 
-		// メッシュ毎のボーンコンテナ
+		// 2) ウェイトを詰める
 		int subsetid = 0;
-		for (auto& bones : g_BonesPerMeshes) {
-
-			// このスタティックメッシュ内の頂点データのスタート位置を取得
-//			int vertexbase = g_subsets[subsetid].VertexBase;
-
-			// このサブセット内のボーンをひとつづつ取り出す
+		for (auto& bones : g_BonesPerMeshes)
+		{
 			for (auto& bone : bones)
 			{
-				for (auto& w : bone.weights) {
-					int& idx = g_vertices[subsetid][w.vertexindex].bonecnt;
+				for (auto& w : bone.weights)
+				{
+					if (w.vertexindex < 0) continue;
+					if (w.vertexindex >= (int)g_vertices[subsetid].size()) continue;
 
-					g_vertices[subsetid][w.vertexindex].BoneName[idx] = w.bonename;	// ボーン名をセット
-					g_vertices[subsetid][w.vertexindex].BoneWeight[idx] = w.weight;	// weight値をセット
-					g_vertices[subsetid][w.vertexindex].BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
+					auto& v = g_vertices[subsetid][w.vertexindex];
 
-					//ボーンの配列番号をセット
-					idx++;
-					assert(idx <= 4);
+					if (v.bonecnt >= 4) continue; // 4本まで
+
+					const int idx = v.bonecnt;
+
+					v.BoneName[idx] = w.bonename;
+					v.BoneWeight[idx] = w.weight;
+					v.BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
+
+					v.bonecnt++;
 				}
 			}
-			subsetid++;				// 次のメッシュへ
+			subsetid++;
+		}
+
+		// 3) 正規化 + “ゼロ救済”（ここでやる）
+		for (auto& vtbl : g_vertices)
+		{
+			for (auto& v : vtbl)
+			{
+				float sum = v.BoneWeight[0] + v.BoneWeight[1] + v.BoneWeight[2] + v.BoneWeight[3];
+
+				if (sum > 1e-6f)
+				{
+					for (int i = 0; i < 4; ++i) v.BoneWeight[i] /= sum;
+				}
+				else
+				{
+					// ウェイト無し頂点はボーン0固定
+					v.BoneIndex[0] = 0;
+					v.BoneWeight[0] = 1.0f;
+					v.bonecnt = 1;
+				}
+			}
 		}
 	}
 
@@ -253,6 +360,19 @@ namespace myAssimp{
 			else {
 					shiness = 0.0f;
 			}
+
+			// マテリアル情報ダンプ
+			std::cout << "[Material] " << mtrlname << "\n";
+			DumpTex(material, aiTextureType_BASE_COLOR, "BASE_COLOR");
+			DumpTex(material, aiTextureType_DIFFUSE, "DIFFUSE");
+			DumpTex(material, aiTextureType_NORMALS, "NORMALS");
+			DumpTex(material, aiTextureType_HEIGHT, "HEIGHT");
+			DumpTex(material, aiTextureType_METALNESS, "METALNESS");
+			DumpTex(material, aiTextureType_DIFFUSE_ROUGHNESS, "ROUGHNESS");
+			DumpTex(material, aiTextureType_AMBIENT_OCCLUSION, "AO");
+			DumpTex(material, aiTextureType_EMISSIVE, "EMISSIVE");
+			DumpTex(material, aiTextureType_OPACITY, "OPACITY");
+			DumpTex(material, aiTextureType_UNKNOWN, "UNKNOWN");
 
 			// このマテリアルに紐づいているディフューズテクスチャ数分ループ
 			std::vector<std::string> texpaths{};
@@ -366,6 +486,18 @@ namespace myAssimp{
 		// シーン情報構築
 		Assimp::Importer importer;
 
+		std::cout << "[Assimp] filename(size)=" << filename.size()
+			<< " strlen=" << strlen(filename.c_str()) << "\n";
+		std::cout << "[Assimp] filename=" << filename << "\n";
+
+		std::error_code ec;
+		auto abs = std::filesystem::absolute(filename, ec);
+		std::cout << "[Assimp] abs=" << abs.string() << " ec=" << ec.message() << "\n";
+		std::cout << "[Assimp] exists=" << std::filesystem::exists(abs) << "\n";
+
+		std::ifstream ifs(abs, std::ios::binary);
+		std::cout << "[Assimp] can_open=" << ifs.good() << "\n";
+
 		// シーン情報を構築
 		const aiScene* pScene = importer.ReadFile(
 			filename.c_str(),
@@ -380,6 +512,7 @@ namespace myAssimp{
 			std::cout << "load error" << filename.c_str() << importer.GetErrorString() << std::endl;
 		}
 		assert(pScene != nullptr);
+		DumpSceneSummary(pScene);
 
 		// 読み込み領域をクリア
 		g_vertices.clear();				//20240908

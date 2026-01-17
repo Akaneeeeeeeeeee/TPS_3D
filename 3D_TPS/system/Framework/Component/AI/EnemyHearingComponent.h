@@ -16,6 +16,7 @@ class WeatherSystem;
 class EnemyHearingComponent : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(EnemyHearingComponent, IComponent)
     EnemyHearingComponent() = default;
     ~EnemyHearingComponent() noexcept override = default;
 

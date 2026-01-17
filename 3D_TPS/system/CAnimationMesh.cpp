@@ -43,8 +43,11 @@ void CAnimationMesh::Load(std::string filename, std::string texturedirectory)
 		dxbone.idx = asimpbone.second.idx;												// 20240714 DX化
 
 		dxbone.OffsetMatrix = utility::aiMtxToDxMtx(asimpbone.second.OffsetMatrix);
-		dxbone.AnimationMatrix = Matrix::Identity;										// 20240714 DX化
+		//dxbone.AnimationMatrix = Matrix::Identity;										// 20240714 DX化
 		dxbone.Matrix = Matrix::Identity;												// 20240714 DX化
+		// identity じゃなく bindローカルにする
+		dxbone.BindLocalMatrix = utility::aiMtxToDxMtx(asimpbone.second.AnimationMatrix);
+		dxbone.AnimationMatrix = dxbone.BindLocalMatrix;
 
 		dxbone.weights.clear();															// 20240714 DX化
 		for (auto& asimpweight : asimpbone.second.weights)								// 20240714 DX化	
@@ -69,89 +72,6 @@ void CAnimationMesh::Load(std::string filename, std::string texturedirectory)
 }
 
 // 階層構造を考慮したボーンコンビネーション行列を更新
-//void CAnimationMesh::UpdateBoneMatrix(CTreeNode<std::string>* ptree,
-//	const DirectX::SimpleMath::Matrix& parent,
-//	BoneCombMatrix& outMatrix,
-//	float timeInTicks,
-//	aiAnimation* anim)															// 20240714 DX化	
-//{
-//	// ノード名からボーン辞書を使ってボーン情報を取得
-//	BONE* bone = &m_BoneDictionary[ptree->m_nodedata];
-//
-//	// チャンネル取得
-//	aiNodeAnim* nodeAnim = nullptr;
-//	for (unsigned int c = 0; c < anim->mNumChannels; c++)
-//	{
-//		if (anim->mChannels[c]->mNodeName.C_Str() == ptree->m_nodedata)
-//		{
-//			nodeAnim = anim->mChannels[c];
-//			break;
-//		}
-//	}
-//
-//	Matrix animMatrix = Matrix::Identity;
-//
-//	if (nodeAnim)
-//	{
-//		// Rotation
-//		aiQuaternion rot;
-//		int rotIndex = static_cast<int>(timeInTicks) % nodeAnim->mNumRotationKeys;
-//		rot = nodeAnim->mRotationKeys[rotIndex].mValue;
-//
-//		// Position
-//		aiVector3D pos;
-//		int posIndex = static_cast<int>(timeInTicks) % nodeAnim->mNumPositionKeys;
-//		pos = nodeAnim->mPositionKeys[posIndex].mValue;
-//
-//		// Scale
-//		Vector3 s = { 1.0f, 1.0f, 1.0f };
-//		Vector3 t = { pos.x, pos.y, pos.z };
-//		Quaternion r = { rot.x, rot.y, rot.z, rot.w };
-//
-//		Matrix scaleMtx = Matrix::CreateScale(s.x, s.y, s.z);
-//		Matrix rotMtx = Matrix::CreateFromQuaternion(r);
-//		Matrix transMtx = Matrix::CreateTranslation(t.x, t.y, t.z);
-//
-//		animMatrix = scaleMtx * rotMtx * transMtx;
-//	}
-//
-//	// ワールド行列に親行列を掛ける
-//	Matrix finalMtx = animMatrix * parent;
-//
-//	// ボーンコンビネーション行列に反映
-//	bone->Matrix = bone->OffsetMatrix * finalMtx;
-//	outMatrix.ConstantBufferMemory.BoneCombMtx[bone->idx] = bone->Matrix.Transpose();
-//
-//	// 子ノードを再帰処理
-//	for (unsigned int n = 0; n < ptree->m_children.size(); n++)
-//	{
-//		UpdateBoneMatrix(ptree->m_children[n].get(), finalMtx, outMatrix, timeInTicks, anim);
-//	}																// 20240714 DX化
-//}
-
-// 階層構造を考慮したボーンコンビネーション行列を更新
-//void CAnimationMesh::UpdateBoneMatrix(
-//	CTreeNode<std::string>* ptree, 
-//	Matrix matrix)															// 20240714 DX化	
-//{
-//	// ノード名からボーン辞書を使ってボーン情報を取得
-//	BONE* bone = &m_BoneDictionary[ptree->m_nodedata];						// 20240714 DX化		
-//
-//	Matrix bonecombination;													// 20240714 DX化；
-//
-//	// ボーンオフセット行列×ボーンアニメメーション行列×逆ボーンオフセット行列
-//	bonecombination = bone->OffsetMatrix * bone->AnimationMatrix * matrix;	// 20240714 DX化
-//	bone->Matrix = bonecombination;											// 20240714 DX化
-//
-//	// 自分の姿勢を表す行列を作成
-//	Matrix mybonemtx;														// 20240714 DX化
-//	mybonemtx = bone->AnimationMatrix * matrix;								// 20240714 DX化
-//	// 子ノードに対して再帰的に処理											// 20240714 DX化
-//	for (unsigned int n = 0; n < ptree->m_children.size(); n++)				// 20240714 DX化
-//	{																		// 20240714 DX化
-//		UpdateBoneMatrix(ptree->m_children[n].get(), mybonemtx);			// 20240714 DX化
-//	}																		// 20240714 DX化
-//}
 void CAnimationMesh::UpdateBoneMatrix(
 	CTreeNode<std::string>* ptree,
 	Matrix4x4 parentMtx)
@@ -227,7 +147,10 @@ void CAnimationMesh::BlendLocalPose(
 void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, const float& timeSec)
 {
 	if (!animation) return;
-
+	// ★追加：毎フレ bind姿勢に戻す
+	for (auto& [name, bone] : m_BoneDictionary)
+		bone.AnimationMatrix = bone.BindLocalMatrix;
+		
 	// 1) 秒 → アニメ内時間（ticks）に変換
 	double ticksPerSecond =
 		(animation->mTicksPerSecond != 0.0)
@@ -244,11 +167,25 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* an
 		if (timeInTicks < 0.0) timeInTicks += duration;
 	}
 
+
+	int hit = 0;
+	int miss = 0;
+
 	// 2) 各チャンネルごとに適切なキーを選んで補間
 	for (unsigned int c = 0; c < animation->mNumChannels; ++c)
 	{
 		aiNodeAnim* nodeAnim = animation->mChannels[c];
-		BONE* bone = &m_BoneDictionary[nodeAnim->mNodeName.C_Str()];
+		//auto itB = m_BoneDictionary.find(nodeAnim->mNodeName.C_Str());
+		//if (itB == m_BoneDictionary.end())
+		//	continue;
+		auto itB = m_BoneDictionary.find(nodeAnim->mNodeName.C_Str());
+
+		const std::string name = nodeAnim->mNodeName.C_Str();
+		if (m_BoneDictionary.find(name) != m_BoneDictionary.end())
+			++hit;
+		else { ++miss; continue; }
+
+		BONE& bone = itB->second;
 
 		// ---- 回転キー選択（線形補間版・簡易）----
 		Quaternion rotQ = Quaternion::Identity;
@@ -285,8 +222,11 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* an
 		Matrix4x4 R = Matrix4x4::CreateFromQuaternion(rotQ);
 		Matrix4x4 T = Matrix4x4::CreateTranslation(posV);
 
-		bone->AnimationMatrix = S * R * T;
+		bone.AnimationMatrix = S * R * T;
 	}
+	//std::cout << "[AnimMap] name=" << animation->mName.C_Str()
+	//	<< " channels=" << animation->mNumChannels
+	//	<< " hit=" << hit << " miss=" << miss << "\n";
 
 	// 3) 階層を考慮してボーン最終行列を作る
 	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix4x4::Identity);
@@ -299,55 +239,6 @@ void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* an
 	}
 }
 
-
-//void CAnimationMesh::UpdateBlended(BoneCombMatrix& bonecombarray,
-//	const aiAnimation* animFrom,
-//	int frameFrom,
-//	const aiAnimation* animTo,
-//	int frameTo,
-//	float alpha)
-//{
-//	if (!animFrom && !animTo) return;
-//
-//	// 1) 2つのローカルポーズを構築
-//	std::unordered_map<std::string, Transform> localposeFrom;
-//	std::unordered_map<std::string, Transform> localposeTo;
-//
-//	if (animFrom)
-//	{
-//		BuildLocalPoseMap(animFrom, frameFrom, localposeFrom);
-//	}
-//	if (animTo)
-//	{
-//		BuildLocalPoseMap(animTo, frameTo, localposeTo);
-//	}
-//
-//	// 2) ブレンド結果のローカルポーズを計算
-//	std::unordered_map<std::string, Transform> blendedLocalPose;
-//	BlendLocalPose(localposeFrom, localposeTo, alpha, blendedLocalPose);
-//
-//	// 3) 各ボーンに AnimationMatrix をセット
-//	for (auto& [bonename, transform] : blendedLocalPose)
-//	{
-//		BONE* bone = &m_BoneDictionary[bonename];
-//
-//		Matrix4x4 scalemtx = Matrix4x4::CreateScale(transform.GetScale());
-//		Matrix4x4 rotmtx = Matrix4x4::CreateFromQuaternion(transform.GetRotation());
-//		Matrix4x4 transmtx = Matrix4x4::CreateTranslation(transform.GetPosition());
-//
-//		bone->AnimationMatrix = scalemtx * rotmtx * transmtx;
-//	}
-//
-//	// 4) 階層を考慮して最終ボーン行列を計算
-//	UpdateBoneMatrix(&m_AssimpNodeNameTree, Matrix4x4::Identity);
-//
-//	// 5) BoneCombMatrix に書き出し
-//	for (const auto& bone : m_BoneDictionary)
-//	{
-//		bonecombarray.ConstantBufferMemory.BoneCombMtx[bone.second.idx] =
-//			bone.second.Matrix.Transpose();
-//	}
-//}
 void CAnimationMesh::UpdateBlended(
 	BoneCombMatrix& bonecombarray,
 	const aiAnimation* animFrom,
@@ -358,11 +249,16 @@ void CAnimationMesh::UpdateBlended(
 {
 	if (!animFrom && !animTo) return;
 
-	// ★ 追加：毎フレームリセット
+	// 毎フレームリセット(これだとAkaiはきれいに動くが他が動かない)
+	//for (auto& [name, bone] : m_BoneDictionary)
+	//{
+	//	bone.AnimationMatrix = Matrix4x4::Identity;
+	//}
 	for (auto& [name, bone] : m_BoneDictionary)
 	{
-		bone.AnimationMatrix = Matrix4x4::Identity;
+		bone.AnimationMatrix = bone.BindLocalMatrix;
 	}
+
 
 	std::unordered_map<std::string, Transform> localposeFrom;
 	std::unordered_map<std::string, Transform> localposeTo;

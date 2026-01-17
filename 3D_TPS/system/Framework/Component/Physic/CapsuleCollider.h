@@ -14,6 +14,7 @@
 class CapsuleCollider : public PhysicsComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(CapsuleCollider, PhysicsComponent)
     CapsuleCollider()
         : PhysicsComponent(), m_HalfHeight(0.0f), m_Radius(0.0f) {
     }

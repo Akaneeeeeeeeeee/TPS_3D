@@ -10,6 +10,7 @@
 #include "Framework/Scene/IScene.h"
 #include "Framework/GameObject/Player/Player.h"
 #include "Framework/GameObject/Player/TitlePlayerActor.h"
+#include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 
 #include "system/DebugUI.h"
 
@@ -20,6 +21,13 @@ void Terrain::Awake()
     m_pMesh = am.GetMesh<CStaticMesh>("terrainmesh");
     m_pMeshRenderer = am.GetMeshRenderer<CStaticMeshRenderer>("terrainmesh");
     m_pShader = am.GetShader<CShader>("unlightshader"); // 実際のキー名に合わせる
+
+    // 描画コンポーネント
+    m_RenderComp = AddComponent<StaticMeshRendererComponent>("terrainmesh");
+    m_RenderComp->SetMeshRendererKey("terrainmesh");     // AssetManagerのMeshRendererキー
+    m_RenderComp->SetShaderKey("unlightshader");      // AssetManagerのShaderキー
+    m_RenderComp->SetTransparent(false);
+
 
     // 物理メッシュコライダを追加
     if (m_pMesh)
@@ -46,7 +54,7 @@ void Terrain::Update(const float delta)
 
 void Terrain::Draw() const
 {
-    if (!m_pMesh || !m_pMeshRenderer || !m_pShader) { return; }
+   /* if (!m_pMesh || !m_pMeshRenderer || !m_pShader) { return; }
 
     Matrix4x4 mtx = m_Transform.GetWorldMatrix();
 	Matrix4x4 currentview = Renderer::GetViewMatrix();
@@ -67,22 +75,11 @@ void Terrain::Draw() const
         proj = comp->GetProjMatrix();
     }
 
-    //if(view == currentview && proj == currentproj)
-    //{
-    //    // 変更がないなら設定し直す必要はない
-    //}
-    //else
-    //{
-    //    // 変更があったら設定し直す
-    //    Renderer::SetViewMatrix(&view);
-    //    Renderer::SetProjectionMatrix(&proj);
-    //}
-
 	Renderer::SetViewMatrix(&view);
 	Renderer::SetProjectionMatrix(&proj);
 
     m_pShader->SetGPU();
-    m_pMeshRenderer->Draw();
+    m_pMeshRenderer->Draw();*/
 }
 
 void Terrain::Uninit()

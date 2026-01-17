@@ -5,8 +5,44 @@
 #include "DebugUI.h"
 #include "CylinderDrawer.h"
 #include "C3DShape.h"
+#include "Framework/WeatherSystem/SkyFogPass.h"
 
 using DirectX::XMFLOAT3;
+
+static SkyFogPass::SkyFogTuning MakeTuning(const WeatherSystem::AtmosphereTuning& a)
+{
+    SkyFogPass::SkyFogTuning t{};
+    t.enableSky = a.enableSky;
+    t.enableFog = a.enableFog;
+    t.cloudOpacity = a.cloudOpacity;
+    t.cloudTiling = a.cloudTiling;
+    t.cloudSpeedU = a.cloudSpeedU;
+    t.cloudSpeedV = a.cloudSpeedV;
+    t.vignetteStrength = a.vignetteStrength;
+    t.vignettePower = a.vignettePower;
+    t.cloudToFogBlend = a.cloudToFogBlend;
+    t.fogMaxDist = a.fogMaxDist;
+    t.fogFarSwitchDist = a.fogFarSwitchDist;
+    t.fogNearSteps = a.fogNearSteps;
+    t.fogNoiseStrength = a.fogNoiseStrength;
+    return t;
+}
+
+void WeatherSystem::DrawAtmospherePreWorld()
+{
+	// 空の描画
+    SkyFogPass::SetTuning(MakeTuning(m_Atmo));
+    SkyFogPass::UpdateFromWeather(*this);
+    if (m_Atmo.enableSky) SkyFogPass::DrawSky();
+}
+
+void WeatherSystem::DrawAtmospherePostWorld()
+{
+    SkyFogPass::SetTuning(MakeTuning(m_Atmo));
+    SkyFogPass::UpdateFromWeather(*this);
+    if (m_Atmo.enableFog) SkyFogPass::DrawFog();
+}
+
 
 // ==============================
 // コンストラクタ
@@ -317,10 +353,16 @@ void WeatherSystem::UpdateSunDirection()
     float angle = (m_Sun.timeOfDayHours / 24.0f) * DirectX::XM_2PI
         - DirectX::XM_PIDIV2;
 
+    // elevation（高さ）と horizontal（地平面成分）
+    float y = std::sinf(angle);   // 高さ（-1..+1）
+    float h = std::cosf(angle);   // 地平面成分（-1..+1）
+
+    const float az = m_Sun.azimuthRad; // 方位角
+
     Vector3 dirToSun;
-    dirToSun.x = 0.0f;
-    dirToSun.y = std::sinf(angle); // 高さ
-    dirToSun.z = std::cosf(angle); // 前後方向
+    dirToSun.x = h * std::sinf(az);
+    dirToSun.z = h * std::cosf(az);
+    dirToSun.y = y;
     dirToSun.Normalize();
 
     // 空に向かう向き
@@ -415,6 +457,14 @@ void WeatherSystem::Init(void)
 {
 	C3DShape::Init();
 	DebugUI::RedistDebugFunction([this]() { this->DebugImGui(); });
+
+    // ここで初期化（Renderer::Init の後に呼ばれる前提）
+    SkyFogPass::Init(
+        Renderer::GetDevice(),
+        Renderer::GetDeviceContext(),
+        Window::GetInstance().GetWidth(),
+        Window::GetInstance().GetHeight()
+    );
 }
 
 // ==============================
@@ -492,22 +542,22 @@ void WeatherSystem::UpdatePerception(void)
 }
 
 // ==============================
-// デバッグ：パーティクル描画
+// パーティクル描画
 // ==============================
-void WeatherSystem::DebugDrawParticles(void) const
+void WeatherSystem::DrawParticles(void) const
 {
     if (m_CurrentParams.rainEmitRate > 0.0f)
     {
-        DebugDrawRain();
+        DrawRain();
     }
     else if (m_CurrentParams.sandEmitRate > 0.0f)
     {
-        DebugDrawSand();
+        DrawSand();
     }
 }
 
 
-void WeatherSystem::DebugDrawRain() const
+void WeatherSystem::DrawRain() const
 {
     // 半径（太さ）と色は調整用
     constexpr float RAIN_RADIUS = 0.25f;
@@ -595,35 +645,7 @@ void WeatherSystem::UpdateDayNightState()
         if (l) l->OnDayNightChanged(m_IsNight);
 }
 
-// ==============================
-// デバッグ：太陽の可視化
-// ==============================
-void WeatherSystem::DebugDrawSun() const
-{
-    // カメラ原点から見て「空の一点」に見えるよう、大きさと距離を分けて設定
-    constexpr float SUN_DISTANCE = 5000.0f; // 太陽までの距離
-    constexpr float SUN_RADIUS = 300.0f;  // 見た目の半径
-
-    Vector3 dir = m_Sun.dirToSun;
-    if (dir.LengthSquared() < 1e-6f) return;
-    dir.Normalize();
-
-    // 原点から dir 方向に SUN_DISTANCE 離れた場所に太陽を置く
-    Vector3 sunPos = dir * SUN_DISTANCE;
-
-    Matrix4x4 scale = Matrix4x4::CreateScale(SUN_RADIUS, SUN_RADIUS, SUN_RADIUS);
-    Matrix4x4 trans = Matrix4x4::CreateTranslation(sunPos.x, sunPos.y, sunPos.z);
-    Matrix4x4 world = scale * trans;
-
-    // 太陽の色は SunState の色・強さを使用
-    Color sunColor = m_Sun.lightColor * m_Sun.lightIntensity;
-
-    //Renderer::SetDepthEnable(false);
-    SphereDrawerDraw(world, sunColor);
-    //Renderer::SetDepthEnable(true);
-}
-
-void WeatherSystem::DebugDrawSand() const
+void WeatherSystem::DrawSand() const
 {
     Color sandColor(0.9f, 0.8f, 0.5f, 1.0f);
     constexpr float SAND_RADIUS = 0.5f;   // かなり小さめに
@@ -658,7 +680,6 @@ void WeatherSystem::DebugDrawSand() const
         sandColor);
 }
 
-
 void WeatherSystem::DebugImGui()
 {
 #ifdef _DEBUG
@@ -687,7 +708,7 @@ void WeatherSystem::DebugImGui()
         UpdateSunColorAndIntensity();
         ApplyToLight();
 
-        // ★街灯へ即通知
+        // 街灯へ即通知
         UpdateDayNightState();
     }
 
@@ -755,6 +776,28 @@ void WeatherSystem::DebugImGui()
     ImGui::Text("Particles (CurrentParams)");
     ImGui::Text("Rain EmitRate = %.1f", m_CurrentParams.rainEmitRate);
     ImGui::Text("Sand EmitRate = %.1f", m_CurrentParams.sandEmitRate);
+
+    ImGui::Separator();
+    ImGui::Text("Atmosphere");
+    ImGui::Checkbox("Enable Sky", &m_Atmo.enableSky);
+    ImGui::Checkbox("Enable Fog", &m_Atmo.enableFog);
+
+    ImGui::Separator();
+    ImGui::Text("Sky");
+    ImGui::SliderFloat("Cloud Opacity", &m_Atmo.cloudOpacity, 0.0f, 1.0f);
+    ImGui::SliderFloat("Cloud Tiling", &m_Atmo.cloudTiling, 0.1f, 5.0f);
+    ImGui::SliderFloat("Cloud Speed U", &m_Atmo.cloudSpeedU, -0.05f, 0.05f);
+    ImGui::SliderFloat("Cloud Speed V", &m_Atmo.cloudSpeedV, -0.05f, 0.05f);
+    ImGui::SliderFloat("Cloud->Fog Blend", &m_Atmo.cloudToFogBlend, 0.0f, 1.0f);
+    ImGui::SliderFloat("Vignette Strength", &m_Atmo.vignetteStrength, 0.0f, 1.0f);
+    ImGui::SliderFloat("Vignette Power", &m_Atmo.vignettePower, 0.5f, 6.0f);
+
+    ImGui::Separator();
+    ImGui::Text("Fog");
+    ImGui::SliderFloat("Fog MaxDist", &m_Atmo.fogMaxDist, 10.0f, 5000.0f);
+    ImGui::SliderFloat("Fog FarSwitch", &m_Atmo.fogFarSwitchDist, 10.0f, 5000.0f);
+    ImGui::SliderFloat("Fog Steps", &m_Atmo.fogNearSteps, 1.0f, 64.0f);
+    ImGui::SliderFloat("Fog NoiseStrength", &m_Atmo.fogNoiseStrength, 0.0f, 3.0f);
 
     ImGui::End();
 #endif

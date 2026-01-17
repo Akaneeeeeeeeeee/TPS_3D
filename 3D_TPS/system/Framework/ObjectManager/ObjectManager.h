@@ -3,6 +3,7 @@
 #include "system/Framework/GameObject/GameObject.h"
 #include "system/Framework/EngineSystem/EngineSystem.h"
 #include "system/Framework/Factory/GameObjectFactory.h"
+#include "system/Framework/Game/GameResult.h"
 
 /**
  * @brief オブジェクトを管理するクラス
@@ -74,8 +75,14 @@ public:
 
 	void DestroySceneObjects(const std::string& sceneName);
 
+	void SetGameResult(ResultType t) { m_Result.type = t; }
+	ResultType GetGameResult() const { return m_Result.type; }
+	void ClearGameResult() { m_Result = {}; }
+
 private:
 	Snowflake m_IDGenerator;	//! ID生成用のSnowflakeインスタンス
+
+	GameResult m_Result{};
 
 	GameObjectFactory* m_ObjectFactory;
 	std::string m_CurrentSceneName;		// 「今のシーン名」
@@ -122,7 +129,17 @@ inline T* ObjectManager::GetObjectByName(const std::string& name) const
 	auto it = m_ObjectsByName.find(name);
 	if (it == m_ObjectsByName.end()) { return nullptr; }
 
-	return dynamic_cast<T*>(it->second);
+	GameObject* obj = it->second;
+	if (!obj) { return nullptr; }
+
+	if constexpr (std::is_same_v<T, GameObject>)
+	{
+		return obj;
+	}
+
+	if (!obj->IsObjA<T>()) { return nullptr; }
+
+	return static_cast<T*>(obj);
 }
 
 template <typename T>
@@ -133,14 +150,17 @@ inline T* ObjectManager::GetObjectByID(const uint64_t id) const
 	auto it = m_ObjectsByID.find(id);
 	if (it == m_ObjectsByID.end()) { return nullptr; }
 
-	// 型を確認しキャスト
+	GameObject* obj = it->second;
+	if (!obj) { return nullptr; }
+
 	if constexpr (std::is_same_v<T, GameObject>)
 	{
-		return static_cast<T*>(it->second);		// 型変換不要ならstatic_cast
+		return obj;
 	}
-	else {
-		return dynamic_cast<T*>(it->second);	// 安全にキャスト
-	}
+
+	if (!obj->IsObjA<T>()) { return nullptr; }
+
+	return static_cast<T*>(obj);
 }
 
 // 指定タグのオブジェクトを取得
@@ -156,9 +176,21 @@ inline std::vector<T*> ObjectManager::GetObjectsByTag(const Tag tag) const
 	// メモリを再確保せずにサイズを設定
 	result.reserve(it->second.size());
 
-	for (auto* obj : it->second) {
-		if (auto casted = dynamic_cast<T*>(obj)) {
-			result.push_back(casted);
+	for (auto* obj : it->second)
+	{
+		if (!obj) { continue; }
+
+		// 型チェック
+		if constexpr (std::is_same_v<T, GameObject>)
+		{
+			result.push_back(obj);
+		}
+		else
+		{
+			if (obj->IsObjA<T>())
+			{
+				result.push_back(static_cast<T*>(obj));
+			}
 		}
 	}
 	return result;

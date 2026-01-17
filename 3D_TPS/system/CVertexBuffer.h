@@ -61,4 +61,6 @@ public:
 			Renderer::GetDeviceContext()->Unmap(m_VertexBuffer.Get(), 0);
 		}
 	}
+
+	ID3D11Buffer* GetBuffer(void) const { return m_VertexBuffer.Get(); }
 };

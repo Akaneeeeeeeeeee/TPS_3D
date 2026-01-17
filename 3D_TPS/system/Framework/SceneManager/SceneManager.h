@@ -29,7 +29,9 @@ public:
 	void Update(float delta_time);
 
 	// 描画
-	void Draw(void);
+	void DrawWorld(void);
+	// フェードなどの遷移演出描画
+	void DrawTransition(void);
 	// UI描画
 	void DrawUI(void);
 

@@ -14,6 +14,7 @@ class PhysicsManager;
 class CameraComponent : public IComponent
 {
 public:
+    DECLARE_COMPONENT_TYPE(CameraComponent, IComponent)
     enum class Mode
     {
         Orbit,   // LookAt + Radius/Elevation/Azimuth

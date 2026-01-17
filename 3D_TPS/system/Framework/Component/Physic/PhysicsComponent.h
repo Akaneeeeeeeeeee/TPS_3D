@@ -16,6 +16,7 @@ class PhysicsManager;
 class PhysicsComponent : public IComponent
 {
 public:
+    DECLARE_COMPONENT_TYPE(PhysicsComponent, IComponent)
     virtual ~PhysicsComponent() noexcept override = default;
 
     virtual void Init(void) override = 0;

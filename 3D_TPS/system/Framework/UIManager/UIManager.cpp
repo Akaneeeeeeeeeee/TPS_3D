@@ -25,14 +25,20 @@ void UIManager::Draw(int screenW, int screenH)
             return a->GetOrder() < b->GetOrder();
         });
 
+    Renderer::SetDepthEnable(false);
+    Renderer::SetBlendState(BS_ALPHABLEND);
     // UI描画の共通設定はここでまとめる（理想）
     // ※CSprite側で SetWorldViewProjection2D() を呼ぶ設計のままでも動く
     Renderer::SetWorldViewProjection2D();
 
-    for (auto* img : m_Images)
+    /*for (auto* img : m_Images)
     {
         if (!img) continue;
         if (!img->ShouldDrawUI()) continue;
         img->DrawUI(screenW, screenH);
-    }
+    }*/
+
+    // 描き終わったら戻す（必要なら）
+    Renderer::SetBlendState(BS_NONE);
+    Renderer::SetDepthEnable(true);
 }

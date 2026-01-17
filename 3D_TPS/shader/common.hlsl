@@ -13,18 +13,18 @@ cbuffer ProjectionBuffer : register(b2)
 
 struct MATERIAL
 {
-	float4 Ambient;
-	float4 Diffuse;
-	float4 Specular;
-	float4 Emission;
-	float Shininess;
-	bool TextureEnable;
-	float2 Dummy;
+    float4 Ambient;
+    float4 Diffuse;
+    float4 Specular;
+    float4 Emission;
+    float Shininess;
+    bool TextureEnable;
+    float2 Dummy;
 };
 
 cbuffer MaterialBuffer : register(b3)
 {
-	MATERIAL Material;
+    MATERIAL Material;
 }
 
 struct LIGHT
@@ -66,6 +66,11 @@ cbuffer SpotLightBuffer : register(b6)
     float3 _SpotPad; // 16byteçáÇÌÇπ
 }
 
+cbuffer CameraBuffer : register(b7)
+{
+    float3 CameraPosW;
+    float _CamPad;
+};
 
 struct VS_IN
 {

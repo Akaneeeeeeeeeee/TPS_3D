@@ -51,7 +51,8 @@ public:
             for (unsigned int x = 0; x <= m_divX; x++) {
                 azimuth = (2 * PI * (float)x) / (float)m_divX;
 
-                VERTEX_3D v;
+                VERTEX_SKINNED_GPU v;
+                //VERTEX_3D v;
                 v.Position.x = r * cosf(azimuth);
                 v.Position.y = m_radius * cosf(elevation);
                 v.Position.z = r * sinf(azimuth);

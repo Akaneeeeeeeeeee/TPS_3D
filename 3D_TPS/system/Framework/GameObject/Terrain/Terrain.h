@@ -6,10 +6,12 @@ class CStaticMeshRenderer;
 class CShader;
 class StaticMeshCollider;
 class IScene;
+class StaticMeshRendererComponent;
 
 class Terrain : public GameObject
 {
 public:
+    DECLARE_GAMEOBJECT_TYPE(Terrain, GameObject)
     Terrain(ComponentFactory* factory,
         const uint64_t id,
         const std::string& name = "",
@@ -47,6 +49,8 @@ private:
     CStaticMeshRenderer* m_pMeshRenderer{};
     CShader* m_pShader{};
     StaticMeshCollider* m_pCollider{};
+
+    StaticMeshRendererComponent* m_RenderComp = nullptr;
 
     IScene* m_pOwnerScene = nullptr;
     Vector3 m_XZMin = Vector3::Zero;

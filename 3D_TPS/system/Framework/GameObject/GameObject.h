@@ -37,12 +37,21 @@ inline GameObject* FromUserData(uint64_t data)
 * @brief	ゲームオブジェクトクラス
 * @detail	ゲーム内の全てのオブジェクトはこのクラスを継承して作成する
 * @remark	オブジェクトはコンポーネントを管理する
-* 
+*
 * @author	赤根和樹
-* @date		2025/10/10(最終更新)
+* @date		2026/1/10(最終更新)
 */
 class GameObject {
 public:
+	using ObjTypeId = uint32_t;
+
+	template<class T>
+	static ObjTypeId ObjTypeIdOf()
+	{
+		static const ObjTypeId id = NewObjTypeId();
+		return id;
+	}
+
 	GameObject() = delete;
 	explicit GameObject(ComponentFactory* factory,
 		const uint64_t id,
@@ -122,6 +131,13 @@ public:
 		requires std::derived_from<T, IComponent>
 	bool RemoveComponent(T* component);
 
+	virtual ObjTypeId GetObjTypeId() const { return ObjTypeIdOf<GameObject>(); }
+	virtual bool IsObjA(ObjTypeId id) const { return id == ObjTypeIdOf<GameObject>(); }
+
+	template<typename T>
+		requires std::derived_from<T, GameObject>
+	bool IsObjA() const { return IsObjA(ObjTypeIdOf<T>()); }
+
 	void RemoveComponent(const std::string& name);
 	void FlushInitializeQueue(void);
 	void FlushDestroyComponents(void);
@@ -158,6 +174,18 @@ public:
 
 	ObjectManager* GetObjectManager(void) const { return m_pObjectManager; }
 
+private:
+	void RemoveFromTypeIndex(IComponent* c);
+	// コンポーネントをインターフェースでも取得するための索引登録
+	void IndexComponent(IComponent* c);
+	void UnindexComponent(IComponent* c);
+	void EraseFromBucket(IComponent::TypeId tid, IComponent* c);
+
+	static ObjTypeId NewObjTypeId()
+	{
+		static std::atomic<ObjTypeId> s{ 1 };
+		return s.fetch_add(1, std::memory_order_relaxed);
+	}
 protected:
 	// SRT情報（姿勢情報）
 	Transform m_Transform;
@@ -190,13 +218,15 @@ protected:
 	bool m_AwakeDone = false;
 	// 開始処理済みフラグ
 	bool m_StartDone = false;
-	
+
 	//! オブジェクトの名前
 	std::string m_Name;
 
 	//! コンポーネントのマップ(コンポーネントが多数になる場合はunordered_mapとの併用も検討)
 	std::unordered_map<std::string, std::unique_ptr<IComponent>> m_Components;
 	std::vector<IComponent*> m_InitializeQueue;		// 保留中の初期化コンポーネント
+	// 型索引（同一型複数OK）
+	std::unordered_map<IComponent::TypeId, std::vector<IComponent*>> m_ComponentsByType;
 };
 
 
@@ -214,6 +244,9 @@ inline T* GameObject::AddComponent(const std::string& name, Args&&... args)
 
 	// 所有権は GameObject が持つ
 	m_Components[name] = std::move(component);
+
+	// 型索引へ登録（同一型複数OK）
+	IndexComponent(ptr);
 
 	// 初期化待ちキューに積む
 	m_InitializeQueue.push_back(ptr);
@@ -234,12 +267,15 @@ template <typename T>
 	requires std::derived_from<T, IComponent>
 inline T* GameObject::GetComponent(void)
 {
-	// コンポーネント探索
-	for (auto& [name, comp] : m_Components)
+	auto it = m_ComponentsByType.find(IComponent::TypeIdOf<T>());
+	if (it == m_ComponentsByType.end() || it->second.empty()) { return nullptr; }
+
+	// Destroy予約されたものが先頭に残る可能性があるのでスキップ
+	for (IComponent* c : it->second)
 	{
-		if (auto ptr = dynamic_cast<T*>(comp.get()))
+		if (c && !c->IsDestroyRequested())
 		{
-			return ptr;
+			return static_cast<T*>(c);
 		}
 	}
 	return nullptr;
@@ -252,7 +288,12 @@ inline T* GameObject::GetComponent(const std::string& _name)
 	// コンポーネント探索
 	auto it = m_Components.find(_name);
 	if (it == m_Components.end()) { return nullptr; }
-	return static_cast<T*>(it->second.get()); // 同一ヒエラルキーなのでOK
+
+	IComponent* c = it->second.get();
+	if (!c) { return nullptr; }
+
+	if (!c->IsA<T>()) { return nullptr; }
+	return static_cast<T*>(c);
 }
 
 // GameObject に全部取り出すヘルパ
@@ -261,11 +302,26 @@ template <typename T>
 inline void GameObject::GetComponents(std::vector<T*>& outcomponents)
 {
 	outcomponents.clear();
-	for (auto& [name, comp] : m_Components)
+
+	// 型索引から探す
+	auto it = m_ComponentsByType.find(IComponent::TypeIdOf<T>());
+	if (it == m_ComponentsByType.end()) { return; }
+
+	outcomponents.reserve(it->second.size());
+	for (IComponent* c : it->second)
 	{
-		if (auto p = static_cast<T*>(comp.get())) // 同一ヒエラルキーなのでOK
+		if (c && !c->IsDestroyRequested())
 		{
-			outcomponents.push_back(p);
+			outcomponents.push_back(static_cast<T*>(c));
 		}
 	}
 }
+
+// 型情報マクロ
+#define DECLARE_GAMEOBJECT_TYPE(Derived, Base) \
+public: \
+    ObjTypeId GetObjTypeId() const override { return GameObject::ObjTypeIdOf<Derived>(); } \
+    bool IsObjA(ObjTypeId id) const override \
+    { \
+        return (id == GameObject::ObjTypeIdOf<Derived>()) || Base::IsObjA(id); \
+    }

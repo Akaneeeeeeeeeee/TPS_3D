@@ -10,16 +10,14 @@ typedef enum
 	BGM_INGAME,			// インゲームBGM
 	BGM_GAMEOVER,		// ゲームオーバーBGM
 	BGM_TITLE,			// タイトルシーンBGM
-	SE_BIRIBIRI,		// ビリビリSE
-	SE_CLICK,			// クリックSE
-	SE_DOON,			// ドォンSE
-	SE_GETMAGAZINE,		// マガジン取得SE
-	SE_PATAPATA,		// パタパタSE
-	SE_SHOT,			// 擬音発射SE
-	SE_POYON,			// ポヨンSE
-	SE_SUCTION,			// 吸い込みSE
-
-
+	SE_STONE,			// 石着地SE
+	SE_CAN,				// 缶着地SE
+	SE_HEAVYRAIN,		// 豪雨SE
+	SE_LIGHTRAIN,		// 小雨SE
+	SE_SANDSTORM,		// 砂嵐SE
+	SE_THUNDER,			// 雷SE
+	SE_WALKING_NORMAL,	// 歩行SE
+	SE_WALKING_RAIN,	// 雨中歩行SE
 
 	SOUND_LABEL_MAX,
 } SOUND_LABEL;
@@ -40,19 +38,19 @@ private:
 
 	PARAM m_param[SOUND_LABEL_MAX] =
 	{
-		{"Game/Asset/Sound/BGM/StageSelectSceneBGM.wav", true},	// ステージ選択BGM（ループさせるのでtrue設定）
-		{"Game/Asset/Sound/BGM/ClearSceneBGM.wav", true},		// ゲームクリアシーンBGM
-		{"Game/Asset/Sound/BGM/GameBGM.wav", true},  			// インゲームBGM
-		{"Game/Asset/Sound/BGM/GameOverSceneBGM.wav", true},	// ゲームオーバーシーンBGM
-		{"Game/Asset/Sound/BGM/TitleSceneBGM.wav", true},		// タイトルシーンBGM
-		{"Game/Asset/Sound/SE/BiriBiri.wav", false},			// 「ビリビリ」SE（ループしないのでfalse設定）
-		{"Game/Asset/Sound/SE/Click.wav", false},				// クリックSE（ループしないのでfalse設定）
-		{"Game/Asset/Sound/SE/Doon.wav", false},				// 「ビリビリ」SE（ループしないのでfalse設定）
-		{"Game/Asset/Sound/SE/Magazine.wav", false},			// マガジン取得SE（ループしないのでfalse設定）
-		{"Game/Asset/Sound/SE/PataPata.wav", false},			// 「パタパタ」SE（ループしないのでfalse設定）
-		{"Game/Asset/Sound/SE/Shot.wav", false},				// 擬音発射SE（ループしないのでfalse設定）		
-		{"Game/Asset/Sound/SE/Slime_Poyon.wav", false},			// 「ポヨン」SE（ループしないのでfalse設定）
-		{"Game/Asset/Sound/SE/Suction.wav", false},				// 吸い込みSE（ループしないのでfalse設定）
+		{"assets/Sound/BGM/StageSelectSceneBGM.wav", true},	// ステージ選択BGM（ループさせるのでtrue設定）
+		{"assets/Sound/BGM/ClearSceneBGM.wav", true},		// ゲームクリアシーンBGM
+		{"assets/Sound/BGM/GameBGM.wav", true},  			// インゲームBGM
+		{"assets/Sound/BGM/GameOverSceneBGM.wav", true},	// ゲームオーバーシーンBGM
+		{"assets/Sound/BGM/TitleSceneBGM.wav", true},		// タイトルシーンBGM
+		{"assets/Sound/SE/BiriBiri.wav", false},			// 「ビリビリ」SE（ループしないのでfalse設定）
+		{"assets/Sound/SE/Click.wav", false},				// クリックSE（ループしないのでfalse設定）
+		{"assets/Sound/SE/Doon.wav", false},				// 「ビリビリ」SE（ループしないのでfalse設定）
+		{"assets/Sound/SE/Magazine.wav", false},			// マガジン取得SE（ループしないのでfalse設定）
+		{"assets/Sound/SE/PataPata.wav", false},			// 「パタパタ」SE（ループしないのでfalse設定）
+		{"assets/Sound/SE/Shot.wav", false},				// 擬音発射SE（ループしないのでfalse設定）		
+		{"assets/Sound/SE/Slime_Poyon.wav", false},			// 「ポヨン」SE（ループしないのでfalse設定）
+		{"assets/Sound/SE/Suction.wav", false},				// 吸い込みSE（ループしないのでfalse設定）
 
 
 	};
@@ -84,7 +82,7 @@ public:
 	// 引数で指定したサウンドを停止する
 	void Stop(SOUND_LABEL label);
 
-	//! 引数で指定したサウンドの音量を変更する	//後から追加（出口）
+	//! 引数で指定したサウンドの音量を変更する	
 	void ChangeVolume(SOUND_LABEL label,int );
 
 	// 引数で指定したサウンドの再生を再開する

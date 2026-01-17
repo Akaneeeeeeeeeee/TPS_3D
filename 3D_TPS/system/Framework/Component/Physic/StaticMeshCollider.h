@@ -14,6 +14,7 @@ class CStaticMesh;
 class StaticMeshCollider : public PhysicsComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(StaticMeshCollider, PhysicsComponent)
     StaticMeshCollider() = default;
     ~StaticMeshCollider() noexcept override = default;
 

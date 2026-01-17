@@ -60,6 +60,7 @@ ComPtr<ID3D11DeviceContext> Renderer::m_DeviceContext;
 ComPtr<IDXGISwapChain> Renderer::m_SwapChain;
 ComPtr<ID3D11RenderTargetView> Renderer::m_RenderTargetView;
 ComPtr<ID3D11DepthStencilView> Renderer::m_DepthStencilView;
+ComPtr<ID3D11ShaderResourceView> Renderer::m_DepthSRV;
 
 ComPtr<ID3D11Buffer> Renderer::m_WorldBuffer;
 ComPtr<ID3D11Buffer> Renderer::m_ViewBuffer;
@@ -69,6 +70,7 @@ ComPtr<ID3D11Buffer> Renderer::m_LightBuffer;
 
 ComPtr<ID3D11DepthStencilState> Renderer::m_DepthStateEnable;
 ComPtr<ID3D11DepthStencilState> Renderer::m_DepthStateDisable;
+ComPtr<ID3D11DepthStencilState> Renderer::m_DepthStateReadOnly;
 
 ComPtr<ID3D11BlendState> Renderer::m_BlendState[MAX_BLENDSTATE];
 ComPtr<ID3D11BlendState> Renderer::m_BlendStateATC;
@@ -133,28 +135,73 @@ void Renderer::Init()
 		throw std::runtime_error("Failed to retrieve render target buffer.");
 	}
 
+	// --- 深度ステンシルビュー設定 ---
+	//ComPtr<ID3D11Texture2D> depthStencil;
+	//D3D11_TEXTURE2D_DESC textureDesc{};
+	//textureDesc.Width = swapChainDesc.BufferDesc.Width;
+	//textureDesc.Height = swapChainDesc.BufferDesc.Height;
+	//textureDesc.MipLevels = 1;
+	//textureDesc.ArraySize = 1;
+	//textureDesc.Format = DXGI_FORMAT_D32_FLOAT;     // Zファイティング解決のため深度バッファの精度を上げる
+	//textureDesc.SampleDesc = swapChainDesc.SampleDesc;
+	//textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	//textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	//hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
+	//if (FAILED(hr)) {
+	//	throw std::runtime_error("Failed to create depthStencil.");
+	//}
+
+	// depth texture (typeless)
 	ComPtr<ID3D11Texture2D> depthStencil;
+
 	D3D11_TEXTURE2D_DESC textureDesc{};
 	textureDesc.Width = swapChainDesc.BufferDesc.Width;
 	textureDesc.Height = swapChainDesc.BufferDesc.Height;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_D32_FLOAT;     // Zファイティング解決のため深度バッファの精度を上げる
+
+	// SRV を作るため typeless
+	textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 	textureDesc.SampleDesc = swapChainDesc.SampleDesc;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	// Depth + SRV
+	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
 	hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
 	if (FAILED(hr)) {
 		throw std::runtime_error("Failed to create depthStencil.");
 	}
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
-	depthStencilViewDesc.Format = textureDesc.Format;
-	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, m_DepthStencilView.GetAddressOf());
+	// DSV (D32_FLOAT)
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+	hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &dsvDesc, m_DepthStencilView.GetAddressOf());
 	if (FAILED(hr)) {
 		throw std::runtime_error("Failed to create depthStencilView.");
 	}
+
+	// SRV (R32_FLOAT)
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = 1;
+
+	hr = m_Device->CreateShaderResourceView(depthStencil.Get(), &srvDesc, m_DepthSRV.GetAddressOf());
+	if (FAILED(hr)) {
+		throw std::runtime_error("Failed to create depth SRV.");
+	}
+
+	//D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
+	//depthStencilViewDesc.Format = textureDesc.Format;
+	//depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	//hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, m_DepthStencilView.GetAddressOf());
+	//if (FAILED(hr)) {
+	//	throw std::runtime_error("Failed to create depthStencilView.");
+	//}
 
 	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
 
@@ -192,6 +239,11 @@ void Renderer::Init()
 	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	// 1～7も同じ設定にする（MRTで書けるように）
+	for (int i = 1; i < 8; ++i)
+	{
+		BlendDesc.RenderTarget[i] = BlendDesc.RenderTarget[0];
+	}
 
 	m_Device->CreateBlendState(&BlendDesc, m_BlendState[0].GetAddressOf());
 	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -207,19 +259,27 @@ void Renderer::Init()
 	SetBlendState(BS_ALPHABLEND);
 
 	// --- 深度ステンシルステートの設定 ---
+	// 通常有効
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = TRUE;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	depthStencilDesc.StencilEnable = FALSE;
-
 	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateEnable.GetAddressOf());
 
+	// 無効
 	depthStencilDesc.DepthEnable = FALSE;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateDisable.GetAddressOf());
-
 	m_DeviceContext->OMSetDepthStencilState(m_DepthStateEnable.Get(), 0);
+
+	// 読み取り専用（深度テストON、書き込みOFF）
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	depthStencilDesc.StencilEnable = FALSE;
+
+	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateReadOnly.GetAddressOf());
 
 	// --- サンプラーステート設定 ---
 	D3D11_SAMPLER_DESC samplerDesc{};
@@ -349,6 +409,19 @@ void Renderer::Uninit()
  */
 void Renderer::Begin()
 {
+	// ★毎フレーム、描画先とビューポートを必ず正しい状態に戻す
+	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
+
+	D3D11_VIEWPORT viewport{};
+	viewport.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
+	viewport.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	m_DeviceContext->RSSetViewports(1, &viewport);
+
+	// 画面クリア（青色）
 	float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	m_DeviceContext->ClearRenderTargetView(m_RenderTargetView.Get(), clearColor);
 	m_DeviceContext->ClearDepthStencilView(m_DepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -578,6 +651,12 @@ void Renderer::SetDepthAllwaysWrite()
 	}
 }
 
+void Renderer::SetDepthReadOnly(bool enable)
+{
+	m_DeviceContext->OMSetDepthStencilState(
+		enable ? m_DepthStateReadOnly.Get() : m_DepthStateEnable.Get(), 0);
+}
+
 /**
  * @brief スポットライト情報をシェーダーにセットします。
  * @param lights スポットライト配列へのポインタ
@@ -612,3 +691,23 @@ void Renderer::SetSpotLights(const SpotLightGPU* lights, int count)
 	m_DeviceContext->PSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
 }
 
+/*
+* @brief バックバッファとデプスステンシルをレンダーターゲットにバインドします。
+ * @param setViewport trueならビューポートも設定する
+ */
+void Renderer::BindBackbuffer(bool setViewport)
+{
+	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
+
+	if (setViewport)
+	{
+		D3D11_VIEWPORT vp{};
+		vp.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
+		vp.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
+		m_DeviceContext->RSSetViewports(1, &vp);
+	}
+}

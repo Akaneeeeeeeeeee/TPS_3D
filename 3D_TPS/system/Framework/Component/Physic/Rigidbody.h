@@ -13,6 +13,7 @@
 class Rigidbody final : public PhysicsComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(Rigidbody, PhysicsComponent)
 	Rigidbody(const float mass = 1.0f);
 	~Rigidbody() override = default;
 

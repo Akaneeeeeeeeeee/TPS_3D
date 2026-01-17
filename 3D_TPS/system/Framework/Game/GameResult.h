@@ -1,0 +1,19 @@
+#pragma once
+#include <string>
+
+enum class ResultType : uint8_t
+{
+    None,
+    Clear,
+    Found,
+    TimeUp
+};
+
+struct GameResult
+{
+    ResultType type = ResultType::None;
+
+    // ç°å„ïKóvÇ»ÇÁí«â¡
+    //float remainSec = 0.0f;
+    //std::string foundByEnemyName;
+};

@@ -54,6 +54,7 @@ struct SkinnedAnimSetup
 class SkinnedAnimationComponent : public IComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(SkinnedAnimationComponent, IComponent)
     SkinnedAnimationComponent() = default;
     ~SkinnedAnimationComponent() override = default;
 
@@ -63,6 +64,7 @@ public:
     void Init(void) override;
     void Update(const float dt) override;
     void Uninit(void) override;
+    void Draw(void) const override;
 
     // ---- Ý’èŒn ----
 
@@ -101,8 +103,9 @@ public:
     aiAnimation* GetClipPtr(AnimType type) const;
 
     // •`‰æiGameObject::Draw ‚©‚çŒÄ‚Ôj
-    void Draw(void) const override;
     void DebugImGui();
+
+    BoneCombMatrix* GetBones() { return m_AnimObject ? &m_AnimObject->GetBoneCombMatrix() : nullptr; }
 
 private:
     void ApplySetupIfPossible();

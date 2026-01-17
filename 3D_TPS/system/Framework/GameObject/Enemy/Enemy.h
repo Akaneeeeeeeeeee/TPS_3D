@@ -9,6 +9,7 @@ class EnemyAIComponent;
 class Terrain;
 class StaticMeshCollider;
 class EnemyHeadIconComponent;
+class UISpriteRenderer;
 
 /*
 * @brief	敵クラス
@@ -20,6 +21,7 @@ class EnemyHeadIconComponent;
 class Enemy : public Character
 {
 public:
+	DECLARE_GAMEOBJECT_TYPE(Enemy, Character)
 	Enemy() = default;
 	Enemy(ComponentFactory* factory, const uint64_t id, const std::string& name = "", const Tag& tag = Tag::Enemy,
 		Player* player = nullptr,
@@ -55,6 +57,7 @@ private:
 	StaticMeshCollider* m_pTerrainCollider;
 	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
+	UISpriteRenderer* m_UISprite = nullptr;
 	EnemyHeadIconComponent* m_HeadIcon = nullptr;
 
 	std::vector<Vector3> m_RequestedWayPoints; // シーンなど外部から指定された巡回点

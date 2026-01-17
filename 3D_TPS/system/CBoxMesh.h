@@ -8,7 +8,8 @@ class CBoxMesh : public CMesh {
 // 頂点座標をノーマライズ
 	void Normalize(
 		Vector3 vec, 
-		Vector3& Normal) {
+		DirectX::XMFLOAT3& Normal) {
+		//Vector3& Normal) {
 
 		vec.Normalize();
 		Normal = vec;

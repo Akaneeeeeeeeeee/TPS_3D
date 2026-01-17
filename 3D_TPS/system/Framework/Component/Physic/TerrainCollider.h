@@ -15,6 +15,7 @@ struct VERTEX_3D;
 class TerrainCollider : public PhysicsComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(TerrainCollider, PhysicsComponent)
     TerrainCollider() = default;
     ~TerrainCollider() noexcept override = default;
 

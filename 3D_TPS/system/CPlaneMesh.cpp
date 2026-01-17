@@ -46,7 +46,8 @@ void CPlaneMesh::CreateVertex() {
 	m_vertices.clear();
 
 	for (unsigned int y = 0; y <= m_divY; y++) {
-		VERTEX_3D	vtx{};
+		VERTEX_SKINNED_GPU	vtx{};
+		//VERTEX_3D	vtx{};
 
 		for (unsigned int x = 0; x <= m_divX; x++) {
 
@@ -77,7 +78,8 @@ void CPlaneMesh::CreateVertexXZ() {
 	m_vertices.clear();
 
 	for (unsigned int y = 0; y <= m_divY; y++) {
-		VERTEX_3D	vtx{};
+		VERTEX_SKINNED_GPU	vtx{};
+		//VERTEX_3D	vtx{};
 
 		for (unsigned int x = 0; x <= m_divX; x++) {
 

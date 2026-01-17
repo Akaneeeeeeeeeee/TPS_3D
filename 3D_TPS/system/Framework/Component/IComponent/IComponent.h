@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "system/Framework/Application/Entry/main.h"
 
 // 前方宣言
 class GameObject;
@@ -13,7 +14,26 @@ struct EngineServices;
 class IComponent
 {
 public:
+	using TypeId = uint32_t;
+
 	virtual ~IComponent();	// デストラクタ
+
+	// RTTI不要の型ID
+	template<class T>
+	static TypeId TypeIdOf()
+	{
+		static const TypeId id = NewTypeId();
+		return id;
+	}
+
+	// 実型ID
+	virtual TypeId GetTypeId() const { return TypeIdOf<IComponent>(); }
+
+	// 継承チェーン判定（BaseでDerivedを取るため）
+	virtual bool IsA(TypeId id) const { return id == TypeIdOf<IComponent>(); }
+
+	template<class T>
+	bool IsA() const { return IsA(TypeIdOf<T>()); }
 
 	virtual void Init(void) = 0;		// 初期化
 	virtual void Update(const float deltatime) = 0;		// 更新
@@ -35,6 +55,13 @@ public:
 	virtual void Detach(void) = 0;	// デタッチされたときの処理(各派生コンポーネントでどの管理システムから解除するかを実装)
 
 protected:
+	// 型ID発行
+	static TypeId NewTypeId()
+	{
+		static std::atomic<TypeId> s{ 1 };
+		return s.fetch_add(1, std::memory_order_relaxed);
+	}
+
 	// インターフェースクラスなのでprotected
 	explicit IComponent();
 	// コンポーネントの所有者(sharedだとややこしくなるので生ポインタにする)
@@ -45,3 +72,11 @@ protected:
 	bool IsDestroy = false;
 };
 
+// 1行で宣言するためのマクロ
+#define DECLARE_COMPONENT_TYPE(Derived, Base) \
+public: \
+    TypeId GetTypeId() const override { return IComponent::TypeIdOf<Derived>(); } \
+    bool IsA(TypeId id) const override \
+    { \
+        return (id == IComponent::TypeIdOf<Derived>()) || Base::IsA(id); \
+    }

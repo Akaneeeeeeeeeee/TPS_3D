@@ -5,7 +5,8 @@
 
 class CMeshRenderer {
 protected:
-	CVertexBuffer<VERTEX_3D>	m_VertexBuffer;		// 頂点バッファ
+	CVertexBuffer<VERTEX_SKINNED_GPU>	m_VertexBuffer;		// 頂点バッファ
+	//CVertexBuffer<VERTEX_3D>	m_VertexBuffer;		// 頂点バッファ
 	CIndexBuffer				m_IndexBuffer;		// インデックスバッファ
 	int							m_IndexNum = 0;		// インデックス数
 public:
@@ -112,14 +113,28 @@ public:
 
 
 	// 頂点バッファを更新
-	void Modify(const std::vector<VERTEX_3D>& vertices)
+	void Modify(const std::vector<VERTEX_SKINNED_GPU>& vertices)
 	{
 		m_VertexBuffer.Modify(vertices);
 	}
+	/*void Modify(const std::vector<VERTEX_3D>& vertices)
+	{
+		m_VertexBuffer.Modify(vertices);
+	}*/
 	// 頂点バッファ・インデックスバッファを更新
-	void Modify(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices)
+	void Modify(const std::vector<VERTEX_SKINNED_GPU>& vertices, const std::vector<uint32_t>& indices)
 	{
 		m_VertexBuffer.Modify(vertices);
 		m_IndexBuffer.Modify(indices);
 	}
+	/*void Modify(const std::vector<VERTEX_3D>& vertices, const std::vector<uint32_t>& indices)
+	{
+		m_VertexBuffer.Modify(vertices);
+		m_IndexBuffer.Modify(indices);
+	}*/
+
+	ID3D11Buffer* GetVB() const { return m_VertexBuffer.GetBuffer(); }
+	ID3D11Buffer* GetIB() const { return m_IndexBuffer.GetBuffer(); }
+
+	DXGI_FORMAT   GetIndexFormat() const { return m_IndexBuffer.GetFormat(); }
 };

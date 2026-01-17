@@ -7,6 +7,7 @@
 class SphereCollider final : public PhysicsComponent
 {
 public:
+	DECLARE_COMPONENT_TYPE(SphereCollider, PhysicsComponent)
     SphereCollider() = default;
     ~SphereCollider() override = default;
 

@@ -1,6 +1,6 @@
 #include "Cube.h"
 #include "system/BoxDrawer.h"
-#include "system/Framework/Component/Renderer/MeshRenderer/MeshRenderer.h"
+#include "system/Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 #include "system/renderer.h"
 #include "Framework/Component/Physic/BoxCollider.h"
 #include "Framework/Component/Physic/Rigidbody.h"
