@@ -49,6 +49,10 @@ void SoundWaveVisualizer::OnEmit(const WorldSoundEvent& ev)
     m_Waves.push_back(w);
 }
 
+void SoundWaveVisualizer::OnWorldSound(const WorldSoundEvent& ev)
+{
+    OnEmit(ev);
+}
 
 void SoundWaveVisualizer::Update(float dt)
 {

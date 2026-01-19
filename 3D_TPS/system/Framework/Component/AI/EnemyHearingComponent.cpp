@@ -9,10 +9,17 @@ void EnemyHearingComponent::Attach(EngineServices& context)
 {
 	m_pPhysics = &context.physics;
 	m_pWeather = &context.weather;
+	m_pSound = &context.sound;
+	m_pSound->RegisterListener(this);
 }
 
 void EnemyHearingComponent::Detach(void)
 {
+	if (m_pSound)
+	{
+		m_pSound->UnregisterListener(this); // 解除
+		m_pSound = nullptr;
+	}
 	m_pPhysics = nullptr;
 	m_pWeather = nullptr;
 }
@@ -120,24 +127,24 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 
 void EnemyHearingComponent::Update(const float dt)
 {
-	if (!m_pEnemyAI) { return; }
+	//if (!m_pEnemyAI) { return; }
 
-	const auto& events = SoundManager::GetInstance().GetEvents();
+	//const auto& events = SoundManager::GetInstance().GetEvents();
 
-	for (const auto& ev : events)
-	{
-		float perceived = ComputePerceivedLoudness(ev);
+	//for (const auto& ev : events)
+	//{
+	//	float perceived = ComputePerceivedLoudness(ev);
 
-		// 弱すぎる音は無視
-		//if (perceived < m_Threshold)
-		if (perceived <= 0.0f)
-		{
-			continue;
-		}
+	//	// 弱すぎる音は無視
+	//	//if (perceived < m_Threshold)
+	//	if (perceived <= 0.0f)
+	//	{
+	//		continue;
+	//	}
 
-		// 音を AI に通知
-		m_pEnemyAI->OnHeardSound(ev.Position, perceived);
-	}
+	//	// 音を AI に通知
+	//	m_pEnemyAI->OnHeardSound(ev.Position, perceived);
+	//}
 }
 
 void EnemyHearingComponent::SetEnemyAI(EnemyAIComponent* ai)

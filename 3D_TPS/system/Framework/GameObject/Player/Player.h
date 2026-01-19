@@ -5,6 +5,7 @@
 class CharacterVirtualComponent;
 class CameraComponent;
 class ThrowComponent;
+class SoundEmitterComponent;
 
 /*
 * @brief	プレイヤークラス
@@ -80,6 +81,7 @@ private:
 	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 	CameraComponent* m_pCamera = nullptr;
 	ThrowComponent* m_pThrowComp = nullptr;
+	SoundEmitterComponent* m_pSoundEmitter = nullptr;
 
 	struct ForceLookAtState
 	{
@@ -102,6 +104,7 @@ private:
 	float m_FootstepIntervalRun = 0.30f;  // 走り時の間隔
 	float m_FootstepIntervalCrouch = 0.50f;  // しゃがみ歩き
 	bool  m_FootstepEnabled = true;   // 必要なら ON/OFF できるように
+	bool  m_IsMoving = false;
 
 	// カメラ補間用（static をやめて Player が持つ）
 	float m_CamAzimuth = 0.0f;

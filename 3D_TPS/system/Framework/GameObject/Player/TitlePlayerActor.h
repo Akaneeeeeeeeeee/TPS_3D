@@ -4,6 +4,7 @@
 // 前方宣言
 class CharacterVirtualComponent;
 class Terrain;
+class SoundEmitterComponent;
 
 /*
 * @brief	タイトル用プレイヤークラス
@@ -72,7 +73,6 @@ public:
 
 	void SetTerrain(Terrain* terrain) { m_Terrain = terrain; }
 
-    // TitlePlayerActor.h
     void SetMove(const Vector3& dir, float amount) { m_MoveDir = dir; m_MoveAmount = amount; }
     void SetFaceMode(FaceMode m) { m_FaceMode = m; }
     void SetFaceDir(const Vector3& dir) { m_FaceDir = dir; }
@@ -80,7 +80,7 @@ public:
     void SetTargetAnim(TitleAnim a) { m_TargetAnim = a; }
     void SetSidewaysRight(bool v) { m_SidewaysRight = v; }
 
-
+    void EmitWorldSoundAt(const Vector3& pos, const WorldSoundEvent& ev);
 private:
     // ---- 台本入力 ----
     Vector3   m_MoveDir = Vector3::Zero;  // 正規化済みが理想（z前進などはあなたの座標系に合わせる）
@@ -117,6 +117,7 @@ private:
 
 	CameraComponent* m_pCamera = nullptr;
     Terrain* m_Terrain = nullptr;
+	SoundEmitterComponent* m_pSoundEmitter = nullptr;
 
 private:
     void ApplyAnimation(float dt);

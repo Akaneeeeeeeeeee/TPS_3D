@@ -680,6 +680,25 @@ void WeatherSystem::DrawSand() const
         sandColor);
 }
 
+float WeatherSystem::GetRainStrength01(void) const
+{
+    // 雨の強さを 0～1 に正規化して返す
+    const float maxEmitRate = 10000.0f; // 強さ最大とみなす放出率
+    float rate = m_CurrentParams.rainEmitRate;
+    float t = std::clamp(rate / maxEmitRate, 0.0f, 1.0f);
+	return t;
+}
+
+float WeatherSystem::GetSandStrength01(void) const
+{
+    // 砂嵐の強さを 0～1 に正規化して返す
+    const float maxEmitRate = 5000.0f; // 強さ最大とみなす放出率
+    float rate = m_CurrentParams.sandEmitRate;
+    float t = std::clamp(rate / maxEmitRate, 0.0f, 1.0f);
+	return t;
+}
+
+
 void WeatherSystem::DebugImGui()
 {
 #ifdef _DEBUG

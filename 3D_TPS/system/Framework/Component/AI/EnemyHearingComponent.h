@@ -1,11 +1,13 @@
 #pragma once
 #include "Framework/Component/IComponent/IComponent.h"
 #include "Framework/SoundManager/SoundManager.h"
+#include "Framework/Sound/IWorldSoundListener.h"
 
 // 前方宣言
 class EnemyAIComponent;
 class PhysicsManager;
 class WeatherSystem;
+class SoundHub;
 
 /*
 * @brief    敵聴覚コンポーネント
@@ -13,7 +15,7 @@ class WeatherSystem;
 * @author   赤根　和樹
 * @date     2025/11/20
 */
-class EnemyHearingComponent : public IComponent
+class EnemyHearingComponent : public IComponent, public IWorldSoundListener
 {
 public:
 	DECLARE_COMPONENT_TYPE(EnemyHearingComponent, IComponent)
@@ -56,4 +58,5 @@ private:
 	EnemyAIComponent* m_pEnemyAI = nullptr;
 	PhysicsManager* m_pPhysics = nullptr;
 	WeatherSystem* m_pWeather = nullptr;
+    SoundHub* m_pSound = nullptr;
 };

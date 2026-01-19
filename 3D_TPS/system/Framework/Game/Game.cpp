@@ -46,9 +46,6 @@ void Game::Init()
 	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
 	m_SceneManager.Init(&m_ObjectManager, "GameScene");
 
-	// 既存の独立物（統一したいなら EngineSystems 側に寄せる）
-	SoundWaveVisualizer::GetInstance().SetWeatherSystem(&svc.weather);
-
 #ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
 #endif
@@ -60,8 +57,6 @@ void Game::Init()
 */
 void Game::Update(const float deltatime)
 {
-	SoundManager::GetInstance().BeginFrame();
-
 	// まず入力は更新（解除キーを拾う）
 	m_Engine.BeginFrame(deltatime);
 
@@ -86,8 +81,11 @@ void Game::Update(const float deltatime)
 	{
 		// イベント発生まではループし続ける
 		m_SceneManager.Update(deltatime);
-		m_GameFeatures.Update(deltatime);
-		SoundWaveVisualizer::GetInstance().Update(deltatime);
+		//m_GameFeatures.Update(deltatime);
+		
+		// サウンド一括再生 + 可視化Updateなど
+		// ここで「このフレームにEmitされた音」をまとめて処理
+		m_Engine.EndFrame();
 	}
 	// ゲーム終了フラグが立ったら
 	else
@@ -120,7 +118,7 @@ void Game::Draw()
 
 	// シーンの描画
 	m_SceneManager.DrawWorld();
-	m_GameFeatures.DrawWorld();
+	//m_GameFeatures.DrawWorld();
 
 	// 天候パーティクル描画
 	svc.weather.DrawParticles();
@@ -134,9 +132,8 @@ void Game::Draw()
 	// 3) 霧（backbufferへ合成）
 	svc.weather.DrawAtmospherePostWorld();
 
-	// todo:ここは後から描画機能に責任を持たせる
-	SoundWaveVisualizer::GetInstance().DrawWorld();
-
+	// 音の可視化
+	svc.sound.DrawWorldSound();
 
 	// 4) UI
 	m_SceneManager.DrawUI();

@@ -190,6 +190,12 @@
     <Filter Include="ソース ファイル\MyFramework\Component\Renderer">
       <UniqueIdentifier>{d410d0c6-44c2-42de-9fa5-0e420ca3a091}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Sound">
+      <UniqueIdentifier>{4a2175c0-6c09-441e-b38f-f80629feb725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\MyFramework\Component\SoundEmitter">
+      <UniqueIdentifier>{5fd11387-2194-4bc0-809e-e7b0a5eef05f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\AimOrientation.h">
@@ -585,9 +591,6 @@
     <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h">
       <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\SoundManager\sound.h">
-      <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\EngineSystem\GameFeatureSystems.h">
       <Filter>ソース ファイル\MyFramework\EngineSystem</Filter>
     </ClInclude>
@@ -635,6 +638,27 @@
     </ClInclude>
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Sound\WeatherAudioController.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Sound\SoundEmitterComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\SoundEmitter</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Sound\IWorldSoundListener.h">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Sound\SoundBus.h">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Sound\SoundHub.h">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Sound\SoundPlaybackListener.h">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\SoundManager\SoundSystem.h">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -938,9 +962,6 @@
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Throw</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\SoundManager\sound.cpp">
-      <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
-    </ClCompile>
     <ClCompile Include="system\Framework\Component\Physic\SphereCollider.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Collider</Filter>
     </ClCompile>
@@ -973,6 +994,24 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Sound\WeatherAudioController.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\SoundManager\SoundManager.cpp">
+      <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\Sound\SoundEmitterComponent.cpp">
+      <Filter>ソース ファイル\MyFramework\Component\SoundEmitter</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\SoundManager\SoundSystem.cpp">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Sound\SoundHub.cpp">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Sound\SoundPlaybackListener.cpp">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

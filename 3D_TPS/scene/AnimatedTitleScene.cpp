@@ -164,13 +164,13 @@ void AnimatedTitleScene::Draw(void)
 
 #ifdef _DEBUG
 	// ワールド軸を描画
-	for (int axisno = 0; axisno < 3; axisno++)
-	{
-		Matrix4x4 rotmtx = Matrix4x4::Identity;
-		m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
-	}
-	SetLineWidth(3.0f);
-	LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
+	//for (int axisno = 0; axisno < 3; axisno++)
+	//{
+	//	Matrix4x4 rotmtx = Matrix4x4::Identity;
+	//	m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
+	//}
+	//SetLineWidth(3.0f);
+	//LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
 #endif
 }
 
@@ -260,9 +260,9 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 
 #ifdef _DEBUG
 	// ローカル軸表示用線分の初期化
-	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
-	m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
-	m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
+	//m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
+	//m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
+	//m_segments[2] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 0, 100));
 #endif
 }
 
@@ -466,7 +466,7 @@ void TitleScript::EmitRockSound(const Vector3& landPos)
 	ev.Radius = 1200.0f;  // 好みで
 	ev.Type = SoundType::StoneImpact; // 型があるなら
 
-	SoundManager::GetInstance().EmitSound(ev);
+	m_Player->EmitWorldSoundAt(landPos, ev);
 }
 
 void TitleScript::StopAndCheckOverWall(void)

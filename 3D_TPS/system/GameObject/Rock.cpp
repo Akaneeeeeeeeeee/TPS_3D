@@ -1,5 +1,4 @@
 ﻿#include "Rock.h"
-#include "system/Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 #include "system/meshmanager.h"
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "system/CMesh.h"
@@ -12,6 +11,7 @@
 #include "Sound/WorldSoundEvent.h"
 #include "Framework/SoundManager/SoundManager.h"
 #include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
+#include "Framework/Component/Sound/SoundEmitterComponent.h"
 
 Rock::Rock(ComponentFactory* factory, const uint64_t id,
 	const std::string& name, const Tag& tag,
@@ -120,6 +120,8 @@ void Rock::Awake(void)
 	m_pRenderComp->SetShaderKey("unlightshader");
 	m_pRenderComp->SetTransparent(false);
 
+	// 音コンポーネント
+	m_pSoundEmitter = AddComponent<SoundEmitterComponent>("RockSoundEmitter");
 }
 
 void Rock::Update(const float deltatime)
@@ -176,23 +178,22 @@ void Rock::OnCollisionEnter(GameObject& other)
 	m_HitOnce = true;
 
 	// ---- 音イベント発生 ----
-	WorldSoundEvent ev{};
-	ev.Type = SoundType::StoneImpact;
-	ev.Position = GetPosition();
-
 	// 大きさ：速度でそれっぽく（0.1〜1.0に丸め）
-	ev.Loudness = std::clamp(speed / 1200.0f, 0.1f, 1.0f);
-	ev.Radius = 600.0f * ev.Loudness;   // 調整
-	ev.Volume = ev.Loudness;
+	const float loud = std::clamp(speed / 1200.0f, 0.1f, 1.0f);
 
-	SoundManager::GetInstance().EmitSound(ev);
-
-	// ---- ぶつかったら止めたいなら（任意） ----
-	/*if (m_RB)
+	if (m_pSoundEmitter)
 	{
-		m_RB->SetLinearVelocity(Vector3::Zero, true);
-		m_RB->SetAngularVelocity(Vector3::Zero, true);
-	}*/
+		WorldSoundEvent ev{};
+		ev.Type = SoundType::StoneImpact;
+		ev.Position = GetPosition();
+		ev.Loudness = loud;
+		ev.Radius = 600.0f * loud;		// 調整
+		ev.Volume = loud;
+		ev.PlayLabel = SE_STONE; // 明示したいなら
+
+		m_pSoundEmitter->EmitSound(ev);
+	}
+
 
 	// ---- 少し待って消滅 ----
 	m_DespawnTimer = 0.35f; // 調整（秒）

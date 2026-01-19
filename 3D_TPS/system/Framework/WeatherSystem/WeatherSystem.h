@@ -220,6 +220,9 @@ public:
     void SetDayLength(float sec) { m_Sun.dayLengthSec = sec; }
 	float GetDayLength() const { return m_Sun.dayLengthSec; }
 
+    float GetRainStrength01(void) const;
+    float GetSandStrength01(void) const;
+
     void Init(void);
 
     // ---- 毎フレーム更新 ----

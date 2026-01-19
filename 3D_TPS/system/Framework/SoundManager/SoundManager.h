@@ -1,43 +1,43 @@
 #pragma once
-#include "system/Framework/NonCopyable/Singleton_Template.h"
-#include "system/Sound/WorldSoundEvent.h"
-#include <vector>
-#include "system/Sound/SoundWaveVisualizer.h"
 
-class SoundManager : public Singleton<SoundManager>
+#include <vector>
+#include <algorithm>
+
+#include "system/commontypes.h"
+#include "system/Sound/WorldSoundEvent.h"
+
+class SoundEmitterComponent;
+class WeatherSystem;
+class SoundSystem;
+class SoundWaveVisualizer;
+class IWorldSoundListener;
+
+class SoundManager
 {
 public:
-    void BeginFrame()
-    {
-        m_Buffer.events.clear();
-    }
+    void BeginFrame() { m_Events.clear(); }
+    void EmitSound(const WorldSoundEvent& ev) { m_Events.push_back(ev); }
 
-    void EmitSound(const WorldSoundEvent& ev)
-    {
-        // 1) 知覚用に積む
-        m_Buffer.events.push_back(ev);
+    void RegisterListener(IWorldSoundListener* l);
+    void UnregisterListener(IWorldSoundListener* l);
 
-        // 2) 出力/演出
-        m_Output.OnEmit(ev);
-    }
+    // Scene/GameFeatures 更新後に 1回呼ぶ（このフレーム分を配布）
+    void Dispatch();
 
-    const std::vector<WorldSoundEvent>& GetEvents() const
-    {
-        return m_Buffer.events;
-    }
+    void SetListenerPos(const Vector3& p) { m_ListenerPos = p; }
+    const Vector3& GetListenerPos() const { return m_ListenerPos; }
+
+    // デバッグ用途で残してOK（Pullはしない）
+    const std::vector<WorldSoundEvent>& GetEvents() const { return m_Events; }
+
+    // 任意（Emitter登録が欲しければ）
+    void RegisterEmitter(SoundEmitterComponent* e);
+    void UnregisterEmitter(SoundEmitterComponent* e);
 
 private:
-    struct Buffer
-    {
-        std::vector<WorldSoundEvent> events;
-    } m_Buffer;
+    std::vector<WorldSoundEvent> m_Events;
+    std::vector<IWorldSoundListener*> m_Listeners;
 
-    struct Output
-    {
-        void OnEmit(const WorldSoundEvent& ev)
-        {
-            // AudioSystem::Get().Play3DSound(...);  // 必要なら
-            SoundWaveVisualizer::GetInstance().OnEmit(ev);
-        }
-    } m_Output;
+    std::vector<SoundEmitterComponent*> m_Emitters; // 任意
+    Vector3 m_ListenerPos = Vector3::Zero;
 };

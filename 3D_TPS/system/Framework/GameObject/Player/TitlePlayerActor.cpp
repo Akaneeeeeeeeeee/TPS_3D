@@ -7,6 +7,7 @@
 #include <cmath>
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
+#include "Framework/Component/Sound/SoundEmitterComponent.h"
 
 namespace
 {
@@ -345,4 +346,12 @@ void TitlePlayerActor::SetupFixedTitleCamera()
 	// 固定カメラ：位置と注視点だけセット（Radius/Elevation/Azimuth は使わない）
 	m_pCamera->SetPosition(camPos);
 	m_pCamera->SetLookAt(lookAt);
+}
+
+void TitlePlayerActor::EmitWorldSoundAt(const Vector3& pos, const WorldSoundEvent& src)
+{
+	if (!m_pSoundEmitter) return;
+	WorldSoundEvent ev = src;
+	ev.Position = pos;
+	m_pSoundEmitter->EmitSound(ev);
 }
