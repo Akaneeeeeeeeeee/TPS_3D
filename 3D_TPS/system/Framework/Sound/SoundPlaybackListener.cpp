@@ -23,22 +23,29 @@ void SoundPlaybackListener::OnWorldSound(const WorldSoundEvent& ev)
     const SOUND_LABEL label = MapLabel(ev);
     if (label == SOUND_LABEL_MAX) return;
 
-    // 世界全体が聞こえにくい係数（0..1）
     float hearing = 1.0f;
     if (m_pWeather) hearing = m_pWeather->GetHearingFactor();
 
-    // 範囲も hearing で縮める（雨/砂嵐で届く距離も短く）
     const float effectiveRadius = ev.Radius * hearing;
     if (effectiveRadius <= 1e-6f) return;
 
+    // 距離基準点（ここが「プレイヤー位置」になっていれば音量で距離が分かる）
     const Vector3 listener = m_pBus->GetListenerPos();
+
     const float dist = (ev.Position - listener).Length();
     if (dist >= effectiveRadius) return;
 
     float att = 1.0f - (dist / effectiveRadius);
     att = std::clamp(att, 0.0f, 1.0f);
 
-    const float vol = ev.Volume * att * hearing;
+    // ---- 種別倍率（EmitterKind） ----
+    float kindMul = 1.0f;
+    if (ev.Emitter == SoundEmitterKind::Player && ev.Type == SoundType::Footstep)
+        kindMul = 0.9f;          // 自分の足音を少し小さく
+    else if (ev.Emitter == SoundEmitterKind::PlayerItem)
+        kindMul = 1.2f;          // 投げた石などは少し大きめ
+
+    float vol = ev.Volume * att * hearing * kindMul;
     if (vol <= 0.0f) return;
 
     m_pSound->PlayOneShot(label, vol);

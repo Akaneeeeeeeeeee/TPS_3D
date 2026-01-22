@@ -69,7 +69,11 @@ void EngineSystems::UpdateFrame(float dt)
     // listenerPos（カメラ）
     Vector3 listenerPos = Vector3::Zero;
     if (auto* cam = m_Camera.GetMain())
-        listenerPos = cam->GetPosition(); // 無いなら取得方法に合わせて変更
+    {
+        //listenerPos = cam->GetPosition();   // カメラの位置基準
+		listenerPos = cam->GetCollisionPivot();    // 注視点基準（プレイヤー位置基準にしたい）
+		//listenerPos = cam->GetLookAt();    // 注視点基準（プレイヤー位置基準にしたい）
+    }
 
     m_Sound.UpdateFrame(dt, listenerPos);
 

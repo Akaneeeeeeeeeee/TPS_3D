@@ -76,8 +76,10 @@ void AssetManager::Init()
         // Goal —p
         {
             auto goalMesh = std::make_unique<CStaticMesh>();
-            goalMesh->Load("assets/model/obj/cylinder.obj",
-                "assets/model/obj");
+            goalMesh->Load("assets/model/tower/Only Tower.obj",
+                "assets/model/tower");
+            //goalMesh->Load("assets/model/obj/cylinder.obj",
+            //    "assets/model/obj");
             RegisterMesh("goalmesh", std::move(goalMesh));
 
             auto goalRenderer = std::make_unique<CStaticMeshRenderer>();

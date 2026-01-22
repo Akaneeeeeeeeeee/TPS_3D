@@ -5,29 +5,15 @@
 void Character::Awake(void)
 {
 	// キャラクターの初期化処理
-	// 例: モデルの読み込み、アニメーションの設定など
 }
 
 void Character::Update(const float deltatime)
 {
 	// キャラクターの更新処理
-	// 例: 入力に基づく移動、アニメーションの更新など
-	GameObject::Update(deltatime);
 }
 
 void Character::Draw(void) const
 {
-	// キャラクターの描画処理
-	// 例: モデルの描画、エフェクトの適用など
-	
-	// シェーダーをセット
-	//m_Shader.SetGPU();
-
-	//// ワールド行列をセット
-	//Matrix4x4 worldMatrix = this->GetWorldMatrix();
-	//Renderer::SetWorldMatrix(&worldMatrix);
-
-	//m_pAnimationObject->Draw();
 }
 
 void Character::Uninit(void)

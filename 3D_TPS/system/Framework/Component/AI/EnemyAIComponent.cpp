@@ -114,9 +114,6 @@ void EnemyAIComponent::Update(const float dt)
 	case EnemyAIComponent::Investigate:
 		UpdateInvestigate(dt);
 		break;
-	case EnemyAIComponent::Chase:
-		UpdateChase(dt);
-		break;
 	default:
 		break;
 	}
@@ -321,7 +318,7 @@ void EnemyAIComponent::UpdatePatrol(const float dt)
 	{
 		// 正規化してセット
 		moveDir.Normalize();
-		m_Char->SetMoveInput(moveDir, 1.0f);
+		m_Char->SetMoveInput(moveDir, m_PatrolMoveAmount);
 		// キャラの向きも合わせる
 		FaceMoveDir(moveDir);
 	}
@@ -359,7 +356,7 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
 		if (moveDir.LengthSquared() > 0.0001f)
 		{
 			moveDir.Normalize();
-			m_Char->SetMoveInput(moveDir, 1.0f);
+			m_Char->SetMoveInput(moveDir, m_InvestigateMoveAmount);
 			FaceMoveDir(moveDir);
 		}
 		else
@@ -383,12 +380,6 @@ void EnemyAIComponent::UpdateInvestigate(const float dt)
 		m_InvestigateTimer = 0.0f;
 		m_State = m_WayPoints.empty() ? Idle : Patrol;
 	}
-}
-
-
-// 追跡状態の更新(現状発見されたらゲームオーバーなので、追跡が必要になったら実装)
-void EnemyAIComponent::UpdateChase(const float deltatime)
-{
 }
 
 /*
@@ -462,7 +453,6 @@ void EnemyAIComponent::UpdateStuck(float dt, const Vector3& desiredDir)
 		m_HasLastDistToTarget = false;
 	}
 }
-
 
 void EnemyAIComponent::FaceMoveDir(const Vector3& moveDir)
 {
@@ -553,7 +543,6 @@ void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
 	m_State = Caution;
 }
 
-
 Vector3 EnemyAIComponent::GetEyePosition(void) const
 {
 	if (!m_pOwner) return Vector3::Zero;
@@ -562,7 +551,6 @@ Vector3 EnemyAIComponent::GetEyePosition(void) const
 	pos.y += m_EyeHeight;
 	return pos;
 }
-
 
 void EnemyAIComponent::UpdateSight(const float dt)
 {
@@ -1121,31 +1109,87 @@ void EnemyAIComponent::ResolveStuck(void)
 
 
 // ローカル範囲での脱出地点探索
+//bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
+//{
+//	if (!m_Physics || !m_pOwner) { return false; }
+//	if (!m_TerrainCol) { return false; }
+//
+//	Vector3 center = m_pOwner->GetPosition();
+//	Vector3 forward = m_pOwner->GetForward();
+//	forward.y = 0.0f;
+//	if (forward.LengthSquared() < 1e-4f)
+//	{
+//		forward = Vector3::Forward;
+//	}
+//	forward.Normalize();
+//
+//	// チェックする角度の一覧（度）
+//	static const float anglesDeg[] =
+//	{ 0.0f, 45.0f, -45.0f, 90.0f, -90.0f, 135.0f, -135.0f, 180.0f };
+//
+//	// キャラの直径を使う
+//	float radius = m_Char ? m_Char->GetRadius() : 50.0f;
+//	float charDiameter = radius * 2.0f;
+//
+//	// 半径の刻み
+//	const float stepR = charDiameter; // 「キャラ1人分ずつ」外側へ
+//	const float footOffset = 2.0f;
+//
+//	for (float r = stepR; r <= maxR; r += stepR)
+//	{
+//		for (float deg : anglesDeg)
+//		{
+//			float rad = deg * DEG2RAD;
+//			Vector3 dir = RotateY(forward, rad);
+//			dir.y = 0.0f;
+//			if (dir.LengthSquared() < 1e-6f) continue;
+//			dir.Normalize();
+//
+//			Vector3 xz = center + dir * r;
+//
+//			float groundY;
+//			if (!m_TerrainCol->SampleHeight(xz.x, xz.z, groundY))
+//				continue;
+//
+//			Vector3 candidate(xz.x, groundY + footOffset, xz.z);
+//
+//			if (IsCapsuleFree(candidate))
+//			{
+//				outPos = candidate;
+//				return true;
+//			}
+//		}
+//	}
+//	return false;
+//}
 bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 {
 	if (!m_Physics || !m_pOwner) { return false; }
 	if (!m_TerrainCol) { return false; }
 
 	Vector3 center = m_pOwner->GetPosition();
+
+	// 現在の足元Y（ownerのPositionが足元基準の前提。もし腰基準ならここを補正）
+	const float curY = center.y;
+
 	Vector3 forward = m_pOwner->GetForward();
 	forward.y = 0.0f;
 	if (forward.LengthSquared() < 1e-4f)
-	{
 		forward = Vector3::Forward;
-	}
 	forward.Normalize();
 
-	// チェックする角度の一覧（度）
 	static const float anglesDeg[] =
 	{ 0.0f, 45.0f, -45.0f, 90.0f, -90.0f, 135.0f, -135.0f, 180.0f };
 
-	// キャラの直径を使う
 	float radius = m_Char ? m_Char->GetRadius() : 50.0f;
 	float charDiameter = radius * 2.0f;
 
-	// 半径の刻み
-	const float stepR = charDiameter; // 「キャラ1人分ずつ」外側へ
+	const float stepR = charDiameter;
 	const float footOffset = 2.0f;
+
+	// 高低差許容（調整値）
+	// 例：段差の上下がこれを超える候補は除外
+	constexpr float MAX_Y_DELTA = 200.0f;
 
 	for (float r = stepR; r <= maxR; r += stepR)
 	{
@@ -1165,6 +1209,11 @@ bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 
 			Vector3 candidate(xz.x, groundY + footOffset, xz.z);
 
+			// ★高低差フィルタ（ここが追加）
+			// 現在の高さから離れすぎる候補は「別の段差/崖下」へのワープになりやすいので捨てる
+			if (std::fabs(candidate.y - curY) > MAX_Y_DELTA)
+				continue;
+
 			if (IsCapsuleFree(candidate))
 			{
 				outPos = candidate;
@@ -1174,6 +1223,7 @@ bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 	}
 	return false;
 }
+
 
 float EnemyAIComponent::HoldTimeByDistance(float dist) const
 {

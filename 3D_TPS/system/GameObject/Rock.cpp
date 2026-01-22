@@ -179,7 +179,8 @@ void Rock::OnCollisionEnter(GameObject& other)
 
 	// ---- 音イベント発生 ----
 	// 大きさ：速度でそれっぽく（0.1〜1.0に丸め）
-	const float loud = std::clamp(speed / 1200.0f, 0.1f, 1.0f);
+	float loud = std::clamp(speed / 1200.0f, 0.1f, 1.0f);
+	loud = 1.0f; // とりあえず最大音量で
 
 	if (m_pSoundEmitter)
 	{
@@ -190,11 +191,12 @@ void Rock::OnCollisionEnter(GameObject& other)
 		ev.Radius = 600.0f * loud;		// 調整
 		ev.Volume = loud;
 		ev.PlayLabel = SE_STONE; // 明示したいなら
+		ev.Emitter = SoundEmitterKind::PlayerItem; // 投げた石なので
 
 		m_pSoundEmitter->EmitSound(ev);
+		//auto L = ev.Position;
+		//printf("[Rock] SoundPosition=(%.2f,%.2f,%.2f)!!!!!!!!!!!!!!!\n", L.x, L.y, L.z);
 	}
-
-
 	// ---- 少し待って消滅 ----
 	m_DespawnTimer = 0.35f; // 調整（秒）
 }

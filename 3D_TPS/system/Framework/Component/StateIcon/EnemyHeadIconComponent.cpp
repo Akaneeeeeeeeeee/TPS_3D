@@ -66,10 +66,6 @@ EnemyHeadIconComponent::IconKind EnemyHeadIconComponent::PickIcon() const
     if (st == EnemyAIComponent::State::Caution || st == EnemyAIComponent::State::Investigate)
         return IconKind::Question;
 
-    // ’ÇÕ/”­Œ©Šm’è ¨ ”­Œ©
-    if (st == EnemyAIComponent::State::Chase /*|| m_pAI->IsFound()*/)
-        return IconKind::Alert;
-
     return IconKind::None;
 }
 

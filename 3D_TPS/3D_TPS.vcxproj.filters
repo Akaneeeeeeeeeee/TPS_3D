@@ -639,9 +639,6 @@
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="system\Framework\Sound\WeatherAudioController.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="system\Framework\Component\Sound\SoundEmitterComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\SoundEmitter</Filter>
     </ClInclude>
@@ -658,6 +655,9 @@
       <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClInclude>
     <ClInclude Include="system\Framework\SoundManager\SoundSystem.h">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Sound\WeatherAudioController.h">
       <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClInclude>
   </ItemGroup>
@@ -995,9 +995,6 @@
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp">
       <Filter>ソース ファイル\MyFramework\Component\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="system\Framework\Sound\WeatherAudioController.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="system\Framework\SoundManager\SoundManager.cpp">
       <Filter>ソース ファイル\MyFramework\Manager\SoundManager</Filter>
     </ClCompile>
@@ -1011,6 +1008,9 @@
       <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClCompile>
     <ClCompile Include="system\Framework\Sound\SoundPlaybackListener.cpp">
+      <Filter>ソース ファイル\MyFramework\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Sound\WeatherAudioController.cpp">
       <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClCompile>
   </ItemGroup>

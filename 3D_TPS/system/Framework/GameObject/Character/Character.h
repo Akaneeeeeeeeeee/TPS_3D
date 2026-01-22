@@ -18,6 +18,8 @@ enum class AnimationState {
 };
 
 class SkinnedAnimationComponent;
+class CharacterVirtualComponent;
+class SoundEmitterComponent;
 
 /// <summary>
 /// アニメーション付きキャラクターオブジェクト
@@ -46,6 +48,14 @@ protected:
 	AnimationState m_AnimState = AnimationState::Idle;
 
 	SkinnedAnimationComponent* m_pAnimComp = nullptr;
+	CharacterVirtualComponent* m_pCharVirtual = nullptr;
+	SoundEmitterComponent* m_pSoundEmitter = nullptr;
+
+	struct FootstepState {
+		float timer = 0.0f;
+		bool  wasOnGround = false;
+		bool  isMoving = false;
+	} m_Footstep;
 
 	float m_AnimationSpeed = 1.0f;	// アニメーション速度倍率
 	float m_MoveSpeed = 7.5f;		// 移動速度

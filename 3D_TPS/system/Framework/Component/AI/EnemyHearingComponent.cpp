@@ -156,6 +156,10 @@ void EnemyHearingComponent::OnWorldSound(const WorldSoundEvent& ev)
 {
 	if (!m_pEnemyAI) { return; }
 
+	// 敵の足音には反応しない（敵同士の連鎖防止）
+	if (ev.Emitter == SoundEmitterKind::Enemy && ev.Type == SoundType::Footstep)
+		return;
+
 	float perceived = ComputePerceivedLoudness(ev);
 
 	// しきい値未満 → 無視

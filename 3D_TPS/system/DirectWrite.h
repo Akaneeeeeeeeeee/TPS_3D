@@ -214,6 +214,20 @@ public:
 			{_startChar,_endChar});
 	}
 
+	// 文字色だけ更新（ブラシ色を差し替える）
+	void SetTextColor(const D2D1_COLOR_F& color)
+	{
+		m_Setting.Color = color;
+		if (m_cpBrush) m_cpBrush->SetColor(color);
+	}
+
+	// 影色も変える
+	void SetShadowColor(const D2D1_COLOR_F& color)
+	{
+		m_Setting.shadowColor = color;
+		if (m_cpShadowBrush) m_cpShadowBrush->SetColor(color);
+	}
+
 	//static void ReleaseFontCollectionLoader();
 
 	~DirectWrite();

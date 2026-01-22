@@ -35,7 +35,8 @@ void SoundHub::BeginFrame(float dt)
 void SoundHub::UpdateFrame(float dt, const Vector3& listenerPos)
 {
     m_Bus.SetListenerPos(listenerPos);
-
+    auto L = listenerPos;
+    printf("[Sound] listener=(%.2f,%.2f,%.2f)\n", L.x, L.y, L.z);
     // 天候ループ音（位置なし）
     m_WeatherAudio.Update(dt);
 }

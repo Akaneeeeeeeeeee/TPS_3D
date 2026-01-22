@@ -43,7 +43,6 @@ public:
         Caution,        // 警戒状態（その場で振り向き＋待機）
         Patrol,		    // 巡回状態
         Investigate,    // 調査状態（音の方向へ移動）
-        Chase,		    // 追跡状態
         STATE_MAX,
     };
 
@@ -121,7 +120,6 @@ private:
     void UpdateIdle(const float deltatime);
     void UpdatePatrol(const float deltatime);
     void UpdateInvestigate(const float deltatime);
-    void UpdateChase(const float deltatime);
 	void UpdateCaution(const float deltatime);
 
     // 移動計算用のヘルパ

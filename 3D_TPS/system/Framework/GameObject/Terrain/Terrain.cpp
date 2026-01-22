@@ -43,7 +43,7 @@ void Terrain::Awake()
         m_pCollider = col;
     }
 
-    // 必要ならデバッグ UI 登録
+    // デバッグ UI 登録
     //DebugUI::RedistDebugFunction([this]() { DebugImGui(); });
 }
 
@@ -54,32 +54,6 @@ void Terrain::Update(const float delta)
 
 void Terrain::Draw() const
 {
-   /* if (!m_pMesh || !m_pMeshRenderer || !m_pShader) { return; }
-
-    Matrix4x4 mtx = m_Transform.GetWorldMatrix();
-	Matrix4x4 currentview = Renderer::GetViewMatrix();
-    Matrix4x4 view;
-    Matrix4x4 currentproj = Renderer::GetProjectionMatrix();
-	Matrix4x4 proj;
-    Renderer::SetWorldMatrix(&mtx);
-    if (Player* player = m_pOwnerScene->GetObjectManager()->GetObjectByTag<Player>(Tag::Player))
-    {
-        auto comp = player->GetComponent<CameraComponent>();
-        view = comp->GetViewMatrix();
-		proj = comp->GetProjMatrix();
-    }
-    else if (TitlePlayerActor * titlePlayer = m_pOwnerScene->GetObjectManager()->GetObjectByTag<TitlePlayerActor>(Tag::Player))
-    {
-        auto comp = titlePlayer->GetComponent<CameraComponent>();
-        view = comp->GetViewMatrix();
-        proj = comp->GetProjMatrix();
-    }
-
-	Renderer::SetViewMatrix(&view);
-	Renderer::SetProjectionMatrix(&proj);
-
-    m_pShader->SetGPU();
-    m_pMeshRenderer->Draw();*/
 }
 
 void Terrain::Uninit()
@@ -98,7 +72,7 @@ void Terrain::DebugImGui()
     ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
     ImGui::Text("Scale   : (%.2f, %.2f, %.2f)", scl.x, scl.y, scl.z);
 
-    // メッシュのバウンディング情報などを出したければ obstacle と同じ要領で
+    // メッシュのバウンディング情報などを出す
     if (m_pMesh)
     {
         const auto& verts = m_pMesh->GetVertices();

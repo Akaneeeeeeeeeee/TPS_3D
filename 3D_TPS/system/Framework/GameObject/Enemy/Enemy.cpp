@@ -17,11 +17,28 @@
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
 #include "Framework/Component/Renderer/SpriteRenderer/UISpriteRenderer.h"
+#include "Framework/Component/Sound/SoundEmitterComponent.h"
 
 namespace {
 	constexpr float ENEMY_CAPSULE_HALFHEIGHT = 60.0f;
 	constexpr float ENEMY_CAPSULE_RADIUS = 35.0f;
 	constexpr Vector3 ENEMY_COLLIDER_OFFSET = Vector3(0.0f, 80.0f, 0.0f);
+	constexpr float ENEMY_FOOTSTEP_MOVE_SPEED_THRESHOLD = 5.0f;
+
+	// 敵の速度レンジ（実測に合わせる）
+	constexpr float ENEMY_SPEED_MIN = 60.0f;   // 歩き最小
+	constexpr float ENEMY_SPEED_MAX = 250.0f;  // 速い移動
+
+	// 間隔（遅いほど長く、速いほど短い）
+	constexpr float ENEMY_STEP_INTERVAL_SLOW = 0.45f;
+	constexpr float ENEMY_STEP_INTERVAL_FAST = 0.25f;
+
+	inline float Remap01Clamp(float v, float inMin, float inMax)
+	{
+		const float d = inMax - inMin;
+		if (d <= 1e-6f) return 0.0f;
+		return std::clamp((v - inMin) / d, 0.0f, 1.0f);
+	}
 }
 
 Enemy::Enemy(ComponentFactory* factory, uint64_t id, const std::string& name, const Tag& tag,
@@ -243,15 +260,20 @@ void Enemy::InitComponents()
 
 	// CharacterVirtualComponent
 	{
-		m_CharComp = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
-		m_CharComp->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
-		m_CharComp->SetOffset(ENEMY_COLLIDER_OFFSET);
+		m_pCharVirtual = AddComponent<CharacterVirtualComponent>("EnemyCharacter");
+		m_pCharVirtual->SetCapsule(ENEMY_CAPSULE_HALFHEIGHT, ENEMY_CAPSULE_RADIUS);
+		m_pCharVirtual->SetOffset(ENEMY_COLLIDER_OFFSET);
 	}
 	
 	// EnemyHearingComponent
 	{
 		auto hearingComp = AddComponent<EnemyHearingComponent>("EnemyHearing");
 		hearingComp->SetEnemyAI(m_AIComp);
+	}
+
+	// SoundEmitter
+	{
+		m_pSoundEmitter = AddComponent<SoundEmitterComponent>("EnemySoundEmitter");
 	}
 
 	// EnemyHeadIconComponent + BillboardSpriteRenderer
@@ -265,7 +287,6 @@ void Enemy::InitComponents()
 		m_UISprite->SetLayer(0);
 		m_UISprite->SetOrder(0);
 	}
-
 }
 
 void Enemy::Update(const float deltatime)
@@ -282,7 +303,7 @@ void Enemy::Update(const float deltatime)
 	// ==============================
 	if (m_GameOverTriggered)
 	{
-		if (m_CharComp) m_CharComp->SetMoveDir(Vector3::Zero);
+		if (m_pCharVirtual) m_pCharVirtual->SetMoveDir(Vector3::Zero);
 
 		if (!m_pAnimComp)
 		{
@@ -372,9 +393,12 @@ void Enemy::Update(const float deltatime)
 		// それ以外の状態: Idle / Walk / Run を速度に応じて再生
 		// それ以外
 		Vector3 vel = Vector3::Zero;
-		if (m_CharComp) vel = m_CharComp->GetLinearVelocity();
+		if (m_pCharVirtual) vel = m_pCharVirtual->GetLinearVelocity();
 		vel.y = 0.0f;
 		const float speed = vel.Length();
+
+		// 足音の更新
+		UpdateFootstep(deltatime, aiState, speed);
 
 		constexpr float MOVE_EPS = 5.0f; // ほぼ停止扱い
 
@@ -481,9 +505,9 @@ void Enemy::OnFoundPlayer(void)
 	m_ShotTimer = 0.0f;
 
 	// 1) 移動停止
-	if (m_CharComp)
+	if (m_pCharVirtual)
 	{
-		m_CharComp->Stop();
+		m_pCharVirtual->Stop();
 	}
 
 	// 2) プレイヤーの方向を向く
@@ -543,4 +567,61 @@ void Enemy::DebugImGui(void)
 		ImGui::Text("Pos:   (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
 		ImGui::Text("Scale: (%.2f, %.2f, %.2f)", scale.x, scale.y, scale.z);
 	}
+}
+
+void Enemy::UpdateFootstep(float dt, EnemyAIComponent::State /*aiState*/, float horizontalSpeed)
+{
+	if (!m_pSoundEmitter || !m_pCharVirtual) return;
+
+	const bool onGround = m_pCharVirtual->IsOnGround();
+
+	// 移動判定ヒステリシス（止まり際の揺れ対策）
+	constexpr float MOVE_START = ENEMY_FOOTSTEP_MOVE_SPEED_THRESHOLD + 2.0f;
+	constexpr float MOVE_STOP = ENEMY_FOOTSTEP_MOVE_SPEED_THRESHOLD;
+
+	if (!m_IsFootstepMoving) m_IsFootstepMoving = (horizontalSpeed >= MOVE_START);
+	else                     m_IsFootstepMoving = (horizontalSpeed >= MOVE_STOP);
+
+	const bool isMoving = m_IsFootstepMoving;
+
+	if (!(onGround && isMoving))
+	{
+		m_FootstepTimer = 0.0f;
+		m_WasOnGround = onGround;
+		return;
+	}
+
+	// 速度→0..1
+	const float speed01 = Remap01Clamp(horizontalSpeed, ENEMY_SPEED_MIN, ENEMY_SPEED_MAX);
+
+	// ★頻度だけ速度で変える（速いほど間隔短い）
+	const float interval = std::lerp(ENEMY_STEP_INTERVAL_SLOW, ENEMY_STEP_INTERVAL_FAST, speed01);
+
+	m_FootstepTimer += dt;
+	if (m_FootstepTimer < interval)
+	{
+		m_WasOnGround = onGround;
+		return;
+	}
+	m_FootstepTimer = 0.0f;
+
+	// ---- 足音イベント ----
+	WorldSoundEvent ev{};
+	ev.Position = GetPosition();
+	ev.Type = SoundType::Footstep;
+	ev.Emitter = SoundEmitterKind::Enemy;
+
+	// 音量や半径は「そのまま固定」でOK（頻度だけ変えたいなら）
+	ev.Volume = 0.6f;
+	ev.Loudness = 0.6f;
+	ev.Radius = 800.0f;
+
+	// 歩き足音だけに固定
+	//ev.PlayLabel = SE_WALKING_NORMAL;
+	// もし再生側のMapに任せたいなら：
+	 ev.PlayLabel = SOUND_LABEL_MAX;
+
+	m_pSoundEmitter->EmitSound(ev);
+
+	m_WasOnGround = onGround;
 }

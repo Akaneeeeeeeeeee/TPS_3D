@@ -286,14 +286,13 @@ void SkyFogPass::UploadSkyCB()
     cb.SunColor_Glow = Vector4(sSunColor.R(), sSunColor.G(), sSunColor.B(), 1.0f);
 
     // 雲色を fog 色に寄せて馴染ませる
-    cb.FogColor_Blend = Vector4(sFogColor.x, sFogColor.y, sFogColor.z, 0.6f);
-
+    cb.FogColor_Blend = Vector4(sFogColor.x, sFogColor.y, sFogColor.z, sTuning.cloudToFogBlend);
     // 空だけビネット
-    cb.Vignette = Vector4(0.35f, 2.2f, 0, 0);
+    cb.Vignette = Vector4(sTuning.vignetteStrength, sTuning.vignettePower, 0, 0);
 
     float timeSec = (h / 24.0f) * 86400.0f;
-    cb.Cloud = Vector4(1.0f, 0.55f, 0.25f, timeSec);
-    cb.CloudSpeed = Vector4(0.004f, 0.0f, 0, 0);
+    cb.Cloud = Vector4(sTuning.cloudTiling, sTuning.cloudOpacity, 0.25f, timeSec);
+    cb.CloudSpeed = Vector4(sTuning.cloudSpeedU, sTuning.cloudSpeedV, 0, 0);
 
     // inv(View/Proj)
     Matrix4x4 view = Renderer::GetViewMatrix();

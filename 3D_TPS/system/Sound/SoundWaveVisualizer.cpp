@@ -4,8 +4,11 @@
 
 void SoundWaveVisualizer::OnEmit(const WorldSoundEvent& ev)
 {
-    // 足音だけを対象にしたい場合
+    // 足音だけを対象にしたい
     if (ev.Type != SoundType::Footstep && ev.Type != SoundType::StoneImpact) { return; }
+    
+    // 敵の足音は可視化しない
+    if (ev.Type == SoundType::Footstep && ev.Emitter == SoundEmitterKind::Enemy) { return; }
 
     // ---- 天候・時間による聴覚係数 ----
     float hearingFactor = 1.0f;
