@@ -345,7 +345,7 @@ float4 FogCompute(float2 uv, Texture2D depthTex, Texture3D noiseTex, bool allowN
     //    体積フォグは「距離フェード」を掛けて、近距離を薄くする
     // -------------------------
     float volFade = FogFactorFromParams(distRaw, gFogVolDist); // 0..1
-    float density = baseDensity * volFade; // ★ここで距離フェード
+    float density = baseDensity * volFade; // ここで距離フェード
 
     float volA = 0.0;
     float3 volRgb = 0.0;

@@ -1,8 +1,5 @@
 #include "EngineSystem.h"
-
 #include "system/CDirectInput.h"
-#include "system/Framework/SoundManager/SoundManager.h"  // ’u‚­‚È‚ç‚±‚±
-
 #include "commontypes.h"
 
 void EngineSystems::Init()

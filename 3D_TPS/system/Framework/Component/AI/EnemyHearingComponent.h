@@ -1,6 +1,6 @@
 #pragma once
 #include "Framework/Component/IComponent/IComponent.h"
-#include "Framework/SoundManager/SoundManager.h"
+#include "Framework/SoundSystem/SoundSystem.h"
 #include "Framework/Sound/IWorldSoundListener.h"
 
 // 前方宣言
@@ -34,8 +34,6 @@ public:
     void SetMinScore(float s) { m_MinScore = s; }
     // 耳の高さ（敵のローカル Y オフセット）
     void SetEarHeight(float h) { m_EarHeight = h; }
-
-    // SoundManager から呼ぶ
     void OnWorldSound(const WorldSoundEvent& ev);
 
 private:

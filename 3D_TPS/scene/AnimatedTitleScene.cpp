@@ -14,7 +14,6 @@
 #include "Framework/GameObject/WeatherController/WeatherController.h"
 #include "system/GameObject/obstacle.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
-#include "Framework/SoundManager/SoundManager.h"
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/GameObject/StreetLight/StreetLight.h"
 #include "Framework/Component/UI/UIImageComponent.h"
@@ -459,12 +458,11 @@ bool TitleScript::IsEnemyNear(float dist) const
 
 void TitleScript::EmitRockSound(const Vector3& landPos)
 {
-	// 石の“着地点”で音を出す（敵AIが SoundManager を見て Investigate する想定）
 	WorldSoundEvent ev{};
 	ev.Position = landPos;
-	ev.Loudness = 1.0f;     // 好みで
-	ev.Radius = 1200.0f;  // 好みで
-	ev.Type = SoundType::StoneImpact; // 型があるなら
+	ev.Loudness = 1.0f;
+	ev.Radius = 1200.0f;
+	ev.Type = SoundType::StoneImpact;
 
 	m_Player->EmitWorldSoundAt(landPos, ev);
 }

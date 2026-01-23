@@ -875,7 +875,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 			}
 			else
 			{
-				m_ClearTimer = 0.0f; // ← これが重要（連続で空いた時だけ解除）
+				m_ClearTimer = 0.0f; // 連続で空いた時だけ解除
 			}
 		}
 	}
@@ -913,7 +913,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 	constexpr float DEG2RAD_LOCAL = PI / 180.0f;
 
 	// ------------------------------------------------------------
-	// A) 壁沿い中は“角度探索に戻らない” ＝安定化（重要）
+	// A) 壁沿い中は“角度探索に戻らない” ＝安定化
 	// ------------------------------------------------------------
 	if (m_AvoidMode != AvoidMode::WallFollow)
 	{
@@ -1209,7 +1209,7 @@ bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 
 			Vector3 candidate(xz.x, groundY + footOffset, xz.z);
 
-			// ★高低差フィルタ（ここが追加）
+			// 高低差フィルタ
 			// 現在の高さから離れすぎる候補は「別の段差/崖下」へのワープになりやすいので捨てる
 			if (std::fabs(candidate.y - curY) > MAX_Y_DELTA)
 				continue;

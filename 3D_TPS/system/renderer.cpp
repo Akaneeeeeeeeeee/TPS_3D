@@ -409,7 +409,7 @@ void Renderer::Uninit()
  */
 void Renderer::Begin()
 {
-	// ★毎フレーム、描画先とビューポートを必ず正しい状態に戻す
+	// 毎フレーム、描画先とビューポートを必ず正しい状態に戻す
 	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
 
 	D3D11_VIEWPORT viewport{};

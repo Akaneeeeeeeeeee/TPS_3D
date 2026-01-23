@@ -1,6 +1,6 @@
 #pragma once
 #include "Framework/Sound/SoundBus.h"
-#include "Framework/SoundManager/SoundSystem.h"
+#include "Framework/SoundSystem/SoundSystem.h"
 #include "Framework/Sound/SoundPlaybackListener.h"
 #include "Framework/Sound/WeatherAudioController.h"
 #include "system/Sound/SoundWaveVisualizer.h"

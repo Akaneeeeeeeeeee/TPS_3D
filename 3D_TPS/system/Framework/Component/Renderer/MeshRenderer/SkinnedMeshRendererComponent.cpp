@@ -35,7 +35,7 @@ void SkinnedMeshRendererComponent::CollectRenderPackets(std::vector<RenderPacket
     MeshDraw md{};
     md.vb = r.GetVB();
     md.ib = r.GetIB();
-    md.stride = sizeof(VERTEX_SKINNED_GPU); // šVB‚ª‚±‚ê‚Åì‚ç‚ê‚Ä‚¢‚é‚±‚Æ‚ª‘O’ñ
+    md.stride = sizeof(VERTEX_SKINNED_GPU);
     md.indexFormat = r.GetIndexFormat();
     md.topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     md.world = m_pOwner->GetWorldMatrix();

@@ -120,7 +120,7 @@ namespace myAssimp{
 			BONE bone{};
 			bone.bonename = std::string(ab->mName.C_Str());
 
-			// ★ここが重要：mNodeを使わない
+			// mNodeを使わない
 			bone.meshname = meshname;
 
 			// armature は無いことがあるのでガード
@@ -470,7 +470,7 @@ namespace myAssimp{
 //			aiProcess_Triangulate);			// 三角形化する
 			aiProcessPreset_TargetRealtime_MaxQuality |
 			aiProcess_ConvertToLeftHanded |
-			aiProcess_PopulateArmatureData);		// 20231225追加
+			aiProcess_PopulateArmatureData);
 
 		if (pScene == nullptr)
 		{

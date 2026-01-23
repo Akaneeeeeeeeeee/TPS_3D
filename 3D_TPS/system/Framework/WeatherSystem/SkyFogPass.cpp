@@ -350,7 +350,7 @@ void SkyFogPass::UploadFogCB()
     cb.FogDist.w = std::clamp(cb.FogDist.w + weatherAdd, 0.0f, 1.0f);
 
     // -------------------------
-    // ★体積フォグ距離フェード（近距離を薄く）
+    // 体積フォグ距離フェード（近距離を薄く）
     // 例：キャラ付近は薄い→中距離から本来の密度へ
     // -------------------------
     cb.FogVolDist = Vector4(

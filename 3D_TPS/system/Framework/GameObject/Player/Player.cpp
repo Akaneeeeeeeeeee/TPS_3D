@@ -3,11 +3,11 @@
 #include "Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 #include "system/Sound/WorldSoundEvent.h"
-#include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Framework/Component/Camera/CameraComponent.h"
 #include "Framework/Component/Throw/ThrowComponent.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
 #include "Framework/Component/Sound/SoundEmitterComponent.h"
+#include "Framework/Component/Sound/ThrowAudioComponent.h"
 
 #include <algorithm> // std::clamp
 #include <cmath>     // std::sqrt, std::atan2, std::lerp
@@ -258,6 +258,9 @@ void Player::Awake(void)
 	// 足音用コンポーネント追加
 	m_pSoundEmitter = AddComponent<SoundEmitterComponent>("SoundEmitter");
 
+	auto* throwAudio = AddComponent<ThrowAudioComponent>("ThrowAudio");
+	m_pThrowComp->SetThrowEventListener(throwAudio);
+
 	//SetScale(Vector3(10.0f, 10.0f, 10.0f));
 }
 
@@ -273,7 +276,7 @@ void Player::Start(void)
 	// カメラ初期化
 	if (m_pCamera)
 	{
-		// 1) 最初の注視点を確定（ここ重要）
+		// 1) 最初の注視点を確定
 		Vector3 pos = GetPosition();
 		Vector3 lookAt = pos;
 		lookAt.y += CAMERA_LOOK_AT_HEIGHT_NORMAL;
@@ -563,7 +566,7 @@ void Player::UpdateFootstep(float dt)
 			ev.Loudness = loud;
 			ev.Radius = radius;
 
-			// 重要：天候で足音の種類を変えるなら、ここで固定ラベルを入れない
+			// 天候で足音の種類を変える→ここで固定ラベルを入れない
 			// Playback側(MapLabel)に任せる
 			ev.PlayLabel = SOUND_LABEL_MAX;
 

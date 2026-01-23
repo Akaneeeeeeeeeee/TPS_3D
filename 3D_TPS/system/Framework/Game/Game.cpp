@@ -4,7 +4,6 @@
 #include "system/DebugUI.h"
 #include "system/CDirectInput.h"
 #include "fpscontrol.h"
-#include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Sound/SoundWaveVisualizer.h"
 #include "Framework/Time/Time.h"
 #include "system/Framework/WeatherSystem/SkyFogPass.h"

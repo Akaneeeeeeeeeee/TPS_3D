@@ -353,7 +353,7 @@ void Enemy::Update(const float deltatime)
 		// 終了判定
 		if (m_pAnimComp->IsPlaying(AnimType::GunShot) && m_pAnimComp->IsCurrentFinished())
 		{
-			// ★スローモ終了SE（1回だけ）
+			// スローモーション終了SE（1回だけ）
 			if (!m_SlowEndSEPlayed && m_pSoundEmitter)
 			{
 				m_pSoundEmitter->PlayUIOneShot(SE_ENDSLOWMOTION, 1.0f);

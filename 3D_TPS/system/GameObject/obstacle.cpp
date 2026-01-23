@@ -124,7 +124,7 @@ void obstacle::DebugImGui()
         ImGui::Text("  (%.2f, %.2f, %.2f)",
             col->GetOffset().x, col->GetOffset().y, col->GetOffset().z);
 
-        // š BoxShape ‚Ì half-extent ‚ð•\Ž¦
+        // BoxShape ‚Ì half-extent ‚ð•\Ž¦
         if (auto shape = col->GetShape())
         {
             const JPH::BoxShape* box = static_cast<const JPH::BoxShape*>(shape.GetPtr());

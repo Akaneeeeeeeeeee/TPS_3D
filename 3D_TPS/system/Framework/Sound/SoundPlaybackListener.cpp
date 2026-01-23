@@ -1,7 +1,7 @@
 #include "Framework/Sound/SoundPlaybackListener.h"
 #include "Framework/Sound/SoundBus.h"
 #include "system/Framework/WeatherSystem/WeatherSystem.h"
-#include "Framework/SoundManager/SoundSystem.h"
+#include "Framework/SoundSystem/SoundSystem.h"
 #include <algorithm>
 
 SOUND_LABEL SoundPlaybackListener::MapLabel(const WorldSoundEvent& ev) const
@@ -43,7 +43,7 @@ void SoundPlaybackListener::OnWorldSound(const WorldSoundEvent& ev)
     if (ev.Emitter == SoundEmitterKind::Player && ev.Type == SoundType::Footstep)
         kindMul = 0.9f;          // ©•ª‚Ì‘«‰¹‚ğ­‚µ¬‚³‚­
     else if (ev.Emitter == SoundEmitterKind::PlayerItem)
-        kindMul = 1.2f;          // “Š‚°‚½Î‚È‚Ç‚Í­‚µ‘å‚«‚ß
+        kindMul = 2.0f;          // “Š‚°‚½Î‚È‚Ç‚Í­‚µ‘å‚«‚ß
 
     float vol = ev.Volume * att * hearing * kindMul;
     if (vol <= 0.0f) return;

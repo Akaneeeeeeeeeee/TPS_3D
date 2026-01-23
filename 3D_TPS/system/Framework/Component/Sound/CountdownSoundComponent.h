@@ -1,6 +1,6 @@
 #pragma once
 #include "Framework/Component/IComponent/IComponent.h"
-#include "Framework/SoundManager/SoundSystem.h"
+#include "Framework/SoundSystem/SoundSystem.h"
 #include "Framework/EngineSystem/EngineSystem.h"
 
 class CountdownSoundComponent final : public IComponent

@@ -9,7 +9,6 @@
 #include <iostream>
 #include "Framework/ObjectManager/ObjectManager.h"
 #include "Sound/WorldSoundEvent.h"
-#include "Framework/SoundManager/SoundManager.h"
 #include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
 #include "Framework/Component/Sound/SoundEmitterComponent.h"
 

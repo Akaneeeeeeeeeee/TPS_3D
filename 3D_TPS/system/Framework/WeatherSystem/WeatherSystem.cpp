@@ -48,7 +48,7 @@ void WeatherSystem::DrawAtmospherePostWorld()
 // コンストラクタ
 // ==============================
 WeatherSystem::WeatherSystem()
-    : m_Rng(RandomEngine::tls().stream("WeatherSystem")) // ★ weather 用サブストリーム
+    : m_Rng(RandomEngine::tls().stream("WeatherSystem")) // weather 用サブストリーム
 {
 	// 初期状態は晴れ
     m_CurrentParams = MakePreset(WeatherType::Clear);
