@@ -260,14 +260,14 @@ void WeatherSystem::ApplyToParticles()
         dir = m_CurrentParams.rainDir;
         gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
 
-        spawnHalfWidth = 200000.0f;
-        spawnHalfDepth = 800.0f;
+        spawnHalfWidth = 1000.0f;
+        spawnHalfDepth = 500.0f;
         spawnHeight = 0.0f;
 
         // 雨はエミッタの真上あたりにまとめて出すイメージなら 0〜0 でもよい
         spawnMinY = 0.0f;
         spawnMaxY = 0.0f;
-        maxParticles = 3000000;
+        maxParticles = 30000;
     }
     // 砂嵐が有効
     else if (m_CurrentParams.sandEmitRate > 0.0f)
@@ -293,7 +293,7 @@ void WeatherSystem::ApplyToParticles()
         spawnHeight = 300.0f;    // 0 → 300（推測です）
 
         // 最大粒子数も増やして間引かれないように
-        maxParticles = 3000000;     // 12000 → 30000
+        maxParticles = 30000;     // 12000 → 30000
     }
 
     for (auto* comp : m_ParticleComponents)

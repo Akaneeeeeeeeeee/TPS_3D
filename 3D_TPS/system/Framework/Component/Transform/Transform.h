@@ -17,7 +17,7 @@ public:
 	Transform(
 		const Vector3& _pos = Vector3::Zero, 
 		const Quaternion& _rot = Quaternion::Identity,
-		const Vector3& _scale = Vector3::Zero) 
+		const Vector3& _scale = Vector3::One) 
 		: Position(_pos), Rotation(_rot), Scale(_scale) {};
 	~Transform() = default;
 
@@ -48,6 +48,8 @@ public:
 	void SetChild(Transform* _child);
 
 	void SetDirty(void);
+
+	void DetachAllChildren(void);
 
 	// 前方ベクトルを取得する
 	Vector3 GetForward(void) const

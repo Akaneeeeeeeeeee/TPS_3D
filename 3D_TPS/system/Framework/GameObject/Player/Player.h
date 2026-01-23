@@ -78,7 +78,6 @@ private:
 	void UpdateThrowNotify(const InputState& in);
 
 private:
-	CharacterVirtualComponent* m_pCharaVirtualComp = nullptr;
 	CameraComponent* m_pCamera = nullptr;
 	ThrowComponent* m_pThrowComp = nullptr;
 	SoundEmitterComponent* m_pSoundEmitter = nullptr;

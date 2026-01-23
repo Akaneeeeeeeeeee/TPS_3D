@@ -255,6 +255,11 @@ void GameObject::Uninit(void)
 
 void GameObject::BaseUninit(void)
 {
+	// 親が消える前に、子の親ポインタを全部 null にする
+	m_Transform.DetachAllChildren();
+	// 先に親から外す（親の children からも消える）
+	m_Transform.SetParent(nullptr);
+
 	// 派生先の終了処理
 	Uninit();
 

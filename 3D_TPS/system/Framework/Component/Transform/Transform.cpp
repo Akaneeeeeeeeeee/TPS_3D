@@ -15,8 +15,14 @@ void Transform::SetParent(Transform* _parent)
     
 	// 新しい親の子リストに自分を追加
     if (_parent) {
-        _parent->m_pChildren.push_back(this);
+        auto& ch = _parent->m_pChildren;
+        if (std::find(ch.begin(), ch.end(), this) == ch.end())
+        {
+            ch.push_back(this);
+        }
     }
+	// 行列更新
+	SetDirty();
 }
 
 void Transform::SetChild(Transform* _child)
@@ -70,4 +76,17 @@ void Transform::SetDirty(void)
     {
         child->SetDirty();
     }
+}
+
+void Transform::DetachAllChildren(void)
+{
+    // ここでは「子->SetParent(nullptr)」を呼ばない
+    // （親の m_pChildren をいじりながら走査すると危ないため）
+    for (auto* child : m_pChildren)
+    {
+        if (!child) continue;
+        child->m_pParent = nullptr; // Transform のメンバなので直接触れる
+        child->SetDirty();
+    }
+    m_pChildren.clear();
 }

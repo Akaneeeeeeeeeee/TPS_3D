@@ -357,11 +357,19 @@ void GameScene::Init(ObjectManager* mgr)
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
 	m_player->SetPosition(Vector3(-300.0f, 100.0f, -100.0f));
-	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
+	// 天候オブジェクト（子にする）
+	auto* weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
+
+	// 先に親を設定
+	weather->TransformRef().SetParent(&m_player->TransformRef());
+
+	// 親からの相対位置（ローカル）
+	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
 
 	// 天候オブジェクト
-	auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
-	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	//auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
+	//weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
 	m_Goal->SetScale(Vector3(0.5f, 1.0f, 0.5f));

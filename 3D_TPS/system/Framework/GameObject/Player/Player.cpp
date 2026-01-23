@@ -865,7 +865,6 @@ void Player::Draw(void) const
 
 void Player::Uninit(void)
 {
-	GameObject::Uninit();
 }
 
 void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const

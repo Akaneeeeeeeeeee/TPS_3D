@@ -50,17 +50,13 @@ void ParticleComponent::Update(const float deltatime)
     // Owner ‚ÌˆÊ’u‚É’Ç]
     if (GameObject* owner = GetOwner())
     {
-        // Transform ‚ÌŽæ“¾•û–@‚ÍŽÀ‘•‚É‡‚í‚¹‚Ä•Ï‚¦‚Ä‚­‚¾‚³‚¢
-        // —á:
-        // const Vector3 pos = owner->GetTransform().GetWorldPosition();
-        // ‚±‚±‚Å‚Í XMFLOAT3 ‚Æ‚µ‚Ä‰¼‚É•ÏŠ·
-        const auto& t = owner->GetTransform();
-        const auto  wp = t.GetPosition();  // Vector3 ‚ð•Ô‚·‚Æ‰¼’è
+        const auto& mtx = owner->GetWorldMatrix();
+        const Vector3 pos = mtx.Translation();
 
         XMFLOAT3 origin(
-            wp.x + m_LocalOffset.x,
-            wp.y + m_LocalOffset.y,
-            wp.z + m_LocalOffset.z);
+            pos.x + m_LocalOffset.x,
+            pos.y + m_LocalOffset.y,
+            pos.z + m_LocalOffset.z);
 
         m_Emitter.SetOrigin(origin);
     }
