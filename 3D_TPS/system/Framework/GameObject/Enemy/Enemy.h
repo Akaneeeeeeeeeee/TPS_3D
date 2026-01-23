@@ -89,9 +89,5 @@ private:
 	float m_ShotTimer = 0.0f;
 
 	float m_ShotDuration = 1.0f;
-
-	float m_FootstepTimer = 0.0f;
-	bool  m_WasOnGround = false;
-	bool  m_IsFootstepMoving = false;
 };
 

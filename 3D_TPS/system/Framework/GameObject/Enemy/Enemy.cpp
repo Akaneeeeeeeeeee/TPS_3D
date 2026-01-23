@@ -644,15 +644,15 @@ void Enemy::UpdateFootstep(float dt, EnemyAIComponent::State /*aiState*/, float 
 	constexpr float MOVE_START = ENEMY_FOOTSTEP_MOVE_SPEED_THRESHOLD + 2.0f;
 	constexpr float MOVE_STOP = ENEMY_FOOTSTEP_MOVE_SPEED_THRESHOLD;
 
-	if (!m_IsFootstepMoving) m_IsFootstepMoving = (horizontalSpeed >= MOVE_START);
-	else                     m_IsFootstepMoving = (horizontalSpeed >= MOVE_STOP);
+	if (!m_Footstep.isMoving) m_Footstep.isMoving = (horizontalSpeed >= MOVE_START);
+	else                     m_Footstep.isMoving = (horizontalSpeed >= MOVE_STOP);
 
-	const bool isMoving = m_IsFootstepMoving;
+	const bool isMoving = m_Footstep.isMoving;
 
 	if (!(onGround && isMoving))
 	{
-		m_FootstepTimer = 0.0f;
-		m_WasOnGround = onGround;
+		m_Footstep.timer = 0.0f;
+		m_Footstep.wasOnGround = onGround;
 		return;
 	}
 
@@ -662,13 +662,13 @@ void Enemy::UpdateFootstep(float dt, EnemyAIComponent::State /*aiState*/, float 
 	// 頻度だけ速度で変える（速いほど間隔短い）
 	const float interval = std::lerp(ENEMY_STEP_INTERVAL_SLOW, ENEMY_STEP_INTERVAL_FAST, speed01);
 
-	m_FootstepTimer += dt;
-	if (m_FootstepTimer < interval)
+	m_Footstep.timer += dt;
+	if (m_Footstep.timer < interval)
 	{
-		m_WasOnGround = onGround;
+		m_Footstep.wasOnGround = onGround;
 		return;
 	}
-	m_FootstepTimer = 0.0f;
+	m_Footstep.timer = 0.0f;
 
 	// ---- 足音イベント ----
 	WorldSoundEvent ev{};
@@ -688,5 +688,5 @@ void Enemy::UpdateFootstep(float dt, EnemyAIComponent::State /*aiState*/, float 
 
 	m_pSoundEmitter->EmitSound(ev);
 
-	m_WasOnGround = onGround;
+	m_Footstep.wasOnGround = onGround;
 }
