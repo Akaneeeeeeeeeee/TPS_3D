@@ -47,12 +47,12 @@ void TitlePlayerActor::Awake(void)
 	setup.meshName = "Akai";
 	setup.shaderName = "animshader";
 	setup.clips = {
-		{ AnimType::Covered_Idle,       "Cover_Idle",         "Cover_Idle",         0, 1.0f },
-		{ AnimType::StoneThrow,       "StoneThrow",          "StoneThrow",          0, 1.0f },
-		{ AnimType::CrouchWalk, "Title_Sneaking", "Title_Sneaking", 0, 1.0f },
-		{ AnimType::Check_OverWall, "checkOverWall",       "checkOverWall",       0, 1.0f },
-		{ AnimType::Run,        "Akai_Run",         "Akai_Run",         0, 1.0f },
-		{ AnimType::Crouch,     "Crouching_Idle",   "Crouching_Idle",   0, 1.0f },
+		{ AnimType::Covered_Idle,       "Cover_Idle",		"Cover_Idle",		0, 1.0f },
+		{ AnimType::StoneThrow,			"StoneThrow",		"StoneThrow",		0, 1.0f },
+		{ AnimType::CrouchWalk,			"Title_Sneaking",	"Title_Sneaking",	0, 1.0f },
+		{ AnimType::Check_OverWall,		"checkOverWall",	"checkOverWall",	0, 1.0f },
+		{ AnimType::Run,				"Akai_Run",			"Akai_Run",         0, 1.0f },
+		{ AnimType::Crouch,				"Crouching_Idle",	"Crouching_Idle",   0, 1.0f },
 	};
 
 	// 2) アセット情報からセットアップ
@@ -83,6 +83,11 @@ void TitlePlayerActor::Awake(void)
 		r->SetMeshKey("Akai");
 		r->SetShaderKey("animshader");
 		r->SetAnimator(m_pAnimComp);    // アニメーターをセット
+	}
+
+	// 足音用コンポーネント追加
+	{
+		m_pSoundEmitter = AddComponent<SoundEmitterComponent>("SoundEmitter");
 	}
 
 	m_MoveDir = Vector3(0.5f, 0.0f, -0.75f);

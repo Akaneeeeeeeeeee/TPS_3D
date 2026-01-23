@@ -598,7 +598,7 @@ void Player::UpdateFootstep(float dt)
 			ev.Radius = std::lerp(300.0f, LANDING_SOUND_RADIUS, land01);
 
 			// 着地専用SEを鳴らしたいなら明示
-			ev.PlayLabel = SE_LANDING;
+			ev.PlayLabel = SOUND_LABEL_MAX;
 
 			m_pSoundEmitter->EmitSound(ev);
 		}
