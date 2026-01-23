@@ -208,6 +208,8 @@
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\Sound\CountdownSoundComponent.h" />
+    <ClInclude Include="system\Framework\Component\Sound\SlowMotionSoundComponent.h" />
     <ClInclude Include="system\Framework\Component\Sound\SoundEmitterComponent.h" />
     <ClInclude Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.h" />
     <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />

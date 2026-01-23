@@ -1,5 +1,4 @@
 #include "SoundEmitterComponent.h"
-#include "Framework/SoundManager/SoundManager.h"
 #include "Framework/GameObject/GameObject.h"
 
 
@@ -17,6 +16,12 @@ void SoundEmitterComponent::EmitSound(const WorldSoundEvent& ev)
 {
     if (!m_pSound) return;
     m_pSound->Emit(ev);
+}
+
+void SoundEmitterComponent::PlayUIOneShot(SOUND_LABEL label, float volume01)
+{
+    if (!m_pSound) return;
+    m_pSound->PlayUIOneShot(label, volume01);
 }
 
 void SoundEmitterComponent::EmitSound(const Vector3& pos, SoundType type,

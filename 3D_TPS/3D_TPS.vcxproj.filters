@@ -660,6 +660,12 @@
     <ClInclude Include="system\Framework\Sound\WeatherAudioController.h">
       <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\Sound\CountdownSoundComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\SoundEmitter</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\Component\Sound\SlowMotionSoundComponent.h">
+      <Filter>ソース ファイル\MyFramework\Component\SoundEmitter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">

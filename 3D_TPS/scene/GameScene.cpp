@@ -22,6 +22,7 @@
 #include "commontypes.h"
 #include "Framework/Time/Time.h"
 #include "Framework/GameObject/StreetLight/StreetLight.h"
+#include "Framework/Component/Sound/CountdownSoundComponent.h"
 
 namespace {
 	// worldTime（0..24） / dayLengthSeconds（現実何秒で1日回すか）/ timeScale（ゲーム内全体倍率）
@@ -340,6 +341,10 @@ void GameScene::Init(ObjectManager* mgr)
 	m_FoundByEnemy = nullptr;
 	m_RequestRebuildEnemies = false;
 	m_Limit.Start(120.0f);
+
+	// カウントダウン用コンポーネントの追加
+	auto* obj = m_pObjectManager->Instantiate<GameObject>("CountdownAudio", Tag::Object, Transform::One());
+	obj->AddComponent<CountdownSoundComponent>("CountdownSound", &m_Limit.remain, TIME_WARN_SEC);
 
 	// ローカル軸表示用線分の初期化
 	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));

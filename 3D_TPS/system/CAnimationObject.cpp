@@ -25,14 +25,16 @@ void CAnimationObject::UpdateFromAnimator(const Animator& animator)
     aiAnimation* current = animator.GetCurrentClip();
     aiAnimation* next = animator.GetNextClip();
 
-    if (current)
+#if _DEBUG
+    /*if (current)
     {
         std::cout << "[Anim] current=" << current->mName.C_Str() << "\n";
     }
     if (next)
     {
         std::cout << "[Anim] next=" << next->mName.C_Str() << "\n";
-    }
+    }*/
+#endif
 
     if (!current) return;
 

@@ -80,7 +80,10 @@ private:
 
 	// すでにゲームオーバー処理を走らせたかどうか
 	bool	m_GameOverTriggered = false;
+	bool	m_SlowEndSEPlayed = false;
+	bool	m_GunSEPlayed = false;   // 射撃SEを1回だけ鳴らす
 	bool	m_RequestSceneTransition = false;
+	bool m_IsPrimaryFound = false;	// 最初に見つけた“主犯”か
 
 	bool  m_ShotStarted = false;
 	float m_ShotTimer = 0.0f;

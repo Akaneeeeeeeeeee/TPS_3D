@@ -305,6 +305,14 @@ void Enemy::Update(const float deltatime)
 	{
 		if (m_pCharVirtual) m_pCharVirtual->SetMoveDir(Vector3::Zero);
 
+		// 主犯以外は演出しない（音も鳴らさない）
+		if (!m_IsPrimaryFound)
+		{
+			// Idleだけ流す程度でOK
+			if (m_pAnimComp) m_pAnimComp->Play(AnimType::Idle, 0.1f);
+			return;
+		}
+
 		if (!m_pAnimComp)
 		{
 			// アニメが無い場合の保険：即遷移
@@ -315,15 +323,43 @@ void Enemy::Update(const float deltatime)
 		if (!m_ShotStarted)
 		{
 			m_ShotStarted = true;
+			m_ShotTimer = 0.0f;
+			m_GunSEPlayed = false;
 
 			// 非ループで射撃開始（確実に 0 秒から）
 			m_pAnimComp->ForceSet(AnimType::GunShot, 0.0f, false);
 			return;
 		}
 
-		// GunShot が「現在再生中」かつ「終了した」なら遷移OK
+		// 射撃中
+		m_ShotTimer += deltatime;
+
+		const float dur = m_pAnimComp->GetCurrentDurationSec();
+		if (dur > 1e-6f)
+		{
+			// 0..1
+			const float norm = std::clamp(m_ShotTimer / dur, 0.0f, 1.0f);
+
+			// 半分を跨いだ瞬間に1回だけ鳴らす
+			if (!m_GunSEPlayed && norm >= 0.35f)
+			{
+				if (m_pSoundEmitter)
+				{
+					m_pSoundEmitter->PlayUIOneShot(SE_GUNSHOT, 1.0f);
+				}
+				m_GunSEPlayed = true;
+			}
+		}
+		// 終了判定
 		if (m_pAnimComp->IsPlaying(AnimType::GunShot) && m_pAnimComp->IsCurrentFinished())
 		{
+			// ★スローモ終了SE（1回だけ）
+			if (!m_SlowEndSEPlayed && m_pSoundEmitter)
+			{
+				m_pSoundEmitter->PlayUIOneShot(SE_ENDSLOWMOTION, 1.0f);
+				m_SlowEndSEPlayed = true;
+			}
+
 			m_RequestSceneTransition = true;
 		}
 		return;
@@ -427,7 +463,6 @@ void Enemy::Draw(void) const
 
 void Enemy::Uninit(void)
 {
-	Character::Uninit();
 }
 
 bool Enemy::CanSeePlayer(const Vector3& playerPos) const
@@ -499,6 +534,36 @@ void Enemy::OnFoundPlayer(void)
 		return;
 
 	m_GameOverTriggered = true;
+
+	// ---- “主犯”判定：最初にFoundを確定した敵だけが演出を担当 ----
+	m_IsPrimaryFound = false;
+	if (auto* om = GetObjectManager())
+	{
+		if (om->GetGameResult() == ResultType::None)
+		{
+			om->SetGameResult(ResultType::Found);
+			m_IsPrimaryFound = true;
+		}
+	}
+	else
+	{
+		// ObjectManagerが無いなら保険で主犯扱い（推測です）
+		m_IsPrimaryFound = true;
+	}
+
+	// 主犯でないなら、移動停止だけして終わり（音もTimeScaleも触らない）
+	if (!m_IsPrimaryFound)
+	{
+		if (m_pCharVirtual) m_pCharVirtual->Stop();
+		return;
+	}
+
+	m_SlowEndSEPlayed = false;
+	m_GunSEPlayed = false;
+
+	// 開始SE（距離無関係）
+	if (m_pSoundEmitter)
+		m_pSoundEmitter->PlayUIOneShot(SE_STARTSLOWMOTION, 1.0f);
 
 	// 射撃アニメ再生開始（ここで初期化）
 	m_ShotStarted = false;
@@ -594,7 +659,7 @@ void Enemy::UpdateFootstep(float dt, EnemyAIComponent::State /*aiState*/, float 
 	// 速度→0..1
 	const float speed01 = Remap01Clamp(horizontalSpeed, ENEMY_SPEED_MIN, ENEMY_SPEED_MAX);
 
-	// ★頻度だけ速度で変える（速いほど間隔短い）
+	// 頻度だけ速度で変える（速いほど間隔短い）
 	const float interval = std::lerp(ENEMY_STEP_INTERVAL_SLOW, ENEMY_STEP_INTERVAL_FAST, speed01);
 
 	m_FootstepTimer += dt;

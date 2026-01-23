@@ -19,6 +19,8 @@ void SoundHub::Init(WeatherSystem* weather)
     // リスナー登録（再生と可視化は内部で登録してしまう）
     m_Bus.RegisterListener(&m_Playback);
     m_Bus.RegisterListener(&m_Viz);
+
+	m_Looping.fill(false);
 }
 
 void SoundHub::BeginFrame(float dt)
@@ -35,8 +37,10 @@ void SoundHub::BeginFrame(float dt)
 void SoundHub::UpdateFrame(float dt, const Vector3& listenerPos)
 {
     m_Bus.SetListenerPos(listenerPos);
-    auto L = listenerPos;
-    printf("[Sound] listener=(%.2f,%.2f,%.2f)\n", L.x, L.y, L.z);
+#if _DEBUG
+    //auto L = listenerPos;
+    //printf("[Sound] listener=(%.2f,%.2f,%.2f)\n", L.x, L.y, L.z);
+#endif
     // 天候ループ音（位置なし）
     m_WeatherAudio.Update(dt);
 }
@@ -55,7 +59,53 @@ void SoundHub::Uninit()
     // 1) 天候ループ音を止める（スロットが2本なら両方止める）
     m_WeatherAudio.Uninit();
 
+    // 念のためUIループも停止
+    for (int i = 0; i < (int)SOUND_LABEL_MAX; ++i)
+    {
+        if (m_Looping[i])
+        {
+            m_System.StopLoop((SOUND_LABEL)i);
+            m_Looping[i] = false;
+        }
+    }
+
     // 2) 再生中のOneShotを回収してから解放
     m_System.Update();
     m_System.Uninit();
+}
+
+void SoundHub::StartUILoop(SOUND_LABEL label, float volume01)
+{
+    if (!IsValid(label)) return;
+    volume01 = std::clamp(volume01, 0.0f, 1.0f);
+
+    if (!m_Looping[(int)label])
+    {
+        m_System.PlayLoop(label, volume01);     // 1回だけ開始
+        m_Looping[(int)label] = true;
+    }
+    else
+    {
+        m_System.SetLoopVolume(label, volume01); // 以降は音量だけ
+    }
+}
+
+void SoundHub::StopUILoop(SOUND_LABEL label)
+{
+    if (!IsValid(label)) return;
+
+    if (m_Looping[(int)label])
+    {
+        m_System.StopLoop(label);
+        m_Looping[(int)label] = false;
+    }
+}
+
+void SoundHub::SetUILoopVolume(SOUND_LABEL label, float volume01)
+{
+    if (!IsValid(label)) return;
+    if (!m_Looping[(int)label]) return;
+
+    volume01 = std::clamp(volume01, 0.0f, 1.0f);
+    m_System.SetLoopVolume(label, volume01);
 }

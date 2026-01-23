@@ -269,7 +269,7 @@ HRESULT SoundSystem::Init()
     m_Param[SE_RUNNING] = { "assets/Sound/SE_Run.wav", false };
     //m_Param[SE_WALKING_RAIN] = { "assets/Sound/SE/FootstepRain.wav", false };
 
-    m_Param[SE_COUNTDOWN] = { "assets/Sound/SE_CountDown.wav", false };
+    m_Param[SE_COUNTDOWN] = { "assets/Sound/SE_CountDown.wav", true };
     m_Param[SE_CONFIRM] = { "assets/Sound/SE_Confirm.wav", false };
     m_Param[SE_HEARTBEAT] = { "assets/Sound/SE_HeartBeat.wav", false };
     m_Param[SE_GUNSHOT] = { "assets/Sound/SE_GunShot.wav", false };

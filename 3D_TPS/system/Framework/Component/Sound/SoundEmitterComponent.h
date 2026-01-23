@@ -23,6 +23,8 @@ public:
         float loudness, float radius, float volume,
         SOUND_LABEL playLabel = SOUND_LABEL_MAX);
 
+    void PlayUIOneShot(SOUND_LABEL label, float volume01 = 1.0f);
+
 private:
     SoundHub* m_pSound = nullptr;
 };

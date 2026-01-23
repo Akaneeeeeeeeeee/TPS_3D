@@ -162,47 +162,9 @@ namespace myAssimp{
 		return bones;
 	}
 
-	// ボーン名、ボーンインデックス、ボーンウェイトを頂点にセットする（20231225追加）
-	void SetBoneDataToVertices() {
-
-		// ボーンインデックスを初期化
-//		for (auto& vtbl : g_vertices) {
-//			for (auto& v : vtbl) {
-//				v.bonecnt = 0;
-//				for (int b = 0; b < 4; b++) {
-//					v.BoneIndex[b] = 0;
-//					//v.BoneIndex[b] = -1;
-//					v.BoneWeight[b] = 0.0f;
-//					v.BoneName[b] = "";
-//				}
-//			}
-//		}
-//
-//		// メッシュ毎のボーンコンテナ
-//		int subsetid = 0;
-//		for (auto& bones : g_BonesPerMeshes) {
-//
-//			// このスタティックメッシュ内の頂点データのスタート位置を取得
-////			int vertexbase = g_subsets[subsetid].VertexBase;
-//
-//			// このサブセット内のボーンをひとつづつ取り出す
-//			for (auto& bone : bones)
-//			{
-//				for (auto& w : bone.weights) {
-//					int& idx = g_vertices[subsetid][w.vertexindex].bonecnt;
-//					if (idx >= 4) continue;	// ボーン数が4を超えたら無視する
-//
-//					g_vertices[subsetid][w.vertexindex].BoneName[idx] = w.bonename;	// ボーン名をセット
-//					g_vertices[subsetid][w.vertexindex].BoneWeight[idx] = w.weight;	// weight値をセット
-//					g_vertices[subsetid][w.vertexindex].BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
-//
-//					//ボーンの配列番号をセット
-//					idx++;
-//					assert(idx <= 4);
-//				}
-//			}
-//			subsetid++;				// 次のメッシュへ
-//		}
+	// ボーン名、ボーンインデックス、ボーンウェイトを頂点にセット
+	void SetBoneDataToVertices()
+	{
 		// 1) 初期化（必ずここでゼロクリア）
 		for (auto& vtbl : g_vertices)
 		{
@@ -218,6 +180,7 @@ namespace myAssimp{
 			}
 		}
 
+		// メッシュ毎のボーンコンテナ
 		// 2) ウェイトを詰める
 		int subsetid = 0;
 		for (auto& bones : g_BonesPerMeshes)
@@ -361,6 +324,7 @@ namespace myAssimp{
 					shiness = 0.0f;
 			}
 
+#if _DEBUG
 			// マテリアル情報ダンプ
 			std::cout << "[Material] " << mtrlname << "\n";
 			DumpTex(material, aiTextureType_BASE_COLOR, "BASE_COLOR");
@@ -373,6 +337,7 @@ namespace myAssimp{
 			DumpTex(material, aiTextureType_EMISSIVE, "EMISSIVE");
 			DumpTex(material, aiTextureType_OPACITY, "OPACITY");
 			DumpTex(material, aiTextureType_UNKNOWN, "UNKNOWN");
+#endif
 
 			// このマテリアルに紐づいているディフューズテクスチャ数分ループ
 			std::vector<std::string> texpaths{};
@@ -512,7 +477,10 @@ namespace myAssimp{
 			std::cout << "load error" << filename.c_str() << importer.GetErrorString() << std::endl;
 		}
 		assert(pScene != nullptr);
+
+#if _DEBUG
 		DumpSceneSummary(pScene);
+#endif
 
 		// 読み込み領域をクリア
 		g_vertices.clear();				//20240908
