@@ -22,6 +22,7 @@
 #include "commontypes.h"
 #include "Framework/Time/Time.h"
 #include "Framework/GameObject/StreetLight/StreetLight.h"
+#include "Framework/Component/Sound/CountdownSoundComponent.h"
 
 namespace {
 	// worldTime（0..24） / dayLengthSeconds（現実何秒で1日回すか）/ timeScale（ゲーム内全体倍率）
@@ -31,6 +32,11 @@ namespace {
 	static bool  g_manualOverride = false;     // マニュアルで方向/色を指定するか
 	static Vector4 g_manualDirection = Vector4(0, 1, 0, 0);
 	static Color   g_manualColor = Color(1, 1, 1, 1);
+
+	constexpr float TIME_WARN_SEC = 60.0f;   // ここを閾値にする（例：10秒以下）
+	constexpr float TIME_BLINK_SEC = 0.25f;   // 点滅周期（0.25=4回/秒でON/OFF）
+	static float g_timeBlinkTimer = 0.0f;
+	static bool  g_timeBlinkOn = true;
 }
 
 // 現在位置のフィールドの高さ表示
@@ -336,6 +342,10 @@ void GameScene::Init(ObjectManager* mgr)
 	m_RequestRebuildEnemies = false;
 	m_Limit.Start(120.0f);
 
+	// カウントダウン用コンポーネントの追加
+	auto* obj = m_pObjectManager->Instantiate<GameObject>("CountdownAudio", Tag::Object, Transform::One());
+	obj->AddComponent<CountdownSoundComponent>("CountdownSound", &m_Limit.remain, TIME_WARN_SEC);
+
 	// ローカル軸表示用線分の初期化
 	m_segments[0] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(100, 0, 0));
 	m_segments[1] = std::make_unique<Segment>(Vector3(0, 0, 0), Vector3(0, 100, 0));
@@ -345,22 +355,30 @@ void GameScene::Init(ObjectManager* mgr)
 
 	// フィールド初期化
 	m_terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
-	m_terrain->SetPosition(Vector3(0.0f, 100.0f, 0.0f));
+	m_terrain->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 	m_terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
 	m_terrain->SetScene(this);
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(-300.0f, 210.0f, -100.0f));
-	//m_player->SetPosition(Vector3(0.0f, 10.0f, -200.0f));
+	m_player->SetPosition(Vector3(-300.0f, 100.0f, -100.0f));
+	// 天候オブジェクト（子にする）
+	auto* weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
+
+	// 先に親を設定
+	weather->TransformRef().SetParent(&m_player->TransformRef());
+
+	// 親からの相対位置（ローカル）
+	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
 
 	// 天候オブジェクト
-	auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
-	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	//auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
+	//weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
-	m_Goal->SetScale(Vector3(50.0f, 100.0f, 50.0f));
-	m_Goal->SetPosition(Vector3(-300.0f, 250.0f, -800.0f));
+	m_Goal->SetScale(Vector3(0.5f, 1.0f, 0.5f));
+	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, -800.0f));
 
 
 	// --- 衝突テスト用障害物 ---
@@ -538,7 +556,7 @@ void GameScene::SpawnEnemies(int count)
 			// 複数モード：ランダム
 			if (!MakeRandomSpawnPos(spawnPos, used))
 			{
-				// ランダム失敗時の保険（推測です）：プレイヤー近く等に置かないなら別条件も足す
+				// ランダム失敗時の保険：プレイヤー近く等に置かないなら別条件も足す
 				spawnPos = m_SingleEnemyPos + Vector3(0, 0, 300.0f * i);
 			}
 		}
@@ -565,6 +583,12 @@ void GameScene::DrawUI(void)
 {
 	if (!m_pDirectWrite) return;
 
+	// 目標テキストはワイド文字リテラルを使用
+	const wchar_t* objectiveTextW = L"目標：敵に見つからずにゴールを目指せ！";
+	m_pDirectWrite->DrawString(
+		objectiveTextW,
+		{ 20.0f, 20.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
+
 	// 残り秒 → mm:ss
 	int s = (m_Limit.remain > 0.0f) ? (int)std::ceil(m_Limit.remain) : 0;
 	int mm = s / 60;
@@ -573,8 +597,30 @@ void GameScene::DrawUI(void)
 	wchar_t timeBuf[64];
 	swprintf_s(timeBuf, L"TIME %02d:%02d", mm, ss);
 
-	m_pDirectWrite->DrawString(timeBuf, { 20.0f, 20.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
+	// 色を一時変更して TIME だけ描く
+	if (m_Limit.remain <= TIME_WARN_SEC)
+	{
+		g_timeBlinkTimer += Time::GetInstance().Deltatime();
+		if (g_timeBlinkTimer >= TIME_BLINK_SEC)
+		{
+			g_timeBlinkTimer = 0.0f;
+			g_timeBlinkOn = !g_timeBlinkOn;
+		}
 
+		const float alpha = g_timeBlinkOn ? 1.0f : 0.15f;
+		m_pDirectWrite->SetTextColor(D2D1::ColorF(D2D1::ColorF::Red, alpha));
+	}
+	else
+	{
+		g_timeBlinkTimer = 0.0f;
+		g_timeBlinkOn = true;
+		m_pDirectWrite->SetTextColor(D2D1::ColorF(D2D1::ColorF::White, 1.0f));
+	}
+
+	m_pDirectWrite->DrawString(timeBuf, { 20.0f, 100.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);
+
+	// 念のため通常色に戻す（他の文字に影響させない）
+	m_pDirectWrite->SetTextColor(D2D1::ColorF(D2D1::ColorF::White, 1.0f));
 #if _DEBUG
 	// 既存の表示
 	if (m_player)

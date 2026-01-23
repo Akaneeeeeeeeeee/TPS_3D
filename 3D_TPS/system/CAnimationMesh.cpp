@@ -147,7 +147,7 @@ void CAnimationMesh::BlendLocalPose(
 void CAnimationMesh::Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, const float& timeSec)
 {
 	if (!animation) return;
-	// ★追加：毎フレ bind姿勢に戻す
+	// 毎フレ bindポーズに戻す
 	for (auto& [name, bone] : m_BoneDictionary)
 		bone.AnimationMatrix = bone.BindLocalMatrix;
 		
@@ -283,8 +283,8 @@ void CAnimationMesh::UpdateBlended(
 
 		BONE& bone = it->second;
 
-		// ★ ここもスケールは Transform 内のものを使うか、1固定にするか選べる
-		Vector3  s = transform.GetScale();      // 必要なら Vector3::One にしてもよい
+		// スケールは Transform 内のものを使うか、1固定にするか選べる
+		Vector3  s = transform.GetScale();
 		auto     r = transform.GetRotation();
 		Vector3  t = transform.GetPosition();
 

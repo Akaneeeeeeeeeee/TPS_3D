@@ -213,6 +213,8 @@ void ThrowComponent::LateUpdate(float dt)
 
         m_hasSpawned = true;
         m_cooldown = std::max(0.0f, t.cooldownSec);
+
+        if (m_Listener) m_Listener->OnThrowReleased(m_current->Id());
     }
 
     // 終了で Hold に戻す（StoneThrow の finished が使えるなら優先）

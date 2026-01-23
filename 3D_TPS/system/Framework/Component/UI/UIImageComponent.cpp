@@ -44,7 +44,7 @@ Matrix4x4 UIImageComponent::BuildWorld2D(int screenW, int screenH) const
 {
     const Vector2 centerPx = CalcCenterPx(screenW, screenH);
 
-    // ★SetWorldViewProjection2D() が OffCenterLH(0..W, H..0) なので
+    // SetWorldViewProjection2D() が OffCenterLH なので
     // 座標は「左上原点(0,0)、右+、下+」でそのまま使う
     SRT srt;
     srt.scale = Vector3(m_Rect.sizePx.x, m_Rect.sizePx.y, 1.0f);

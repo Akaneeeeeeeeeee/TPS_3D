@@ -9,6 +9,7 @@ class CShader;
 class SphereCollider;
 class Rigidbody;
 class StaticMeshRendererComponent;
+class SoundEmitterComponent;
 
 /*
 * @brief	Rockクラス
@@ -46,6 +47,7 @@ private:
 	Rigidbody* m_RB = nullptr;
 
 	StaticMeshRendererComponent* m_pRenderComp = nullptr;
+	SoundEmitterComponent* m_pSoundEmitter = nullptr;
 
 	std::optional<Vector3> m_PendingVel;	// 速度
 	std::optional<Vector3> m_PendingAngVel;	// 角速度

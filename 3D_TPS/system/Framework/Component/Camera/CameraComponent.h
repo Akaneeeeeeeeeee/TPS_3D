@@ -72,6 +72,7 @@ public:
     void  SetNearPlane(float nearPlane) { m_Near = nearPlane; }
 
     void SetCollisionPivot(const Vector3& p) { m_CollisionPivot = p; }
+	Vector3 GetCollisionPivot() const { return m_CollisionPivot; }
     void SetIgnoreBody(const JPH::BodyID& id) { m_IgnoreBody = id; }
 private:
     CameraManager* m_CameraManager = nullptr;

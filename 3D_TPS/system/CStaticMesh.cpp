@@ -23,34 +23,6 @@ void CStaticMesh::Load(std::string filename, std::string texturedirectory)
 	// 頂点データ作成
 	int meshidx = 0;
 
-	/*for (const auto& mv : vertices)
-	{
-		for (auto& v : mv)
-		{
-			VERTEX_3D vertex{};
-			vertex.Position = Vector3(v.pos.x, v.pos.y, v.pos.z);
-			vertex.Normal = Vector3(v.normal.x, v.normal.y, v.normal.z);
-			vertex.TexCoord = Vector2(v.texcoord.x, v.texcoord.y);
-			vertex.Diffuse = Color(v.color.r, v.color.g, v.color.b, v.color.a);
-
-			vertex.bonecnt = v.bonecnt;
-			for (int i = 0; i < 4; i++)
-			{
-				vertex.BoneIndex[i] = 0;
-				vertex.BoneWeight[i] = 0.0f;
-				vertex.BoneName[i] = "";
-			}
-
-			for (int i = 0; i < v.bonecnt; i++) 
-			{
-				vertex.BoneIndex[i] = v.BoneIndex[i];
-				vertex.BoneWeight[i] = v.BoneWeight[i];
-				vertex.BoneName[i] = v.BoneName[i];
-			}
-
-			m_vertices.emplace_back(vertex);
-		}
-	}*/
 	for (const auto& mv : vertices)
 	{
 		for (const auto& v : mv)

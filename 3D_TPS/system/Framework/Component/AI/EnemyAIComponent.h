@@ -43,7 +43,6 @@ public:
         Caution,        // 警戒状態（その場で振り向き＋待機）
         Patrol,		    // 巡回状態
         Investigate,    // 調査状態（音の方向へ移動）
-        Chase,		    // 追跡状態
         STATE_MAX,
     };
 
@@ -121,7 +120,6 @@ private:
     void UpdateIdle(const float deltatime);
     void UpdatePatrol(const float deltatime);
     void UpdateInvestigate(const float deltatime);
-    void UpdateChase(const float deltatime);
 	void UpdateCaution(const float deltatime);
 
     // 移動計算用のヘルパ
@@ -147,7 +145,7 @@ private:
     float m_AvoidSideSign = 1.0f;   // +1 = 左方向、-1 = 右方向
 
 	int   m_CurrentIndex = 0;       // 現在の巡回地点インデックス
-	float m_ArriveRadius = 100.0f;   // 到着判定半径
+	float m_ArriveRadius = 200.0f;   // 到着判定半径
 	float m_RayLength = 800.0f;     // 障害物回避用のRay長さ
 	float m_AvoidWeight = 1.5f;     // 障害物回避の重み付け
 	float m_EyeHeight = 80.0f;      // Rayの発射位置（敵の目の高さ）

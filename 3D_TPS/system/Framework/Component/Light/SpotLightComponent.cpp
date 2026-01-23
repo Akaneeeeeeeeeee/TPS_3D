@@ -173,9 +173,9 @@ float SpotLightComponent::ComputeInfluence01(const Vector3& worldPos) const
     float dist01 = (denomD > 1e-6f) ? 1.0f - (dist - nearD) / denomD : 0.0f;
     dist01 = Saturate(dist01);
 
-    // 「上面が強い」＝ near 付近を強くしたいなら指数をかける（好み）
-    // dist01 = std::pow(dist01, 0.7f);  // 0.7 だと近いほどさらに強く（例）
-    // angle01 = std::pow(angle01, 1.2f); // 中心寄りを強く（例）
+    // 「上面が強い」＝ near 付近を強くしたいなら指数をかける
+    // dist01 = std::pow(dist01, 0.7f);  // 0.7 だと近いほどさらに強く
+    // angle01 = std::pow(angle01, 1.2f); // 中心寄りを強く
 
     // 0..1 で返す（intensity は LightSystem 側で倍率にするのが扱いやすい）
     return angle01 * dist01;
@@ -200,7 +200,7 @@ void SpotLightComponent::FitToGroundCircle(float groundY, float groundRadius,
     const float H = pos.y - groundY;
     if (H <= 1e-3f) return;
 
-    // ① 角度（地面の半径 / 高さ から outer を決める）
+    // 角度（地面の半径 / 高さ から outer を決める）
     const float outerHalf = std::atan2(groundRadius, H);
     float outerDeg = RadToDeg(outerHalf * 2.0f);
 
@@ -209,12 +209,12 @@ void SpotLightComponent::FitToGroundCircle(float groundY, float groundRadius,
     float innerDeg = RadToDeg(innerHalf * 2.0f);
     if (innerDeg > outerDeg) innerDeg = outerDeg;
 
-    // ② range：地面の円周まで届く直線距離（重要）
+    // range：地面の円周まで届く直線距離
     const float distToEdge = std::sqrt(H * H + groundRadius * groundRadius);
     const float rangeDist = distToEdge + rangeExtraAxis;
     SetRange(rangeDist);
 
-    // ③ near：上面口径(topRadiusMin)から逆算（axis距離でOK）
+    // near：上面口径(topRadiusMin)から逆算（axis距離）
     const float tanOuter = std::tan(outerHalf);
     float nearAxis = 0.0f;
     if (tanOuter > 1e-6f)

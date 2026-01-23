@@ -7,6 +7,7 @@
 #include <cmath>
 #include "Framework/Component/Physic/StaticMeshCollider.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
+#include "Framework/Component/Sound/SoundEmitterComponent.h"
 
 namespace
 {
@@ -46,12 +47,12 @@ void TitlePlayerActor::Awake(void)
 	setup.meshName = "Akai";
 	setup.shaderName = "animshader";
 	setup.clips = {
-		{ AnimType::Covered_Idle,       "Cover_Idle",         "Cover_Idle",         0, 1.0f },
-		{ AnimType::StoneThrow,       "StoneThrow",          "StoneThrow",          0, 1.0f },
-		{ AnimType::CrouchWalk, "Title_Sneaking", "Title_Sneaking", 0, 1.0f },
-		{ AnimType::Check_OverWall, "checkOverWall",       "checkOverWall",       0, 1.0f },
-		{ AnimType::Run,        "Akai_Run",         "Akai_Run",         0, 1.0f },
-		{ AnimType::Crouch,     "Crouching_Idle",   "Crouching_Idle",   0, 1.0f },
+		{ AnimType::Covered_Idle,       "Cover_Idle",		"Cover_Idle",		0, 1.0f },
+		{ AnimType::StoneThrow,			"StoneThrow",		"StoneThrow",		0, 1.0f },
+		{ AnimType::CrouchWalk,			"Title_Sneaking",	"Title_Sneaking",	0, 1.0f },
+		{ AnimType::Check_OverWall,		"checkOverWall",	"checkOverWall",	0, 1.0f },
+		{ AnimType::Run,				"Akai_Run",			"Akai_Run",         0, 1.0f },
+		{ AnimType::Crouch,				"Crouching_Idle",	"Crouching_Idle",   0, 1.0f },
 	};
 
 	// 2) アセット情報からセットアップ
@@ -82,6 +83,11 @@ void TitlePlayerActor::Awake(void)
 		r->SetMeshKey("Akai");
 		r->SetShaderKey("animshader");
 		r->SetAnimator(m_pAnimComp);    // アニメーターをセット
+	}
+
+	// 足音用コンポーネント追加
+	{
+		m_pSoundEmitter = AddComponent<SoundEmitterComponent>("SoundEmitter");
 	}
 
 	m_MoveDir = Vector3(0.5f, 0.0f, -0.75f);
@@ -345,4 +351,12 @@ void TitlePlayerActor::SetupFixedTitleCamera()
 	// 固定カメラ：位置と注視点だけセット（Radius/Elevation/Azimuth は使わない）
 	m_pCamera->SetPosition(camPos);
 	m_pCamera->SetLookAt(lookAt);
+}
+
+void TitlePlayerActor::EmitWorldSoundAt(const Vector3& pos, const WorldSoundEvent& src)
+{
+	if (!m_pSoundEmitter) return;
+	WorldSoundEvent ev = src;
+	ev.Position = pos;
+	m_pSoundEmitter->EmitSound(ev);
 }

@@ -1,16 +1,11 @@
 #include "EngineSystem.h"
-
 #include "system/CDirectInput.h"
-// #include "system/Framework/SoundManager/SoundManager.h"  // 置くならここ
-
 #include "commontypes.h"
 
 void EngineSystems::Init()
 {
     if (m_Inited) return;
     m_Inited = true;
-
-    //m_Graphics.Init();
 
     m_Shader.Init();
     //m_Asset.Init();
@@ -29,19 +24,18 @@ void EngineSystems::Init()
     m_Light.SetPhysics(&m_Physics);
     m_Light.SetOcclusionEnabled(false);
 
-    // 必要なら
-    // m_camera.Init();
+    // --- Sound ---
+	m_Sound.Init(&m_Weather);
 }
 
 void EngineSystems::BeginFrame(float dt)
-{
-    (void)dt;
-
+{   
+	m_LastDt = dt;
     // 入力更新
     CDirectInput::GetInstance().Update();
 
-    // サウンド BeginFrame を統一したいならここへ寄せる
-    // SoundManager::GetInstance().BeginFrame();
+    // サウンドイベントバッファをクリア
+    m_Sound.BeginFrame(dt);
 }
 
 void EngineSystems::UpdateFrame(float dt)
@@ -68,15 +62,31 @@ void EngineSystems::UpdateFrame(float dt)
         m_Weather.SetViewProjMatrices(view, proj);
     }
 
+    // リスナー位置（カメラ）を毎フレーム渡す
+    // listenerPos（カメラ）
+    Vector3 listenerPos = Vector3::Zero;
+    if (auto* cam = m_Camera.GetMain())
+    {
+        //listenerPos = cam->GetPosition();   // カメラの位置基準
+		listenerPos = cam->GetCollisionPivot();    // 注視点基準（プレイヤー位置基準にしたい）
+		//listenerPos = cam->GetLookAt();    // 注視点基準（プレイヤー位置基準にしたい）
+    }
+
+    m_Sound.UpdateFrame(dt, listenerPos);
+
+    // ライト更新
     m_Light.UpdateCache();
     m_Light.UploadToGPU();
 }
 
 void EngineSystems::EndFrame()
 {
+    // Scene.UpdateでEmitが終わった後に呼ぶ想定
+    m_Sound.EndFrame(m_LastDt);
 }
 
 void EngineSystems::Uninit()
 {
+	m_Sound.Uninit();
     m_Inited = false;
 }

@@ -9,10 +9,17 @@ void EnemyHearingComponent::Attach(EngineServices& context)
 {
 	m_pPhysics = &context.physics;
 	m_pWeather = &context.weather;
+	m_pSound = &context.sound;
+	m_pSound->RegisterListener(this);
 }
 
 void EnemyHearingComponent::Detach(void)
 {
+	if (m_pSound)
+	{
+		m_pSound->UnregisterListener(this); // 解除
+		m_pSound = nullptr;
+	}
 	m_pPhysics = nullptr;
 	m_pWeather = nullptr;
 }
@@ -120,24 +127,6 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 
 void EnemyHearingComponent::Update(const float dt)
 {
-	if (!m_pEnemyAI) { return; }
-
-	const auto& events = SoundManager::GetInstance().GetEvents();
-
-	for (const auto& ev : events)
-	{
-		float perceived = ComputePerceivedLoudness(ev);
-
-		// 弱すぎる音は無視
-		//if (perceived < m_Threshold)
-		if (perceived <= 0.0f)
-		{
-			continue;
-		}
-
-		// 音を AI に通知
-		m_pEnemyAI->OnHeardSound(ev.Position, perceived);
-	}
 }
 
 void EnemyHearingComponent::SetEnemyAI(EnemyAIComponent* ai)
@@ -148,6 +137,10 @@ void EnemyHearingComponent::SetEnemyAI(EnemyAIComponent* ai)
 void EnemyHearingComponent::OnWorldSound(const WorldSoundEvent& ev)
 {
 	if (!m_pEnemyAI) { return; }
+
+	// 敵の足音には反応しない（敵同士の連鎖防止）
+	if (ev.Emitter == SoundEmitterKind::Enemy && ev.Type == SoundType::Footstep)
+		return;
 
 	float perceived = ComputePerceivedLoudness(ev);
 

@@ -116,7 +116,7 @@ void CharacterContactListenerImpl::OnContactRemoved(
     const JPH::BodyID& inBodyID2,
     const JPH::SubShapeID& inSubShapeID2)
 {
-    // ★重要：RemovedではBodyが消えている可能性があるので、BodyをLockして触らない :contentReference[oaicite:3]{index=3}
+    // RemovedではBodyが消えている可能性があるので、BodyをLockして触らない
     const JPH::BodyID innerBodyID = inCharacter->GetInnerBodyID();
     const auto key = MakeKey(innerBodyID, inBodyID2);
 

@@ -48,7 +48,7 @@ void WeatherSystem::DrawAtmospherePostWorld()
 // コンストラクタ
 // ==============================
 WeatherSystem::WeatherSystem()
-    : m_Rng(RandomEngine::tls().stream("WeatherSystem")) // ★ weather 用サブストリーム
+    : m_Rng(RandomEngine::tls().stream("WeatherSystem")) // weather 用サブストリーム
 {
 	// 初期状態は晴れ
     m_CurrentParams = MakePreset(WeatherType::Clear);
@@ -260,14 +260,14 @@ void WeatherSystem::ApplyToParticles()
         dir = m_CurrentParams.rainDir;
         gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
 
-        spawnHalfWidth = 200000.0f;
-        spawnHalfDepth = 800.0f;
+        spawnHalfWidth = 1000.0f;
+        spawnHalfDepth = 500.0f;
         spawnHeight = 0.0f;
 
         // 雨はエミッタの真上あたりにまとめて出すイメージなら 0〜0 でもよい
         spawnMinY = 0.0f;
         spawnMaxY = 0.0f;
-        maxParticles = 3000000;
+        maxParticles = 30000;
     }
     // 砂嵐が有効
     else if (m_CurrentParams.sandEmitRate > 0.0f)
@@ -293,7 +293,7 @@ void WeatherSystem::ApplyToParticles()
         spawnHeight = 300.0f;    // 0 → 300（推測です）
 
         // 最大粒子数も増やして間引かれないように
-        maxParticles = 3000000;     // 12000 → 30000
+        maxParticles = 30000;     // 12000 → 30000
     }
 
     for (auto* comp : m_ParticleComponents)
@@ -679,6 +679,25 @@ void WeatherSystem::DrawSand() const
         SAND_RADIUS,
         sandColor);
 }
+
+float WeatherSystem::GetRainStrength01(void) const
+{
+    // 雨の強さを 0～1 に正規化して返す
+    const float maxEmitRate = 10000.0f; // 強さ最大とみなす放出率
+    float rate = m_CurrentParams.rainEmitRate;
+    float t = std::clamp(rate / maxEmitRate, 0.0f, 1.0f);
+	return t;
+}
+
+float WeatherSystem::GetSandStrength01(void) const
+{
+    // 砂嵐の強さを 0～1 に正規化して返す
+    const float maxEmitRate = 5000.0f; // 強さ最大とみなす放出率
+    float rate = m_CurrentParams.sandEmitRate;
+    float t = std::clamp(rate / maxEmitRate, 0.0f, 1.0f);
+	return t;
+}
+
 
 void WeatherSystem::DebugImGui()
 {

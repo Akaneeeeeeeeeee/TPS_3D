@@ -208,8 +208,13 @@
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\Sound\CountdownSoundComponent.h" />
+    <ClInclude Include="system\Framework\Component\Sound\SlowMotionSoundComponent.h" />
+    <ClInclude Include="system\Framework\Component\Sound\SoundEmitterComponent.h" />
+    <ClInclude Include="system\Framework\Component\Sound\ThrowAudioComponent.h" />
     <ClInclude Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.h" />
     <ClInclude Include="system\Framework\Component\Throw\IThrowAction.h" />
+    <ClInclude Include="system\Framework\Component\Throw\IThrowEventListener.h" />
     <ClInclude Include="system\Framework\Component\Throw\ThrowComponent.h" />
     <ClInclude Include="system\Framework\Component\UI\UIImageComponent.h" />
     <ClInclude Include="system\Framework\EngineSystem\EngineSystem.h" />
@@ -236,8 +241,12 @@
     </ClInclude>
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
-    <ClInclude Include="system\Framework\SoundManager\sound.h" />
-    <ClInclude Include="system\Framework\SoundManager\SoundManager.h" />
+    <ClInclude Include="system\Framework\SoundSystem\SoundSystem.h" />
+    <ClInclude Include="system\Framework\Sound\IWorldSoundListener.h" />
+    <ClInclude Include="system\Framework\Sound\SoundBus.h" />
+    <ClInclude Include="system\Framework\Sound\SoundHub.h" />
+    <ClInclude Include="system\Framework\Sound\SoundPlaybackListener.h" />
+    <ClInclude Include="system\Framework\Sound\WeatherAudioController.h" />
     <ClInclude Include="system\Framework\Time\Time.h" />
     <ClInclude Include="system\Framework\Time\CountDownTimer.h" />
     <ClInclude Include="system\Framework\UIManager\UIManager.h" />
@@ -418,6 +427,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp" />
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\Sound\SoundEmitterComponent.cpp" />
     <ClCompile Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowComponent.cpp" />
@@ -472,7 +482,10 @@
     <ClCompile Include="system\Framework\Shader\Shaders\VertexShader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="system\Framework\SoundManager\sound.cpp" />
+    <ClCompile Include="system\Framework\SoundSystem\SoundSystem.cpp" />
+    <ClCompile Include="system\Framework\Sound\SoundHub.cpp" />
+    <ClCompile Include="system\Framework\Sound\SoundPlaybackListener.cpp" />
+    <ClCompile Include="system\Framework\Sound\WeatherAudioController.cpp" />
     <ClCompile Include="system\Framework\UIManager\UIManager.cpp" />
     <ClCompile Include="system\Framework\WeatherSystem\SkyFogPass.cpp" />
     <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp" />

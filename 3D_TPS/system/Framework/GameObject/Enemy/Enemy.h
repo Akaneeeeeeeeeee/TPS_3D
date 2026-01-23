@@ -10,6 +10,7 @@ class Terrain;
 class StaticMeshCollider;
 class EnemyHeadIconComponent;
 class UISpriteRenderer;
+class SoundEmitterComponent;
 
 /*
 * @brief	敵クラス
@@ -43,6 +44,8 @@ public:
 	bool IsGameOverTriggered(void) const { return m_GameOverTriggered; }
 	void DebugImGui(void);
 
+	void UpdateFootstep(float dt, EnemyAIComponent::State aiState, float horizontalSpeed);
+
 	bool IsSceneTransitionRequested() const { return m_RequestSceneTransition; }
 private:
 	void InitAnimation(void);
@@ -55,7 +58,6 @@ private:
 	Player* m_pPlayer = nullptr;
 	Terrain* m_pTerrain = nullptr;
 	StaticMeshCollider* m_pTerrainCollider;
-	CharacterVirtualComponent* m_CharComp = nullptr;
 	EnemyAIComponent* m_AIComp = nullptr;
 	UISpriteRenderer* m_UISprite = nullptr;
 	EnemyHeadIconComponent* m_HeadIcon = nullptr;
@@ -78,12 +80,14 @@ private:
 
 	// すでにゲームオーバー処理を走らせたかどうか
 	bool	m_GameOverTriggered = false;
+	bool	m_SlowEndSEPlayed = false;
+	bool	m_GunSEPlayed = false;   // 射撃SEを1回だけ鳴らす
 	bool	m_RequestSceneTransition = false;
+	bool m_IsPrimaryFound = false;	// 最初に見つけた“主犯”か
 
 	bool  m_ShotStarted = false;
 	float m_ShotTimer = 0.0f;
 
-	// クリップ長が取れない→固定秒でOK（後で調整）
-	float m_ShotDuration = 0.7f;
+	float m_ShotDuration = 1.0f;
 };
 

@@ -6,7 +6,7 @@ Texture2D GNormalR : register(t1);
 Texture2D GEmissive : register(t2);
 Texture2D DepthTex : register(t3); // Renderer::DepthSRV (R32_FLOAT)
 
-// Light buffers (Šù‘¶)
+// Light buffers
 struct LIGHT
 {
     bool Enable;

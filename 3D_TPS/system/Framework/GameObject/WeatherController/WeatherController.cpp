@@ -23,17 +23,12 @@ void WeatherController::SetSpawnAreaXZ(float halfWidth, float halfDepth)
 void WeatherController::Awake(void)
 {
 	m_ParticleComp = AddComponent<ParticleComponent>("WeatherParticle");
-	//m_ParticleComp->SetSpawnAreaXZ(200000.0f, 200000.0f); // L‚¢”ÍˆÍ‚É¶¬
 }
 
 void WeatherController::Update(const float dt)
 {
-    GameObject::Update(dt);
-
-    // ƒJƒƒ‰‚É’Ç]‚³‚¹‚½‚¢‚È‚ç‚±‚±‚ÅˆÊ’u‚ğ‡‚í‚¹‚é
 }
 
 void WeatherController::Uninit(void)
 {
-	GameObject::Uninit();
 }

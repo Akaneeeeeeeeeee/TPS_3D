@@ -9,7 +9,10 @@
 #include "Framework/Component/Camera/CameraComponent.h"
 #include "Framework/LightSystem/LightSystem.h"
 #include "Framework/UIManager/UIManager.h"
-
+#include "Framework/SoundSystem/SoundSystem.h"
+#include "system/Sound/SoundWaveVisualizer.h"
+#include "Framework/Sound/SoundPlaybackListener.h"
+#include "Framework/Sound/SoundHub.h"
 
 /*
 * @brief	エンジンコンテキスト
@@ -28,7 +31,7 @@ struct EngineServices
 	WeatherSystem& weather;
 	CameraManager& camera;
 	LightSystem& light;
-	//SoundSystem& sound;
+	SoundHub& sound;
 };
 
 
@@ -51,19 +54,20 @@ public:
 private:
 	GraphicsDevice m_Graphics;
 
-	ShaderManager  m_Shader;
-	AssetManager   m_Asset;
-	RenderManager  m_Render;
-	CameraManager  m_Camera;
-	WeatherSystem  m_Weather;
-	PhysicsManager m_Physics;
-	LightSystem    m_Light;
-	//SoundSystem    m_Sound;
+	ShaderManager	m_Shader;
+	AssetManager	m_Asset;
+	RenderManager	m_Render;
+	CameraManager	m_Camera;
+	WeatherSystem	m_Weather;
+	PhysicsManager	m_Physics;
+	LightSystem		m_Light;
+	SoundHub		m_Sound;
 
 	EngineServices m_Services {
 		m_Render, m_Shader, m_Asset.GetInstance(),
-		m_Physics, m_Weather, m_Camera, m_Light, //m_Sound
+		m_Physics, m_Weather, m_Camera, m_Light, m_Sound
 	};
 
+	float m_LastDt = 0.0f;
 	bool m_Inited = false;
 };

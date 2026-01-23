@@ -4,6 +4,7 @@
 #include "Framework/Component/IComponent/IComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 #include "IThrowAction.h"
+#include "IThrowEventListener.h"
 
 class ThrowComponent final : public IComponent
 {
@@ -23,6 +24,7 @@ public:
 
 	void Attach(EngineServices& ctx) override {}
 	void Detach() override {}
+    void SetThrowEventListener(IThrowEventListener* i) { m_Listener = i; }
 
 private:
     enum class State { None, Hold, Throwing };
@@ -35,7 +37,6 @@ private:
     void ApplyHoldEveryFrame();
     float SanitizeReleaseNorm(const ThrowTuning& t) const;
 
-    // 
     Vector3 GetAimForward() const;
     Vector3 ComputeThrowVelocity(const ThrowTuning& t) const;
     void DrawThrowGuide(const Vector3& startPos, const Vector3& startVel) const;
@@ -52,6 +53,7 @@ private:
     State m_state = State::None;
     ThrowItemId m_previewId = ThrowItemId::Rock; // 構え中ガイド表示用（最後に選んだ投げ物）
 
+	IThrowEventListener* m_Listener = nullptr;
     bool  m_hasSpawned = false;
     float m_elapsed = 0.0f;
     float m_cooldown = 0.0f;

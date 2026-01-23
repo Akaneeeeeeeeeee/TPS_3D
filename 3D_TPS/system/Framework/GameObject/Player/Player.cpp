@@ -3,10 +3,11 @@
 #include "Framework/Component/Physic/CharacterVirtualComponent.h"
 #include "Framework/Component/Animator/SkinnedAnimatorComponent.h"
 #include "system/Sound/WorldSoundEvent.h"
-#include "system/Framework/SoundManager/SoundManager.h"
 #include "system/Framework/Component/Camera/CameraComponent.h"
 #include "Framework/Component/Throw/ThrowComponent.h"
 #include "Framework/Component/Renderer/MeshRenderer/SkinnedMeshRendererComponent.h"
+#include "Framework/Component/Sound/SoundEmitterComponent.h"
+#include "Framework/Component/Sound/ThrowAudioComponent.h"
 
 #include <algorithm> // std::clamp
 #include <cmath>     // std::sqrt, std::atan2, std::lerp
@@ -87,10 +88,10 @@ namespace
 	constexpr float LANDING_LOUDNESS_MAX = 2.00f;
 
 	// ---- 速度に応じて足音の「強さ/届く範囲」を変えるためのパラメータ ----
-	// ※ここは実測値に合わせて調整する。初期値は仮（推測です）
+	// ※ここは実測値に合わせて調整する。初期値は仮
 	// horizontalSpeed が FOOTSTEP_SPEED_MIN のとき最小、FOOTSTEP_SPEED_MAX で最大になる。
-	constexpr float FOOTSTEP_SPEED_MIN = 60.0f;   // (推測です) 歩き時の水平速度の目安
-	constexpr float FOOTSTEP_SPEED_MAX = 250.0f;  // (推測です) 走り時の水平速度の目安
+	constexpr float FOOTSTEP_SPEED_MIN = 60.0f;   // 歩き時の水平速度の目安
+	constexpr float FOOTSTEP_SPEED_MAX = 250.0f;  // 走り時の水平速度の目安
 
 	// 速度が遅い時/速い時の Loudness 係数（AIに聞こえる強さ & 実再生音量に使う）
 	constexpr float FOOTSTEP_SPEED_LOUDNESS_SCALE_MIN = 0.60f;
@@ -182,6 +183,12 @@ namespace
 	// リセンター時の仰角（見下ろしにならない安定値）
 	constexpr float CAMERA_ELEVATION_RECENTER = -0.25f; // 調整
 
+	constexpr float FOOTSTEP_WALK_INTERVAL = 0.45f;
+	constexpr float FOOTSTEP_RUN_INTERVAL = 0.25f; // 走りは頻繁（短い）
+	constexpr float FOOTSTEP_VOL_MIN = 0.25f;
+	constexpr float FOOTSTEP_VOL_MAX = 1.00f;
+	constexpr float FOOTSTEP_RADIUS_MIN = 350.0f;
+	constexpr float FOOTSTEP_RADIUS_MAX = 900.0f;
 
 	static Vector3 SmoothToVec3(const Vector3& cur, const Vector3& target, float dt, float speed)
 	{
@@ -227,8 +234,8 @@ void Player::Awake(void)
 
 	// 移動制御用コンポーネントを追加
 	{
-		m_pCharaVirtualComp = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
-		m_pCharaVirtualComp->SetCapsule(PLAYER_CAPSULE_HALF_HEIGHT, PLAYER_CAPSULE_RADIUS);
+		m_pCharVirtual = this->AddComponent<CharacterVirtualComponent>(m_Name + "_CharacterVirtualComponent");
+		m_pCharVirtual->SetCapsule(PLAYER_CAPSULE_HALF_HEIGHT, PLAYER_CAPSULE_RADIUS);
 	}
 
 	// TPS カメラコンポーネント追加
@@ -248,6 +255,12 @@ void Player::Awake(void)
 	r->SetShaderKey("animshader");
 	r->SetAnimator(m_pAnimComp);    // アニメーターをセット
 
+	// 足音用コンポーネント追加
+	m_pSoundEmitter = AddComponent<SoundEmitterComponent>("SoundEmitter");
+
+	auto* throwAudio = AddComponent<ThrowAudioComponent>("ThrowAudio");
+	m_pThrowComp->SetThrowEventListener(throwAudio);
+
 	//SetScale(Vector3(10.0f, 10.0f, 10.0f));
 }
 
@@ -263,7 +276,7 @@ void Player::Start(void)
 	// カメラ初期化
 	if (m_pCamera)
 	{
-		// 1) 最初の注視点を確定（ここ重要）
+		// 1) 最初の注視点を確定
 		Vector3 pos = GetPosition();
 		Vector3 lookAt = pos;
 		lookAt.y += CAMERA_LOOK_AT_HEIGHT_NORMAL;
@@ -297,13 +310,13 @@ void Player::Start(void)
 		pivot.y += m_CamLookAtHeightCur;
 		m_pCamera->SetCollisionPivot(pivot);
 
-		if (m_pCharaVirtualComp)
-			m_pCamera->SetIgnoreBody(m_pCharaVirtualComp->GetInnerBodyID());
+		if (m_pCharVirtual)
+			m_pCamera->SetIgnoreBody(m_pCharVirtual->GetInnerBodyID());
 	}
 
 	// 足音系の初期化（Updateで使う状態）
-	m_FootstepTimer = 0.0f;
-	m_WasOnGround = (m_pCharaVirtualComp) ? m_pCharaVirtualComp->IsOnGround() : false;
+	m_Footstep.timer = 0.0f;
+	m_Footstep.wasOnGround = (m_pCharVirtual) ? m_pCharVirtual->IsOnGround() : false;
 
 	m_PrevAiming = false;
 	m_PrevRightTrigger = 0.0f;
@@ -439,9 +452,9 @@ void Player::ApplyStance(const InputState& in)
 		m_CrouchToggle = !m_CrouchToggle;
 	}
 	// 姿勢の切替は「移動」より先に決めておくと、速度係数や当たり判定が同フレームで揃う
-	if (m_pCharaVirtualComp)
+	if (m_pCharVirtual)
 	{
-		m_pCharaVirtualComp->SetStance(
+		m_pCharVirtual->SetStance(
 			m_CrouchToggle ? CharacterVirtualComponent::Stance::Crouch
 			: CharacterVirtualComponent::Stance::Stand
 		);
@@ -452,7 +465,7 @@ void Player::ApplyMoveToCharacterVirtual(const Vector3& moveDir, float moveAmoun
 {
 	// ---- 4) CharacterVirtual に入力を渡す ----
 	// 方向 + 量を渡すことで「スティック倒し具合に応じた速度」が作れる
-	if (m_pCharaVirtualComp)
+	if (m_pCharVirtual)
 	{
 		float amount = moveAmount;
 		if (m_CrouchToggle)
@@ -460,10 +473,10 @@ void Player::ApplyMoveToCharacterVirtual(const Vector3& moveDir, float moveAmoun
 			amount *= 0.55f; // 0.4〜0.7で調整
 		}
 
-		m_pCharaVirtualComp->SetMoveInput(moveDir, amount);
+		m_pCharVirtual->SetMoveInput(moveDir, amount);
 
 		if (wantsJump)
-			m_pCharaVirtualComp->RequestJump();
+			m_pCharVirtual->RequestJump();
 	}
 }
 
@@ -501,91 +514,99 @@ void Player::UpdateMovementAnimation(const InputState& in)
 
 void Player::UpdateFootstep(float dt)
 {
-	// ---- 6) CharacterVirtual の接地判定に同期して足音を出す ----
-	// 「移動している + 地面にいる」時だけ、一定間隔で音イベントを発行する
-	if (!m_pCharaVirtualComp || !m_FootstepEnabled)
+	if (!m_pCharVirtual || !m_FootstepEnabled || !m_pSoundEmitter)
 		return;
 
-	bool  onGround = m_pCharaVirtualComp->IsOnGround();
-	float horizontalSpeed = m_pCharaVirtualComp->GetHorizontalSpeed();
+	const bool  onGround = m_pCharVirtual->IsOnGround();
+	const float horizontalSpeed = m_pCharVirtual->GetHorizontalSpeed();
 
-	bool isMoving = horizontalSpeed > FOOTSTEP_MOVE_SPEED_THRESHOLD;
+	// ---- 移動判定ヒステリシス（止まり際の揺れ対策）----
+	constexpr float MOVE_START = FOOTSTEP_MOVE_SPEED_THRESHOLD;       
+	constexpr float MOVE_STOP = FOOTSTEP_MOVE_SPEED_THRESHOLD * 0.75f;
+
+	if (!m_IsMoving) m_IsMoving = (horizontalSpeed >= MOVE_START);
+	else                    m_IsMoving = (horizontalSpeed >= MOVE_STOP);
+
+	const bool isMoving = m_IsMoving;
+
+	// ---- 姿勢係数（しゃがみ等）----
+	const float kInterval = m_pCharVirtual->GetFootstepIntervalCoeff();
+	const float kRadius = m_pCharVirtual->GetFootstepRadiusCoeff();
+	const float kLoudness = m_pCharVirtual->GetFootstepLoudnessCoeff();
+
+	// ---- 速度を0..1へ（あなたの既存）----
+	const float speed01 = REMAP_01_CLAMP(horizontalSpeed, FOOTSTEP_SPEED_MIN, FOOTSTEP_SPEED_MAX);
+
+	// ---- 走りほど間隔を短く（頻繁に）----
+	float interval = std::lerp(FOOTSTEP_WALK_INTERVAL, FOOTSTEP_RUN_INTERVAL, speed01);
+	interval *= kInterval; // しゃがみは遅く、等
 
 	if (onGround && isMoving)
 	{
-		// 姿勢ごとの係数を取得（しゃがみは足音が小さく/遅く/狭くなる等）
-		float kInterval = m_pCharaVirtualComp->GetFootstepIntervalCoeff();
-		float kRadius = m_pCharaVirtualComp->GetFootstepRadiusCoeff();
-		float kLoudness = m_pCharaVirtualComp->GetFootstepLoudnessCoeff();
-
-		// 実際の足音間隔 = 立ち基準 * 姿勢係数
-		float interval = FOOTSTEP_BASE_INTERVAL * kInterval;
-
-		m_FootstepTimer += dt;
-
-		if (m_FootstepTimer >= interval)
+		m_Footstep.timer += dt;
+		if (m_Footstep.timer >= interval)
 		{
-			m_FootstepTimer = 0.0f;
+			m_Footstep.timer = 0.0f;
 
-			// ---- 速度から「音の大きさ/届く範囲係数」を作る ----
-			const float speed01 = REMAP_01_CLAMP(horizontalSpeed, FOOTSTEP_SPEED_MIN, FOOTSTEP_SPEED_MAX);
+			// 音量：しゃがみ小、歩き普通、走り大（速度で連続スケール）
+			float vol = std::lerp(FOOTSTEP_VOL_MIN, FOOTSTEP_VOL_MAX, speed01);
+			vol *= kLoudness;
 
-			const float speedLoudnessScale =
-				std::lerp(FOOTSTEP_SPEED_LOUDNESS_SCALE_MIN, FOOTSTEP_SPEED_LOUDNESS_SCALE_MAX, speed01);
+			// 届く範囲：速度で増える＋姿勢係数
+			float radius = std::lerp(FOOTSTEP_RADIUS_MIN, FOOTSTEP_RADIUS_MAX, speed01);
+			radius *= kRadius;
 
-			const float speedRadiusScale =
-				std::lerp(FOOTSTEP_SPEED_RADIUS_SCALE_MIN, FOOTSTEP_SPEED_RADIUS_SCALE_MAX, speed01);
+			// AI向けの強さ（好みで vol と同じでOK）
+			float loud = vol; // or 別カーブにしたいなら別式
 
-			// ---- 足音の WorldSoundEvent を飛ばす ----
 			WorldSoundEvent ev{};
 			ev.Position = GetPosition();
-
-			// 届く範囲：基準 * 姿勢係数 * 速度係数
-			ev.Radius = FOOTSTEP_BASE_RADIUS * kRadius * speedRadiusScale;
-
-			// AIが感じる強さ：基準 * 姿勢係数 * 速度係数
-			ev.Loudness = FOOTSTEP_BASE_LOUDNESS * kLoudness * speedLoudnessScale;
-
-			// 実際の再生音量も連動（不要なら固定 1.0f でもよい）
-			ev.Volume = 1.0f * speedLoudnessScale;
-
 			ev.Type = SoundType::Footstep;
-			SoundManager::GetInstance().EmitSound(ev);
+			ev.Volume = vol;
+			ev.Loudness = loud;
+			ev.Radius = radius;
+
+			// 天候で足音の種類を変える→ここで固定ラベルを入れない
+			// Playback側(MapLabel)に任せる
+			ev.PlayLabel = SOUND_LABEL_MAX;
+
+			m_pSoundEmitter->EmitSound(ev);
 		}
 	}
 	else
 	{
-		// 空中や停止中はタイマーをリセット
-		// ※停止→すぐ移動再開で「変な間隔」になりにくい
-		m_FootstepTimer = 0.0f;
+		// 止まった/空中：次の再開が変にならないようにリセット
+		m_Footstep.timer = 0.0f;
 	}
 
-	// 着地音をつけたいならここで「前フレーム非接地 → 今フレーム接地」を見る
-	if (!m_WasOnGround && onGround)
+	// ---- 着地音（例）----
+	if (!m_Footstep.wasOnGround && onGround)
 	{
-		Vector3 v = m_pCharaVirtualComp->GetLinearVelocity();
-		float   vy = v.y;
-		float   impact = std::max(0.0f, -vy); // 下向き速度
+		const Vector3 v = m_pCharVirtual->GetLinearVelocity();
+		const float impact = std::max(0.0f, -v.y);
 
-		// そこそこ高いところから落ちたときだけ
 		if (impact > LANDING_IMPACT_THRESHOLD)
 		{
 			WorldSoundEvent ev{};
 			ev.Position = GetPosition();
-			ev.Radius = LANDING_SOUND_RADIUS;
-			ev.Loudness = std::clamp(
-				impact / LANDING_LOUDNESS_DIV,
-				LANDING_LOUDNESS_MIN,
-				LANDING_LOUDNESS_MAX
-			);
 			ev.Type = SoundType::Footstep;
 
-			SoundManager::GetInstance().EmitSound(ev);
+			// 落下速度でスケール（例）
+			const float land01 = std::clamp(impact / LANDING_LOUDNESS_DIV, 0.0f, 1.0f);
+			ev.Volume = std::lerp(0.2f, 1.0f, land01);
+			ev.Loudness = ev.Volume;
+			ev.Radius = std::lerp(300.0f, LANDING_SOUND_RADIUS, land01);
+
+			// 着地専用SEを鳴らしたいなら明示
+			ev.PlayLabel = SOUND_LABEL_MAX;
+
+			m_pSoundEmitter->EmitSound(ev);
 		}
 	}
 
-	m_WasOnGround = onGround;
+	m_Footstep.wasOnGround = onGround;
 }
+
 
 void Player::UpdateCamera(float dt, const InputState& in)
 {
@@ -603,8 +624,8 @@ void Player::UpdateCamera(float dt, const InputState& in)
 		pivot.y += m_CamLookAtHeightCur;   // 普段のカメラ高さを流用
 		m_pCamera->SetCollisionPivot(pivot);
 
-		if (m_pCharaVirtualComp)
-			m_pCamera->SetIgnoreBody(m_pCharaVirtualComp->GetInnerBodyID());
+		if (m_pCharVirtual)
+			m_pCamera->SetIgnoreBody(m_pCharVirtual->GetInnerBodyID());
 
 		// ベースとなるカメラ位置（開始時の位置）
 		const Vector3 baseCamPos =
@@ -679,8 +700,8 @@ void Player::UpdateCamera(float dt, const InputState& in)
 		m_pCamera->SetCollisionPivot(pivot);
 
 		// 自分(プレイヤー)は無視（カメラが自分に当たって詰むのを防ぐ）
-		if (m_pCharaVirtualComp)
-			m_pCamera->SetIgnoreBody(m_pCharaVirtualComp->GetInnerBodyID());
+		if (m_pCharVirtual)
+			m_pCamera->SetIgnoreBody(m_pCharVirtual->GetInnerBodyID());
 	}
 
 	if (in.aiming)
@@ -847,14 +868,13 @@ void Player::Draw(void) const
 
 void Player::Uninit(void)
 {
-	GameObject::Uninit();
 }
 
 void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector3>& out) const
 {
 	out.clear();
 
-	auto* ch = m_pCharaVirtualComp;
+	auto* ch = m_pCharVirtual;
 	if (!ch)
 	{
 		// 最低限、頭くらいの 1 点だけでも返す
@@ -902,9 +922,9 @@ void Player::GetVisibilitySamplePoints(const Vector3& eyePos, std::vector<Vector
 
 JPH::BodyID Player::GetInnerBodyID(void) const
 {
-	if (m_pCharaVirtualComp)
+	if (m_pCharVirtual)
 	{
-		return m_pCharaVirtualComp->GetInnerBodyID();
+		return m_pCharVirtual->GetInnerBodyID();
 	}
 	return JPH::BodyID();
 }
