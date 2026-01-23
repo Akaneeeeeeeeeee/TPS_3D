@@ -27,7 +27,6 @@ void WeatherController::Awake(void)
 
 void WeatherController::Update(const float dt)
 {
-	Vector3 pos = GetPosition();
 }
 
 void WeatherController::Uninit(void)

@@ -127,24 +127,6 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 
 void EnemyHearingComponent::Update(const float dt)
 {
-	//if (!m_pEnemyAI) { return; }
-
-	//const auto& events = SoundManager::GetInstance().GetEvents();
-
-	//for (const auto& ev : events)
-	//{
-	//	float perceived = ComputePerceivedLoudness(ev);
-
-	//	// 弱すぎる音は無視
-	//	//if (perceived < m_Threshold)
-	//	if (perceived <= 0.0f)
-	//	{
-	//		continue;
-	//	}
-
-	//	// 音を AI に通知
-	//	m_pEnemyAI->OnHeardSound(ev.Position, perceived);
-	//}
 }
 
 void EnemyHearingComponent::SetEnemyAI(EnemyAIComponent* ai)
