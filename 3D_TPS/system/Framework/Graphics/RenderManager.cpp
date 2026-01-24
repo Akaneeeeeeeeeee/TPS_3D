@@ -11,55 +11,16 @@
 #include "renderer.h"
 #include "BoneCombMatrix.h"
 
-static ComPtr<ID3DBlob> Compile(const wchar_t* path, const char* entry, const char* target)
-{
-	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#ifdef _DEBUG
-	flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-	ComPtr<ID3DBlob> blob, err;
-	HRESULT hr = D3DCompileFromFile(
-		path,
-		nullptr,
-		D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		entry,
-		target,
-		flags,
-		0,
-		blob.GetAddressOf(),
-		err.GetAddressOf()
-	);
-
-	if (FAILED(hr))
-	{
-		std::string msg = "D3DCompileFromFile failed.\n";
-		msg += "file: ";
-		// wchar->utf8 変換は面倒なので、とりあえず entry/target を出す
-		msg += " entry: ";  msg += entry;
-		msg += " target: "; msg += target;
-		msg += "\n";
-
-		if (err)
-		{
-			msg += "---- HLSL compiler log ----\n";
-			msg += (const char*)err->GetBufferPointer();
-			msg += "\n---------------------------\n";
-		}
-		throw std::runtime_error(msg);
-	}
-	return blob;
-}
 
 void RenderManager::InitDeferredShaders(void)
 {
 	auto* dev = Renderer::GetDevice();
 
-	auto vs = Compile(L"shader/DeferredLighting.hlsl", "VS_Fullscreen", "vs_5_0");
-	dev->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, m_FullVS.GetAddressOf());
+	//auto vs = Compile(L"shader/DeferredLighting.hlsl", "VS_Fullscreen", "vs_5_0");
+	//dev->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, m_FullVS.GetAddressOf());
 
-	auto ps = Compile(L"shader/DeferredLighting.hlsl", "PS_Lighting", "ps_5_0");
-	dev->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), nullptr, m_LightPS.GetAddressOf());
+	//auto ps = Compile(L"shader/DeferredLighting.hlsl", "PS_Lighting", "ps_5_0");
+	//dev->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), nullptr, m_LightPS.GetAddressOf());
 
 	// GBuffer用シェーダー取得
 	auto& am = AssetManager::GetInstance();
@@ -70,6 +31,12 @@ void RenderManager::InitDeferredShaders(void)
 	if (!m_pGBufferStatic || !m_pGBufferSkin)
 	{
 		throw std::runtime_error("RenderManager::InitDeferredShaders failed to get GBuffer shaders.");
+	}
+
+	m_pDeferredLighting = am.GetShader<CShader>("deferred_lighting");
+	if(!m_pDeferredLighting)
+	{
+		throw std::runtime_error("RenderManager::InitDeferredShaders failed to get Deferred Lighting shader.");
 	}
 
 	D3D11_BUFFER_DESC bd{};
@@ -270,8 +237,7 @@ void RenderManager::RenderLightingPass()
 	ctx->HSSetShader(nullptr, nullptr, 0);
 	ctx->DSSetShader(nullptr, nullptr, 0);
 
-	ctx->VSSetShader(m_FullVS.Get(), nullptr, 0);
-	ctx->PSSetShader(m_LightPS.Get(), nullptr, 0);
+	m_pDeferredLighting->SetGPU();
 
 	// CBDeferred 更新（invView/invProj/camPos）
 	Matrix4x4 view = Renderer::GetViewMatrix();

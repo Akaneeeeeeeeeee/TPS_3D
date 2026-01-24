@@ -3,6 +3,7 @@
 #include <wrl/client.h>
 #include "CommonTypes.h"
 #include "WeatherSystem.h"
+#include "CShader.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -51,10 +52,9 @@ private:
     static float   sFogDensity;
 
     // shaders
-    static ComPtr<ID3D11VertexShader> sVSFull;
-    static ComPtr<ID3D11PixelShader>  sPSSky;
-    static ComPtr<ID3D11PixelShader>  sPSFogLow;
-    static ComPtr<ID3D11PixelShader>  sPSFogComposite;
+    static CShader* sShSky;
+    static CShader* sShFogLow;
+    static CShader* sShFogComposite;
 
     // CB: b7,b8（既存 b0〜b6 は触らない）
     static ComPtr<ID3D11Buffer> sCBSky; // b7

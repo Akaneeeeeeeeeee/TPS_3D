@@ -65,7 +65,6 @@ private:
 	CShader* m_pGBufferStatic = nullptr;
 	CShader* m_pGBufferSkin = nullptr;
 
-	ComPtr<ID3D11VertexShader> m_FullVS;
-	ComPtr<ID3D11PixelShader>  m_LightPS;
+	CShader* m_pDeferredLighting = nullptr;
 	ComPtr<ID3D11Buffer>       m_CBDeferred;
 };
