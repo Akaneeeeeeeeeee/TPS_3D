@@ -60,6 +60,16 @@ void AssetManager::Init()
 		auto deferredLighting = std::make_unique<CShader>();
 		deferredLighting->Create("shader/DeferredLightingVS.hlsl", "shader/DeferredLightingPS.hlsl");
 		RegisterShader("deferred_lighting", std::move(deferredLighting));
+
+		// Shadow Depth（静的）
+		auto shStatic = std::make_unique<CShader>();
+		shStatic->Create("shader/ShadowDepthVS.hlsl", "shader/ShadowDepthPS.hlsl");
+		RegisterShader("shadow_static", std::move(shStatic));
+
+		// Shadow Depth（スキン）
+		auto shSkin = std::make_unique<CShader>();
+		shSkin->Create("shader/ShadowDepthOneSkinVS.hlsl", "shader/ShadowDepthPS.hlsl");
+		RegisterShader("shadow_skin", std::move(shSkin));
 	}
 
 	// ==== Static Mesh ＋ Renderer ====
@@ -124,7 +134,7 @@ void AssetManager::Init()
 		}
 	}
 
-	// ==== AnimationMesh / AnimationData（例：Akai）====
+	// ==== AnimationMesh / AnimationData（Akai）====
 	{
 		// スキンメッシュ
 		auto woman = std::make_unique<CAnimationMesh>();

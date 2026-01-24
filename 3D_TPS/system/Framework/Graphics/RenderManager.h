@@ -2,6 +2,7 @@
 #include "system/Framework/Application/Entry/main.h"
 #include "system/Framework/Graphics/RenderInfo.h"
 #include "system/Framework/Graphics/GBuffer.h"
+#include "system/Framework/ShadowMap/ShadowMap.h"
 
 class IRenderer;
 class GraphicsDevice;
@@ -49,6 +50,8 @@ private:
 	void RenderGBufferPass(void);
 	void RenderLightingPass(void);
 	void RenderTransparentForwardPass(void);
+	void RenderShadowPass(void);
+	void BuildSunShadowMatrices(Matrix4x4& outView, Matrix4x4& outProj) const;
 
 	// 共通のメッシュ描画
 	void DrawMeshForward(const MeshDraw& md);
@@ -59,6 +62,18 @@ private:
 	std::vector<IRenderer*> m_RenderComponents;		//! レンダラー系コンポーネントのリスト
 	std::vector<RenderPacket> m_Packets;			//! 描画情報のリスト(毎フレーム取得)
 
+	// shadow
+	ShadowMap m_Shadow;
+	CShader* m_pShadowStatic = nullptr;
+	CShader* m_pShadowSkin = nullptr;
+
+	ComPtr<ID3D11Buffer> m_CBShadow; // b10
+	ComPtr<ID3D11SamplerState> m_ShadowCmpSampler;
+	Matrix4x4 m_LightView{};
+	Matrix4x4 m_LightProj{};
+	Matrix4x4 m_LightViewProjT{};
+
+	// deferred
 	GBuffer m_GBuffer;
 
 	// GBuffer用の通常メッシュシェーダ（mainエントリ）

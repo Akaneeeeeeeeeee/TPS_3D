@@ -1,5 +1,7 @@
 SamplerState Samp : register(s0);
 
+SamplerComparisonState ShadowCmp : register(s1);
+
 // GBuffer
 Texture2D GAlbedo : register(t0);
 Texture2D GNormalR : register(t1);
@@ -62,4 +64,79 @@ float3 WorldPosFromDepth(float2 uv, float depth01)
 
     float4 w = mul(float4(view.xyz, 1.0), InvViewT);
     return w.xyz;
+}
+
+// ShadowMap
+Texture2D ShadowMapTex : register(t4);
+
+// Shadow CB（b10）
+cbuffer CBShadow : register(b10)
+{
+    matrix LightViewProjT; // row-vector運用（Transpose済み）
+    float4 ShadowTexel; // x=1/width, y=1/height, z=width, w=height
+    float4 ShadowParams; // x=bias, y=normalBias, z=pcfRadius(0..2), w=unused
+}
+
+float ShadowPCF(float3 worldPos, float3 N)
+{
+    float3 wp = worldPos + N * ShadowParams.y;
+    
+    // world -> light clip
+    float4 lc = mul(float4(wp, 1.0), LightViewProjT);
+
+    // wが0に近いのは無視
+    if (abs(lc.w) < 1e-6)
+        return 1.0;
+
+    float3 ndc = lc.xyz / lc.w;
+
+    // NDC->UV（DXはz=0..1）
+    float2 suv = ndc.xy * 0.5 + 0.5;
+    suv.y = 1.0 - suv.y;
+    
+    // 範囲外は影なし扱い
+    if (suv.x < 0 || suv.x > 1 || suv.y < 0 || suv.y > 1)
+        return 1.0;
+
+    float depth = ndc.z;
+    if (depth < 0 || depth > 1)
+        return 1.0;
+
+    // バイアス（定数 + 法線で少し増やす）
+    float bias = ShadowParams.x;
+    float normalBias = ShadowParams.y;
+    // 光の向き（光が飛んでくる向きが Light.Direction なので、面→光は -Light.Direction）
+    float3 L = normalize(-Light.Direction.xyz);
+    float ndl = saturate(dot(N, L));
+    float b = bias + (1.0 - ndl) * normalBias;
+
+    // PCF
+    float2 texel = ShadowTexel.xy;
+    int r = (int) ShadowParams.z; // 0..2 くらい
+
+    float lit = 0.0;
+    int count = 0;
+
+    [loop]
+    for (int y = -r; y <= r; ++y)
+    {
+        [loop]
+        for (int x = -r; x <= r; ++x)
+        {
+            float2 uv = suv + float2(x, y) * texel;
+            if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1)
+            {
+                lit += 1.0;
+                count++;
+                continue;
+            }
+            float sm = ShadowMapTex.SampleLevel(Samp, uv, 0).r;
+
+            // 比較サンプル：戻り値は 0..1（影=0、明るい=1）
+            lit += ShadowMapTex.SampleCmpLevelZero(ShadowCmp, uv, depth - b);
+            count++;
+        }
+    }
+
+    return (count > 0) ? (lit / count) : 1.0;
 }

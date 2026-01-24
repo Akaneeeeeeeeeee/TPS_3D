@@ -21,7 +21,11 @@ float4 main(VS_OUT pin) : SV_Target
     // directional
     float3 Ld = normalize(-Light.Direction.xyz);
     float ndl = saturate(dot(N, Ld));
-    float3 col = al.rgb * (Light.Ambient.rgb + Light.Diffuse.rgb * ndl);
+    
+    float shadow = ShadowPCF(worldPos, N); // 0..1
+
+    float3 col = al.rgb * (Light.Ambient.rgb + Light.Diffuse.rgb * ndl * shadow);
+    //float3 col = al.rgb * (Light.Ambient.rgb + Light.Diffuse.rgb * ndl);
 
     // spot lights
     [loop]
