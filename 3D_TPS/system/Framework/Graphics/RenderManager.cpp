@@ -171,13 +171,19 @@ bool RenderManager::Init(GraphicsDevice* graphicsDevice, LightSystem* light)
 
 	// スポット影配列（K枚）
 	m_SpotShadow.Create(dev, 1024, 1024, SPOT_SHADOW_K);
+	D3D11_BUFFER_DESC bd{};
+	bd.ByteWidth = sizeof(CBSpotShadowCPU);
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	HRESULT hr = dev->CreateBuffer(&bd, nullptr, m_CBSpotShadow.GetAddressOf());
+	if (FAILED(hr)) throw std::runtime_error("Create CBSpotShadow failed.");
 
 	return true;
 }
 
 void RenderManager::Uninit(void)
 {
-	// 描画コンポーネントリストと描画情報コンテナを単純にクリア（各コンポーネントのUninitは呼ばない）
+	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
 	m_RenderComponents.clear();
 	m_Packets.clear();
 
@@ -249,7 +255,6 @@ void RenderManager::RenderDeferred()
 	RenderGBufferPass();
 
 	// ---- ここでスポット用Computeを回す ----
-	// 例：サービスからLightSystemを取れるならそれを使う
 	LightSystem& ls = *m_pLightSystem;
 
 	// 1) ライトキャッシュ更新（どこかで呼んでるなら不要）
@@ -258,13 +263,16 @@ void RenderManager::RenderDeferred()
 	// 2) 近い順でshadowSlice割り当て（今は影マップ未実装なのでsliceだけ付く）
 	std::vector<SpotLightGPU> spotLights;
 	std::array<int, SPOT_SHADOW_K> shadowIdx{};
-	int shadowCount = 0;
+	int shadowCount = 4;
 
 	// 参照位置はプレイヤーorカメラ
 	Matrix4x4 invView = Renderer::GetViewMatrix().Invert();
 	Vector3 refPos = invView.Translation();
 
 	AssignSpotShadowSlices(ls, refPos, spotLights, shadowIdx, shadowCount);
+
+	// ここで近いshadowCount本だけ影マップ生成
+	RenderSpotShadowPass(spotLights, shadowIdx, shadowCount);
 
 	// 3) StructuredBuffer更新
 	UpdateSpotStructuredBuffer(Renderer::GetDeviceContext(), spotLights);
@@ -1048,6 +1056,14 @@ void RenderManager::RunSpotCompute(const CBDeferred& cbDeferred, const Matrix4x4
 	ti.TileW = TILE_W;
 	ti.TileH = TILE_H;
 
+	// t9: SpotShadowTex（配列）
+	ID3D11ShaderResourceView* t9 = m_SpotShadow.GetSRV();
+	ctx->CSSetShaderResources(9, 1, &t9);
+
+	// b2: CBSpotShadow
+	ID3D11Buffer* b2 = m_CBSpotShadow.Get();
+	ctx->CSSetConstantBuffers(2, 1, &b2);
+
 	ctx->UpdateSubresource(m_CBTileInfo.Get(), 0, nullptr, &ti, 0, 0);
 	ID3D11Buffer* b1 = m_CBTileInfo.Get();
 	ctx->CSSetConstantBuffers(1, 1, &b1);
@@ -1062,4 +1078,115 @@ void RenderManager::RunSpotCompute(const CBDeferred& cbDeferred, const Matrix4x4
 	ctx->CSSetShaderResources(0, 9, nulls);
 
 	ctx->CSSetShader(nullptr, nullptr, 0);
+}
+
+
+void RenderManager::BuildSpotShadowMatrices(const SpotLightGPU& s, Matrix4x4& outView, Matrix4x4& outProj)
+{
+	Vector3 pos(s.Position.x, s.Position.y, s.Position.z);
+	Vector3 dir(s.Direction.x, s.Direction.y, s.Direction.z);
+	if (dir.LengthSquared() < 1e-6f) dir = Vector3(0, -1, 0);
+	dir.Normalize();
+
+	Vector3 up = Vector3::Up;
+	if (fabs(dir.Dot(up)) > 0.98f) up = Vector3(0, 0, 1);
+
+	outView = DirectX::XMMatrixLookAtLH(pos, pos + dir, up);
+
+	float outerCos = std::clamp(s.Params1.z, -1.0f, 1.0f);
+	float fov = 2.0f * acosf(outerCos);
+	fov = std::clamp(fov, 0.1f, 3.10f);
+
+	float nearZ = std::max(0.1f, s.Params2.y);       // near
+	float farZ = std::max(nearZ + 1.0f, s.Params1.x); // range
+
+	outProj = DirectX::XMMatrixPerspectiveFovLH(fov, 1.0f, nearZ, farZ);
+}
+
+void RenderManager::RenderSpotShadowPass(const std::vector<SpotLightGPU>& lights,
+	const std::array<int, SPOT_SHADOW_K>& shadowIdx,
+	int shadowCount)
+{
+	auto* ctx = Renderer::GetDeviceContext();
+
+	// 退避（カメラ）
+	Matrix4x4 savedView = Renderer::GetViewMatrix();
+	Matrix4x4 savedProj = Renderer::GetProjectionMatrix();
+
+	Renderer::SetDepthEnable(true);
+	Renderer::SetBlendState(BS_NONE);
+
+	ctx->GSSetShader(nullptr, nullptr, 0);
+	ctx->HSSetShader(nullptr, nullptr, 0);
+	ctx->DSSetShader(nullptr, nullptr, 0);
+
+	// K本ぶん描く（0..shadowCount-1 が slice）
+	for (int si = 0; si < shadowCount; ++si)
+	{
+		int li = shadowIdx[si];          // lights のインデックス
+		const SpotLightGPU& s = lights[li];
+
+		Matrix4x4 lv, lp;
+		BuildSpotShadowMatrices(s, lv, lp);
+
+		Renderer::SetViewMatrix(&lv);
+		Renderer::SetProjectionMatrix(&lp);
+
+		m_SpotShadow.BeginSlice(ctx, si);
+
+		for (const auto& p : m_Packets)
+		{
+			if (p.phase != RenderPhase::OpaqueGBuffer) continue;
+			if (p.type != DrawType::Mesh) continue;
+
+			const MeshDraw& md = std::get<MeshDraw>(p.payload);
+			if (!md.vb || !md.ib) continue;
+
+			UINT offset = 0;
+			ctx->IASetPrimitiveTopology(md.topology);
+			ctx->IASetVertexBuffers(0, 1, &md.vb, &md.stride, &offset);
+			ctx->IASetIndexBuffer(md.ib, md.indexFormat, 0);
+
+			bool isSkinned = false;
+			for (const auto& di : md.items) if (di.bones) { isSkinned = true; break; }
+			(isSkinned ? m_pShadowSkin : m_pShadowStatic)->SetGPU();
+
+			Matrix4x4 w = md.world;
+			Renderer::SetWorldMatrix(&w);
+
+			for (const auto& di : md.items)
+			{
+				if (di.bones) di.bones->SetGPU();
+				ctx->DrawIndexed(di.indexNum, di.indexBase, di.vertexBase);
+			}
+		}
+
+		// VP^T を保存（HLSLが row-vector mul(world, VP_T) の前提）
+		Matrix4x4 vp = lv * lp;
+		m_SpotShadowCB.SpotLightViewProjT[si] = vp.Transpose();
+	}
+
+	// 未使用を埋める
+	for (int i = shadowCount; i < SPOT_SHADOW_K; ++i)
+		m_SpotShadowCB.SpotLightViewProjT[i] = Matrix4x4::Identity;
+
+	// 戻す
+	Renderer::SetViewMatrix(&savedView);
+	Renderer::SetProjectionMatrix(&savedProj);
+	Renderer::BindBackbuffer(true);
+
+	// b2 を更新
+	m_SpotShadowCB.SpotShadowTexel =
+		Vector4(1.0f / m_SpotShadow.W(), 1.0f / m_SpotShadow.H(),
+			(float)m_SpotShadow.W(), (float)m_SpotShadow.H());
+
+	// 初期値（まずこれ）
+	float bias = 0.0025f;
+	float normalBias = 0.008f;
+	float pcfRadius = 1.0f; // 3x3
+
+	m_SpotShadowCB.SpotShadowParams =
+		Vector4(bias, normalBias, pcfRadius, (float)shadowCount);
+
+	ctx->UpdateSubresource(m_CBSpotShadow.Get(), 0, nullptr, &m_SpotShadowCB, 0, 0);
 }

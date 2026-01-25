@@ -119,6 +119,9 @@ public:
 	bool CreateBeamTex(ID3D11Device* dev);
 	void RunBeamCompute(const CBDeferred& cbDeferred, const CBTileInfo& ti);
 
+	// スポットシャドウマップ関連
+	void BuildSpotShadowMatrices(const SpotLightGPU& s, Matrix4x4& outView, Matrix4x4& outProj);
+	void RenderSpotShadowPass(const std::vector<SpotLightGPU>& lights, const std::array<int, SPOT_SHADOW_K>& shadowIdx, int shadowCount);
 private:
 	void RenderGBufferPass(void);
 	void RenderLightingPass(void);
@@ -188,5 +191,6 @@ private:
 	ComPtr<ID3D11Buffer> m_CBBeam;		// b0 for BeamCS
 
 	SpotShadowMapArray m_SpotShadow;
+	CBSpotShadowCPU m_SpotShadowCB;
 	ComPtr<ID3D11Buffer> m_CBSpotShadow; // b2
 };
