@@ -22,7 +22,7 @@ cbuffer LightBuffer : register(b4)
     LIGHT Light;
 }
 
-#define MAX_SPOT_LIGHT 8
+#define MAX_SPOT_LIGHT 128
 struct SpotLightGPU
 {
     float4 Position;
@@ -68,6 +68,7 @@ float3 WorldPosFromDepth(float2 uv, float depth01)
 
 // ShadowMap
 Texture2D ShadowMapTex : register(t4);
+Texture2D SpotAccumTex : register(t5);
 
 // Shadow CBÅib10Åj
 cbuffer CBShadow : register(b10)

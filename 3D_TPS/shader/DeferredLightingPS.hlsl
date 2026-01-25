@@ -25,56 +25,65 @@ float4 main(VS_OUT pin) : SV_Target
     float shadow = ShadowPCF(worldPos, N); // 0..1
 
     float3 col = al.rgb * (Light.Ambient.rgb + Light.Diffuse.rgb * ndl * shadow);
+    
+    // Compute結果
+    col += SpotAccumTex.SampleLevel(Samp, uv, 0).rgb;
+
+    // emission
+    col += em.rgb;
+    return float4(col, 1);
+    
     //float3 col = al.rgb * (Light.Ambient.rgb + Light.Diffuse.rgb * ndl);
 
     // spot lights
-    [loop]
-    for (int i = 0; i < SpotCount; i++)
-    {
-        SpotLightGPU s = SpotLights[i];
-        if (s.Params2.x < 0.5)
-            continue;
+    //[loop]
+    //for (int i = 0; i < SpotCount; i++)
+    //{
+    //    SpotLightGPU s = SpotLights[i];
+    //    if (s.Params2.x < 0.5)
+    //        continue;
 
-        float3 lp = s.Position.xyz;
-        float3 sd = normalize(s.Direction.xyz);
+    //    float3 lp = s.Position.xyz;
+    //    float3 sd = normalize(s.Direction.xyz);
 
-        float3 toP = worldPos - lp;
-        float dist = length(toP);
+    //    float3 toP = worldPos - lp;
+    //    float dist = length(toP);
 
-        float range = s.Params1.x;
-        float innerCos = s.Params1.y;
-        float outerCos = s.Params1.z;
-        float intensity = s.Params1.w;
-        float nearD = s.Params2.y;
+    //    float range = s.Params1.x;
+    //    float innerCos = s.Params1.y;
+    //    float outerCos = s.Params1.z;
+    //    float intensity = s.Params1.w;
+    //    float nearD = s.Params2.y;
 
-        if (dist <= nearD)
-            continue;
-        if (dist > range)
-            continue;
+    //    if (dist <= nearD)
+    //        continue;
+    //    if (dist > range)
+    //        continue;
 
-        float3 dirTo = toP / max(dist, 1e-6);
-        float cosAng = dot(dirTo, sd);
-        if (cosAng < outerCos)
-            continue;
+    //    float3 dirTo = toP / max(dist, 1e-6);
+    //    float cosAng = dot(dirTo, sd);
+    //    if (cosAng < outerCos)
+    //        continue;
 
-        float angle01 = saturate((cosAng - outerCos) / max(innerCos - outerCos, 1e-6));
+    //    float angle01 = saturate((cosAng - outerCos) / max(innerCos - outerCos, 1e-6));
 
-        float dist01 = 1.0 - (dist - nearD) / max(range - nearD, 1e-6);
-        dist01 = saturate(dist01);
-        dist01 *= dist01;
+    //    float dist01 = 1.0 - (dist - nearD) / max(range - nearD, 1e-6);
+    //    dist01 = saturate(dist01);
+    //    dist01 *= dist01;
 
-        float3 Ls = normalize(lp - worldPos);
-        float ndlS = saturate(dot(N, Ls));
-        float atten = angle01 * dist01 * intensity;
+    //    float3 Ls = normalize(lp - worldPos);
+    //    float ndlS = saturate(dot(N, Ls));
+    //    float atten = angle01 * dist01 * intensity;
 
-        ndlS = max(ndlS, 0.2); // あなたのテスト値
-        atten *= ndlS;
+    //    ndlS = max(ndlS, 0.2); // あなたのテスト値
+    //    atten *= ndlS;
 
-        col += al.rgb * (s.Color.rgb * atten);
-    }
+    //    col += al.rgb * (s.Color.rgb * atten);
+    //}
 
-    // emission add
-    col += em.rgb;
+    //// emission add
+    //col += em.rgb;
 
-    return float4(col, 1.0);
+    //return float4(col, 1.0);
+    
 }

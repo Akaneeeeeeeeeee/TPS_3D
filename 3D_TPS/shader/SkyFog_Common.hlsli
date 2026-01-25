@@ -11,7 +11,7 @@ Texture2D DepthFull : register(t4);
 Texture3D NoiseFogF : register(t5);
 
 // Spot
-#define MAX_SPOT_LIGHT 8
+#define MAX_SPOT_LIGHT 128
 struct SpotLightGPU
 {
     float4 Position;

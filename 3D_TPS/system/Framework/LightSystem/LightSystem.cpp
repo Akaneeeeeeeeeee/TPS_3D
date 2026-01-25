@@ -12,27 +12,22 @@ bool LightSystem::IsOccludedWorld(const Vector3& from, const Vector3& to) const
 
 void LightSystem::UpdateCache()
 {
-    m_CacheCount = 0;
+    m_Cache.clear();
+    m_Cache.reserve(MAX_SPOT);
 
     for (auto* c : m_Spots)
     {
         if (!c) continue;
-        if (m_CacheCount >= MAX_SPOT) break;
+        if ((int)m_Cache.size() >= MAX_SPOT) break;
 
         SpotLightGPU gpu{};
         if (c->BuildGPU(gpu))
         {
-            m_Cache[m_CacheCount].valid = true;
-            m_Cache[m_CacheCount].gpu = gpu;
-            m_Cache[m_CacheCount].src = c;
-            ++m_CacheCount;
+            CachedSpot cs{};
+            cs.gpu = gpu;
+            cs.src = c;
+            m_Cache.push_back(cs);
         }
-    }
-
-    for (int i = m_CacheCount; i < MAX_SPOT; ++i)
-    {
-        m_Cache[i].valid = false;
-        m_Cache[i].src = nullptr;
     }
 }
 
@@ -41,10 +36,9 @@ void LightSystem::UploadToGPU()
     SpotLightGPU gpu[MAX_SPOT]{};
     int count = 0;
 
-    for (int i = 0; i < m_CacheCount; ++i)
+    for (auto& cache : m_Cache)
     {
-        if (!m_Cache[i].valid) continue;
-        gpu[count++] = m_Cache[i].gpu;
+        gpu[count++] = cache.gpu;
     }
 
     Renderer::SetSpotLights(gpu, count);
@@ -54,18 +48,18 @@ float LightSystem::GetLightVisibility01(const Vector3& worldPos) const
 {
     float best = 0.0f;
 
-    for (int i = 0; i < m_CacheCount; ++i)
+    for (auto& cache : m_Cache)
     {
-        if (!m_Cache[i].valid || !m_Cache[i].src) continue;
+        if (!cache.src) continue;
 
         // ① 円錐内 + 減衰（0..1）
-        float t = m_Cache[i].src->ComputeInfluence01(worldPos);
+        float t = cache.src->ComputeInfluence01(worldPos);
         if (t <= 0.0f) continue;
 
         // ② 遮蔽（任意）
         if (m_UseOcclusion)
         {
-            const auto& p = m_Cache[i].gpu.Position;
+            const auto& p = cache.gpu.Position;
             Vector3 lightPos(p.x, p.y, p.z);
 
             // ライト位置から少し押し出す（ライトが壁に埋まってる時の即ヒット対策）

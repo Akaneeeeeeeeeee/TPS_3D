@@ -15,6 +15,7 @@ public:
 
     static void UpdateFromWeather(const WeatherSystem& ws);
 
+    static void SetBeamSRV(ID3D11ShaderResourceView* srv);
     static void DrawSky(); // スカイドーム不要
     static void DrawFog(); // 低解像度→アップスケール＋穴だけ再計算
 
@@ -69,6 +70,8 @@ private:
     // 3D noise（ファイル不要）
     static ComPtr<ID3D11Texture3D>          sNoiseTex;
     static ComPtr<ID3D11ShaderResourceView> sNoiseSRV;
+
+    static ComPtr<ID3D11ShaderResourceView> sBeamSRV;
 
     static SkyFogTuning sTuning;
 };

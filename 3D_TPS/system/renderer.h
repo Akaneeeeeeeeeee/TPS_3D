@@ -158,7 +158,7 @@ struct CBBoneCombMatrix {
     DirectX::XMFLOAT4X4 BoneCombMtx[MAX_BONE];  ///< ボーンコンビネーション行列の配列
 };
 
-constexpr int MAX_SPOT_LIGHT = 32;
+constexpr int MAX_SPOT_LIGHT = 128;
 
 // 定数バッファ用（16byte境界を守る）
 struct CBSpotLights
@@ -197,6 +197,11 @@ private:
 
     static ComPtr<ID3D11BlendState> m_BlendState[MAX_BLENDSTATE];
     static ComPtr<ID3D11BlendState> m_BlendStateATC;
+
+    static ComPtr<ID3D11SamplerState> m_SamplerLinearWrap; // 今PSに刺してるやつ
+    static ComPtr<ID3D11SamplerState> m_SamplerLinearClamp; // Compute/ポスト向け
+
+    static ComPtr<ID3D11ShaderResourceView> m_BeamSRV;
 
     static LIGHT m_Light;
     // 最後にセットされた View / Proj 行列を保持する
@@ -253,4 +258,10 @@ public:
     static void BindBackbuffer(bool setViewport = true);
 
     static void SetDepthReadOnly(bool enable);
+
+    static ID3D11SamplerState* GetSamplerLinearWrap() { return m_SamplerLinearWrap.Get(); }
+    static ID3D11SamplerState* GetSamplerLinearClamp() { return m_SamplerLinearClamp.Get(); }
+
+    static void SetBeamSRV(ID3D11ShaderResourceView* srv) { m_BeamSRV = srv; }
+    static ID3D11ShaderResourceView* GetBeamSRV() { return m_BeamSRV.Get(); }
 };

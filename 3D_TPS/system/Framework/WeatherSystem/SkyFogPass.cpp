@@ -37,6 +37,13 @@ static UINT Align16(UINT x) { return (x + 15u) & ~15u; }
 
 SkyFogPass::SkyFogTuning SkyFogPass::sTuning{};
 
+ComPtr<ID3D11ShaderResourceView> SkyFogPass::sBeamSRV;
+
+void SkyFogPass::SetBeamSRV(ID3D11ShaderResourceView* srv)
+{
+    sBeamSRV = srv; // ComPtrがAddRefして保持
+}
+
 void SkyFogPass::SetTuning(const SkyFogTuning& t)
 {
     sTuning = t;
@@ -288,7 +295,7 @@ void SkyFogPass::UploadFogCB()
     cb.BeamParams = Vector4(
         12000.0f,  // beamMaxDist ← 柱はここまで
         20.0f,     // beamStepLenWanted
-        0.0008f,   // kBeam
+        0.0f,   // kBeam
         0.6f       // beamTint
     );
 
@@ -452,6 +459,9 @@ void SkyFogPass::DrawFog()
         sCtx->PSSetShaderResources(4, 1, &depth);
         sCtx->PSSetShaderResources(5, 1, &noise);
 
+        ID3D11ShaderResourceView* beam = sBeamSRV.Get(); // t6
+        sCtx->PSSetShaderResources(6, 1, &beam);
+
         Renderer::SetDepthEnable(false);
         Renderer::SetBlendState(BS_ALPHABLEND);
 
@@ -462,6 +472,10 @@ void SkyFogPass::DrawFog()
 
         ID3D11ShaderResourceView* nulls[3] = { nullptr, nullptr, nullptr };
         sCtx->PSSetShaderResources(3, 3, nulls);
+
+        // t6も外す
+        ID3D11ShaderResourceView* null1 = nullptr;
+        sCtx->PSSetShaderResources(6, 1, &null1);
     }
 
     // 退避していたRTV/DSVを戻す（この後のUI/デバッグが壊れない）

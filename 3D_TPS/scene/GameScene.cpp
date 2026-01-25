@@ -415,15 +415,40 @@ void GameScene::Init(ObjectManager* mgr)
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
 
 		// ŠX“”
-		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight1", Tag::Light);
-		streetLight->SetPosition(Vector3(-300.0f, 400.0f, -100.0f));
-		// ’n–Ê‚Ì–¾‚é‚¢‰~”¼Œa‚ğ’¼Úw’è
-		streetLight->SetGroundCircle(
-			/*groundRadius=*/150.0f,
-			/*groundY=*/0.0f,
-			/*topRadiusMin=*/10.0f,   // ã–Ê‚ÌgŒûŒah‚ğŠm•Û
-			/*innerRatio=*/0.6f       // ’†S‚ª‹­‚¢”ÍˆÍ
-		);
+		Vector3 pos = Vector3(-300.0f, 400.0f, -100.0f);
+		Vector3 offset = Vector3(0.0f, 0.0f, 200.0f);
+		// ƒ‰ƒCƒg30ŒÂ‚ğ‹Ï“™‚É”z’u
+		for (int j = 0; j < 4; ++j)
+		{
+			Vector3 rowStart = pos + Vector3(200.0f * j, 0.0f, 0.0f);
+			Vector3 rowOffset = Vector3(0.0f, 0.0f, -200.0f);
+			for (int i = 0; i < 8; ++i)
+			{
+				auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight_" + std::to_string(j * 8 + i), Tag::Light);
+				streetLight->SetPosition(rowStart + rowOffset * i);
+				// ’n–Ê‚Ì–¾‚é‚¢‰~”¼Œa‚ğ’¼Úw’è
+				streetLight->SetGroundCircle(
+					/*groundRadius=*/150.0f,
+					/*groundY=*/0.0f,
+					/*topRadiusMin=*/10.0f,   // ã–Ê‚ÌgŒûŒah‚ğŠm•Û
+					/*innerRatio=*/0.6f       // ’†S‚ª‹­‚¢”ÍˆÍ
+				);
+			}
+		}
+
+		//for (int i = 0; i < 8; ++i)
+		//{
+		//	auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight_" + i, Tag::Light);
+		//	streetLight->SetPosition(pos + offset);
+		//	// ’n–Ê‚Ì–¾‚é‚¢‰~”¼Œa‚ğ’¼Úw’è
+		//	streetLight->SetGroundCircle(
+		//		/*groundRadius=*/150.0f,
+		//		/*groundY=*/0.0f,
+		//		/*topRadiusMin=*/10.0f,   // ã–Ê‚ÌgŒûŒah‚ğŠm•Û
+		//		/*innerRatio=*/0.6f       // ’†S‚ª‹­‚¢”ÍˆÍ
+		//	);
+		//	offset.z -= 200.0f;
+		//}
 	}
 
 	// DirectWrite ‰Šú‰»i1‰ñ‚¾‚¯j

@@ -12,7 +12,7 @@ class PhysicsManager;
 class LightSystem
 {
 public:
-    static constexpr int MAX_SPOT = 8;
+    static constexpr int MAX_SPOT = 128;
 
     void Register(SpotLightComponent* c)
     {
@@ -45,24 +45,23 @@ public:
         return 1.0f + t * (m_MaxMul - 1.0f);
     }
 
-    // 遮蔽判定をやりたい場合だけセット（任意）
+    // 遮蔽判定をやりたい場合だけセット
     void SetPhysics(PhysicsManager* pm) { m_Physics = pm; }
     void SetOcclusionEnabled(bool e) { m_UseOcclusion = e; }
 
 	float ComputeLightVisibilityForPlayer(const class Player& player) const;
 
+    int GetSpotCount(void) const { return m_Cache.size(); }
+    const SpotLightGPU& GetSpotGPU(int i) const { return m_Cache[i].gpu; }
 private:
     struct CachedSpot
     {
-        bool valid = false;
         SpotLightGPU gpu{};
         SpotLightComponent* src = nullptr; // 逆参照（知覚計算用）
     };
 
     std::vector<SpotLightComponent*> m_Spots;
-
-    std::array<CachedSpot, MAX_SPOT> m_Cache{};
-    int m_CacheCount = 0;
+    std::vector<CachedSpot> m_Cache{};
 
     // 係数の最大（調整用）
     float m_MaxMul = 2.0f;

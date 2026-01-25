@@ -3,6 +3,7 @@
 #include "system/CAnimationMesh.h"
 #include "system/CStaticMesh.h"
 #include "system/CShader.h"
+#include "system/ComputeShader.h"
 
 AssetManager::AssetManager()
 {
@@ -70,6 +71,20 @@ void AssetManager::Init()
 		auto shSkin = std::make_unique<CShader>();
 		shSkin->Create("shader/ShadowDepthOneSkinVS.hlsl", "shader/ShadowDepthPS.hlsl");
 		RegisterShader("shadow_skin", std::move(shSkin));
+
+		// ==== Compute Shader ====
+
+		auto csBuildTile = std::make_unique<ComputeShader>();
+		csBuildTile->Create("shader/BuildTileCS.hlsl");
+		RegisterComputeShader("cs_build_tile", std::move(csBuildTile));
+
+		auto csSpot = std::make_unique<ComputeShader>();
+		csSpot->Create("shader/SpotLightingCS.hlsl");
+		RegisterComputeShader("cs_spot_lighting", std::move(csSpot));
+
+		auto csBeam = std::make_unique<ComputeShader>();
+		csBeam->Create("shader/BeamCS.hlsl");
+		RegisterComputeShader("cs_beam", std::move(csBeam));
 	}
 
 	// ==== Static Mesh Å{ Renderer ====
@@ -292,4 +307,16 @@ void AssetManager::LoadStaticMesh(
 CStaticMesh* AssetManager::GetStaticMesh(const std::string& name) const
 {
 	return m_StaticMeshList.at(name).get();
+}
+
+void AssetManager::RegisterComputeShader(const std::string& key, std::unique_ptr<ComputeShader> cs)
+{
+	m_ComputeShaders[key] = std::move(cs);
+}
+
+ComputeShader* AssetManager::GetComputeShader(const std::string& key)
+{
+	auto it = m_ComputeShaders.find(key);
+	if (it == m_ComputeShaders.end()) return nullptr;
+	return it->second.get();
 }

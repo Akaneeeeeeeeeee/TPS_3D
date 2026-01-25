@@ -1,5 +1,7 @@
 #include "SkyFog_Common.hlsli"
 
+Texture2D BeamTex : register(t6);
+
 struct PSIn
 {
     float4 pos : SV_Position;
@@ -19,10 +21,23 @@ float4 main(PSIn pin) : SV_Target
 
     float edge = max(abs(d0 - dx), abs(d0 - dy));
 
+    float4 fog;
     if (edge > 0.002)
     {
-        return FogCompute(uv, DepthFull, NoiseFogF, /*allowNear=*/true);
+        // ‚±‚±‚Ífog‚Ì‚Ý
+        fog = FogCompute(uv, DepthFull, NoiseFogF, /*allowNear=*/true);
+    }
+    else
+    {
+        fog = low;
     }
 
-    return low;
+    // BeamTex ‡¬irgb=F, a=‹­‚³j
+    float4 beam = BeamTex.SampleLevel(Samp, uv, 0);
+
+    float outA = 1.0 - (1.0 - fog.a) * (1.0 - beam.a);
+    float3 premul = fog.rgb * fog.a + beam.rgb * beam.a * (1.0 - fog.a);
+    float3 outRgb = (outA > 1e-6) ? (premul / outA) : 0.0;
+
+    return float4(outRgb, outA);
 }

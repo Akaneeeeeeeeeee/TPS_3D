@@ -8,6 +8,7 @@ class CStaticMesh;
 class CMesh;
 class CMeshRenderer;
 class CShader;
+class ComputeShader;
 
 class AssetManager
 {
@@ -30,6 +31,9 @@ public:
 	CAnimationMesh* GetAnimationMesh(const std::string& name) const;
 	void LoadStaticMesh(const std::string& name, const std::filesystem::path& filepath, const std::filesystem::path& texturepath);
 	CStaticMesh* GetStaticMesh(const std::string& name) const;
+
+	void RegisterComputeShader(const std::string& key, std::unique_ptr<ComputeShader> cs);
+	ComputeShader* GetComputeShader(const std::string& key);
 
 public:
 	// ========= Mesh Œn =========
@@ -75,6 +79,8 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<CMeshRenderer>> m_RendererList;
 	std::unordered_map<std::string, std::unique_ptr<CShader>> m_ShaderList;
 	std::unordered_map<std::string, std::unique_ptr<CAnimationData>> m_AnimData;
+
+	std::unordered_map<std::string, std::unique_ptr<ComputeShader>> m_ComputeShaders;
 };
 
 

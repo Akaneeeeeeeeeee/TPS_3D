@@ -82,6 +82,11 @@ Matrix4x4 Renderer::m_CurrentProjection = Matrix4x4::Identity;
 ComPtr<ID3D11Buffer> Renderer::m_SpotLightBuffer;
 CBSpotLights Renderer::m_SpotLightCB{};
 
+ComPtr<ID3D11SamplerState> Renderer::m_SamplerLinearWrap;
+ComPtr<ID3D11SamplerState> Renderer::m_SamplerLinearClamp;
+
+ComPtr<ID3D11ShaderResourceView> Renderer::m_BeamSRV;
+
 //------------------------------------------------------------------------------
 // Renderer クラスの各関数の実装
 //------------------------------------------------------------------------------
@@ -293,9 +298,13 @@ void Renderer::Init()
 	samplerDesc.MaxAnisotropy = 4;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	ComPtr<ID3D11SamplerState> samplerState;
-	m_Device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
-	m_DeviceContext->PSSetSamplers(0, 1, samplerState.GetAddressOf());
+	m_Device->CreateSamplerState(&samplerDesc, m_SamplerLinearWrap.GetAddressOf());
+	m_DeviceContext->PSSetSamplers(0, 1, m_SamplerLinearWrap.GetAddressOf());
+
+	// clamp用
+	D3D11_SAMPLER_DESC clampDesc = samplerDesc;
+	clampDesc.AddressU = clampDesc.AddressV = clampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	m_Device->CreateSamplerState(&clampDesc, m_SamplerLinearClamp.GetAddressOf());
 
 	// --- 定数バッファ生成 ---
 	D3D11_BUFFER_DESC bufferDesc{};

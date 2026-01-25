@@ -259,6 +259,34 @@ bool CreateGeometryShader(ID3D11Device* device,
 	return true;
 }
 
+// --------------------------------------------------------------------------------------
+// コンピュートシェーダーオブジェクトを生成する
+// --------------------------------------------------------------------------------------
+bool CreateComputeShader(ID3D11Device* device,
+	const char* szFileName,
+	LPCSTR szEntryPoint,
+	LPCSTR szShaderModel,
+	ID3D11ComputeShader** ppComputeShader) {
+	HRESULT hr;
+	ID3DBlob* pBlob = nullptr;
+	void* ShaderObject;
+	size_t	ShaderObjectSize;
+	// ファイルの拡張子に合わせてコンパイル
+	hr = CompileShader(szFileName, szEntryPoint, szShaderModel, &ShaderObject, ShaderObjectSize, &pBlob);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	// コンピュートシェーダーを生成
+	hr = device->CreateComputeShader(ShaderObject, ShaderObjectSize, nullptr, ppComputeShader);
+	if (FAILED(hr))
+	{
+		if (pBlob)pBlob->Release();
+		return false;
+	}
+	return true;
+}
+
 /*----------------------------
 コンスタントバッファを作成
 ------------------------------*/

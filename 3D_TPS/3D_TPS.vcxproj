@@ -173,6 +173,7 @@
     <ClInclude Include="system\CCylinderMesh.h" />
     <ClInclude Include="system\CDirectInput.h" />
     <ClInclude Include="system\CIndexBuffer.h" />
+    <ClInclude Include="system\ComputeShader.h" />
     <ClInclude Include="system\CPlane.h" />
     <ClInclude Include="system\Cube\Cube.h" />
     <ClInclude Include="system\CVertexBuffer.h" />
@@ -242,6 +243,7 @@
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsManager.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\Physics.h" />
     <ClInclude Include="system\Framework\ShadowMap\ShadowMap.h" />
+    <ClInclude Include="system\Framework\ShadowMap\SpotShadowMapArray.h" />
     <ClInclude Include="system\Framework\SoundSystem\SoundSystem.h" />
     <ClInclude Include="system\Framework\Sound\IWorldSoundListener.h" />
     <ClInclude Include="system\Framework\Sound\SoundBus.h" />
@@ -375,6 +377,7 @@
     <ClCompile Include="system\CConeMesh.cpp" />
     <ClCompile Include="system\CCylinderMesh.cpp" />
     <ClCompile Include="system\CLineMesh.cpp" />
+    <ClCompile Include="system\ComputeShader.cpp" />
     <ClCompile Include="system\ConeDrawer.cpp" />
     <ClCompile Include="system\CPlane.cpp" />
     <ClCompile Include="system\CPlaneMesh.cpp" />
@@ -484,6 +487,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="system\Framework\ShadowMap\ShadowMap.cpp" />
+    <ClCompile Include="system\Framework\ShadowMap\SpotShadowMapArray.cpp" />
     <ClCompile Include="system\Framework\SoundSystem\SoundSystem.cpp" />
     <ClCompile Include="system\Framework\Sound\SoundHub.cpp" />
     <ClCompile Include="system\Framework\Sound\SoundPlaybackListener.cpp" />
@@ -512,6 +516,26 @@
     <ClCompile Include="system\utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="shader\BeamCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shader\BuildTileCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="shader\common.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -645,6 +669,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shader\SpotLightingCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\unlitTexturePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
