@@ -369,7 +369,7 @@ void GameScene::Init(ObjectManager* mgr)
 	weather->TransformRef().SetParent(&m_player->TransformRef());
 
 	// 親からの相対位置（ローカル）
-	weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	weather->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 
 	// 天候オブジェクト
 	//auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
@@ -416,9 +416,6 @@ void GameScene::Init(ObjectManager* mgr)
 
 		// 街灯
 		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight1", Tag::Light);
-		//streetLight->SetNightOnly(false);
-		//streetLight->SetEnabled(true);
-		//streetLight->SetIntensity(200.0f); // 目視確認用に極端に上げる
 		streetLight->SetPosition(Vector3(-300.0f, 400.0f, -100.0f));
 		// 地面の明るい円半径を直接指定
 		streetLight->SetGroundCircle(

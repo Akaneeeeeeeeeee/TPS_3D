@@ -64,7 +64,7 @@ void TitlePlayerActor::Awake(void)
 	// カメラ追加
 	{
 		m_pCamera = this->AddComponent<CameraComponent>("TitleCameraComponent");
-		Vector3 campos = this->GetPosition() - Vector3(0.0f, 100.0f, 550.0f);
+		Vector3 campos = this->GetPosition() - Vector3(0.0f, 0.0f, 550.0f);
 		m_pCamera->SetPosition(campos);
 		// 低い位置から、少し離れて見上げる
 		m_pCamera->SetLookAt(CAMERA_LOOKAT_POSITION);
@@ -104,8 +104,6 @@ void TitlePlayerActor::Start(void)
 		m_pCharaVirtualComp->SetStance(CharacterVirtualComponent::Stance::Crouch);
 		m_pCharaVirtualComp->SetMoveInput(Vector3::Zero, 0.0f);
 	}
-
-	//SetupFixedTitleCamera();	// ここで一度だけ確定
 }
 
 namespace
@@ -144,7 +142,6 @@ void TitlePlayerActor::Update(const float dt)
 
 		m_UseTargetPose = false;
 
-		GameObject::Update(dt);
 		ApplyAnimation(dt);
 		return;
 	}
@@ -200,12 +197,6 @@ void TitlePlayerActor::Update(const float dt)
 		m_Transform.SetRotation(Quaternion::CreateFromAxisAngle(UP, yaw));
 	}
 
-	// カメラ更新
-	if (m_pCamera)
-	{
-		m_pCamera->ApplyCamera();
-	}
-
 	// ---- アニメ ----
 	ApplyAnimation(dt);
 }
@@ -216,7 +207,6 @@ void TitlePlayerActor::Draw(void) const
 
 void TitlePlayerActor::Uninit(void)
 {
-	Character::Uninit();
 }
 
 void TitlePlayerActor::ApplyMovement(float dt)
@@ -280,10 +270,6 @@ void TitlePlayerActor::ApplyAnimation(float dt)
 	case TitleAnim::CheckOverWall:
 		m_pAnimComp->Play(AnimType::Check_OverWall, BLEND_SEC);
 		break;
-
-	case TitleAnim::ThrowStone:
-		m_pAnimComp->Play(AnimType::StoneThrow, BLEND_SEC);
-		break;
 	}
 
 	m_pAnimComp->SetPlaybackSpeed(1.0f);
@@ -303,54 +289,6 @@ namespace
 	{
 		return (PLAYER_CAPSULE_HALF_HEIGHT * 2.0f) + (PLAYER_CAPSULE_RADIUS * 2.0f);
 	}
-}
-
-void TitlePlayerActor::SetupFixedTitleCamera()
-{
-	if (!m_pCamera) return;
-
-	const float bodyH = PlayerBodyHeight();
-
-	// プレイヤーの向き（無効なら +Z を仮採用）
-	Vector3 forward = NormalizeXZ(this->GetForward(), Vector3(0, 0, 1));
-	Vector3 up = Vector3(0, 1, 0);
-
-	// 右方向
-	Vector3 right = up.Cross(forward);
-	right = NormalizeXZ(right, Vector3(1, 0, 0));
-
-	// オフセット（全部 “体格比” なのでマジックナンバーが消える）
-	const float frontDist = bodyH * 3.5f;   // 手前(前方)に置く距離
-	const float sideDist = bodyH * 0.8f;   // 斜め成分（0にすると正面）
-	const float eyeHeight = bodyH * 0.15f;  // 地上付近（好みで 0.1～0.25）
-	const float lookHeight = bodyH * 0.25f;  // 見る位置（胸～頭）
-
-	Vector3 playerPos = this->GetPosition();
-	Vector3 lookAt = playerPos + up * lookHeight;
-
-	// カメラのXZ（前方＋少し横）
-	Vector3 camXZ = playerPos + forward * frontDist + right * sideDist;
-
-	// 地面Yを Terrain から取得（失敗したらプレイヤー足元付近を使う）
-	float groundY = playerPos.y - PLAYER_CAPSULE_HALF_HEIGHT;
-
-	if (m_Terrain)
-	{
-		if (auto* col = m_Terrain->GetComponent<StaticMeshCollider>())
-		{
-			float y;
-			if (col->SampleHeight(camXZ.x, camXZ.z, y))
-			{
-				groundY = y;
-			}
-		}
-	}
-
-	Vector3 camPos(camXZ.x, groundY + eyeHeight, camXZ.z);
-
-	// 固定カメラ：位置と注視点だけセット（Radius/Elevation/Azimuth は使わない）
-	m_pCamera->SetPosition(camPos);
-	m_pCamera->SetLookAt(lookAt);
 }
 
 void TitlePlayerActor::EmitWorldSoundAt(const Vector3& pos, const WorldSoundEvent& src)

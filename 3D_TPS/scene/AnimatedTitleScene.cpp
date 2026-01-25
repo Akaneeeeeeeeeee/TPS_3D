@@ -182,7 +182,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	this->m_pObjectManager = _Mgr;
 	
 	m_Terrain = m_pObjectManager->Instantiate<Terrain>("city", Tag::Field);
-	m_Terrain->SetPosition(Vector3(0.0f, -100.0f, 0.0f));
+	m_Terrain->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 	m_Terrain->SetScale(Vector3(100.0f, 100.0f, 100.0f));
 	m_Terrain->SetScene(this);
 
@@ -198,18 +198,18 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	// 敵追加
 	m_Enemy = m_pObjectManager->Instantiate<Enemy>("Enemy", Tag::Enemy);
 	m_Enemy->SetTerrain(m_Terrain);
-	m_Enemy->SetPosition(Vector3(2000.0f, 0.0f, -3350.0f));
+	m_Enemy->SetPosition(Vector3(2000.0f, 100.0f, -3350.0f));
 	m_Enemy->SetWayPoints(Vector3(2000.0f, 0.0f, -3500.0f), Vector3(4000.0f, 0.0f, -3350.0f));
 
 	// 障害物追加
 	m_Obstacles[0] = m_pObjectManager->Instantiate<obstacle>("Obstacle1", Tag::Object);
-	m_Obstacles[0]->SetPosition(Vector3(1500.0f, -50.0f, -3450.0f));
+	m_Obstacles[0]->SetPosition(Vector3(1500.0f, 50.0f, -3450.0f));
 	// カメラに平行に配置
 	m_Obstacles[0]->SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Up, 0.75f));
 	m_Obstacles[0]->SetScale(Vector3(175.0f, 65.0f, 25.0f));
 
 	auto* lightObj = m_pObjectManager->Instantiate<StreetLight>("StreetLight", Tag::Light, Transform::One());
-	lightObj->SetPosition(Vector3(1900.0f, 100.0f, -3650.0f));
+	lightObj->SetPosition(Vector3(1900.0f, 400.0f, -3650.0f));
 	// 地面の明るい円半径を直接指定
 	lightObj->SetGroundCircle(
 		/*groundRadius=*/150.0f,
@@ -319,17 +319,6 @@ void TitleScript::Tick(float dt)
 	case State::LookAround:
 	{
 		StopAndCheckOverWall();
-
-		// “見た”タイミングっぽいところで1回だけ判定（数値は調整）
-		if (!m_Scanned && m_Timer >= 0.35f)
-		{
-			m_Scanned = true;
-
-			if (IsEnemyNear(700.0f))
-			{
-				Enter(State::ThrowRock);
-			}
-		}
 
 		// 敵がいないなら一定時間で退場
 		if (m_Timer >= 1.2f)

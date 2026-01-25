@@ -130,7 +130,6 @@ float ShadowPCF(float3 worldPos, float3 N)
                 count++;
                 continue;
             }
-            float sm = ShadowMapTex.SampleLevel(Samp, uv, 0).r;
 
             // 比較サンプル：戻り値は 0..1（影=0、明るい=1）
             lit += ShadowMapTex.SampleCmpLevelZero(ShadowCmp, uv, depth - b);

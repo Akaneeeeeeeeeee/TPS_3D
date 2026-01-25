@@ -184,12 +184,15 @@ ParticleInstance ParticleEmitter::CreateOneParticle()
                 static_cast<double>(m_SpawnHalfDepth)));
     }
 
-    // Y は「原点を中心とした帯」の中で一様乱数
-    //
-    //   ・m_SpawnHeight == 0 のとき → ちょうど原点の高さだけ
-    //   ・m_SpawnHeight > 0 のとき → [ -m_SpawnHeight, +m_SpawnHeight ] の範囲
-    //
-    if (m_SpawnHeight > 0.0f)
+    // Range が有効なら [minY, maxY] を使う
+    if (m_SpawnMaxY > m_SpawnMinY)
+    {
+        double yLocal = m_Rng.uniformReal(
+            static_cast<double>(m_SpawnMinY),
+            static_cast<double>(m_SpawnMaxY));
+        oy = static_cast<float>(yLocal);
+    }
+    else if (m_SpawnHeight > 0.0f)
     {
         double yLocal = m_Rng.uniformReal(
             -static_cast<double>(m_SpawnHeight),

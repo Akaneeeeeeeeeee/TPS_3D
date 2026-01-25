@@ -158,7 +158,7 @@ struct CBBoneCombMatrix {
     DirectX::XMFLOAT4X4 BoneCombMtx[MAX_BONE];  ///< ボーンコンビネーション行列の配列
 };
 
-constexpr int MAX_SPOT_LIGHT = 8;
+constexpr int MAX_SPOT_LIGHT = 32;
 
 // 定数バッファ用（16byte境界を守る）
 struct CBSpotLights
