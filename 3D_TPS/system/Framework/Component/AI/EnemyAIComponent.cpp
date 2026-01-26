@@ -471,29 +471,22 @@ void EnemyAIComponent::FaceMoveDir(const Vector3& moveDir)
 
 void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
 {
-	// 驚いてる最中は方向だけ更新する
-	if (m_State == State::Caution)
-	{
-		//m_LastHeardPosition = pos;
-		return;
-	}
+	if (!m_pOwner) { return; }
 
-	// Idle / Patrol / Investigate / Chase から来た場合は
-	// 「新しい驚き」として扱う
+	// 常に「最後に聞いた音」を更新（怪しみ中でも更新する）
 	m_LastHeardPosition = pos;
-	m_HeardThisFrame = true;   // Enemy が驚きアニメを再生するトリガ
+	m_HeardThisFrame = true; // Enemy側の驚きアニメ用トリガ
 
-	// 調査で向かう地点を「音源」にする
+	// 調査地点は常に音源へ
 	m_InvestigateTarget = pos;
 	m_HasInvestigateTarget = true;
-
-	if (!m_pOwner) { return; }
 
 	// 角度チェックは必要なら残す（正面ほぼ一致なら直接 Investigate へ）
 	Vector3 selfPos = m_pOwner->GetPosition();
 	Vector3 toSound = pos - selfPos;
 	toSound.y = 0.0f;
 
+	// ほぼ同一点なら回転は要らないのでそのまま Investigate へ
 	if (toSound.LengthSquared() < 1e-4f)
 	{
 		m_State = Investigate;
@@ -502,7 +495,23 @@ void EnemyAIComponent::OnHeardSound(const Vector3& pos, float strength)
 		m_IsAvoidingWall = false;
 		return;
 	}
+
 	toSound.Normalize();
+
+	// 怪しんでるときに新しい音が来たら、そちらを優先して振り向き直す
+	if (m_State == State::Caution)
+	{
+		// いまの視線方向から、新しい音方向へ“回転やり直し”
+		m_CautionTurnTime = 0.0f;
+		m_CautionWaitTime = 0.0f;
+		m_HasLookedAtHeard = false;
+
+		m_CautionStartViewDir = GetViewForward(); // 現在視線（Caution中はm_ViewForward）
+		m_CautionTargetViewDir = toSound;
+
+		// 状態はCautionのまま維持（音を優先して見直す）
+		return;
+	}
 
 	// 現在向いている方向（Transform は Z- 前方系）
 	Quaternion rot = m_pOwner->GetRotation();
