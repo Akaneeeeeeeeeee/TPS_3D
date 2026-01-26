@@ -15,6 +15,14 @@ enum class WeatherType {
 	Weather_MAX
 };
 
+struct BeamTuning
+{
+    float maxDist = 6000.0f;
+    float stepLen = 10.0f;
+    float kBeam = 0.002f;
+    float tint = 1.0f;
+    int   maxSteps = 512; // HLSLの上限を動かしたい
+};
 
 // 知覚影響パラメータ
 struct PerceptionFactors
@@ -265,6 +273,8 @@ public:
         return Vector3(m_CurrentParams.fogColor.x, m_CurrentParams.fogColor.y, m_CurrentParams.fogColor.z);
     }
 
+    const BeamTuning& GetBeamTuning() const { return m_Beam; }
+
 private:
     // ---- 天候補間（既存ロジック） ----
     static WeatherParticleParams LerpParams(
@@ -321,4 +331,5 @@ private:
     void UpdateDayNightState(); // Update内で呼ぶ
 
     AtmosphereTuning m_Atmo;
+	BeamTuning       m_Beam;
 };

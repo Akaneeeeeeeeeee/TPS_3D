@@ -13,6 +13,7 @@ class LightSystem;
 class SpotLightGPU;
 class ComputeShader;
 class LightSystem;
+class WeatherSystem;
 
 namespace {
 	static constexpr int SPOT_SHADOW_K = 16; // スポットシャドウマップの最大数
@@ -60,7 +61,8 @@ struct CBBeam
 	float kBeam;
 	float beamTint;
 	Vector2 BeamSize;
-	Vector2 _pad;
+	uint32_t MaxSteps;
+	uint32_t _pad;
 };
 
 struct CBSpotShadowCPU
@@ -81,7 +83,7 @@ public:
 	RenderManager();
 	~RenderManager();
 
-	bool Init(GraphicsDevice* graphicsDevice, LightSystem* light);	//! 初期化処理
+	bool Init(GraphicsDevice* graphicsDevice, LightSystem* light, WeatherSystem* weather);	//! 初期化処理
 	void Uninit(void);			//! 終了処理
 
 	void StartRender(void);		//! 描画開始処理
@@ -136,6 +138,7 @@ private:
 private:
 	GraphicsDevice* m_pGraphicsDevice = nullptr;	//! GraphicsDeviceへのポインタ
 	LightSystem* m_pLightSystem = nullptr;			//! LightSystemへのポインタ
+	WeatherSystem* m_pWeatherSystem = nullptr;		//! WeatherSystemへのポインタ
 	std::vector<IRenderer*> m_RenderComponents;		//! レンダラー系コンポーネントのリスト
 	std::vector<RenderPacket> m_Packets;			//! 描画情報のリスト(毎フレーム取得)
 

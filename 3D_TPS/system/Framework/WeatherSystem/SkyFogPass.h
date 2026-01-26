@@ -73,5 +73,7 @@ private:
 
     static ComPtr<ID3D11ShaderResourceView> sBeamSRV;
 
+    static ComPtr<ID3D11SamplerState> sBeamSamp;
+
     static SkyFogTuning sTuning;
 };

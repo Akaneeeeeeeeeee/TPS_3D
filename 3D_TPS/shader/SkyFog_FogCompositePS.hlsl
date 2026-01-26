@@ -2,6 +2,8 @@
 
 Texture2D BeamTex : register(t6);
 
+SamplerState BeamSamp : register(s2);
+
 struct PSIn
 {
     float4 pos : SV_Position;
@@ -33,7 +35,7 @@ float4 main(PSIn pin) : SV_Target
     }
 
     // BeamTex çáê¨Åirgb=êF, a=ã≠Ç≥Åj
-    float4 beam = BeamTex.SampleLevel(Samp, uv, 0);
+    float4 beam = BeamTex.SampleLevel(BeamSamp, uv, 0);
 
     float outA = 1.0 - (1.0 - fog.a) * (1.0 - beam.a);
     float3 premul = fog.rgb * fog.a + beam.rgb * beam.a * (1.0 - fog.a);

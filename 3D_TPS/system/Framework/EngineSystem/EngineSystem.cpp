@@ -11,7 +11,7 @@ void EngineSystems::Init()
     //m_Asset.Init();
 	m_Asset.GetInstance().Init();
 
-    m_Render.Init(&m_Graphics, &m_Light);
+    m_Render.Init(&m_Graphics, &m_Light, &m_Weather);
 
     m_Physics.Init();
 

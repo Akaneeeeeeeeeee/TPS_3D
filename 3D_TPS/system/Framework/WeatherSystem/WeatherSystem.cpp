@@ -814,6 +814,16 @@ void WeatherSystem::DebugImGui()
     ImGui::SliderFloat("Fog Steps", &m_Atmo.fogNearSteps, 1.0f, 64.0f);
     ImGui::SliderFloat("Fog NoiseStrength", &m_Atmo.fogNoiseStrength, 0.0f, 3.0f);
 
+    ImGui::Separator();
+    ImGui::Text("Godray (Beam CS)");
+    ImGui::SliderFloat("Beam MaxDist", &m_Beam.maxDist, 1000.0f, 20000.0f);
+    ImGui::SliderFloat("Beam StepLen", &m_Beam.stepLen, 5.0f, 200.0f);
+    ImGui::SliderFloat("Beam k", &m_Beam.kBeam, 0.0f, 0.01f);
+    ImGui::SliderFloat("Beam Tint", &m_Beam.tint, 0.0f, 2.0f);
+    // maxStepsも触りたいなら↓（後述のCB改造が必要）
+    ImGui::SliderInt("Beam MaxSteps", &m_Beam.maxSteps, 16, 800);
+
+
     ImGui::End();
 #endif
 }

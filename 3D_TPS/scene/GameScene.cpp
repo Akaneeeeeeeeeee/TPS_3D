@@ -340,7 +340,7 @@ void GameScene::Init(ObjectManager* mgr)
 	m_CameraFocusIssued = false;
 	m_FoundByEnemy = nullptr;
 	m_RequestRebuildEnemies = false;
-	m_Limit.Start(120.0f);
+	m_Limit.Start(1200.0f);
 
 	// カウントダウン用コンポーネントの追加
 	auto* obj = m_pObjectManager->Instantiate<GameObject>("CountdownAudio", Tag::Object, Transform::One());
@@ -374,7 +374,7 @@ void GameScene::Init(ObjectManager* mgr)
 	// 天候オブジェクト
 	//auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
 	//weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
-	
+
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
 	m_Goal->SetScale(Vector3(0.5f, 1.0f, 0.5f));
@@ -400,7 +400,7 @@ void GameScene::Init(ObjectManager* mgr)
 			rb->SetBodyType(Rigidbody::Type::Static);
 			rb->Init();*/
 		}
-		
+
 		// 障害物
 		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
 
@@ -415,40 +415,149 @@ void GameScene::Init(ObjectManager* mgr)
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
 
 		// 街灯
-		Vector3 pos = Vector3(-300.0f, 400.0f, -100.0f);
-		Vector3 offset = Vector3(0.0f, 0.0f, 200.0f);
-		// ライト30個を均等に配置
-		for (int j = 0; j < 4; ++j)
+		//Vector3 pos = Vector3(-300.0f, 800.0f, -100.0f);
+		//Vector3 offset = Vector3(0.0f, 0.0f, 200.0f);
+		//// ライト30個を均等に配置
+		//for (int j = 0; j < 4; ++j)
+		//{
+		//	Vector3 rowStart = pos + Vector3(200.0f * j, 0.0f, 0.0f);
+		//	Vector3 rowOffset = Vector3(1000.0f, 0.0f, -1000.0f);
+		//	for (int i = 0; i < 4; ++i)
+		//	{
+		//		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight_" + std::to_string(j * 8 + i), Tag::Light);
+		//		streetLight->SetPosition(rowStart + rowOffset * i);
+		//		// 地面の明るい円半径を直接指定
+		//		streetLight->SetGroundCircle(
+		//			/*groundRadius=*/300.0f,
+		//			/*groundY=*/0.0f,
+		//			/*topRadiusMin=*/10.0f,   // 上面の“口径”を確保
+		//			/*innerRatio=*/0.6f       // 中心が強い範囲
+		//		);
+		//	}
+		//}
+
+		// -------------------------
+		// 街灯（合計100個）
+		// 4本の線分に「長さに比例」して本数を割り当て、各線分内は等間隔
+		// 共有点(0,-4000)が重複しないように一部端点を除外
+		// -------------------------
 		{
-			Vector3 rowStart = pos + Vector3(200.0f * j, 0.0f, 0.0f);
-			Vector3 rowOffset = Vector3(0.0f, 0.0f, -200.0f);
-			for (int i = 0; i < 8; ++i)
-			{
-				auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight_" + std::to_string(j * 8 + i), Tag::Light);
-				streetLight->SetPosition(rowStart + rowOffset * i);
-				// 地面の明るい円半径を直接指定
-				streetLight->SetGroundCircle(
-					/*groundRadius=*/150.0f,
-					/*groundY=*/0.0f,
-					/*topRadiusMin=*/10.0f,   // 上面の“口径”を確保
-					/*innerRatio=*/0.6f       // 中心が強い範囲
-				);
+			Vector3 pos = Vector3(-300.0f, 600.0f, -100.0f);
+			const float lightY = pos.y;
+
+			constexpr int TOTAL_LIGHTS = 40;
+
+			struct Seg {
+				Vector3 a;
+				Vector3 b;
+				bool includeStart;
+				bool includeEnd;
+				float len;
+				float frac;
+				int count;
+			};
+
+			auto Length = [](const Vector3& a, const Vector3& b) -> float {
+				Vector3 d = b - a;
+				return std::sqrt(d.x * d.x + d.y * d.y + d.z * d.z);
+				};
+
+			auto LerpV = [](const Vector3& a, const Vector3& b, float t) -> Vector3 {
+				return a + (b - a) * t;
+				};
+
+			// 4本の線分
+			std::array<Seg, 4> segs = {
+				// 1) x=0, z=-8000..8000
+				Seg{ Vector3(0.0f,     lightY, -8000.0f), Vector3(0.0f,     lightY,  8000.0f), true,  true,  0, 0, 0 },
+
+				// 2) x=-5800, z=-2000..8000
+				Seg{ Vector3(-5800.0f, lightY, -2000.0f), Vector3(-5800.0f, lightY,  8000.0f), true,  true,  0, 0, 0 },
+
+				// 3) x=-8000..0, z=-4000（終点(0,-4000)は重複しやすいので除外）
+				Seg{ Vector3(-8000.0f, lightY, -4000.0f), Vector3(0.0f,     lightY, -4000.0f), true,  false, 0, 0, 0 },
+
+				// 4) x=0..8500, z=-4000..-2200（始点(0,-4000)は重複しやすいので除外）
+				Seg{ Vector3(0.0f,     lightY, -4000.0f), Vector3(8500.0f,  lightY, -2200.0f), false, true,  0, 0, 0 },
+			};
+
+			// 長さ合計
+			float totalLen = 0.0f;
+			for (auto& s : segs) {
+				s.len = Length(s.a, s.b);
+				totalLen += s.len;
+			}
+
+			// 本数配分（長さ比例 → floor → 余りを小数部が大きい順に配る）
+			int sum = 0;
+			for (auto& s : segs) {
+				const float exact = (TOTAL_LIGHTS * (s.len / totalLen));
+				const float flo = std::floor(exact);
+				s.count = (int)flo;
+				s.frac = exact - flo;
+				if (s.count < 1) s.count = 1;
+				sum += s.count;
+			}
+
+			int diff = TOTAL_LIGHTS - sum;
+			// diff>0: 追加、diff<0: 削る（count>=1維持）
+			while (diff != 0) {
+				int best = -1;
+
+				if (diff > 0) {
+					// frac最大を増やす
+					float bestFrac = -1.0f;
+					for (int i = 0; i < (int)segs.size(); ++i) {
+						if (segs[i].frac > bestFrac) { bestFrac = segs[i].frac; best = i; }
+					}
+					segs[best].count += 1;
+					diff -= 1;
+				}
+				else {
+					// frac最小を減らす（ただし1未満にしない）
+					float bestFrac = 2.0f;
+					for (int i = 0; i < (int)segs.size(); ++i) {
+						if (segs[i].count <= 1) continue;
+						if (segs[i].frac < bestFrac) { bestFrac = segs[i].frac; best = i; }
+					}
+					if (best < 0) break; // これ以上減らせない
+					segs[best].count -= 1;
+					diff += 1;
+				}
+			}
+
+			auto CalcT = [](bool incS, bool incE, int i, int count) -> float {
+				if (count <= 1) return incS ? 0.0f : 1.0f; // 1本しかない場合の保険
+
+				if (incS && incE)    return (float)i / (float)(count - 1);      // 0..1
+				if (incS && !incE)   return (float)i / (float)count;            // 0..(n-1)/n
+				if (!incS && incE)   return (float)(i + 1) / (float)count;      // 1/n..1
+				/* neither */        return (float)(i + 1) / (float)(count + 1);// (1..n)/(n+1)
+				};
+
+			int idx = 0;
+			for (const auto& s : segs) {
+				for (int i = 0; i < s.count; ++i) {
+					const float t = CalcT(s.includeStart, s.includeEnd, i, s.count);
+					const Vector3 p = LerpV(s.a, s.b, t);
+
+					auto streetLight = m_pObjectManager->Instantiate<StreetLight>(
+						"StreetLight_" + std::to_string(idx),
+						Tag::Light
+					);
+					++idx;
+
+					streetLight->SetPosition(p);
+					streetLight->SetGroundCircle(
+						/*groundRadius=*/200.0f,
+						/*groundY=*/0.0f,
+						/*topRadiusMin=*/10.0f,
+						/*innerRatio=*/0.6f
+					);
+				}
 			}
 		}
 
-		//for (int i = 0; i < 8; ++i)
-		//{
-		//	auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight_" + i, Tag::Light);
-		//	streetLight->SetPosition(pos + offset);
-		//	// 地面の明るい円半径を直接指定
-		//	streetLight->SetGroundCircle(
-		//		/*groundRadius=*/150.0f,
-		//		/*groundY=*/0.0f,
-		//		/*topRadiusMin=*/10.0f,   // 上面の“口径”を確保
-		//		/*innerRatio=*/0.6f       // 中心が強い範囲
-		//	);
-		//	offset.z -= 200.0f;
-		//}
 	}
 
 	// DirectWrite 初期化（1回だけ）

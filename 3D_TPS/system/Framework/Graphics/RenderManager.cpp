@@ -145,11 +145,12 @@ RenderManager::~RenderManager()
 }
 
 // 初期化処理
-bool RenderManager::Init(GraphicsDevice* graphicsDevice, LightSystem* light)
+bool RenderManager::Init(GraphicsDevice* graphicsDevice, LightSystem* light, WeatherSystem* weather)
 {
 	if (graphicsDevice == nullptr) { return false; }
 
 	m_pLightSystem = light;
+	m_pWeatherSystem = weather;
 
 	// GBufferの初期化
 	auto* dev = Renderer::GetDevice();
@@ -263,7 +264,7 @@ void RenderManager::RenderDeferred()
 	// 2) 近い順でshadowSlice割り当て（今は影マップ未実装なのでsliceだけ付く）
 	std::vector<SpotLightGPU> spotLights;
 	std::array<int, SPOT_SHADOW_K> shadowIdx{};
-	int shadowCount = 4;
+	int shadowCount = 0;
 
 	// 参照位置はプレイヤーorカメラ
 	Matrix4x4 invView = Renderer::GetViewMatrix().Invert();
@@ -312,8 +313,6 @@ void RenderManager::RenderDeferred()
 	RenderLightingPass();
 	RenderTransparentForwardPass();
 	RenderOverlayWorldPass();
-
-	SkyFogPass::SetBeamSRV(m_BeamSRV.Get());
 }
 
 void RenderManager::RenderGBufferPass()
@@ -899,6 +898,12 @@ void RenderManager::RunBeamCompute(const CBDeferred& cbDeferred, const CBTileInf
 	// DepthSRV を読むので DSV を外す（重要）
 	ctx->OMSetRenderTargets(0, nullptr, nullptr);
 
+	// FogCompositePS が t6 に BeamTex を刺してる場合があるので外す
+	{
+		ID3D11ShaderResourceView* nullPS = nullptr;
+		ctx->PSSetShaderResources(6, 1, &nullPS);
+	}
+
 	// BeamTexを0クリア
 	float clearF[4] = { 0,0,0,0 };
 	ctx->ClearUnorderedAccessViewFloat(m_BeamUAV.Get(), clearF);
@@ -935,11 +940,31 @@ void RenderManager::RunBeamCompute(const CBDeferred& cbDeferred, const CBTileInf
 	ctx->CSSetConstantBuffers(1, 1, &b1);
 
 	// CBBeam(b0)
+	//CBBeam cb{};
+	//cb.beamMaxDist = 6000.0f;
+	//cb.stepLenWanted = 25.0f;
+	//cb.kBeam = 0.0020f;
+	//cb.beamTint = 1.0f;
+	//cb.BeamSize = Vector2((float)BEAM_W, (float)BEAM_H);
+
 	CBBeam cb{};
-	cb.beamMaxDist = 6000.0f;
-	cb.stepLenWanted = 50.0f;
-	cb.kBeam = 0.0020f;
-	cb.beamTint = 1.0f;
+	if (m_pWeatherSystem)
+	{
+		const auto& bt = m_pWeatherSystem->GetBeamTuning();
+		cb.beamMaxDist = bt.maxDist;
+		cb.stepLenWanted = bt.stepLen;
+		cb.kBeam = bt.kBeam;
+		cb.beamTint = bt.tint;
+		cb.MaxSteps = (uint32_t)bt.maxSteps;
+	}
+	else
+	{
+		cb.beamMaxDist = 6000.0f;
+		cb.stepLenWanted = 10.0f;
+		cb.kBeam = 0.0020f;
+		cb.beamTint = 1.0f;
+		cb.MaxSteps = 512;
+	}
 	cb.BeamSize = Vector2((float)BEAM_W, (float)BEAM_H);
 
 	ctx->UpdateSubresource(m_CBBeam.Get(), 0, nullptr, &cb, 0, 0);
@@ -959,6 +984,8 @@ void RenderManager::RunBeamCompute(const CBDeferred& cbDeferred, const CBTileInf
 	ctx->CSSetShaderResources(0, 10, nullSRV);
 
 	ctx->CSSetShader(nullptr, nullptr, 0);
+
+	SkyFogPass::SetBeamSRV(m_BeamSRV.Get());
 }
 
 

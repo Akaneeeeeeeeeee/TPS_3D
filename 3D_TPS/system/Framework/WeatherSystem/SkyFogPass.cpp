@@ -39,6 +39,8 @@ SkyFogPass::SkyFogTuning SkyFogPass::sTuning{};
 
 ComPtr<ID3D11ShaderResourceView> SkyFogPass::sBeamSRV;
 
+ComPtr<ID3D11SamplerState> SkyFogPass::sBeamSamp;
+
 void SkyFogPass::SetBeamSRV(ID3D11ShaderResourceView* srv)
 {
     sBeamSRV = srv; // ComPtrがAddRefして保持
@@ -182,6 +184,18 @@ void SkyFogPass::Init(ID3D11Device* dev, ID3D11DeviceContext* ctx, int w, int h)
     CreateCBs();
     CreateLowResFogTargets();
     CreateNoise3D();
+
+    // BeamTex 用サンプラ（s2）: LINEAR + CLAMP
+    {
+        D3D11_SAMPLER_DESC sd{};
+        sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        sd.MinLOD = 0;
+        sd.MaxLOD = D3D11_FLOAT32_MAX;
+
+        ThrowIfFailed(sDev->CreateSamplerState(&sd, sBeamSamp.GetAddressOf()),
+            "Create Beam sampler failed.");
+    }
 }
 
 void SkyFogPass::Resize(int w, int h)
@@ -462,6 +476,9 @@ void SkyFogPass::DrawFog()
         ID3D11ShaderResourceView* beam = sBeamSRV.Get(); // t6
         sCtx->PSSetShaderResources(6, 1, &beam);
 
+        ID3D11SamplerState* bs = sBeamSamp.Get();
+        sCtx->PSSetSamplers(2, 1, &bs);
+
         Renderer::SetDepthEnable(false);
         Renderer::SetBlendState(BS_ALPHABLEND);
 
@@ -476,6 +493,9 @@ void SkyFogPass::DrawFog()
         // t6も外す
         ID3D11ShaderResourceView* null1 = nullptr;
         sCtx->PSSetShaderResources(6, 1, &null1);
+
+        ID3D11SamplerState* nullS = nullptr;
+        sCtx->PSSetSamplers(2, 1, &nullS);
     }
 
     // 退避していたRTV/DSVを戻す（この後のUI/デバッグが壊れない）

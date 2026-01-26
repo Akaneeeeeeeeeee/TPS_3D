@@ -35,14 +35,42 @@ cbuffer CBTileInfo : register(b1)
 
 cbuffer CBBeam : register(b0)
 {
-    float beamMaxDist; // 例: 3000
-    float stepLenWanted; // 例: 50
-    float kBeam; // 例: 0.002
-    float beamTint; // 例: 1.0
+    float beamMaxDist;
+    float stepLenWanted;
+    float kBeam;
+    float beamTint;
 
     float2 BeamSize; // (BEAM_W, BEAM_H)
-    float2 _pad;
+    uint MaxSteps;
+    uint _pad;
 };
+
+// 0..1 の疑似乱数（外部テクスチャ無し版）
+// スポットライトの輪切りを避けるために使う/粗いノイズが出るが許容
+float Hash12(float2 p)
+{
+    // 安いハッシュ
+    float h = dot(p, float2(127.1, 311.7));
+    return frac(sin(h) * 43758.5453);
+}
+float Bayer4x4(uint2 p)
+{
+    // 0..15 / 16
+    const float b[16] =
+    {
+        0, 8, 2, 10,
+        12, 4, 14, 6,
+        3, 11, 1, 9,
+        15, 7, 13, 5
+    };
+    uint idx = (p.x & 3) + ((p.y & 3) << 2);
+    return b[idx] / 16.0;
+}
+float IGN(float2 p)
+{
+    // 規則性が出にくい擬似乱数 0..1
+    return frac(52.9829189 * frac(p.x * 0.06711056 + p.y * 0.00583715));
+}
 
 float3 WorldDirFromUV(float2 uv)
 {
@@ -153,18 +181,32 @@ void main(uint3 id : SV_DispatchThreadID)
     uint count = min(TileCountSRV[tileId], MaxPerTile);
 
     int steps = (int) ceil(distMax / max(stepLenWanted, 1.0));
-    steps = clamp(steps, 8, 128);
+    //steps = clamp(steps, 8, 256);
+    steps = clamp(steps, 8, (int) MaxSteps);
     float stepLen = distMax / steps;
 
     float beamEnergy = 0.0;
     float3 beamPremul = 0.0;
+    
+    //float jitter = IGN((float2)id.xy);
+    ////float jitter = Bayer4x4(id.xy);
+    //float jt = (jitter - 0.5) * 0.5;
+    ////float jitter = Hash12((float2) id.xy);
 
     [loop]
     for (int i = 0; i < steps; ++i)
     {
-        float tt = (i + 0.5) * stepLen;
-        float3 p = camW + dir * tt;
+        // ステップごとに違うジッター
+        //float jitter = IGN((float2) id.xy + float2(i * 17.0, i * 23.0)); // 0..1
 
+        // 振れ幅は小さめ（±0.25ステップ）
+        //float jt = (jitter - 0.5) * 0.5;
+
+        //float tt = (i + 0.5 + jt) * stepLen;
+        float tt = (i + 0.5) * stepLen;
+        
+        float3 p = camW + dir * tt;
+        
         [loop]
         for (uint k = 0; k < count; ++k)
         {
