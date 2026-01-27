@@ -1,10 +1,9 @@
 ﻿#include "SkyFogPass.h"
-#include "renderer.h" // Renderer
-#include <d3dcompiler.h>
+#include "renderer.h"
+#include "Framework/AssetManager/AssetManager.h"
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
-#pragma comment(lib, "d3dcompiler.lib")
 
 ID3D11Device* SkyFogPass::sDev = nullptr;
 ID3D11DeviceContext* SkyFogPass::sCtx = nullptr;
@@ -17,10 +16,9 @@ Color   SkyFogPass::sSunColor = Color(1, 1, 1, 1);
 Vector3 SkyFogPass::sFogColor = Vector3(0.7f, 0.8f, 0.9f);
 float   SkyFogPass::sFogDensity = 0.0f;
 
-ComPtr<ID3D11VertexShader> SkyFogPass::sVSFull;
-ComPtr<ID3D11PixelShader>  SkyFogPass::sPSSky;
-ComPtr<ID3D11PixelShader>  SkyFogPass::sPSFogLow;
-ComPtr<ID3D11PixelShader>  SkyFogPass::sPSFogComposite;
+CShader* SkyFogPass::sShSky = nullptr;
+CShader* SkyFogPass::sShFogLow = nullptr;
+CShader* SkyFogPass::sShFogComposite = nullptr;
 
 ComPtr<ID3D11Buffer> SkyFogPass::sCBSky;
 ComPtr<ID3D11Buffer> SkyFogPass::sCBFog;
@@ -38,6 +36,15 @@ static void ThrowIfFailed(HRESULT hr, const char* msg) { if (FAILED(hr)) throw s
 static UINT Align16(UINT x) { return (x + 15u) & ~15u; }
 
 SkyFogPass::SkyFogTuning SkyFogPass::sTuning{};
+
+ComPtr<ID3D11ShaderResourceView> SkyFogPass::sBeamSRV;
+
+ComPtr<ID3D11SamplerState> SkyFogPass::sBeamSamp;
+
+void SkyFogPass::SetBeamSRV(ID3D11ShaderResourceView* srv)
+{
+    sBeamSRV = srv; // ComPtrがAddRefして保持
+}
 
 void SkyFogPass::SetTuning(const SkyFogTuning& t)
 {
@@ -140,47 +147,6 @@ struct D3D11StateBackup
     }
 };
 
-
-static ComPtr<ID3DBlob> Compile(const wchar_t* path, const char* entry, const char* target)
-{
-    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#ifdef _DEBUG
-    flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-    ComPtr<ID3DBlob> blob, err;
-    HRESULT hr = D3DCompileFromFile(
-        path,
-        nullptr,
-        D3D_COMPILE_STANDARD_FILE_INCLUDE,
-        entry,
-        target,
-        flags,
-        0,
-        blob.GetAddressOf(),
-        err.GetAddressOf()
-    );
-
-    if (FAILED(hr))
-    {
-        std::string msg = "D3DCompileFromFile failed.\n";
-        msg += "file: ";
-        // wchar->utf8 変換は面倒なので、とりあえず entry/target を出す
-        msg += " entry: ";  msg += entry;
-        msg += " target: "; msg += target;
-        msg += "\n";
-
-        if (err)
-        {
-            msg += "---- HLSL compiler log ----\n";
-            msg += (const char*)err->GetBufferPointer();
-            msg += "\n---------------------------\n";
-        }
-        throw std::runtime_error(msg);
-    }
-    return blob;
-}
-
 // ---- CB（HLSLと一致させる）----
 struct CBSky
 {
@@ -218,6 +184,18 @@ void SkyFogPass::Init(ID3D11Device* dev, ID3D11DeviceContext* ctx, int w, int h)
     CreateCBs();
     CreateLowResFogTargets();
     CreateNoise3D();
+
+    // BeamTex 用サンプラ（s2）: LINEAR + CLAMP
+    {
+        D3D11_SAMPLER_DESC sd{};
+        sd.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        sd.AddressU = sd.AddressV = sd.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        sd.MinLOD = 0;
+        sd.MaxLOD = D3D11_FLOAT32_MAX;
+
+        ThrowIfFailed(sDev->CreateSamplerState(&sd, sBeamSamp.GetAddressOf()),
+            "Create Beam sampler failed.");
+    }
 }
 
 void SkyFogPass::Resize(int w, int h)
@@ -331,7 +309,7 @@ void SkyFogPass::UploadFogCB()
     cb.BeamParams = Vector4(
         12000.0f,  // beamMaxDist ← 柱はここまで
         20.0f,     // beamStepLenWanted
-        0.0008f,   // kBeam
+        0.0f,   // kBeam
         0.6f       // beamTint
     );
 
@@ -396,8 +374,7 @@ void SkyFogPass::DrawSky()
     sCtx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
     sCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    sCtx->VSSetShader(sVSFull.Get(), nullptr, 0);
-    sCtx->PSSetShader(sPSSky.Get(), nullptr, 0);
+	sShSky->SetGPU();
 
     ID3D11Buffer* cb = sCBSky.Get();
     sCtx->VSSetConstantBuffers(7, 1, &cb);
@@ -449,8 +426,7 @@ void SkyFogPass::DrawFog()
         sCtx->HSSetShader(nullptr, nullptr, 0);
         sCtx->DSSetShader(nullptr, nullptr, 0);
 
-        sCtx->VSSetShader(sVSFull.Get(), nullptr, 0);
-        sCtx->PSSetShader(sPSFogLow.Get(), nullptr, 0);
+		sShFogLow->SetGPU();
 
         ID3D11Buffer* cb = sCBFog.Get();
         sCtx->VSSetConstantBuffers(8, 1, &cb);
@@ -484,8 +460,7 @@ void SkyFogPass::DrawFog()
         sCtx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
         sCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        sCtx->VSSetShader(sVSFull.Get(), nullptr, 0);
-        sCtx->PSSetShader(sPSFogComposite.Get(), nullptr, 0);
+		sShFogComposite->SetGPU();
 
         ID3D11Buffer* cb = sCBFog.Get();
         sCtx->VSSetConstantBuffers(8, 1, &cb);
@@ -498,6 +473,12 @@ void SkyFogPass::DrawFog()
         sCtx->PSSetShaderResources(4, 1, &depth);
         sCtx->PSSetShaderResources(5, 1, &noise);
 
+        ID3D11ShaderResourceView* beam = sBeamSRV.Get(); // t6
+        sCtx->PSSetShaderResources(6, 1, &beam);
+
+        ID3D11SamplerState* bs = sBeamSamp.Get();
+        sCtx->PSSetSamplers(2, 1, &bs);
+
         Renderer::SetDepthEnable(false);
         Renderer::SetBlendState(BS_ALPHABLEND);
 
@@ -508,6 +489,13 @@ void SkyFogPass::DrawFog()
 
         ID3D11ShaderResourceView* nulls[3] = { nullptr, nullptr, nullptr };
         sCtx->PSSetShaderResources(3, 3, nulls);
+
+        // t6も外す
+        ID3D11ShaderResourceView* null1 = nullptr;
+        sCtx->PSSetShaderResources(6, 1, &null1);
+
+        ID3D11SamplerState* nullS = nullptr;
+        sCtx->PSSetSamplers(2, 1, &nullS);
     }
 
     // 退避していたRTV/DSVを戻す（この後のUI/デバッグが壊れない）
@@ -603,19 +591,13 @@ void SkyFogPass::CreateNoise3D()
 
 void SkyFogPass::CreateShaders()
 {
-    auto vs = Compile(L"shader/SkyFog.hlsl", "VS_Fullscreen", "vs_5_0");
-    ThrowIfFailed(sDev->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, sVSFull.GetAddressOf()),
-        "Create VS failed.");
+    auto& am = AssetManager::GetInstance();
 
-    auto psSky = Compile(L"shader/SkyFog.hlsl", "PS_Sky", "ps_5_0");
-    ThrowIfFailed(sDev->CreatePixelShader(psSky->GetBufferPointer(), psSky->GetBufferSize(), nullptr, sPSSky.GetAddressOf()),
-        "Create PS Sky failed.");
+    // AssetManager::Init() で登録したキーと一致させる
+    sShSky = am.GetShader<CShader>("skyfog_sky");
+    sShFogLow = am.GetShader<CShader>("skyfog_foglow");
+    sShFogComposite = am.GetShader<CShader>("skyfog_fogcomp");
 
-    auto psFogLow = Compile(L"shader/SkyFog.hlsl", "PS_FogLow", "ps_5_0");
-    ThrowIfFailed(sDev->CreatePixelShader(psFogLow->GetBufferPointer(), psFogLow->GetBufferSize(), nullptr, sPSFogLow.GetAddressOf()),
-        "Create PS FogLow failed.");
-
-    auto psFogC = Compile(L"shader/SkyFog.hlsl", "PS_FogComposite", "ps_5_0");
-    ThrowIfFailed(sDev->CreatePixelShader(psFogC->GetBufferPointer(), psFogC->GetBufferSize(), nullptr, sPSFogComposite.GetAddressOf()),
-        "Create PS FogComposite failed.");
+    if (!sShSky || !sShFogLow || !sShFogComposite)
+        throw std::runtime_error("SkyFogPass::CreateShaders: skyfog shaders not found.");
 }

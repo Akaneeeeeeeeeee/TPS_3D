@@ -14,6 +14,15 @@
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseQuery.h>
 
+// ==============================
+// Debug-only log (Releaseでは出ない)
+// ==============================
+#if defined(_DEBUG)
+#define JOLT_LOG(...) JPH::Trace(__VA_ARGS__)
+#else
+#define JOLT_LOG(...) ((void)0)
+#endif
+
 namespace
 {
     // このコライダの BodyID だけを許可する BodyFilter
@@ -60,7 +69,7 @@ bool StaticMeshCollider::SampleHeight(float x, float z, float& outY) const
 
     if (!npq.CastRay(ray, hit, bpFilter, objFilter, bodyFilter))
     {
-        JPH::Trace("SampleHeight: CastRay no hit (CHARACTER filter).");
+        JOLT_LOG("SampleHeight: CastRay no hit (CHARACTER filter).");
         return false;
     }
 
@@ -68,7 +77,6 @@ bool StaticMeshCollider::SampleHeight(float x, float z, float& outY) const
     outY = CAST_HEIGHT - dist;
     return true;
 }
-
 
 void StaticMeshCollider::Attach(EngineServices& context)
 {
@@ -83,10 +91,8 @@ void StaticMeshCollider::Init()
     if (m_Positions.empty() || m_Triangles.empty()) { return; }
 
     CreateBody(m_Physics->GetBodyInterface());
-    JPH::Trace("StaticMeshCollider: BodyID = %u", m_BodyID.GetIndex());
-
+    JOLT_LOG("StaticMeshCollider: BodyID = %u", m_BodyID.GetIndex());
 }
-
 
 void StaticMeshCollider::SetMesh(const CStaticMesh& mesh)
 {
@@ -102,7 +108,7 @@ void StaticMeshCollider::SetMesh(const CStaticMesh& mesh)
         m_BodyID = JPH::BodyID();
     }
 
-	// オーナーのスケールを取得（必要なら頂点に適用する）
+    // オーナーのスケールを取得（必要なら頂点に適用する）
     Vector3 scale = m_pOwner ? m_pOwner->GetScale() : Vector3::One;
 
     // 頂点配列・インデックス配列・サブセットを取得
@@ -114,7 +120,7 @@ void StaticMeshCollider::SetMesh(const CStaticMesh& mesh)
     m_Positions.clear();
     m_Positions.reserve(vertices.size());
 
-	// 頂点位置をスケール適用して登録
+    // 頂点位置をスケール適用して登録
     for (auto& v : vertices)
     {
         Vector3 p = v.Position;
@@ -224,14 +230,14 @@ void StaticMeshCollider::CreateBody(JPH::BodyInterface& bi)
     mesh_settings.mIndexedTriangles = std::move(tris);
     // メッシュデータを検証、縮退した三角形を削除する
     mesh_settings.Sanitize();
-    
+
     // ----- Shape を作成 -----
     auto result = mesh_settings.Create();          // ShapeSettings::ShapeResult
 
     if (result.HasError())
     {
         // ここでエラーメッセージをログに出しておくと原因が分かりやすい
-        JPH::Trace("MeshShape Create error: %s", result.GetError().c_str());
+        JOLT_LOG("MeshShape Create error: %s", result.GetError().c_str());
         m_Shape = nullptr;
         return;
     }
@@ -275,7 +281,6 @@ void StaticMeshCollider::Uninit()
     m_Shape = nullptr; // 使ってるなら
     m_Physics = nullptr;
 }
-
 
 void StaticMeshCollider::Detach(void)
 {

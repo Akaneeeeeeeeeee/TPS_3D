@@ -264,10 +264,11 @@ void WeatherSystem::ApplyToParticles()
         spawnHalfDepth = 500.0f;
         spawnHeight = 0.0f;
 
-        // 雨はエミッタの真上あたりにまとめて出すイメージなら 0〜0 でもよい
-        spawnMinY = 0.0f;
-        spawnMaxY = 0.0f;
-        maxParticles = 30000;
+        // プレイヤー原点から +500～+900 の高さで生成
+        spawnMinY = 500.0f;
+        spawnMaxY = 900.0f;
+
+        maxParticles = 5000;
     }
     // 砂嵐が有効
     else if (m_CurrentParams.sandEmitRate > 0.0f)
@@ -281,19 +282,17 @@ void WeatherSystem::ApplyToParticles()
         gravity = XMFLOAT3(0.0f, -1.0f, 0.0f);
         // プリセットで決めた高さレンジをそのまま使う
         spawnMinY = m_CurrentParams.sandMinHeight;
-        spawnMaxY = m_CurrentParams.sandMaxHeight;
+        spawnMaxY = 500.0f;
+        //spawnMaxY = m_CurrentParams.sandMaxHeight;
 
         // XZ方向を広げる
-        spawnHalfWidth = 2000.0f;   // 1000 → 2000
-        spawnHalfDepth = 2000.0f;
+        spawnHalfWidth = 700.0f;
+        spawnHalfDepth = 700.0f;
 
-        // 高さ方向の厚みを持たせたいなら、spawnHeight も上げる
-        //  SetSpawnHeight の解釈は実装次第なので（推測です）、
-        //   「高さレンジ」として使っているなら 200〜500 ぐらいを試す。
-        spawnHeight = 300.0f;    // 0 → 300（推測です）
+        spawnHeight = 0.0f;
 
-        // 最大粒子数も増やして間引かれないように
-        maxParticles = 30000;     // 12000 → 30000
+        // 最大粒子数
+        maxParticles = 5000;
     }
 
     for (auto* comp : m_ParticleComponents)
@@ -494,8 +493,6 @@ void WeatherSystem::Update(float dt)
 	UpdatePerception();
 
 	UpdateDayNightState();
-
-    // 将来的に Fog / Sky / PBR 用定数バッファもここで更新
 }
 
 void WeatherSystem::UpdatePerception(void)
@@ -555,7 +552,6 @@ void WeatherSystem::DrawParticles(void) const
         DrawSand();
     }
 }
-
 
 void WeatherSystem::DrawRain() const
 {
@@ -817,6 +813,16 @@ void WeatherSystem::DebugImGui()
     ImGui::SliderFloat("Fog FarSwitch", &m_Atmo.fogFarSwitchDist, 10.0f, 5000.0f);
     ImGui::SliderFloat("Fog Steps", &m_Atmo.fogNearSteps, 1.0f, 64.0f);
     ImGui::SliderFloat("Fog NoiseStrength", &m_Atmo.fogNoiseStrength, 0.0f, 3.0f);
+
+    ImGui::Separator();
+    ImGui::Text("Godray (Beam CS)");
+    ImGui::SliderFloat("Beam MaxDist", &m_Beam.maxDist, 1000.0f, 20000.0f);
+    ImGui::SliderFloat("Beam StepLen", &m_Beam.stepLen, 5.0f, 200.0f);
+    ImGui::SliderFloat("Beam k", &m_Beam.kBeam, 0.0f, 0.01f);
+    ImGui::SliderFloat("Beam Tint", &m_Beam.tint, 0.0f, 2.0f);
+    // maxStepsも触りたいなら↓（後述のCB改造が必要）
+    ImGui::SliderInt("Beam MaxSteps", &m_Beam.maxSteps, 16, 800);
+
 
     ImGui::End();
 #endif

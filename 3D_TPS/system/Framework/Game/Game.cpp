@@ -107,8 +107,6 @@ void Game::Draw()
 	{
 		Matrix4x4 view = cam->GetViewMatrix();
 		Matrix4x4 proj = cam->GetProjMatrix();
-		/*Renderer::SetViewMatrix(&view);
-		Renderer::SetProjectionMatrix(&proj);*/
 		cam->ApplyCamera();
 	}
 
@@ -119,14 +117,14 @@ void Game::Draw()
 	m_SceneManager.DrawWorld();
 	//m_GameFeatures.DrawWorld();
 
-	// 天候パーティクル描画
-	svc.weather.DrawParticles();
-
 	// デバッグ用当たり判定描画
 	//svc.physics.DebugDraw();
 
 	// 2) 遅延描画（GBuffer→Lighting→(透明Forwardは後で)）
 	svc.render.RenderDeferred();
+
+	// 天候パーティクル描画
+	svc.weather.DrawParticles();
 
 	// 3) 霧（backbufferへ合成）
 	svc.weather.DrawAtmospherePostWorld();

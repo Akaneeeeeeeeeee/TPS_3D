@@ -3,6 +3,7 @@
 #include "system/CAnimationMesh.h"
 #include "system/CStaticMesh.h"
 #include "system/CShader.h"
+#include "system/ComputeShader.h"
 
 AssetManager::AssetManager()
 {
@@ -15,145 +16,191 @@ AssetManager::~AssetManager()
 
 void AssetManager::Init()
 {
-    // ==== Shader ====
-    {
+	// ==== Shader ====
+	{
 		// 光源なしシェーダー
-        auto unlit = std::make_unique<CShader>();
-        unlit->Create("shader/vertexLightingVS.hlsl",
-            "shader/vertexLightingPS.hlsl");
-        RegisterShader("unlightshader", std::move(unlit));
+		auto unlit = std::make_unique<CShader>();
+		unlit->Create("shader/vertexLightingVS.hlsl",
+			"shader/vertexLightingPS.hlsl");
+		RegisterShader("unlightshader", std::move(unlit));
 
 		// アニメーション用シェーダー
-        auto anim = std::make_unique<CShader>();
-        anim->Create("shader/vertexLightingOneSkinVS.hlsl",
-            "shader/vertexLightingPS.hlsl");
-        RegisterShader("animshader", std::move(anim));
+		auto anim = std::make_unique<CShader>();
+		anim->Create("shader/vertexLightingOneSkinVS.hlsl",
+			"shader/vertexLightingPS.hlsl");
+		RegisterShader("animshader", std::move(anim));
 
-        // GBuffer（静的）
-        auto gbufStatic = std::make_unique<CShader>();
-        gbufStatic->Create("shader/GBufferVS.hlsl", "shader/GBufferPS.hlsl");
-        RegisterShader("gbuffer_static", std::move(gbufStatic));
+		// GBuffer（静的）
+		auto gbufStatic = std::make_unique<CShader>();
+		gbufStatic->Create("shader/GBufferVS.hlsl", "shader/GBufferPS.hlsl");
+		RegisterShader("gbuffer_static", std::move(gbufStatic));
 
-        // GBuffer（スキン）
-        auto gbufSkin = std::make_unique<CShader>();
-        gbufSkin->Create("shader/GBufferOneSkinVS.hlsl", "shader/GBufferPS.hlsl");
-        RegisterShader("gbuffer_skin", std::move(gbufSkin));
-    }
+		// GBuffer（スキン）
+		auto gbufSkin = std::make_unique<CShader>();
+		gbufSkin->Create("shader/GBufferOneSkinVS.hlsl", "shader/GBufferPS.hlsl");
+		RegisterShader("gbuffer_skin", std::move(gbufSkin));
 
-    // ==== Static Mesh ＋ Renderer ====
-    {
-        // 障害物用 BOX
-        {
-            auto boxMesh = std::make_unique<CStaticMesh>();
-            boxMesh->Load("assets/model/obj/box.obj",
-                "assets/model/obj/");
-            RegisterMesh("obstaclebox", std::move(boxMesh));
+		// ----------------------------
+		// SkyFog（FullScreen）
+		// ----------------------------
+		auto sky = std::make_unique<CShader>();
+		sky->Create("shader/SkyFogVS.hlsl", "shader/SkyFog_SkyPS.hlsl");
+		RegisterShader("skyfog_sky", std::move(sky));
 
-            auto boxRenderer = std::make_unique<CStaticMeshRenderer>();
-            // Mesh はさっき登録したものを取得
-            auto* meshPtr = GetMesh<CStaticMesh>("obstaclebox");
-            boxRenderer->Init(*meshPtr);
-            RegisterMeshRenderer("obstaclebox", std::move(boxRenderer));
-        }
+		auto fogLow = std::make_unique<CShader>();
+		fogLow->Create("shader/SkyFogVS.hlsl", "shader/SkyFog_FogLowPS.hlsl");
+		RegisterShader("skyfog_foglow", std::move(fogLow));
 
-        // Terrain 用
-        {
-            auto terrainMesh = std::make_unique<CStaticMesh>();
-            terrainMesh->Load("assets/model/factory/factoryterrainmesh.fbx",
-                "assets/model/factory");
-            RegisterMesh("terrainmesh", std::move(terrainMesh));
-            /*auto terrainMesh = std::make_unique<CStaticMesh>();
-            terrainMesh->Load("assets/model/factory/factoryterrainmesh.fbx",
-                "assets/model/factory");
-            RegisterMesh("terrainmesh", std::move(terrainMesh));*/
+		auto fogComp = std::make_unique<CShader>();
+		fogComp->Create("shader/SkyFogVS.hlsl", "shader/SkyFog_FogCompositePS.hlsl");
+		RegisterShader("skyfog_fogcomp", std::move(fogComp));
 
-            auto terrainRenderer = std::make_unique<CStaticMeshRenderer>();
-            auto* meshPtr = GetMesh<CStaticMesh>("terrainmesh");
-            terrainRenderer->Init(*meshPtr);
-            RegisterMeshRenderer("terrainmesh", std::move(terrainRenderer));
-        }
+		// ----------------------------
+		// Deferred Lighting
+		// ----------------------------
+		auto deferredLighting = std::make_unique<CShader>();
+		deferredLighting->Create("shader/DeferredLightingVS.hlsl", "shader/DeferredLightingPS.hlsl");
+		RegisterShader("deferred_lighting", std::move(deferredLighting));
 
-        // Goal 用
-        {
-            auto goalMesh = std::make_unique<CStaticMesh>();
-            goalMesh->Load("assets/model/tower/Only Tower.obj",
-                "assets/model/tower");
-            //goalMesh->Load("assets/model/obj/cylinder.obj",
-            //    "assets/model/obj");
-            RegisterMesh("goalmesh", std::move(goalMesh));
+		// Shadow Depth（静的）
+		auto shStatic = std::make_unique<CShader>();
+		shStatic->Create("shader/ShadowDepthVS.hlsl", "shader/ShadowDepthPS.hlsl");
+		RegisterShader("shadow_static", std::move(shStatic));
 
-            auto goalRenderer = std::make_unique<CStaticMeshRenderer>();
-            auto* meshPtr = GetMesh<CStaticMesh>("goalmesh");
-            goalRenderer->Init(*meshPtr);
-            RegisterMeshRenderer("goalmesh", std::move(goalRenderer));
-        }
+		// Shadow Depth（スキン）
+		auto shSkin = std::make_unique<CShader>();
+		shSkin->Create("shader/ShadowDepthOneSkinVS.hlsl", "shader/ShadowDepthPS.hlsl");
+		RegisterShader("shadow_skin", std::move(shSkin));
 
-        // Rock 用
-        {
-            auto rockMesh = std::make_unique<CStaticMesh>();
-            rockMesh->Load("assets/model/Rock-Set/Rock_2/Rock_2.fbx",
-                "assets/model/Rock-Set/Rock_2/Textures");
-            RegisterMesh("Rock", std::move(rockMesh));
+		// ==== Compute Shader ====
 
-            auto rockRenderer = std::make_unique<CStaticMeshRenderer>();
-            auto* meshPtr = GetMesh<CStaticMesh>("Rock");
-            rockRenderer->Init(*meshPtr);
-            RegisterMeshRenderer("Rock", std::move(rockRenderer));
-        }
-    }
+		auto csBuildTile = std::make_unique<ComputeShader>();
+		csBuildTile->Create("shader/BuildTileCS.hlsl");
+		RegisterComputeShader("cs_build_tile", std::move(csBuildTile));
 
-    // ==== AnimationMesh / AnimationData（例：Akai）====
-    {
-        // スキンメッシュ
-        auto woman = std::make_unique<CAnimationMesh>();
-        woman->Load("assets/model/Woman/Model/SK_Fio.fbx",
-            "assets/model/Woman/Textures/");
-        RegisterMesh("Akai", std::move(woman));
-        //auto woman = std::make_unique<CAnimationMesh>();
-        //woman->Load("assets/model/Woman/Model/SK_Fio.fbx",
-        //    "assets/model/Woman/Textures/");
-        //RegisterMesh("Akai", std::move(woman));
-        auto solider = std::make_unique<CAnimationMesh>();
-        solider->Load("assets/model/SciFi_Solider/Model/SK_ScifiSoldierUE4.fbx",
-            "assets/model/SciFi_Solider/Textures/");
-        RegisterMesh("Solider", std::move(solider));
+		auto csSpot = std::make_unique<ComputeShader>();
+		csSpot->Create("shader/SpotLightingCS.hlsl");
+		RegisterComputeShader("cs_spot_lighting", std::move(csSpot));
 
-        // 各アニメーション
-        // アイドル
-        auto soliderIdle = std::make_unique<CAnimationData>();
-        soliderIdle->LoadAnimation("assets/model/SciFi_Solider/Animation/UnarmedIdle01.fbx",
-            "Solider_Idle");
-        RegisterAnimationData("Solider_Idle", std::move(soliderIdle));
-        auto akaiIdle = std::make_unique<CAnimationData>();
-        akaiIdle->LoadAnimation("assets/model/Woman/Animation/Idle.fbx",
-            "Akai_Idle");
-        RegisterAnimationData("Akai_Idle", std::move(akaiIdle));
-        //auto akaiIdle = std::make_unique<CAnimationData>();
-        //akaiIdle->LoadAnimation("assets/model/Woman/Animation/Idle.fbx",
-        //    "Akai_Idle");
-        //RegisterAnimationData("Akai_Idle", std::move(akaiIdle));
+		auto csBeam = std::make_unique<ComputeShader>();
+		csBeam->Create("shader/BeamCS.hlsl");
+		RegisterComputeShader("cs_beam", std::move(csBeam));
+	}
+
+	// ==== Static Mesh ＋ Renderer ====
+	{
+		// 障害物用 BOX
+		{
+			auto boxMesh = std::make_unique<CStaticMesh>();
+			boxMesh->Load("assets/model/obj/box.obj",
+				"assets/model/obj/");
+			RegisterMesh("obstaclebox", std::move(boxMesh));
+
+			auto boxRenderer = std::make_unique<CStaticMeshRenderer>();
+			// Mesh はさっき登録したものを取得
+			auto* meshPtr = GetMesh<CStaticMesh>("obstaclebox");
+			boxRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("obstaclebox", std::move(boxRenderer));
+		}
+
+		// Terrain 用
+		{
+			auto terrainMesh = std::make_unique<CStaticMesh>();
+			terrainMesh->Load("assets/model/factory/factoryterrainmesh.fbx",
+				"assets/model/factory");
+			RegisterMesh("terrainmesh", std::move(terrainMesh));
+			/*auto terrainMesh = std::make_unique<CStaticMesh>();
+			terrainMesh->Load("assets/model/factory/factoryterrainmesh.fbx",
+				"assets/model/factory");
+			RegisterMesh("terrainmesh", std::move(terrainMesh));*/
+
+			auto terrainRenderer = std::make_unique<CStaticMeshRenderer>();
+			auto* meshPtr = GetMesh<CStaticMesh>("terrainmesh");
+			terrainRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("terrainmesh", std::move(terrainRenderer));
+		}
+
+		// Goal 用
+		{
+			auto goalMesh = std::make_unique<CStaticMesh>();
+			goalMesh->Load("assets/model/tower/Only Tower.obj",
+				"assets/model/tower");
+			//goalMesh->Load("assets/model/obj/cylinder.obj",
+			//    "assets/model/obj");
+			RegisterMesh("goalmesh", std::move(goalMesh));
+
+			auto goalRenderer = std::make_unique<CStaticMeshRenderer>();
+			auto* meshPtr = GetMesh<CStaticMesh>("goalmesh");
+			goalRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("goalmesh", std::move(goalRenderer));
+		}
+
+		// Rock 用
+		{
+			auto rockMesh = std::make_unique<CStaticMesh>();
+			rockMesh->Load("assets/model/Rock-Set/Rock_2/Rock_2.fbx",
+				"assets/model/Rock-Set/Rock_2/Textures");
+			RegisterMesh("Rock", std::move(rockMesh));
+
+			auto rockRenderer = std::make_unique<CStaticMeshRenderer>();
+			auto* meshPtr = GetMesh<CStaticMesh>("Rock");
+			rockRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("Rock", std::move(rockRenderer));
+		}
+	}
+
+	// ==== AnimationMesh / AnimationData（Akai）====
+	{
+		// スキンメッシュ
+		auto woman = std::make_unique<CAnimationMesh>();
+		woman->Load("assets/model/Woman/Model/SK_Fio.fbx",
+			"assets/model/Woman/Textures/");
+		RegisterMesh("Akai", std::move(woman));
+		//auto woman = std::make_unique<CAnimationMesh>();
+		//woman->Load("assets/model/Woman/Model/SK_Fio.fbx",
+		//    "assets/model/Woman/Textures/");
+		//RegisterMesh("Akai", std::move(woman));
+		auto solider = std::make_unique<CAnimationMesh>();
+		solider->Load("assets/model/SciFi_Solider/Model/SK_ScifiSoldierUE4.fbx",
+			"assets/model/SciFi_Solider/Textures/");
+		RegisterMesh("Solider", std::move(solider));
+
+		// 各アニメーション
+		// アイドル
+		auto soliderIdle = std::make_unique<CAnimationData>();
+		soliderIdle->LoadAnimation("assets/model/SciFi_Solider/Animation/UnarmedIdle01.fbx",
+			"Solider_Idle");
+		RegisterAnimationData("Solider_Idle", std::move(soliderIdle));
+		auto akaiIdle = std::make_unique<CAnimationData>();
+		akaiIdle->LoadAnimation("assets/model/Woman/Animation/Idle.fbx",
+			"Akai_Idle");
+		RegisterAnimationData("Akai_Idle", std::move(akaiIdle));
+		//auto akaiIdle = std::make_unique<CAnimationData>();
+		//akaiIdle->LoadAnimation("assets/model/Woman/Animation/Idle.fbx",
+		//    "Akai_Idle");
+		//RegisterAnimationData("Akai_Idle", std::move(akaiIdle));
 
 		// 走る
-        auto akaiRun = std::make_unique<CAnimationData>();
-        akaiRun->LoadAnimation("assets/model/Woman/Animation/Running.fbx",
-            "Akai_Run");
-        RegisterAnimationData("Akai_Run", std::move(akaiRun));
-        auto soliderRun = std::make_unique<CAnimationData>();
-        soliderRun->LoadAnimation("assets/model/SciFi_Solider/Animation/StandardRun.fbx",
-            "Solider_Run");
-        RegisterAnimationData("Solider_Run", std::move(soliderRun));
+		auto akaiRun = std::make_unique<CAnimationData>();
+		akaiRun->LoadAnimation("assets/model/Woman/Animation/Running.fbx",
+			"Akai_Run");
+		RegisterAnimationData("Akai_Run", std::move(akaiRun));
+		auto soliderRun = std::make_unique<CAnimationData>();
+		soliderRun->LoadAnimation("assets/model/SciFi_Solider/Animation/StandardRun.fbx",
+			"Solider_Run");
+		RegisterAnimationData("Solider_Run", std::move(soliderRun));
 
 		// 歩く
-        auto soliderWalk = std::make_unique<CAnimationData>();
-        soliderWalk->LoadAnimation("assets/model/SciFi_Solider/Animation/Walking.fbx",
-            "Solider_Walking");
-        RegisterAnimationData("Solider_Walking", std::move(soliderWalk));
-        auto walk = std::make_unique<CAnimationData>();
-        walk->LoadAnimation("assets/model/Woman/Animation/Walking.fbx",
-            "Walking");
-        RegisterAnimationData("Walking", std::move(walk));
+		auto soliderWalk = std::make_unique<CAnimationData>();
+		soliderWalk->LoadAnimation("assets/model/SciFi_Solider/Animation/Walking.fbx",
+			"Solider_Walking");
+		RegisterAnimationData("Solider_Walking", std::move(soliderWalk));
+		auto walk = std::make_unique<CAnimationData>();
+		walk->LoadAnimation("assets/model/Woman/Animation/Walking.fbx",
+			"Walking");
+		RegisterAnimationData("Walking", std::move(walk));
 
-        // Crouching_Idle, Crouched_Walking, など
+		// Crouching_Idle, Crouched_Walking, など
 		//auto crouchIdle = std::make_unique<CAnimationData>();
 		//crouchIdle->LoadAnimation("assets/model/SciFi_Solider/Animation/CrouchingIdle.fbx",
 		//	"Crouching_Idle");
@@ -186,40 +233,40 @@ void AssetManager::Init()
 		titleSneak->LoadAnimation("assets/model/Woman/Animation/Title_Sneaking.fbx",
 			"Title_Sneaking");
 		RegisterAnimationData("Title_Sneaking", std::move(titleSneak));
-		
-        auto checkOverWall = std::make_unique<CAnimationData>();
-        checkOverWall->LoadAnimation("assets/model/Woman/Animation/Crouch_Check_Over_Wall.fbx",
+
+		auto checkOverWall = std::make_unique<CAnimationData>();
+		checkOverWall->LoadAnimation("assets/model/Woman/Animation/Crouch_Check_Over_Wall.fbx",
 			"checkOverWall");
 		RegisterAnimationData("checkOverWall", std::move(checkOverWall));
-        
-        auto stoneThrow = std::make_unique<CAnimationData>();
-        stoneThrow->LoadAnimation("assets/model/Woman/Animation/StoneThrow.fbx",
+
+		auto stoneThrow = std::make_unique<CAnimationData>();
+		stoneThrow->LoadAnimation("assets/model/Woman/Animation/StoneThrow.fbx",
 			"StoneThrow");
 		RegisterAnimationData("StoneThrow", std::move(stoneThrow));
 
-        auto coverIdle = std::make_unique<CAnimationData>();
-        coverIdle->LoadAnimation("assets/model/Woman/Animation/Cover_Idle.fbx",
+		auto coverIdle = std::make_unique<CAnimationData>();
+		coverIdle->LoadAnimation("assets/model/Woman/Animation/Cover_Idle.fbx",
 			"Cover_Idle");
 		RegisterAnimationData("Cover_Idle", std::move(coverIdle));
 
-        auto lookaround = std::make_unique<CAnimationData>();
-        lookaround->LoadAnimation("assets/model/SciFi_Solider/Animation/Looking.fbx",
+		auto lookaround = std::make_unique<CAnimationData>();
+		lookaround->LoadAnimation("assets/model/SciFi_Solider/Animation/Looking.fbx",
 			"LookAround");
 		RegisterAnimationData("LookAround", std::move(lookaround));
-        
-        auto gunShot = std::make_unique<CAnimationData>();
-        gunShot->LoadAnimation("assets/model/SciFi_Solider/Animation/GunShot.fbx",
+
+		auto gunShot = std::make_unique<CAnimationData>();
+		gunShot->LoadAnimation("assets/model/SciFi_Solider/Animation/GunShot.fbx",
 			"GunShot");
 		RegisterAnimationData("GunShot", std::move(gunShot));
-    }
+	}
 }
 
 void AssetManager::Uninit()
 {
-    m_MeshList.clear();
-    m_RendererList.clear();
-    m_ShaderList.clear();
-    m_AnimData.clear();
+	m_MeshList.clear();
+	m_RendererList.clear();
+	m_ShaderList.clear();
+	m_AnimData.clear();
 }
 
 
@@ -235,8 +282,8 @@ CAnimationData* AssetManager::GetAnimationData(const std::string& name) const
 }
 
 void AssetManager::LoadAnimationMesh(
-	const std::string& name, 
-	const std::filesystem::path& filepath, 
+	const std::string& name,
+	const std::filesystem::path& filepath,
 	const std::filesystem::path& texturepath)
 {
 	m_AnimationMeshList[name] = std::make_unique<CAnimationMesh>();
@@ -260,4 +307,16 @@ void AssetManager::LoadStaticMesh(
 CStaticMesh* AssetManager::GetStaticMesh(const std::string& name) const
 {
 	return m_StaticMeshList.at(name).get();
+}
+
+void AssetManager::RegisterComputeShader(const std::string& key, std::unique_ptr<ComputeShader> cs)
+{
+	m_ComputeShaders[key] = std::move(cs);
+}
+
+ComputeShader* AssetManager::GetComputeShader(const std::string& key)
+{
+	auto it = m_ComputeShaders.find(key);
+	if (it == m_ComputeShaders.end()) return nullptr;
+	return it->second.get();
 }

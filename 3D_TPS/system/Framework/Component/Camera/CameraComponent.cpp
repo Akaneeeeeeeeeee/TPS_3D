@@ -96,8 +96,6 @@ void CameraComponent::Init()
 
 void CameraComponent::Update(const float /*deltaTime*/)
 {
-	// 今回は Player 側が角度や注視点を更新し、
-	// 描画前に ApplyCamera() を呼ぶ設計にしているので、ここでは何もしない。
 }
 
 void CameraComponent::Uninit()
@@ -143,7 +141,15 @@ void CameraComponent::ApplyCamera()
 	// 距離ゼロのときは衝突解決しても意味がないのでスキップ
 	if ((desiredPos - pivot).LengthSquared() > 1e-8f)
 	{
-		m_Position = ResolveCameraCollision_Jolt(m_Physics, pivot, desiredPos, m_IgnoreBody);
+		if (m_Mode == Mode::Direct)
+		{
+			// タイトル固定/演出用：カメラを勝手に動かさない
+			m_Position = desiredPos;
+		}
+		else
+		{
+			m_Position = ResolveCameraCollision_Jolt(m_Physics, pivot, desiredPos, m_IgnoreBody);
+		}
 	}
 	else
 	{

@@ -706,11 +706,11 @@ void Player::UpdateCamera(float dt, const InputState& in)
 
 	if (in.aiming)
 	{
-		// 構え状態：プレイヤーの向いている方向を向いて、肩越しで後ろから見る
+		// 構え状態：カメラの向いてる方向にキャラを向けて、肩越しで後ろから見る
 		Vector3 pf = Vector3::Transform(Vector3(0.0f, 0.0f, -1.0f), m_Transform.GetRotation());
 		pf.y = 0.0f;
 		if (pf.LengthSquared() > 1e-6f) pf.Normalize();
-		float yaw = std::atan2(-pf.x, -pf.z);
+		float yaw = m_CamAzimuth;
 
 		// マウスで回転（構え中は右クリック不要）
 		{
@@ -720,13 +720,13 @@ void Player::UpdateCamera(float dt, const InputState& in)
 			m_CamElevation -= dy * CAMERA_MOUSE_SENSITIVITY;
 		}
 
-		// パッド右スティックで回転したい場合（Input 側が対応している前提）
+		// パッド右スティックで回転したい場合
 		{
 			Vector2 rs = input.GetRightStick();
 			constexpr float PAD_YAW_SPEED = 3.2f;
 			constexpr float PAD_PITCH_SPEED = 2.2f;
 			yaw += rs.x * PAD_YAW_SPEED * dt;
-			m_CamElevation -= rs.y * PAD_PITCH_SPEED * dt;
+			m_CamElevation += rs.y * PAD_PITCH_SPEED * dt;
 		}
 
 		// 仰角制限
@@ -789,7 +789,7 @@ void Player::UpdateCamera(float dt, const InputState& in)
 			constexpr float PAD_YAW_SPEED = 3.0f;
 			constexpr float PAD_PITCH_SPEED = 2.2f;
 			m_CamAzimuth += rs.x * PAD_YAW_SPEED * dt;
-			m_CamElevation -= rs.y * PAD_PITCH_SPEED * dt;
+			m_CamElevation += rs.y * PAD_PITCH_SPEED * dt;
 		}
 
 		// 仰角の制限(-89°～89°の範囲に制限)
@@ -805,9 +805,6 @@ void Player::UpdateCamera(float dt, const InputState& in)
 		lookAt.y += m_CamLookAtHeightCur;  // 注視点を少し上にずらす
 		m_pCamera->SetLookAt(lookAt);
 	}
-
-	// 最後にGPUへ反映（View/ProjをRendererに送る）
-	m_pCamera->ApplyCamera();
 }
 
 void Player::UpdateThrowNotify(const InputState& in)

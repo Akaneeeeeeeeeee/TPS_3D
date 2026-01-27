@@ -3,6 +3,7 @@
 #include <wrl/client.h>
 #include "CommonTypes.h"
 #include "WeatherSystem.h"
+#include "CShader.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -14,6 +15,7 @@ public:
 
     static void UpdateFromWeather(const WeatherSystem& ws);
 
+    static void SetBeamSRV(ID3D11ShaderResourceView* srv);
     static void DrawSky(); // スカイドーム不要
     static void DrawFog(); // 低解像度→アップスケール＋穴だけ再計算
 
@@ -51,10 +53,9 @@ private:
     static float   sFogDensity;
 
     // shaders
-    static ComPtr<ID3D11VertexShader> sVSFull;
-    static ComPtr<ID3D11PixelShader>  sPSSky;
-    static ComPtr<ID3D11PixelShader>  sPSFogLow;
-    static ComPtr<ID3D11PixelShader>  sPSFogComposite;
+    static CShader* sShSky;
+    static CShader* sShFogLow;
+    static CShader* sShFogComposite;
 
     // CB: b7,b8（既存 b0〜b6 は触らない）
     static ComPtr<ID3D11Buffer> sCBSky; // b7
@@ -69,6 +70,10 @@ private:
     // 3D noise（ファイル不要）
     static ComPtr<ID3D11Texture3D>          sNoiseTex;
     static ComPtr<ID3D11ShaderResourceView> sNoiseSRV;
+
+    static ComPtr<ID3D11ShaderResourceView> sBeamSRV;
+
+    static ComPtr<ID3D11SamplerState> sBeamSamp;
 
     static SkyFogTuning sTuning;
 };

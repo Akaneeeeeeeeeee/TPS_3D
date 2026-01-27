@@ -15,6 +15,14 @@ enum class WeatherType {
 	Weather_MAX
 };
 
+struct BeamTuning
+{
+    float maxDist = 6000.0f;
+    float stepLen = 10.0f;
+    float kBeam = 0.002f;
+    float tint = 1.0f;
+    int   maxSteps = 512; // HLSLの上限を動かしたい
+};
 
 // 知覚影響パラメータ
 struct PerceptionFactors
@@ -96,49 +104,58 @@ inline WeatherParticleParams MakePreset(WeatherType type)
         p.rainEmitRate = 0.0f;
         p.sandEmitRate = 0.0f;
         p.fogDensity = 0.0f;
+        p.fogColor = XMFLOAT3(0.0f, 0.0f, 0.0f);
         break;
 
     case WeatherType::LightRain:
-        p.rainEmitRate = 1000.0f;
-        p.rainMinLife = 0.8f;
-        p.rainMaxLife = 1.4f;
-        p.rainMinSpeed = 80.0f;
-        p.rainMaxSpeed = 120.0f;
+        // うっすら降ってる：粒数は中、速度を上げて“線”で見せる
+        p.rainEmitRate = 1800.0f;
+        p.rainMinLife = 0.9f;
+        p.rainMaxLife = 1.3f;
+        p.rainMinSpeed = 1600.0f;
+        p.rainMaxSpeed = 2100.0f;
         p.rainDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 
         p.sandEmitRate = 0.0f;
-        p.fogDensity = 0.001f;
-        p.fogColor = XMFLOAT3(0.7f, 0.7f, 0.8f);
+
+        p.fogDensity = 0.0012f;
+        p.fogColor = XMFLOAT3(0.70f, 0.70f, 0.80f);
         break;
 
     case WeatherType::HeavyRain:
-        p.rainEmitRate = 8000.0f;
-        p.rainMinLife = 1.0f;
-        p.rainMaxLife = 1.8f;
-        p.rainMinSpeed = 600.0f;
-        p.rainMaxSpeed = 1000.0f;
+        // 強い雨：上限(5000)に近づけて密度を出す。速度も上げる
+        p.rainEmitRate = 4200.0f;
+        p.rainMinLife = 0.8f;
+        p.rainMaxLife = 1.0f;
+        p.rainMinSpeed = 1900.0f;
+        p.rainMaxSpeed = 2600.0f;
         p.rainDir = XMFLOAT3(0.0f, -1.0f, 0.0f);
 
         p.sandEmitRate = 0.0f;
-        p.fogDensity = 0.004f;
-        p.fogColor = XMFLOAT3(0.6f, 0.6f, 0.7f);
+
+        p.fogDensity = 0.0035f;
+        p.fogColor = XMFLOAT3(0.60f, 0.60f, 0.70f);
         break;
 
     case WeatherType::Sandstorm:
+        // 砂嵐：空間を埋める。life長め + emit控えめで alive を 5000 に寄せる
         p.rainEmitRate = 0.0f;
 
-        p.sandEmitRate = 5000.0f;
-        p.sandMinLife = 5.0f;
-        p.sandMaxLife = 8.0f;
-        p.sandMinSpeed = 500.0f;
-        p.sandMaxSpeed = 1000.0f;
-        p.sandDir = XMFLOAT3(1.0f, 0.2f, 0.0f); // 斜め方向
-        // Y = [0, 300] の範囲に出す
-        p.sandMinHeight = 0.0f;
-        p.sandMaxHeight = 300.0f;
+        p.sandEmitRate = 1700.0f;
+        p.sandMinLife = 2.0f;
+        p.sandMaxLife = 4.0f;
+        p.sandMinSpeed = 750.0f;
+        p.sandMaxSpeed = 1100.0f;
 
-        p.fogDensity = 0.004f;
-        p.fogColor = XMFLOAT3(0.8f, 0.7f, 0.4f);
+        // 横風っぽさが重要（Yは小さめ）
+        p.sandDir = XMFLOAT3(1.0f, 0.10f, 0.20f);
+
+        // プレイヤー子のローカルYで “地表付近の厚み”
+        p.sandMinHeight = 0.0f;
+        p.sandMaxHeight = 500.0f;
+
+        p.fogDensity = 0.0035f;
+        p.fogColor = XMFLOAT3(0.80f, 0.70f, 0.40f);
         break;
     }
 
@@ -256,6 +273,8 @@ public:
         return Vector3(m_CurrentParams.fogColor.x, m_CurrentParams.fogColor.y, m_CurrentParams.fogColor.z);
     }
 
+    const BeamTuning& GetBeamTuning() const { return m_Beam; }
+
 private:
     // ---- 天候補間（既存ロジック） ----
     static WeatherParticleParams LerpParams(
@@ -312,4 +331,5 @@ private:
     void UpdateDayNightState(); // Update内で呼ぶ
 
     AtmosphereTuning m_Atmo;
+	BeamTuning       m_Beam;
 };

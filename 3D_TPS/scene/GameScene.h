@@ -155,7 +155,7 @@ private:
 	int m_EnemyAliveCount = 0;
 
 	// 1体モードで出したい「元の座標」
-	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 210.0f, 1750.0f);
+	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 100.0f, 1750.0f);
 
 	std::unique_ptr<DirectWrite> m_pDirectWrite;
 	FontData m_FontData;

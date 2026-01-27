@@ -106,4 +106,10 @@ bool CreateGeometryShader(ID3D11Device* device,
 	LPCSTR szShaderModel,
 	ID3D11GeometryShader** ppGeometryShader);		// ジオメトリシェーダーオブジェクトを生成
 
+bool CreateComputeShader(ID3D11Device* device,
+	const char* szFileName,
+	LPCSTR szEntryPoint,
+	LPCSTR szShaderModel,
+	ID3D11ComputeShader** ppComputeShader);			// コンピュートシェーダーオブジェクトを生成
+
 std::string ExtractFileName(std::string fullpath, char split);

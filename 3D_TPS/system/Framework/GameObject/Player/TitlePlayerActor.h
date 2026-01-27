@@ -122,5 +122,4 @@ private:
 private:
     void ApplyAnimation(float dt);
     void ApplyMovement(float dt);
-    void SetupFixedTitleCamera(void);
 };

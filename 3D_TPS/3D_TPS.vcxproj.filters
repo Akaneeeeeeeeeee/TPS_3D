@@ -666,6 +666,15 @@
     <ClInclude Include="system\Framework\Component\Sound\ThrowAudioComponent.h">
       <Filter>ソース ファイル\MyFramework\Component\SoundEmitter</Filter>
     </ClInclude>
+    <ClInclude Include="system\ComputeShader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\ShadowMap\ShadowMap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\ShadowMap\SpotShadowMapArray.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -1016,6 +1025,15 @@
     <ClCompile Include="system\Framework\SoundSystem\SoundSystem.cpp">
       <Filter>ソース ファイル\MyFramework\Sound</Filter>
     </ClCompile>
+    <ClCompile Include="system\ComputeShader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\ShadowMap\ShadowMap.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\ShadowMap\SpotShadowMapArray.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\common.hlsl">
@@ -1066,12 +1084,51 @@
     <FxCompile Include="shader\GBufferPS.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
+    <FxCompile Include="shader\BeamCS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\BuildTileCS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\DeferredLightingPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\DeferredLightingVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\ShadowDepthOneSkinVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\ShadowDepthPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\ShadowDepthVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SkyFog_FogCompositePS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SkyFog_FogLowPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SkyFog_SkyPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SkyFogPS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SkyFogVS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\SpotLightingCS.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader\SkyFog.hlsl">
+    <None Include="shader\DeferredLighting_Common.hlsli">
       <Filter>リソース ファイル</Filter>
     </None>
-    <None Include="shader\DeferredLighting.hlsl">
+    <None Include="shader\SkyFog_Common.hlsli">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>
