@@ -27,7 +27,7 @@ namespace {
 
 	// 敵の速度レンジ（実測に合わせる）
 	constexpr float ENEMY_SPEED_MIN = 60.0f;   // 歩き最小
-	constexpr float ENEMY_SPEED_MAX = 250.0f;  // 速い移動
+	constexpr float ENEMY_SPEED_MAX = 600.0f;  // 速い移動
 
 	// 間隔（遅いほど長く、速いほど短い）
 	constexpr float ENEMY_STEP_INTERVAL_SLOW = 0.45f;
