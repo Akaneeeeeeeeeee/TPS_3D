@@ -48,7 +48,7 @@ cbuffer BoneMatrixBuffer : register(b5)
 }
 
 // スポットライト
-#define MAX_SPOT_LIGHT 8
+#define MAX_SPOT_LIGHT 128
 
 struct SpotLightGPU
 {

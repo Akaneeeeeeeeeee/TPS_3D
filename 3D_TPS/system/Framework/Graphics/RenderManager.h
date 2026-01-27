@@ -18,14 +18,14 @@ class WeatherSystem;
 namespace {
 	static constexpr int SPOT_SHADOW_K = 16; // スポットシャドウマップの最大数
 	static constexpr int TILE_SIZE = 16;
-	static constexpr int TILE_W = 1920 / TILE_SIZE; // 120
-	static constexpr int TILE_H = 1080 / TILE_SIZE; // 68
+	static constexpr int TILE_W = SCREEN_WIDTH  / TILE_SIZE; // 120
+	static constexpr int TILE_H = SCREEN_HEIGHT / TILE_SIZE; // 68
 	static constexpr int TILE_COUNT = TILE_W * TILE_H; // 8160
 	static constexpr int MAX_LIGHTS_PER_TILE = 64;
 
 	static constexpr int BEAM_DIV = 2;                 // 1/2 解像度（重いなら 4 に）
-	static constexpr int BEAM_W = 1920 / BEAM_DIV;
-	static constexpr int BEAM_H = 1080 / BEAM_DIV;
+	static constexpr int BEAM_W = SCREEN_WIDTH / BEAM_DIV;
+	static constexpr int BEAM_H = SCREEN_HEIGHT / BEAM_DIV;
 }
 
 struct CBDeferred
