@@ -597,13 +597,16 @@ void EnemyAIComponent::UpdateSight(const float dt)
 	}
 }
 
+/*
+* @brief	視線情報から不審度を更新する
+*/
 void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 {
 	Vector3 eyePos = GetEyePosition();
 
 	std::vector<Vector3> samples;
 	m_pPlayer->GetVisibilitySamplePoints(eyePos, samples);
-	int n = std::min<int>((int)samples.size(), SamplePointCount);
+	int samplePoint = std::min<int>((int)samples.size(), SamplePointCount);
 
 	m_CanSeeAnyPointThisFrame = false;
 
@@ -615,12 +618,13 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 	env01 = std::clamp(env01, 0.0f, 1.0f);
 
 	// 「暗い＆遠い」は“見えてる扱いにしない”ためのしきい値
-	constexpr float VISIBLE_MIN = 0.15f; // 調整用
+	constexpr float VISIBLE_MIN = 0.15f; // 調整用。通常は空namespaceに。
 
 	float bestC = -1.0f;
 	Vector3 bestP = Vector3::Zero;
 
-	for (int i = 0; i < n; ++i)
+	// 各サンプル点について視認判定
+	for (int i = 0; i < samplePoint; ++i)
 	{
 		const Vector3& p = samples[i];
 
@@ -631,6 +635,7 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 		// 距離の減衰（0..1）
 		float distMul = 1.0f - std::clamp(dist / std::max(1.0f, m_BaseViewDistance), 0.0f, 1.0f);
 
+		// ライトによる見えやすさ補正（0..1）
 		float light01 = (m_Light) ? std::clamp(m_Light->GetLightVisibility01(p), 0.0f, 1.0f) : 0.0f;
 
 		// 夜の暗さをライトが押し上げる
@@ -647,16 +652,19 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 		}
 		else
 		{
+			// 見えてないなら見えてた時間を減衰
 			m_SeenSec[i] = std::max(0.0f, m_SeenSec[i] - dt * m_SeenDecayPerSec);
 		}
 
 		if (!visibleNow)
 			continue; // 見えてる扱いの点だけ寄与
 
+		// 見えてる点の寄与度計算
 		float hold = HoldTimeByDistance(dist);
 		float conf = (hold > 1e-6f) ? (m_SeenSec[i] / hold) : 1.0f;
 		conf = std::clamp(conf, 0.0f, 1.0f);
 
+		// 点の寄与度合計に加算
 		float contribution = conf * distMul * bright01;
 		sumContribution += contribution;
 
@@ -679,9 +687,9 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 	}
 
 	// 4点平均（n で割る）
-	float sight01 = (n > 0) ? (sumContribution / (float)n) : 0.0f;
+	float sight01 = (samplePoint > 0) ? (sumContribution / static_cast<float>(samplePoint)) : 0.0f;
 
-	float countMul = m_PointCountMul[std::clamp(visibleNowCount, 0, 4)];
+	float countMul = m_PointCountMul[std::clamp(visibleNowCount, 0, SamplePointCount)];
 
 	if (sight01 > 0.0f)
 		m_Suspicion += dt * m_SusGainPerSec * sight01 * countMul;
@@ -755,11 +763,13 @@ bool EnemyAIComponent::IsInViewCone(
 	return cosAngle >= cosHalfFov;
 }
 
-
+/*
+* @brief	ターゲット位置が見えているかを判定する
+*/
 bool EnemyAIComponent::CanSeePoint(const Vector3& eyePos, const Vector3& targetPos) const
 {
 	using namespace JPH;
-	if (!m_Physics) return false;
+	if (!m_Physics) { return false; }
 
 	Vector3 toTarget = targetPos - eyePos;
 	float   dist = toTarget.Length();

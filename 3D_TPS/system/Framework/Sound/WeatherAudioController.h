@@ -1,4 +1,3 @@
-// system/Sound/WeatherAudioController.h
 #pragma once
 #include "system/commontypes.h"
 #include "system/Sound/WorldSoundEvent.h"

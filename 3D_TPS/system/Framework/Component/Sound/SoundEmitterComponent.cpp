@@ -14,8 +14,8 @@ void SoundEmitterComponent::Detach()
 
 void SoundEmitterComponent::EmitSound(const WorldSoundEvent& ev)
 {
-    if (!m_pSound) return;
-    m_pSound->Emit(ev);
+    if (!m_pSound) { return; }
+	m_pSound->Emit(ev);     // SoundHub‚ÌEmit‚ðŒÄ‚Ô
 }
 
 void SoundEmitterComponent::PlayUIOneShot(SOUND_LABEL label, float volume01)

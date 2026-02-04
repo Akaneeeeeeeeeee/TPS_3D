@@ -340,7 +340,7 @@ void GameScene::Init(ObjectManager* mgr)
 	m_CameraFocusIssued = false;
 	m_FoundByEnemy = nullptr;
 	m_RequestRebuildEnemies = false;
-	m_Limit.Start(1200.0f);
+	m_Limit.Start(300.0f);
 
 	// カウントダウン用コンポーネントの追加
 	auto* obj = m_pObjectManager->Instantiate<GameObject>("CountdownAudio", Tag::Object, Transform::One());
@@ -378,7 +378,7 @@ void GameScene::Init(ObjectManager* mgr)
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
 	m_Goal->SetScale(Vector3(0.5f, 1.0f, 0.5f));
-	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, -800.0f));
+	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, 5000.0f));
 
 
 	// --- 衝突テスト用障害物 ---

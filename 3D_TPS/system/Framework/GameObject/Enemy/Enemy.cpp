@@ -681,9 +681,7 @@ void Enemy::UpdateFootstep(float dt, EnemyAIComponent::State /*aiState*/, float 
 	ev.Loudness = 0.6f;
 	ev.Radius = 800.0f;
 
-	// •à‚«‘«‰¹‚¾‚¯‚ÉŒÅ’è
-	//ev.PlayLabel = SE_WALKING_NORMAL;
-	// ‚à‚µÄ¶‘¤‚ÌMap‚É”C‚¹‚½‚¢‚È‚çF
+	// Ä¶‘¤‚ÌMap‚É”C‚¹‚½‚¢‚Ì‚Åƒ‰ƒxƒ‹‚ÍÅ‘å’l‚É‚µ‚Ä‚¨‚­
 	 ev.PlayLabel = SOUND_LABEL_MAX;
 
 	m_pSoundEmitter->EmitSound(ev);
