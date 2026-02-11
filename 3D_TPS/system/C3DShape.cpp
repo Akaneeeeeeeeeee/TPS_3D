@@ -7,6 +7,7 @@
 #include "ConeDrawer.h"
 #include "LineDrawer.h"
 #include "CapsuleDrawer.h"
+#include "TriangleDrawer.h"
 
 bool C3DShape::m_first = true;
 
@@ -24,6 +25,34 @@ void C3DShape::Init()
         CapsuleDrawerInit();
         m_first = false;
     }
+}
+
+void C3DShape::Uninit()
+{
+    if (m_first) return; // そもそも初期化してない
+
+    // ※Renderer がまだ生きてる段階で呼ぶこと（重要）
+
+    // 依存が強そうなものから逆順で解放
+    CapsuleDrawerUninit();
+
+    LineInstancedDrawerUninit();
+    LineDrawerUninit();
+
+    RainInstancedDrawerUninit();
+
+    ConeDrawerUninit();
+    CylinderDrawerUninit();
+
+    BoxInstancedDrawerUninit();
+    BoxDrawerUninit();
+
+    SphereInstancedDrawerUninit();
+    SphereDrawerUninit();
+
+    TriangleDrawerUninit(); // 使っているなら
+
+    m_first = true;
 }
 
 C3DShape::C3DShape() {

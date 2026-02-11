@@ -44,6 +44,14 @@ void CylinderDrawerInit()
 
 }
 
+void CylinderDrawerUninit()
+{
+    //g_shader.Uninit();
+    //g_material.Uninit();
+    //g_renderer.Uninit();
+    //g_mesh.Uninit();
+}
+
 void CylinderDrawerDraw(float radius, float height,Color col, float posx, float posy, float posz)
 {
 	Matrix4x4 mtx = Matrix4x4::CreateScale(radius,height,radius);
@@ -147,6 +155,17 @@ void RainInstancedDrawerInit()
         sizeof(CBRainInstance),
         g_cbInstance.GetAddressOf());
     assert(ok);
+}
+
+void RainInstancedDrawerUninit()
+{
+    g_cbInstance.Reset();
+    g_cbCamera.Reset();
+
+    //g_rainShader.Uninit();
+    //g_rainMaterial.Uninit();
+    //g_rainRenderer.Uninit();
+    //g_rainMesh.Uninit();
 }
 
 void RainInstancedDrawerDraw(

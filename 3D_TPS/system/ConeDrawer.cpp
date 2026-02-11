@@ -39,7 +39,11 @@ void ConeDrawerInit(bool topdownflag)
 	g_shader.Create(
 		"shader/unlitTextureVS.hlsl",				// 頂点シェーダー
 		"shader/unlitTexturePS.hlsl");			// ピクセルシェーダー
+}
 
+void ConeDrawerUninit()
+{
+	// 特に何もしない
 }
 
 void ConeDrawerDraw(float radius, 

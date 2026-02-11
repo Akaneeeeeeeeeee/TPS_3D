@@ -180,65 +180,107 @@ void Enemy::InitAnimation(void)
 // ----------------------------------------
 // 2) 巡回点決定（地形コライダからサンプリング）
 // ----------------------------------------
+//void Enemy::InitPatrolPoints(RandomEngine& rng)
+//{
+//	// 地形が設定されていない場合のフォールバック
+//	auto SetDefaultPatrol = [&]() {
+//		m_StartPos = Vector3(-300.0f, 210.0f, 1750.0f);
+//		m_EndPos = Vector3(-300.0f, 210.0f, -540.0f);
+//		};
+//
+//	// StaticMeshCollider から AABB と高さサンプルを取る
+//	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
+//	if (!m_pTerrainCollider)
+//	{
+//		SetDefaultPatrol();
+//		m_Transform.SetPosition(m_StartPos);
+//		return;
+//	}
+//
+////#ifdef _DEBUG
+////	SetDefaultPatrol();
+////#else
+//	Vector3 xzMin, xzMax;
+//	if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
+//	{
+//		SetDefaultPatrol();
+//		m_Transform.SetPosition(m_StartPos);
+//		return;
+//	}
+//
+//	// 地形範囲内のランダム XZ を生成
+//	auto RandXZInTerrain = [&]() -> Vector3 {
+//		float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
+//		float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
+//		return Vector3(x, 0.0f, z);
+//		};
+//
+//	constexpr int   MAX_TRY = 16;
+//	constexpr float HEIGHT_OFFSET = 75.0f;
+//
+//	bool ok = false;
+//	for (int i = 0; i < MAX_TRY && !ok; ++i)
+//	{
+//		Vector3 p0 = RandXZInTerrain();
+//		Vector3 p1 = RandXZInTerrain();
+//
+//		float y0, y1;
+//		if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
+//			m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
+//		{
+//			m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
+//			m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
+//			ok = true;
+//		}
+//	}
+//
+//	if (!ok)
+//	{
+//		SetDefaultPatrol();
+//	}
+////#endif
+//
+//	// 実際の Transform を開始地点に合わせる
+//	m_Transform.SetPosition(m_StartPos);
+//}
 void Enemy::InitPatrolPoints(RandomEngine& rng)
 {
-	// 地形が設定されていない場合のフォールバック
 	auto SetDefaultPatrol = [&]() {
 		m_StartPos = Vector3(-300.0f, 210.0f, 1750.0f);
 		m_EndPos = Vector3(-300.0f, 210.0f, -540.0f);
 		};
 
-	// StaticMeshCollider から AABB と高さサンプルを取る
+	if (!m_pTerrain)
+	{
+		SetDefaultPatrol();
+		m_Transform.SetPosition(m_StartPos);
+		return;
+	}
+
 	m_pTerrainCollider = m_pTerrain->GetComponent<StaticMeshCollider>();
-	if (!m_pTerrainCollider)
+	if (!m_pTerrainCollider || !m_AIComp)
 	{
 		SetDefaultPatrol();
 		m_Transform.SetPosition(m_StartPos);
 		return;
 	}
 
-//#ifdef _DEBUG
-//	SetDefaultPatrol();
-//#else
-	Vector3 xzMin, xzMax;
-	if (!m_pTerrainCollider->GetWorldXZBounds(xzMin, xzMax))
+	// AI側が地形コライダを使って巡回点を作る前提
+	m_AIComp->SetTerrainCollider(m_pTerrainCollider);
+
+	// いまの位置（胴体基準）を開始候補として渡す
+	Vector3 startBody = m_Transform.GetPosition();
+	Vector3 endBody = Vector3::Zero;
+
+	if (!m_AIComp->BuildRandomPatrolPoints(startBody, endBody, rng))
 	{
 		SetDefaultPatrol();
 		m_Transform.SetPosition(m_StartPos);
 		return;
 	}
 
-	// 地形範囲内のランダム XZ を生成
-	auto RandXZInTerrain = [&]() -> Vector3 {
-		float x = static_cast<float>(rng.uniformReal(xzMin.x, xzMax.x));
-		float z = static_cast<float>(rng.uniformReal(xzMin.z, xzMax.z));
-		return Vector3(x, 0.0f, z);
-		};
-
-	constexpr int   MAX_TRY = 16;
-	constexpr float HEIGHT_OFFSET = 75.0f;
-
-	bool ok = false;
-	for (int i = 0; i < MAX_TRY && !ok; ++i)
-	{
-		Vector3 p0 = RandXZInTerrain();
-		Vector3 p1 = RandXZInTerrain();
-
-		float y0, y1;
-		if (m_pTerrainCollider->SampleHeight(p0.x, p0.z, y0) &&
-			m_pTerrainCollider->SampleHeight(p1.x, p1.z, y1))
-		{
-			m_StartPos = Vector3(p0.x, y0 + HEIGHT_OFFSET, p0.z);
-			m_EndPos = Vector3(p1.x, y1 + HEIGHT_OFFSET, p1.z);
-			ok = true;
-		}
-	}
-
-	if (!ok)
-	{
-		SetDefaultPatrol();
-	}
-//#endif
+	m_StartPos = startBody;
+	m_EndPos = endBody;
 
 	// 実際の Transform を開始地点に合わせる
 	m_Transform.SetPosition(m_StartPos);

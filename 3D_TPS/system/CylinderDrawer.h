@@ -1,8 +1,8 @@
 #pragma once
-//#include "Framework/Component/Transform/Transform.h"
 #include	"CommonTypes.h"
 
 void CylinderDrawerInit();
+void CylinderDrawerUninit();
 void CylinderDrawerDraw(float radius, float hieght, Color col, float posx, float posy, float posz);
 void CylinderDrawerDraw(SRT rts, Color col);
 void CylinderDrawerDraw(Matrix4x4 mtx, Color col);
@@ -15,6 +15,7 @@ struct RainInstance
 };
 
 void RainInstancedDrawerInit();
+void RainInstancedDrawerUninit();
 void RainInstancedDrawerDraw(
     const Matrix4x4& view,
     const Matrix4x4& proj,

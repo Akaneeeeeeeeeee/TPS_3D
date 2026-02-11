@@ -85,6 +85,7 @@ public:
 
 	bool Init(GraphicsDevice* graphicsDevice, LightSystem* light, WeatherSystem* weather);	//! 初期化処理
 	void Uninit(void);			//! 終了処理
+	void Release(void);		//! 解放処理
 
 	void StartRender(void);		//! 描画開始処理
 	//void Render(const RenderInfo& info);	//! 描画コンポーネント1つ分の描画(これをinfoコンテナ数分ループさせる)

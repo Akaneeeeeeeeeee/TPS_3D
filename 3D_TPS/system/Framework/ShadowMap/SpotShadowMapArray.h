@@ -11,6 +11,7 @@ public:
     bool Create(ID3D11Device* dev, int w, int h, int slices);
     void BeginSlice(ID3D11DeviceContext* ctx, int slice);
     void End(ID3D11DeviceContext* ctx) { (void)ctx; }
+	void Release(void);
 
     ID3D11ShaderResourceView* GetSRV() const { return m_SRV.Get(); }
     int W() const { return m_W; }

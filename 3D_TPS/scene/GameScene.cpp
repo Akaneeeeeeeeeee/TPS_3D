@@ -302,9 +302,9 @@ void GameScene::Draw(void)
 		m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
 	}
 
-	Vector3 sp;
-	sp = m_player->GetTransform().GetPosition();
-	sp.y -= 500.0f;
+	//Vector3 sp;
+	//sp = m_player->GetTransform().GetPosition();
+	//sp.y -= 500.0f;
 
 	SetLineWidth(3.0f);
 	//LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
@@ -756,7 +756,7 @@ void GameScene::DrawUI(void)
 	// Šù‘¶‚Ì•\Ž¦
 	if (m_player)
 	{
-		const auto p = m_player->GetTransform().GetPosition();
+		const auto p = m_player->GetPosition();
 		wchar_t buf[256];
 		swprintf_s(buf, L"Player (%.1f, %.1f, %.1f)", p.x, p.y, p.z);
 		m_pDirectWrite->DrawString(buf, { 20.0f, 50.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);

@@ -29,8 +29,8 @@ static void SetupD3D11InfoQueue(ID3D11Device* device)
 	// 目的：Index buffer が足りない瞬間に止める
 	q->SetBreakOnID(D3D11_MESSAGE_ID_DEVICE_DRAW_INDEX_BUFFER_TOO_SMALL, TRUE);
 
-	// 任意：警告でも止めたいなら
-	// q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
+	// 警告でも止める
+	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
 
 	q->Release();
 }
@@ -42,7 +42,7 @@ static void ReportLiveD3DObjects(ID3D11Device* device)
 	ID3D11Debug* dbg = nullptr;
 	if (SUCCEEDED(device->QueryInterface(__uuidof(ID3D11Debug), (void**)&dbg)) && dbg)
 	{
-		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
 		dbg->Release();
 	}
 }
@@ -386,14 +386,23 @@ void Renderer::Init()
  */
 void Renderer::Uninit()
 {
-#if _DEBUG
-	ReportLiveD3DObjects(Renderer::GetDevice());
-#endif
+	if (m_DeviceContext) { UnbindAll(); } // 先に全部外す
+
+	m_DepthSRV.Reset();
+	m_DepthStencilView.Reset();
+
+	m_DepthStateReadOnly.Reset();
+	m_SamplerLinearWrap.Reset();
+	m_SamplerLinearClamp.Reset();
+
+	m_SpotLightBuffer.Reset();
+	m_BeamSRV.Reset();
 
 	for (auto& bs : m_BlendState) {
 		bs.Reset();
 	}
 	m_BlendStateATC.Reset();
+
 	m_DepthStateEnable.Reset();
 	m_DepthStateDisable.Reset();
 	m_WorldBuffer.Reset();
@@ -401,11 +410,54 @@ void Renderer::Uninit()
 	m_ProjectionBuffer.Reset();
 	m_LightBuffer.Reset();
 	m_MaterialBuffer.Reset();
+
 	m_RenderTargetView.Reset();
 	m_SwapChain.Reset();
+
 	m_DeviceContext.Reset();
+#if _DEBUG
+	Microsoft::WRL::ComPtr<ID3D11InfoQueue> iq;
+	if (SUCCEEDED(m_Device.As(&iq)) && iq)
+	{
+		iq->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, FALSE);
+	}
+	ReportLiveD3DObjects(Renderer::GetDevice());
+#endif
 	m_Device.Reset();
 }
+
+void Renderer::UnbindAll()
+{
+	if (!m_DeviceContext) return;
+
+	// RT/DS を外す
+	m_DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	// SRV を外す（VS/PS/GS/HS/DS/CS まとめて）
+	ID3D11ShaderResourceView* nullSRV[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+	m_DeviceContext->VSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->PSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->GSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->HSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->DSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->CSSetShaderResources(0, _countof(nullSRV), nullSRV);
+
+	// UAV を外す（CSは最大8）
+	ID3D11UnorderedAccessView* nullUAV[D3D11_PS_CS_UAV_REGISTER_COUNT] = {};
+	UINT initialCounts[D3D11_PS_CS_UAV_REGISTER_COUNT] = {};
+	m_DeviceContext->CSSetUnorderedAccessViews(
+		0, D3D11_PS_CS_UAV_REGISTER_COUNT, nullUAV, initialCounts);
+
+	// State / Shader も外す（念のため）
+	m_DeviceContext->VSSetShader(nullptr, nullptr, 0);
+	m_DeviceContext->PSSetShader(nullptr, nullptr, 0);
+	m_DeviceContext->GSSetShader(nullptr, nullptr, 0);
+	m_DeviceContext->CSSetShader(nullptr, nullptr, 0);
+
+	m_DeviceContext->ClearState();
+	m_DeviceContext->Flush();
+}
+
 
 /**
  * @brief 1フレームの描画を開始します。

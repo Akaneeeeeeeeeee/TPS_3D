@@ -4,6 +4,7 @@
 #include	"transform.h"
 
 void ConeDrawerInit(bool);
+void ConeDrawerUninit();
 
 void ConeDrawerDraw(float radius,
 	float height,

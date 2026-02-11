@@ -51,3 +51,11 @@ void SpotShadowMapArray::BeginSlice(ID3D11DeviceContext* ctx, int slice)
     ctx->RSSetViewports(1, &m_VP);
     ctx->ClearDepthStencilView(m_DSV[slice].Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
+
+void SpotShadowMapArray::Release(void)
+{
+    m_Tex.Reset();
+    m_SRV.Reset();
+    m_DSV.clear();
+    m_W = m_H = m_Slices = 0;
+}

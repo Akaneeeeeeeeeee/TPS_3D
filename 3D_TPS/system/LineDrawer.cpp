@@ -23,7 +23,6 @@ struct LINEWIDTHCBUFFER
     float pad;
 };
 
-
 void LineDrawerInit()
 {
 	g_mesh.Init(Vector3(0, 0, 0), Vector3(0, 0, 1), 1);
@@ -55,9 +54,17 @@ void LineDrawerInit()
 	);
 
 	assert(sts);
-
 }
 
+void LineDrawerUninit()
+{
+    //g_linewidthbuffer.Reset();
+
+    //g_shader.Uninit();
+    //g_material.Uninit();
+    //g_renderer.Uninit();
+    //g_mesh.Uninit();
+}
 
 // ビューポートのサイズを取得
 static void GetViewportSize(float& outW, float& outH)
@@ -172,6 +179,16 @@ void LineInstancedDrawerInit()
         sizeof(CBLineInstance),
         g_cbInstance.GetAddressOf());
     assert(sts);
+}
+
+void LineInstancedDrawerUninit()
+{
+    g_cbInstance.Reset();
+
+    //g_instShader.Uninit();
+    //g_instMaterial.Uninit();
+    //g_instRenderer.Uninit();
+    //g_instMesh.Uninit();
 }
 
 void LineInstancedDrawerDraw(

@@ -61,7 +61,14 @@ void TriangleDrawerInit()
 		"shader/unlitTexturePS.hlsl",			// ピクセルシェーダー
 		"shader/GeometryShader.hlsl"			// ジオメトリシェーダ
 	);
+}
 
+void TriangleDrawerUninit()
+{
+	//g_IndexBuffer.Release();
+	//g_VertexBuffer.Release();
+	//g_material.Uninit();
+	//g_shader.Uninit();
 }
 
 void TriangleDrawerDraw(

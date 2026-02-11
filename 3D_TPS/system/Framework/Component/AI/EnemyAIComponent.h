@@ -11,6 +11,7 @@ class Player;
 class WeatherSystem;
 class StaticMeshCollider;
 class LightSystem;
+class RandomEngine;
 
 namespace
 {
@@ -92,6 +93,18 @@ public:
 
     bool IsInPatrolTurnPhase() const { return m_IsPatrolTurning; }
     bool IsPatrolTurnRight() const { return m_PatrolTurnRight; }
+
+    // 巡回点を「到達可能な範囲」から作る
+    bool BuildRandomPatrolPoints(Vector3& outStartBody, Vector3& outEndBody, RandomEngine& rng) const;
+
+private:
+    struct Cell { int x, z; };
+
+    // 地形から「胴体座標」を作る（XZ→地形高さ→胴体Y）
+    bool SampleBodyOnTerrain(float x, float z, Vector3& outBody) const;
+
+    // 胴体座標でカプセルが置けるか
+    bool IsCapsuleFreeBody(const Vector3& bodyPos) const;
 
 private:
     PhysicsManager* m_Physics = nullptr;

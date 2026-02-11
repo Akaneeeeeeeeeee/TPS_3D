@@ -186,7 +186,6 @@ void Game::Uninit(void)
 
 	// レンダラの終了処理
 	//m_RenderManager.Uninit();
-	Renderer::Uninit();
 	m_Engine.Uninit();
 }
 

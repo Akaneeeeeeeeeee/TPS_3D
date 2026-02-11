@@ -35,6 +35,7 @@ public:
     ~PhysicsManager();
     void Init(void);
     void Update(const float deltaTime);
+	void Uninit(void);
 
 #ifdef _DEBUG
     void DebugDraw(void);

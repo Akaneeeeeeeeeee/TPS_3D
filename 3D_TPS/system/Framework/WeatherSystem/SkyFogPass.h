@@ -11,6 +11,7 @@ class SkyFogPass
 {
 public:
     static void Init(ID3D11Device* dev, ID3D11DeviceContext* ctx, int w, int h);
+	static void Uninit(void);
     static void Resize(int w, int h);
 
     static void UpdateFromWeather(const WeatherSystem& ws);
