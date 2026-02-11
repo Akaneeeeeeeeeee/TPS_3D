@@ -148,7 +148,7 @@ private:
 	// GameScene.h ‘¤
 	StaticMeshCollider* m_TerrainCol = nullptr;
 
-	bool m_MultiEnemy = true;
+	bool m_MultiEnemy = false;
 	int  m_MultiCount = 20;
 	bool m_RequestRebuildEnemies = false;
 

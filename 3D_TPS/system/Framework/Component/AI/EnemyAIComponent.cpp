@@ -418,7 +418,7 @@ void EnemyAIComponent::UpdateStuck(float dt, const Vector3& desiredDir)
 	// しきい値
 	const float MOVE_EPS_SQ = 1.0f; // ほとんど動いていない距離
 	const float TARGET_EPS = 5.0f;  // 目標までの距離が「縮んだ」とみなす量
-	const float STUCK_TIME = 1.0f;  // 何秒続いたらスタックとみなすか
+	const float STUCK_TIME = 3.0f;  // 何秒続いたらスタックとみなすか
 
 	// 位置としては動いているか
 	bool movingPos = (movedSq > MOVE_EPS_SQ);

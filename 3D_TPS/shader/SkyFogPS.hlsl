@@ -15,14 +15,14 @@ float4 main(PS_IN pin) : SV_Target
     t = pow(t, 1.2);
     float3 col = lerp(gSkyHorizon.rgb, gSkyZenith.rgb, t);
 
-    // sun
+    // ‘¾—z
     float3 sdir = normalize(gSkySunDir_Size.xyz);
     float sd = saturate(dot(wdir, sdir));
     float sunDisk = smoothstep(1.0 - gSkySunDir_Size.w, 1.0, sd);
     float sunGlow = pow(sd, 32.0) * gSkySunColor_Glow.a;
     col += gSkySunColor_Glow.rgb * (sunDisk + sunGlow);
 
-    // clouds
+    // ‰_
     float2 suv = float2(atan2(wdir.z, wdir.x) * (1.0 / 6.2831853) + 0.5, wdir.y * 0.5 + 0.5);
     float2 scroll = gSkyCloudSpeed.xy * gSkyCloud.w;
     float n = NoiseFBM(float3(suv * gSkyCloud.x + scroll, gSkyCloud.w * 0.01), NoiseSky);
@@ -31,7 +31,7 @@ float4 main(PS_IN pin) : SV_Target
     float3 cloudCol = lerp(float3(1, 1, 1), gSkyFogColor_Blend.rgb, gSkyFogColor_Blend.a);
     col = lerp(col, col * cloudCol, cloud);
 
-    // vignette
+    // ƒrƒlƒbƒg
     float2 c = uv - 0.5;
     float r = length(c);
     float vig = 1.0 - saturate(pow(r * 1.4142, gSkyVignette.y) * gSkyVignette.x);

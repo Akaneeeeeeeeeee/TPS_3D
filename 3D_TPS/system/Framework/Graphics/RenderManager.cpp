@@ -636,8 +636,6 @@ void RenderManager::RenderShadowPass()
 	ctx->HSSetShader(nullptr, nullptr, 0);
 	ctx->DSSetShader(nullptr, nullptr, 0);
 
-	// ラスタ：カリングは好み。まずは Front を消す/Back を消すで試す
-
 	// Opaqueだけを影に入れる（必要なら TransparentForward も影に入れる）
 	for (const auto& p : m_Packets)
 	{
