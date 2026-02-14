@@ -182,40 +182,99 @@ bool RenderManager::Init(GraphicsDevice* graphicsDevice, LightSystem* light, Wea
 	return true;
 }
 
-void RenderManager::Release(void)
+//void RenderManager::Release(void)
+//{
+//	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
+//	m_RenderComponents.clear();
+//	m_Packets.clear();
+//	m_GBuffer.Release();
+//	m_Shadow.Release();
+//	m_SpotShadow.Release();
+//	m_TileCountBuf.Reset();
+//	m_TileCountUAV.Reset();
+//	m_TileCountSRV.Reset();
+//	m_TileIndexBuf.Reset();
+//	m_TileIndexUAV.Reset();
+//	m_TileIndexSRV.Reset();
+//	//m_SpotLightBuf.Reset();
+//	//m_SpotLightUAV.Reset();
+//	//m_SpotLightSRV.Reset();
+//	m_SpotAccumTex.Reset();
+//	m_SpotAccumUAV.Reset();
+//	m_SpotAccumSRV.Reset();
+//	m_BeamTex.Reset();
+//	m_BeamUAV.Reset();
+//	m_BeamSRV.Reset();
+//}
+
+void RenderManager::Release()
 {
-	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
-	m_RenderComponents.clear();
-	m_Packets.clear();
-	m_GBuffer.Release();
-	/*m_Shadow.Release();
-	m_SpotShadow.Release();*/
+	// まずGPUの結びつきを外す（内部参照を落とす）
+	if (auto* ctx = Renderer::GetDeviceContext())
+	{
+		ctx->ClearState();
+		ctx->Flush();
+	}
+
+	// 他クラスに渡した参照を先に切る（重要）
+	SkyFogPass::SetBeamSRV(nullptr);
+
+	// 生成したD3Dリソースを全部Reset
+	m_ShadowCmpSampler.Reset();
+
+	m_CBDeferred.Reset();
+	m_CBShadow.Reset();
+	m_CBTile.Reset();
+	m_CBTileInfo.Reset();
+	m_CBBeam.Reset();
+	m_CBSpotShadow.Reset();
+
+	m_SpotSB_SRV.Reset();
+	m_SpotSB.Reset();
+	m_SpotSB_Capacity = 0;
+	m_SpotCountThisFrame = 0;
+
 	m_TileCountBuf.Reset();
 	m_TileCountUAV.Reset();
 	m_TileCountSRV.Reset();
 	m_TileIndexBuf.Reset();
 	m_TileIndexUAV.Reset();
 	m_TileIndexSRV.Reset();
-	//m_SpotLightBuf.Reset();
-	//m_SpotLightUAV.Reset();
-	//m_SpotLightSRV.Reset();
-	m_SpotAccumTex.Reset();
-	m_SpotAccumUAV.Reset();
-	m_SpotAccumSRV.Reset();
-	m_BeamTex.Reset();
-	m_BeamUAV.Reset();
-	m_BeamSRV.Reset();
-}
 
-void RenderManager::Uninit(void)
-{
+	m_SpotAccumSRV.Reset();
+	m_SpotAccumUAV.Reset();
+	m_SpotAccumTex.Reset();
+
+	m_BeamSRV.Reset();
+	m_BeamUAV.Reset();
+	m_BeamTex.Reset();
+
 	m_GBuffer.Release();
 	m_Shadow.Release();
 	m_SpotShadow.Release();
 
+	// rawポインタは「所有しない」ならnullptrにするだけ
+	m_pDeferredLighting = nullptr;
+	m_pGBufferStatic = nullptr;
+	m_pGBufferSkin = nullptr;
+	m_pShadowStatic = nullptr;
+	m_pShadowSkin = nullptr;
+	m_pCSBuildTile = nullptr;
+	m_pCSSpotLighting = nullptr;
+	m_pCSBeam = nullptr;
+
+	m_RenderComponents.clear();
+	m_Packets.clear();
+}
+
+void RenderManager::Uninit(void)
+{
+	this->Release();
+
 	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
 	m_RenderComponents.clear();
 	m_Packets.clear();
+	m_Shadow.Release();
 
 	// 依存性の解消
 	m_pGraphicsDevice = nullptr;
