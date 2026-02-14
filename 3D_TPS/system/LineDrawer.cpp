@@ -15,8 +15,12 @@ static CShader g_shader;
 static ComPtr<ID3D11Buffer> g_linewidthbuffer;
 
 // 線の太さ設定用定数バッファ
-struct LINEWIDTHCBUFFER {
-	float width[4];				
+struct LINEWIDTHCBUFFER
+{
+    float widthPx;
+    float invW;
+    float invH;
+    float pad;
 };
 
 void LineDrawerInit()
@@ -50,20 +54,51 @@ void LineDrawerInit()
 	);
 
 	assert(sts);
-
 }
 
-void SetLineWidth(float linewidth) 
+void LineDrawerUninit()
 {
+    //g_linewidthbuffer.Reset();
 
-	float writedata[4] = { linewidth ,linewidth ,linewidth ,linewidth };
+    //g_shader.Uninit();
+    //g_material.Uninit();
+    //g_renderer.Uninit();
+    //g_mesh.Uninit();
+}
 
-	// 定数バッファへ書き込み
-	Renderer::GetDeviceContext()->UpdateSubresource(g_linewidthbuffer.Get(), 0, nullptr, writedata, 0, 0);
+// ビューポートのサイズを取得
+static void GetViewportSize(float& outW, float& outH)
+{
+    outW = 1.0f;
+    outH = 1.0f;
 
-	// ジオメトリシェーダーにセット
-	Renderer::GetDeviceContext()->GSSetConstantBuffers(6, 1, g_linewidthbuffer.GetAddressOf());
+    D3D11_VIEWPORT vp{};
+    UINT num = 1;
+    Renderer::GetDeviceContext()->RSGetViewports(&num, &vp);
+    if (num > 0)
+    {
+        outW = (vp.Width > 1.0f) ? vp.Width : 1.0f;
+        outH = (vp.Height > 1.0f) ? vp.Height : 1.0f;
+    }
+}
 
+void SetLineWidth(float widthPx)
+{
+    float w, h;
+    GetViewportSize(w, h);
+
+    LINEWIDTHCBUFFER cb{};
+    cb.widthPx = widthPx;
+    cb.invW = 1.0f / w;
+    cb.invH = 1.0f / h;
+
+    // 定数バッファへ書き込み
+    auto* ctx = Renderer::GetDeviceContext();
+    ctx->UpdateSubresource(g_linewidthbuffer.Get(), 0, nullptr, &cb, 0, 0);
+
+    // ジオメトリシェーダーにセット
+    // b6はSpotLightBufferと衝突するので避ける
+    ctx->GSSetConstantBuffers(10, 1, g_linewidthbuffer.GetAddressOf());
 }
 
 void LineDrawerDraw(
@@ -144,6 +179,16 @@ void LineInstancedDrawerInit()
         sizeof(CBLineInstance),
         g_cbInstance.GetAddressOf());
     assert(sts);
+}
+
+void LineInstancedDrawerUninit()
+{
+    g_cbInstance.Reset();
+
+    //g_instShader.Uninit();
+    //g_instMaterial.Uninit();
+    //g_instRenderer.Uninit();
+    //g_instMesh.Uninit();
 }
 
 void LineInstancedDrawerDraw(

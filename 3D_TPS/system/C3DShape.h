@@ -14,6 +14,7 @@ protected:
 	static bool m_first;                // <-- 初期化フラグ
 public:
     static void Init();
+	static void Uninit();
     /**
      * @brief コンストラクタ
      */

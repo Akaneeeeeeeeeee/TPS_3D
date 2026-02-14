@@ -266,7 +266,11 @@ void AssetManager::Uninit()
 	m_MeshList.clear();
 	m_RendererList.clear();
 	m_ShaderList.clear();
+	m_ComputeShaders.clear();
 	m_AnimData.clear();
+	m_AnimationDataList.clear();
+	m_AnimationMeshList.clear();
+	m_StaticMeshList.clear();
 }
 
 

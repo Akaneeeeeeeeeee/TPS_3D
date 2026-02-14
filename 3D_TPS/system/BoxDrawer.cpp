@@ -39,6 +39,14 @@ void BoxDrawerInit()
 	g_material.Create(mtrl);
 }
 
+void BoxDrawerUninit()
+{
+    //g_shader.Uninit();
+    //g_material.Uninit();
+    //g_renderer.Uninit();
+    //g_mesh.Uninit();
+}
+
 void BoxDrawerDraw(float width, float height, float depth, 
 	Color col, float posx, float posy, float posz)
 {
@@ -145,6 +153,17 @@ void BoxInstancedDrawerInit()
         sizeof(CBInstBoxInstance),
         g_instBoxCBInstance.GetAddressOf());
     assert(ok);
+}
+
+void BoxInstancedDrawerUninit()
+{
+    g_instBoxCBInstance.Reset();
+    g_instBoxCBCamera.Reset();
+
+    //g_instBoxShader.Uninit();
+    //g_instBoxMaterial.Uninit();
+    //g_instBoxRenderer.Uninit();
+    //g_instBoxMesh.Uninit();
 }
 
 void BoxInstancedDrawerDraw(

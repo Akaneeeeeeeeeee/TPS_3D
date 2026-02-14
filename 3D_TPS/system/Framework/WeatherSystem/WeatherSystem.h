@@ -241,6 +241,7 @@ public:
     float GetSandStrength01(void) const;
 
     void Init(void);
+	void Uninit(void);
 
     // ---- 毎フレーム更新 ----
     void Update(float dt);

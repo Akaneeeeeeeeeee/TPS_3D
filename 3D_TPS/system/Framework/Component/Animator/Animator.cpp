@@ -104,30 +104,22 @@ void Animator::ForceSetClip(aiAnimation* clip, float startTimeSec, bool loop)
 
 void Animator::RequestTransition(aiAnimation* nextClip, float blendDurationSec, bool nextLoop)
 {
-    if (!nextClip)
-        return;
+    if (!nextClip) { return; }
 
-    if (!m_CurrentClip)
+    // 現在未設定 or 即切替
+    if (!m_CurrentClip || blendDurationSec <= 0.0f)
     {
         SetInitialClip(nextClip, 0.0f, nextLoop);
         return;
     }
 
-    if (IsBlending() && m_NextClip == nextClip)
-        return;
+    // 同一クリップ or 同一遷移要求は無視
+    if (nextClip == m_CurrentClip) { return; }
+    if (IsBlending() && m_NextClip == nextClip) { return; }
 
-    if (nextClip == m_CurrentClip)
-        return;
-
-    if (blendDurationSec <= 0.0f)
-    {
-        SetInitialClip(nextClip, 0.0f, nextLoop);
-        return;
-    }
-
+    // ブレンド開始
     m_NextClip = nextClip;
     m_LoopNext = nextLoop;
-
     m_NextTimeSec = 0.0f;
     m_BlendDuration = blendDurationSec;
     m_BlendTimer = 0.0f;
@@ -135,12 +127,7 @@ void Animator::RequestTransition(aiAnimation* nextClip, float blendDurationSec, 
 
 void Animator::Update(const float dt)
 {
-    if (!m_CurrentClip)
-        return;
-
-    // dt <= 0 のときは何もしない（停止など）
-    if (dt <= 0.0f)
-        return;
+    if (!m_CurrentClip || dt <= 0.0f) { return; }
 
     // current
     {
@@ -150,8 +137,7 @@ void Animator::Update(const float dt)
         m_CurrentFinished = finished;
     }
 
-    if (!IsBlending())
-        return;
+    if (!IsBlending()) { return; }
 
     // next
     {

@@ -46,6 +46,17 @@ void CapsuleDrawerInit(void)
 
 }
 
+void CapsuleDrawerUninit()
+{
+    //g_shader.Uninit();
+    //g_material.Uninit();
+
+    //g_renderersphere.Uninit();
+    //g_renderercylinder.Uninit();
+
+    //g_meshsphere.Uninit();
+    //g_meshcylinder.Uninit();
+}
 
 void CapsuleDrawerDraw(float radius, float height, Color col, float posx, float posy, float posz)
 {

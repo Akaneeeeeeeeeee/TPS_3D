@@ -9,45 +9,114 @@
 #include <stdexcept>
 #include "renderer.h"
 #include "system/Framework/Application/Application.h"
+//#ifdef _DEBUG
+//#include <d3d11sdklayers.h> // ID3D11InfoQueue, ID3D11Debug
+//#pragma comment(lib, "dxguid.lib") // IID類で必要になることがある
+//
+//
+//static void SetupD3D11InfoQueue(ID3D11Device* device)
+//{
+//	if (!device) return;
+//
+//	ID3D11InfoQueue* q = nullptr;
+//	HRESULT hr = device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&q);
+//	if (FAILED(hr) || !q) return;
+//
+//	// まず「壊れてる/エラー」は常に止める
+//	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+//	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+//
+//	// 目的：Index buffer が足りない瞬間に止める
+//	q->SetBreakOnID(D3D11_MESSAGE_ID_DEVICE_DRAW_INDEX_BUFFER_TOO_SMALL, TRUE);
+//
+//	// 警告でも止める
+//	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
+//
+//	q->Release();
+//}
+//
+//static void ReportLiveD3DObjects(ID3D11Device* device)
+//{
+//	if (!device) return;
+//
+//	ID3D11Debug* dbg = nullptr;
+//	if (SUCCEEDED(device->QueryInterface(__uuidof(ID3D11Debug), (void**)&dbg)) && dbg)
+//	{
+//		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+//		dbg->Release();
+//	}
+//}
+//#endif
+
+#include <stdexcept>
+#include <cstring> // strlen
+#include "renderer.h"
+#include "system/Framework/Application/Application.h"
+
 #ifdef _DEBUG
 #include <d3d11sdklayers.h> // ID3D11InfoQueue, ID3D11Debug
-#pragma comment(lib, "dxguid.lib") // IID類で必要になることがある
+#include <d3dcommon.h>      // WKPDID_D3DDebugObjectName
+#pragma comment(lib, "dxguid.lib")
 
+static void SetD3D11Name(ID3D11DeviceChild* obj, const char* name)
+{
+	if (!obj || !name) return;
+
+	// 既存の同名データを消してから付け直す（サイズ違い警告を潰す）
+	obj->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
+
+	// 文字列終端 '\0' を含めて渡す
+	obj->SetPrivateData(
+		WKPDID_D3DDebugObjectName,
+		(UINT)std::strlen(name) + 1,
+		name
+	);
+}
+
+template<class T>
+static void SetD3D11Name(const Microsoft::WRL::ComPtr<T>& obj, const char* name)
+{
+	SetD3D11Name(obj.Get(), name);
+}
 
 static void SetupD3D11InfoQueue(ID3D11Device* device)
 {
 	if (!device) return;
 
-	ID3D11InfoQueue* q = nullptr;
-	HRESULT hr = device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&q);
-	if (FAILED(hr) || !q) return;
+	Microsoft::WRL::ComPtr<ID3D11InfoQueue> q;
+	if (FAILED(device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)q.GetAddressOf())) || !q)
+		return;
 
-	// まず「壊れてる/エラー」は常に止める
+	// 壊れてる/エラーだけ止める（WARNING では止めない）
 	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
 	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+	q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, FALSE);
 
-	// 目的：Index buffer が足りない瞬間に止める
-	q->SetBreakOnID(D3D11_MESSAGE_ID_DEVICE_DRAW_INDEX_BUFFER_TOO_SMALL, TRUE);
+	// ここは任意：特定の警告を「出力自体」しない（うるさい場合）
+	D3D11_MESSAGE_ID hideIds[] = {
+		D3D11_MESSAGE_ID_DEVICE_DRAW_SAMPLER_NOT_SET,       // #352
+		D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS       // #55
+	};
 
-	// 任意：警告でも止めたいなら
-	// q->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, TRUE);
+	D3D11_INFO_QUEUE_FILTER filter{};
+	filter.DenyList.NumIDs = (UINT)_countof(hideIds);
+	filter.DenyList.pIDList = hideIds;
 
-	q->Release();
+	q->AddStorageFilterEntries(&filter);
+	q->AddRetrievalFilterEntries(&filter);
 }
 
 static void ReportLiveD3DObjects(ID3D11Device* device)
 {
 	if (!device) return;
 
-	ID3D11Debug* dbg = nullptr;
-	if (SUCCEEDED(device->QueryInterface(__uuidof(ID3D11Debug), (void**)&dbg)) && dbg)
+	Microsoft::WRL::ComPtr<ID3D11Debug> dbg;
+	if (SUCCEEDED(device->QueryInterface(__uuidof(ID3D11Debug), (void**)dbg.GetAddressOf())) && dbg)
 	{
-		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-		dbg->Release();
+		dbg->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
 	}
 }
 #endif
-
 
  //------------------------------------------------------------------------------
  // スタティックメンバ変数の初期化
@@ -98,283 +167,601 @@ ComPtr<ID3D11ShaderResourceView> Renderer::m_BeamSRV;
  * ビューポート、ラスタライザ、ブレンドステート、深度ステンシルステート、サンプラーステート、
  * 定数バッファの生成、初期ライトおよびマテリアルの設定などを実施します。
  */
+//void Renderer::Init()
+//{
+//	HRESULT hr = S_OK;
+//
+//	DXGI_SWAP_CHAIN_DESC swapChainDesc{};
+//	swapChainDesc.BufferCount = 1;
+//	swapChainDesc.BufferDesc.Width = Window::GetInstance().GetWidth();
+//	swapChainDesc.BufferDesc.Height = Window::GetInstance().GetHeight();
+//	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+//	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+//	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+//	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+//	swapChainDesc.OutputWindow = Window::GetInstance().GetHandleWindow();
+//	swapChainDesc.SampleDesc.Count = 1;
+//	swapChainDesc.SampleDesc.Quality = 0;
+//	swapChainDesc.Windowed = TRUE;
+//
+//
+//	UINT createFlags = 0;
+//#ifdef _DEBUG
+//	createFlags |= D3D11_CREATE_DEVICE_DEBUG;  // デバッグレイヤーON
+//#endif
+//
+//	createFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+//
+//	hr = D3D11CreateDeviceAndSwapChain(
+//		nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlags,
+//		nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc,
+//		m_SwapChain.GetAddressOf(),
+//		m_Device.GetAddressOf(),
+//		&m_FeatureLevel,
+//		m_DeviceContext.GetAddressOf());
+//
+//	ComPtr<ID3D11Texture2D> renderTarget;
+//	hr = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTarget.GetAddressOf()));
+//	if (SUCCEEDED(hr) && renderTarget) {
+//		m_Device->CreateRenderTargetView(renderTarget.Get(), nullptr, m_RenderTargetView.GetAddressOf());
+//	}
+//	else {
+//		throw std::runtime_error("Failed to retrieve render target buffer.");
+//	}
+//
+//	// --- 深度ステンシルビュー設定 ---
+//	//ComPtr<ID3D11Texture2D> depthStencil;
+//	//D3D11_TEXTURE2D_DESC textureDesc{};
+//	//textureDesc.Width = swapChainDesc.BufferDesc.Width;
+//	//textureDesc.Height = swapChainDesc.BufferDesc.Height;
+//	//textureDesc.MipLevels = 1;
+//	//textureDesc.ArraySize = 1;
+//	//textureDesc.Format = DXGI_FORMAT_D32_FLOAT;     // Zファイティング解決のため深度バッファの精度を上げる
+//	//textureDesc.SampleDesc = swapChainDesc.SampleDesc;
+//	//textureDesc.Usage = D3D11_USAGE_DEFAULT;
+//	//textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+//	//hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
+//	//if (FAILED(hr)) {
+//	//	throw std::runtime_error("Failed to create depthStencil.");
+//	//}
+//
+//	// depth texture (typeless)
+//	ComPtr<ID3D11Texture2D> depthStencil;
+//
+//	D3D11_TEXTURE2D_DESC textureDesc{};
+//	textureDesc.Width = swapChainDesc.BufferDesc.Width;
+//	textureDesc.Height = swapChainDesc.BufferDesc.Height;
+//	textureDesc.MipLevels = 1;
+//	textureDesc.ArraySize = 1;
+//
+//	// SRV を作るため typeless
+//	textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+//	textureDesc.SampleDesc = swapChainDesc.SampleDesc;
+//	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+//
+//	// Depth + SRV
+//	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+//
+//	hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
+//	if (FAILED(hr)) {
+//		throw std::runtime_error("Failed to create depthStencil.");
+//	}
+//
+//	// DSV (D32_FLOAT)
+//	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+//	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+//	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+//
+//	hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &dsvDesc, m_DepthStencilView.GetAddressOf());
+//	if (FAILED(hr)) {
+//		throw std::runtime_error("Failed to create depthStencilView.");
+//	}
+//
+//	// SRV (R32_FLOAT)
+//	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+//	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+//	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+//	srvDesc.Texture2D.MostDetailedMip = 0;
+//	srvDesc.Texture2D.MipLevels = 1;
+//
+//	hr = m_Device->CreateShaderResourceView(depthStencil.Get(), &srvDesc, m_DepthSRV.GetAddressOf());
+//	if (FAILED(hr)) {
+//		throw std::runtime_error("Failed to create depth SRV.");
+//	}
+//
+//	//D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
+//	//depthStencilViewDesc.Format = textureDesc.Format;
+//	//depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+//	//hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, m_DepthStencilView.GetAddressOf());
+//	//if (FAILED(hr)) {
+//	//	throw std::runtime_error("Failed to create depthStencilView.");
+//	//}
+//
+//	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
+//
+//	D3D11_VIEWPORT viewport;
+//	viewport.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
+//	viewport.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
+//	viewport.MinDepth = 0.0f;
+//	viewport.MaxDepth = 1.0f;
+//	viewport.TopLeftX = 0;
+//	viewport.TopLeftY = 0;
+//	m_DeviceContext->RSSetViewports(1, &viewport);
+//
+//
+//	// --- ラスタライザステート設定 ---
+//	D3D11_RASTERIZER_DESC rasterizerDesc{};
+//	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+//	//rasterizerDesc.CullMode = D3D11_CULL_NONE;      // カリングオフ(デバッグ用)
+//	//rasterizerDesc.CullMode = D3D11_CULL_FRONT;      // カリングオフ(デバッグ用)
+//	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+//	rasterizerDesc.DepthClipEnable = TRUE;
+//
+//	ComPtr<ID3D11RasterizerState> rs;
+//	m_Device->CreateRasterizerState(&rasterizerDesc, rs.GetAddressOf());
+//	m_DeviceContext->RSSetState(rs.Get());
+//
+//	// --- ブレンドステートの生成 ---
+//	D3D11_BLEND_DESC BlendDesc{};
+//	BlendDesc.AlphaToCoverageEnable = FALSE;
+//	BlendDesc.IndependentBlendEnable = TRUE;
+//	BlendDesc.RenderTarget[0].BlendEnable = FALSE;
+//	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+//	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+//	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+//	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+//	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+//	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+//	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+//	// 1～7も同じ設定にする（MRTで書けるように）
+//	for (int i = 1; i < 8; ++i)
+//	{
+//		BlendDesc.RenderTarget[i] = BlendDesc.RenderTarget[0];
+//	}
+//
+//	m_Device->CreateBlendState(&BlendDesc, m_BlendState[0].GetAddressOf());
+//	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+//	m_Device->CreateBlendState(&BlendDesc, m_BlendState[1].GetAddressOf());
+//	m_Device->CreateBlendState(&BlendDesc, m_BlendStateATC.GetAddressOf());
+//
+//	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+//	m_Device->CreateBlendState(&BlendDesc, m_BlendState[2].GetAddressOf());
+//
+//	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
+//	m_Device->CreateBlendState(&BlendDesc, m_BlendState[3].GetAddressOf());
+//
+//	SetBlendState(BS_ALPHABLEND);
+//
+//	// --- 深度ステンシルステートの設定 ---
+//	// 通常有効
+//	D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
+//	depthStencilDesc.DepthEnable = TRUE;
+//	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+//	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+//	depthStencilDesc.StencilEnable = FALSE;
+//	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateEnable.GetAddressOf());
+//
+//	// 無効
+//	depthStencilDesc.DepthEnable = FALSE;
+//	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+//	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateDisable.GetAddressOf());
+//	m_DeviceContext->OMSetDepthStencilState(m_DepthStateEnable.Get(), 0);
+//
+//	// 読み取り専用（深度テストON、書き込みOFF）
+//	depthStencilDesc.DepthEnable = TRUE;
+//	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+//	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+//	depthStencilDesc.StencilEnable = FALSE;
+//
+//	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateReadOnly.GetAddressOf());
+//
+//	// --- サンプラーステート設定 ---
+//	D3D11_SAMPLER_DESC samplerDesc{};
+//	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+//	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+//	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+//	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+//	//    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+//	//    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+//	//    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+//	samplerDesc.MaxAnisotropy = 4;
+//	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+//
+//	m_Device->CreateSamplerState(&samplerDesc, m_SamplerLinearWrap.GetAddressOf());
+//	m_DeviceContext->PSSetSamplers(0, 1, m_SamplerLinearWrap.GetAddressOf());
+//
+//	// clamp用
+//	D3D11_SAMPLER_DESC clampDesc = samplerDesc;
+//	clampDesc.AddressU = clampDesc.AddressV = clampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+//	m_Device->CreateSamplerState(&clampDesc, m_SamplerLinearClamp.GetAddressOf());
+//
+//	// --- 定数バッファ生成 ---
+//	D3D11_BUFFER_DESC bufferDesc{};
+//	bufferDesc.ByteWidth = sizeof(Matrix4x4);
+//	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+//	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+//	bufferDesc.CPUAccessFlags = 0;
+//	bufferDesc.MiscFlags = 0;
+//	bufferDesc.StructureByteStride = sizeof(float);
+//
+//	m_Device->CreateBuffer(&bufferDesc, nullptr, m_WorldBuffer.GetAddressOf());
+//	m_DeviceContext->VSSetConstantBuffers(0, 1, m_WorldBuffer.GetAddressOf());
+//
+//	m_Device->CreateBuffer(&bufferDesc, nullptr, m_ViewBuffer.GetAddressOf());
+//	m_DeviceContext->VSSetConstantBuffers(1, 1, m_ViewBuffer.GetAddressOf());
+//
+//	m_Device->CreateBuffer(&bufferDesc, nullptr, m_ProjectionBuffer.GetAddressOf());
+//	m_DeviceContext->VSSetConstantBuffers(2, 1, m_ProjectionBuffer.GetAddressOf());
+//
+//	bufferDesc.ByteWidth = sizeof(MATERIAL);
+//	m_Device->CreateBuffer(&bufferDesc, nullptr, m_MaterialBuffer.GetAddressOf());
+//
+//	bufferDesc.ByteWidth = sizeof(LIGHT);
+//	m_Device->CreateBuffer(&bufferDesc, nullptr, m_LightBuffer.GetAddressOf());
+//
+//	// --- ライト初期化 ---
+//	LIGHT light{};
+//	light.Enable = true;
+//	light.Direction = Vector4(0.5f, -1.0f, 0.8f, 0.0f);
+//	light.Direction.Normalize();
+//	light.Ambient = Color(0.2f, 0.2f, 0.2f, 1.0f);
+//	light.Diffuse = Color(1.5f, 1.5f, 1.5f, 1.0f);
+//	SetLight(light);
+//
+//	// --- マテリアル初期化 ---
+//	MATERIAL material{};
+//	material.Diffuse = Color(1.0f, 1.0f, 1.0f, 1.0f);
+//	material.Ambient = Color(1.0f, 1.0f, 1.0f, 1.0f);
+//	SetMaterial(material);
+//
+//	m_DeviceContext->VSSetConstantBuffers(3, 1, m_MaterialBuffer.GetAddressOf());
+//	m_DeviceContext->PSSetConstantBuffers(3, 1, m_MaterialBuffer.GetAddressOf());
+//
+//	m_DeviceContext->VSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
+//	m_DeviceContext->PSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
+//
+//
+//	// スポットライト用定数バッファ生成
+//	D3D11_BUFFER_DESC spotDesc{};
+//	spotDesc.ByteWidth = sizeof(CBSpotLights);
+//	spotDesc.Usage = D3D11_USAGE_DEFAULT;
+//	spotDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+//	spotDesc.CPUAccessFlags = 0;
+//	spotDesc.MiscFlags = 0;
+//	spotDesc.StructureByteStride = 0;
+//
+//	m_Device->CreateBuffer(&spotDesc, nullptr, m_SpotLightBuffer.GetAddressOf());
+//
+//	// b5 にセット（PS も VS も、両方使うなら両方）
+//	m_DeviceContext->VSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
+//	m_DeviceContext->PSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
+//
+//	// 初期状態（0個）をGPUへ
+//	m_SpotLightCB.Count = 0;
+//	m_DeviceContext->UpdateSubresource(m_SpotLightBuffer.Get(), 0, nullptr, &m_SpotLightCB, 0, 0);
+//
+//	// デバッグ用情報キューのセットアップ
+//#ifdef _DEBUG
+//	SetupD3D11InfoQueue(Renderer::GetDevice());
+//#endif
+//}
+
 void Renderer::Init()
 {
-	HRESULT hr = S_OK;
+    HRESULT hr = S_OK;
 
-	DXGI_SWAP_CHAIN_DESC swapChainDesc{};
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.BufferDesc.Width = Window::GetInstance().GetWidth();
-	swapChainDesc.BufferDesc.Height = Window::GetInstance().GetHeight();
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.OutputWindow = Window::GetInstance().GetHandleWindow();
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.Windowed = TRUE;
+    DXGI_SWAP_CHAIN_DESC swapChainDesc{};
+    // flip-model にするため BufferCount は 2 以上推奨
+    swapChainDesc.BufferCount = 2;
+    swapChainDesc.BufferDesc.Width = Window::GetInstance().GetWidth();
+    swapChainDesc.BufferDesc.Height = Window::GetInstance().GetHeight();
+    swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
+    // flip-model では RefreshRate を固定値で持たないのが一般的（0/0）
+    swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+    swapChainDesc.BufferDesc.RefreshRate.Denominator = 0;
 
-	UINT createFlags = 0;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.OutputWindow = Window::GetInstance().GetHandleWindow();
+    swapChainDesc.SampleDesc.Count = 1;
+    swapChainDesc.SampleDesc.Quality = 0;
+    swapChainDesc.Windowed = TRUE;
+
+    // ★ DXGI WARNING #294 を消す：legacy ではなく flip を使う
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+    UINT createFlags = 0;
 #ifdef _DEBUG
-	createFlags |= D3D11_CREATE_DEVICE_DEBUG;  // デバッグレイヤーON
+    createFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+    createFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+    hr = D3D11CreateDeviceAndSwapChain(
+        nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlags,
+        nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc,
+        m_SwapChain.GetAddressOf(),
+        m_Device.GetAddressOf(),
+        &m_FeatureLevel,
+        m_DeviceContext.GetAddressOf());
+
+    if (FAILED(hr)) {
+        throw std::runtime_error("D3D11CreateDeviceAndSwapChain failed.");
+    }
+
+#ifdef _DEBUG
+    SetupD3D11InfoQueue(m_Device.Get());
 #endif
 
-	createFlags |= D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+    // --- BackBuffer RTV ---
+    ComPtr<ID3D11Texture2D> renderTarget;
+    hr = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+        reinterpret_cast<void**>(renderTarget.GetAddressOf()));
+    if (FAILED(hr) || !renderTarget) {
+        throw std::runtime_error("Failed to retrieve render target buffer.");
+    }
 
-	hr = D3D11CreateDeviceAndSwapChain(
-		nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlags,
-		nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc,
-		m_SwapChain.GetAddressOf(),
-		m_Device.GetAddressOf(),
-		&m_FeatureLevel,
-		m_DeviceContext.GetAddressOf());
+    hr = m_Device->CreateRenderTargetView(renderTarget.Get(), nullptr, m_RenderTargetView.GetAddressOf());
+    if (FAILED(hr)) {
+        throw std::runtime_error("Failed to create RTV.");
+    }
 
-	ComPtr<ID3D11Texture2D> renderTarget;
-	hr = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(renderTarget.GetAddressOf()));
-	if (SUCCEEDED(hr) && renderTarget) {
-		m_Device->CreateRenderTargetView(renderTarget.Get(), nullptr, m_RenderTargetView.GetAddressOf());
-	}
-	else {
-		throw std::runtime_error("Failed to retrieve render target buffer.");
-	}
-
-	// --- 深度ステンシルビュー設定 ---
-	//ComPtr<ID3D11Texture2D> depthStencil;
-	//D3D11_TEXTURE2D_DESC textureDesc{};
-	//textureDesc.Width = swapChainDesc.BufferDesc.Width;
-	//textureDesc.Height = swapChainDesc.BufferDesc.Height;
-	//textureDesc.MipLevels = 1;
-	//textureDesc.ArraySize = 1;
-	//textureDesc.Format = DXGI_FORMAT_D32_FLOAT;     // Zファイティング解決のため深度バッファの精度を上げる
-	//textureDesc.SampleDesc = swapChainDesc.SampleDesc;
-	//textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	//textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	//hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
-	//if (FAILED(hr)) {
-	//	throw std::runtime_error("Failed to create depthStencil.");
-	//}
-
-	// depth texture (typeless)
-	ComPtr<ID3D11Texture2D> depthStencil;
-
-	D3D11_TEXTURE2D_DESC textureDesc{};
-	textureDesc.Width = swapChainDesc.BufferDesc.Width;
-	textureDesc.Height = swapChainDesc.BufferDesc.Height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-
-	// SRV を作るため typeless
-	textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-	textureDesc.SampleDesc = swapChainDesc.SampleDesc;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-
-	// Depth + SRV
-	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-
-	hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
-	if (FAILED(hr)) {
-		throw std::runtime_error("Failed to create depthStencil.");
-	}
-
-	// DSV (D32_FLOAT)
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-
-	hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &dsvDesc, m_DepthStencilView.GetAddressOf());
-	if (FAILED(hr)) {
-		throw std::runtime_error("Failed to create depthStencilView.");
-	}
-
-	// SRV (R32_FLOAT)
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = 1;
-
-	hr = m_Device->CreateShaderResourceView(depthStencil.Get(), &srvDesc, m_DepthSRV.GetAddressOf());
-	if (FAILED(hr)) {
-		throw std::runtime_error("Failed to create depth SRV.");
-	}
-
-	//D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
-	//depthStencilViewDesc.Format = textureDesc.Format;
-	//depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	//hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, m_DepthStencilView.GetAddressOf());
-	//if (FAILED(hr)) {
-	//	throw std::runtime_error("Failed to create depthStencilView.");
-	//}
-
-	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
-
-	D3D11_VIEWPORT viewport;
-	viewport.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
-	viewport.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	m_DeviceContext->RSSetViewports(1, &viewport);
-
-
-	// --- ラスタライザステート設定 ---
-	D3D11_RASTERIZER_DESC rasterizerDesc{};
-	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	//rasterizerDesc.CullMode = D3D11_CULL_NONE;      // カリングオフ(デバッグ用)
-	//rasterizerDesc.CullMode = D3D11_CULL_FRONT;      // カリングオフ(デバッグ用)
-	rasterizerDesc.CullMode = D3D11_CULL_BACK;
-	rasterizerDesc.DepthClipEnable = TRUE;
-
-	ComPtr<ID3D11RasterizerState> rs;
-	m_Device->CreateRasterizerState(&rasterizerDesc, rs.GetAddressOf());
-	m_DeviceContext->RSSetState(rs.Get());
-
-	// --- ブレンドステートの生成 ---
-	D3D11_BLEND_DESC BlendDesc{};
-	BlendDesc.AlphaToCoverageEnable = FALSE;
-	BlendDesc.IndependentBlendEnable = TRUE;
-	BlendDesc.RenderTarget[0].BlendEnable = FALSE;
-	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	// 1～7も同じ設定にする（MRTで書けるように）
-	for (int i = 1; i < 8; ++i)
-	{
-		BlendDesc.RenderTarget[i] = BlendDesc.RenderTarget[0];
-	}
-
-	m_Device->CreateBlendState(&BlendDesc, m_BlendState[0].GetAddressOf());
-	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-	m_Device->CreateBlendState(&BlendDesc, m_BlendState[1].GetAddressOf());
-	m_Device->CreateBlendState(&BlendDesc, m_BlendStateATC.GetAddressOf());
-
-	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-	m_Device->CreateBlendState(&BlendDesc, m_BlendState[2].GetAddressOf());
-
-	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
-	m_Device->CreateBlendState(&BlendDesc, m_BlendState[3].GetAddressOf());
-
-	SetBlendState(BS_ALPHABLEND);
-
-	// --- 深度ステンシルステートの設定 ---
-	// 通常有効
-	D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
-	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	depthStencilDesc.StencilEnable = FALSE;
-	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateEnable.GetAddressOf());
-
-	// 無効
-	depthStencilDesc.DepthEnable = FALSE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateDisable.GetAddressOf());
-	m_DeviceContext->OMSetDepthStencilState(m_DepthStateEnable.Get(), 0);
-
-	// 読み取り専用（深度テストON、書き込みOFF）
-	depthStencilDesc.DepthEnable = TRUE;
-	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	depthStencilDesc.StencilEnable = FALSE;
-
-	m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateReadOnly.GetAddressOf());
-
-	// --- サンプラーステート設定 ---
-	D3D11_SAMPLER_DESC samplerDesc{};
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	//    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	//    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	//    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	samplerDesc.MaxAnisotropy = 4;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	m_Device->CreateSamplerState(&samplerDesc, m_SamplerLinearWrap.GetAddressOf());
-	m_DeviceContext->PSSetSamplers(0, 1, m_SamplerLinearWrap.GetAddressOf());
-
-	// clamp用
-	D3D11_SAMPLER_DESC clampDesc = samplerDesc;
-	clampDesc.AddressU = clampDesc.AddressV = clampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	m_Device->CreateSamplerState(&clampDesc, m_SamplerLinearClamp.GetAddressOf());
-
-	// --- 定数バッファ生成 ---
-	D3D11_BUFFER_DESC bufferDesc{};
-	bufferDesc.ByteWidth = sizeof(Matrix4x4);
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = 0;
-	bufferDesc.StructureByteStride = sizeof(float);
-
-	m_Device->CreateBuffer(&bufferDesc, nullptr, m_WorldBuffer.GetAddressOf());
-	m_DeviceContext->VSSetConstantBuffers(0, 1, m_WorldBuffer.GetAddressOf());
-
-	m_Device->CreateBuffer(&bufferDesc, nullptr, m_ViewBuffer.GetAddressOf());
-	m_DeviceContext->VSSetConstantBuffers(1, 1, m_ViewBuffer.GetAddressOf());
-
-	m_Device->CreateBuffer(&bufferDesc, nullptr, m_ProjectionBuffer.GetAddressOf());
-	m_DeviceContext->VSSetConstantBuffers(2, 1, m_ProjectionBuffer.GetAddressOf());
-
-	bufferDesc.ByteWidth = sizeof(MATERIAL);
-	m_Device->CreateBuffer(&bufferDesc, nullptr, m_MaterialBuffer.GetAddressOf());
-
-	bufferDesc.ByteWidth = sizeof(LIGHT);
-	m_Device->CreateBuffer(&bufferDesc, nullptr, m_LightBuffer.GetAddressOf());
-
-	// --- ライト初期化 ---
-	LIGHT light{};
-	light.Enable = true;
-	light.Direction = Vector4(0.5f, -1.0f, 0.8f, 0.0f);
-	light.Direction.Normalize();
-	light.Ambient = Color(0.2f, 0.2f, 0.2f, 1.0f);
-	light.Diffuse = Color(1.5f, 1.5f, 1.5f, 1.0f);
-	SetLight(light);
-
-	// --- マテリアル初期化 ---
-	MATERIAL material{};
-	material.Diffuse = Color(1.0f, 1.0f, 1.0f, 1.0f);
-	material.Ambient = Color(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
-
-	m_DeviceContext->VSSetConstantBuffers(3, 1, m_MaterialBuffer.GetAddressOf());
-	m_DeviceContext->PSSetConstantBuffers(3, 1, m_MaterialBuffer.GetAddressOf());
-
-	m_DeviceContext->VSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
-	m_DeviceContext->PSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
-
-
-	// スポットライト用定数バッファ生成
-	D3D11_BUFFER_DESC spotDesc{};
-	spotDesc.ByteWidth = sizeof(CBSpotLights);
-	spotDesc.Usage = D3D11_USAGE_DEFAULT;
-	spotDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	spotDesc.CPUAccessFlags = 0;
-	spotDesc.MiscFlags = 0;
-	spotDesc.StructureByteStride = 0;
-
-	m_Device->CreateBuffer(&spotDesc, nullptr, m_SpotLightBuffer.GetAddressOf());
-
-	// b5 にセット（PS も VS も、両方使うなら両方）
-	m_DeviceContext->VSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
-	m_DeviceContext->PSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
-
-	// 初期状態（0個）をGPUへ
-	m_SpotLightCB.Count = 0;
-	m_DeviceContext->UpdateSubresource(m_SpotLightBuffer.Get(), 0, nullptr, &m_SpotLightCB, 0, 0);
-
-	// デバッグ用情報キューのセットアップ
 #ifdef _DEBUG
-	SetupD3D11InfoQueue(Renderer::GetDevice());
+    SetD3D11Name(renderTarget, "Renderer:BackBufferTex");
+    SetD3D11Name(m_RenderTargetView, "Renderer:BackBufferRTV");
 #endif
+
+    // --- Depth (typeless) ---
+    ComPtr<ID3D11Texture2D> depthStencil;
+
+    D3D11_TEXTURE2D_DESC textureDesc{};
+    textureDesc.Width = swapChainDesc.BufferDesc.Width;
+    textureDesc.Height = swapChainDesc.BufferDesc.Height;
+    textureDesc.MipLevels = 1;
+    textureDesc.ArraySize = 1;
+    textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+    textureDesc.SampleDesc = swapChainDesc.SampleDesc;
+    textureDesc.Usage = D3D11_USAGE_DEFAULT;
+    textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+    hr = m_Device->CreateTexture2D(&textureDesc, nullptr, depthStencil.GetAddressOf());
+    if (FAILED(hr) || !depthStencil) {
+        throw std::runtime_error("Failed to create depthStencil.");
+    }
+
+#ifdef _DEBUG
+    SetD3D11Name(depthStencil, "Renderer:DepthTex(R32_TYPELESS)");
+#endif
+
+    // --- DSV (D32_FLOAT) ---
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+    dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+    hr = m_Device->CreateDepthStencilView(depthStencil.Get(), &dsvDesc, m_DepthStencilView.GetAddressOf());
+    if (FAILED(hr) || !m_DepthStencilView) {
+        throw std::runtime_error("Failed to create depthStencilView.");
+    }
+
+#ifdef _DEBUG
+    SetD3D11Name(m_DepthStencilView, "Renderer:DepthDSV(D32_FLOAT)");
+#endif
+
+    // --- SRV (R32_FLOAT) ---
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+    srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    hr = m_Device->CreateShaderResourceView(depthStencil.Get(), &srvDesc, m_DepthSRV.GetAddressOf());
+    if (FAILED(hr) || !m_DepthSRV) {
+        throw std::runtime_error("Failed to create depth SRV.");
+    }
+
+#ifdef _DEBUG
+    SetD3D11Name(m_DepthSRV, "Renderer:DepthSRV(R32_FLOAT)");
+#endif
+
+    m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), m_DepthStencilView.Get());
+
+    // Viewport
+    D3D11_VIEWPORT viewport{};
+    viewport.Width = static_cast<FLOAT>(Window::GetInstance().GetWidth());
+    viewport.Height = static_cast<FLOAT>(Window::GetInstance().GetHeight());
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    m_DeviceContext->RSSetViewports(1, &viewport);
+
+    // --- Rasterizer ---
+    D3D11_RASTERIZER_DESC rasterizerDesc{};
+    rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    rasterizerDesc.CullMode = D3D11_CULL_BACK;
+    rasterizerDesc.DepthClipEnable = TRUE;
+
+    ComPtr<ID3D11RasterizerState> rs;
+    hr = m_Device->CreateRasterizerState(&rasterizerDesc, rs.GetAddressOf());
+    if (SUCCEEDED(hr) && rs) {
+        m_DeviceContext->RSSetState(rs.Get());
+#ifdef _DEBUG
+        SetD3D11Name(rs, "Renderer:RasterizerState(Default)");
+#endif
+    }
+
+    // --- Blend states ---
+    D3D11_BLEND_DESC BlendDesc{};
+    BlendDesc.AlphaToCoverageEnable = FALSE;
+    BlendDesc.IndependentBlendEnable = TRUE;
+    BlendDesc.RenderTarget[0].BlendEnable = FALSE;
+    BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    for (int i = 1; i < 8; ++i) BlendDesc.RenderTarget[i] = BlendDesc.RenderTarget[0];
+
+    m_Device->CreateBlendState(&BlendDesc, m_BlendState[0].GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_BlendState[0], "Renderer:BlendState(Opaque)");
+#endif
+
+    BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+    m_Device->CreateBlendState(&BlendDesc, m_BlendState[1].GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_BlendState[1], "Renderer:BlendState(Alpha)");
+#endif
+
+    m_Device->CreateBlendState(&BlendDesc, m_BlendStateATC.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_BlendStateATC, "Renderer:BlendState(ATC)");
+#endif
+
+    BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+    m_Device->CreateBlendState(&BlendDesc, m_BlendState[2].GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_BlendState[2], "Renderer:BlendState(Add)");
+#endif
+
+    BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_REV_SUBTRACT;
+    m_Device->CreateBlendState(&BlendDesc, m_BlendState[3].GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_BlendState[3], "Renderer:BlendState(RevSub)");
+#endif
+
+    SetBlendState(BS_ALPHABLEND);
+
+    // --- Depth states ---
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
+    depthStencilDesc.DepthEnable = TRUE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    depthStencilDesc.StencilEnable = FALSE;
+    m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateEnable.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_DepthStateEnable, "Renderer:DepthState(Enable)");
+#endif
+
+    depthStencilDesc.DepthEnable = FALSE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateDisable.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_DepthStateDisable, "Renderer:DepthState(Disable)");
+#endif
+
+    m_DeviceContext->OMSetDepthStencilState(m_DepthStateEnable.Get(), 0);
+
+    depthStencilDesc.DepthEnable = TRUE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    depthStencilDesc.StencilEnable = FALSE;
+    m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthStateReadOnly.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_DepthStateReadOnly, "Renderer:DepthState(ReadOnly)");
+#endif
+
+    // --- Samplers ---
+    D3D11_SAMPLER_DESC samplerDesc{};
+    samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.MaxAnisotropy = 4;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    m_Device->CreateSamplerState(&samplerDesc, m_SamplerLinearWrap.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_SamplerLinearWrap, "Renderer:SamplerLinearWrap");
+#endif
+
+    D3D11_SAMPLER_DESC clampDesc = samplerDesc;
+    clampDesc.AddressU = clampDesc.AddressV = clampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    m_Device->CreateSamplerState(&clampDesc, m_SamplerLinearClamp.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_SamplerLinearClamp, "Renderer:SamplerLinearClamp");
+#endif
+
+    // ここは「初期化時」だけだと後で消されることがあるので、
+    // Begin() 側でも毎フレーム付け直すのを推奨（下に追記あり）
+    if (m_SamplerLinearWrap) {
+        ID3D11SamplerState* s0 = m_SamplerLinearWrap.Get();
+        m_DeviceContext->PSSetSamplers(0, 1, &s0);
+    }
+
+    // --- Constant buffers ---
+    D3D11_BUFFER_DESC bufferDesc{};
+    bufferDesc.ByteWidth = sizeof(Matrix4x4);
+    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bufferDesc.CPUAccessFlags = 0;
+
+    m_Device->CreateBuffer(&bufferDesc, nullptr, m_WorldBuffer.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_WorldBuffer, "Renderer:CB_World");
+#endif
+    m_DeviceContext->VSSetConstantBuffers(0, 1, m_WorldBuffer.GetAddressOf());
+
+    m_Device->CreateBuffer(&bufferDesc, nullptr, m_ViewBuffer.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_ViewBuffer, "Renderer:CB_View");
+#endif
+    m_DeviceContext->VSSetConstantBuffers(1, 1, m_ViewBuffer.GetAddressOf());
+
+    m_Device->CreateBuffer(&bufferDesc, nullptr, m_ProjectionBuffer.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_ProjectionBuffer, "Renderer:CB_Proj");
+#endif
+    m_DeviceContext->VSSetConstantBuffers(2, 1, m_ProjectionBuffer.GetAddressOf());
+
+    bufferDesc.ByteWidth = sizeof(MATERIAL);
+    m_Device->CreateBuffer(&bufferDesc, nullptr, m_MaterialBuffer.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_MaterialBuffer, "Renderer:CB_Material");
+#endif
+
+    bufferDesc.ByteWidth = sizeof(LIGHT);
+    m_Device->CreateBuffer(&bufferDesc, nullptr, m_LightBuffer.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_LightBuffer, "Renderer:CB_Light");
+#endif
+
+    // 初期ライト/マテリアル
+    LIGHT light{};
+    light.Enable = true;
+    light.Direction = Vector4(0.5f, -1.0f, 0.8f, 0.0f);
+    light.Direction.Normalize();
+    light.Ambient = Color(0.2f, 0.2f, 0.2f, 1.0f);
+    light.Diffuse = Color(1.5f, 1.5f, 1.5f, 1.0f);
+    SetLight(light);
+
+    MATERIAL material{};
+    material.Diffuse = Color(1.0f, 1.0f, 1.0f, 1.0f);
+    material.Ambient = Color(1.0f, 1.0f, 1.0f, 1.0f);
+    SetMaterial(material);
+
+    m_DeviceContext->VSSetConstantBuffers(3, 1, m_MaterialBuffer.GetAddressOf());
+    m_DeviceContext->PSSetConstantBuffers(3, 1, m_MaterialBuffer.GetAddressOf());
+    m_DeviceContext->VSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
+    m_DeviceContext->PSSetConstantBuffers(4, 1, m_LightBuffer.GetAddressOf());
+
+    // SpotLight CB
+    D3D11_BUFFER_DESC spotDesc{};
+    spotDesc.ByteWidth = sizeof(CBSpotLights);
+    spotDesc.Usage = D3D11_USAGE_DEFAULT;
+    spotDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+    m_Device->CreateBuffer(&spotDesc, nullptr, m_SpotLightBuffer.GetAddressOf());
+#ifdef _DEBUG
+    SetD3D11Name(m_SpotLightBuffer, "Renderer:CB_SpotLights");
+#endif
+
+    m_DeviceContext->VSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
+    m_DeviceContext->PSSetConstantBuffers(6, 1, m_SpotLightBuffer.GetAddressOf());
+
+    m_SpotLightCB.Count = 0;
+    m_DeviceContext->UpdateSubresource(m_SpotLightBuffer.Get(), 0, nullptr, &m_SpotLightCB, 0, 0);
 }
 
 /**
@@ -386,14 +773,23 @@ void Renderer::Init()
  */
 void Renderer::Uninit()
 {
-#if _DEBUG
-	ReportLiveD3DObjects(Renderer::GetDevice());
-#endif
+	if (m_DeviceContext) { UnbindAll(); } // 先に全部外す
+
+	m_DepthSRV.Reset();
+	m_DepthStencilView.Reset();
+
+	m_DepthStateReadOnly.Reset();
+	m_SamplerLinearWrap.Reset();
+	m_SamplerLinearClamp.Reset();
+
+	m_SpotLightBuffer.Reset();
+	m_BeamSRV.Reset();
 
 	for (auto& bs : m_BlendState) {
 		bs.Reset();
 	}
 	m_BlendStateATC.Reset();
+
 	m_DepthStateEnable.Reset();
 	m_DepthStateDisable.Reset();
 	m_WorldBuffer.Reset();
@@ -401,11 +797,54 @@ void Renderer::Uninit()
 	m_ProjectionBuffer.Reset();
 	m_LightBuffer.Reset();
 	m_MaterialBuffer.Reset();
+
 	m_RenderTargetView.Reset();
 	m_SwapChain.Reset();
+
 	m_DeviceContext.Reset();
+#if _DEBUG
+	Microsoft::WRL::ComPtr<ID3D11InfoQueue> iq;
+	if (SUCCEEDED(m_Device.As(&iq)) && iq)
+	{
+		iq->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, FALSE);
+	}
+	ReportLiveD3DObjects(Renderer::GetDevice());
+#endif
 	m_Device.Reset();
 }
+
+void Renderer::UnbindAll()
+{
+	if (!m_DeviceContext) return;
+
+	// RT/DS を外す
+	m_DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	// SRV を外す（VS/PS/GS/HS/DS/CS まとめて）
+	ID3D11ShaderResourceView* nullSRV[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+	m_DeviceContext->VSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->PSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->GSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->HSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->DSSetShaderResources(0, _countof(nullSRV), nullSRV);
+	m_DeviceContext->CSSetShaderResources(0, _countof(nullSRV), nullSRV);
+
+	// UAV を外す（CSは最大8）
+	ID3D11UnorderedAccessView* nullUAV[D3D11_PS_CS_UAV_REGISTER_COUNT] = {};
+	UINT initialCounts[D3D11_PS_CS_UAV_REGISTER_COUNT] = {};
+	m_DeviceContext->CSSetUnorderedAccessViews(
+		0, D3D11_PS_CS_UAV_REGISTER_COUNT, nullUAV, initialCounts);
+
+	// State / Shader も外す（念のため）
+	m_DeviceContext->VSSetShader(nullptr, nullptr, 0);
+	m_DeviceContext->PSSetShader(nullptr, nullptr, 0);
+	m_DeviceContext->GSSetShader(nullptr, nullptr, 0);
+	m_DeviceContext->CSSetShader(nullptr, nullptr, 0);
+
+	m_DeviceContext->ClearState();
+	m_DeviceContext->Flush();
+}
+
 
 /**
  * @brief 1フレームの描画を開始します。

@@ -495,6 +495,12 @@ void WeatherSystem::Update(float dt)
 	UpdateDayNightState();
 }
 
+void WeatherSystem::Uninit(void)
+{
+	SkyFogPass::Uninit();
+	C3DShape::Uninit();
+}
+
 void WeatherSystem::UpdatePerception(void)
 {
     // 1) 時刻による明るさ（0～1）

@@ -1,33 +1,73 @@
 #include "CStaticMeshRenderer.h"
+#include <crtdbg.h>
 
 void CStaticMeshRenderer::Init(CStaticMesh& mesh)
 {
-	// 頂点バッファとインデックスバッファを生成
-	CMeshRenderer::Init(mesh);
+    _CrtCheckMemory(); // ① ここで壊れてたら「この前」がおかしい
 
-	// サブセット情報取得
-	m_Subsets = mesh.GetSubsets();
+    m_Materiales.clear();
+    m_Subsets.clear();
+    m_DiffuseTextures.clear();
 
-	// diffuseテクスチャ情報取得
-	m_DiffuseTextures = mesh.GetDiffuseTextures();
+    CMeshRenderer::Init(mesh);
+    _CrtCheckMemory(); // ② ここで壊れたら CMeshRenderer::Init が犯人
 
-	// マテリアル情報取得	
-	std::vector<MATERIAL> materials;
-	materials = mesh.GetMaterials();
+    m_Subsets = mesh.GetSubsets();
+    m_DiffuseTextures = mesh.GetDiffuseTextures();
 
-	// マテリアル数分ループしてマテリアルデータを生成
-	for (int i = 0; i < materials.size(); i++)
-	{
-		// マテリアルオブジェクト生成
-		std::unique_ptr<CMaterial> m = std::make_unique<CMaterial>();
+    auto materials = mesh.GetMaterials();
+    _CrtCheckMemory(); // ③ ここで壊れたら GetMaterials が犯人
 
-		// マテリアル情報をセット
-		m->Create(materials[i]);
+    if (materials.size() > 4096) __debugbreak();
 
-		// マテリアルオブジェクトを配列に追加
-		m_Materiales.push_back(std::move(m));
-	}
+    m_Materiales.reserve(materials.size());
+
+    for (size_t i = 0; i < materials.size(); ++i)
+    {
+        auto m = std::make_unique<CMaterial>();
+
+        _CrtCheckMemory(); // ④ Create 前
+        m->Create(materials[i]);
+        _CrtCheckMemory(); // ⑤ Create 後に壊れてたら Create が犯人
+
+        m_Materiales.push_back(std::move(m));
+        _CrtCheckMemory(); // ⑥ push_back 後
+    }
 }
+
+//void CStaticMeshRenderer::Init(CStaticMesh& mesh)
+//{
+//	// 再Init対策
+//	m_Materiales.clear();
+//	m_Subsets.clear();
+//	m_DiffuseTextures.clear();
+//
+//	// 頂点バッファとインデックスバッファを生成
+//	CMeshRenderer::Init(mesh);
+//
+//	// サブセット情報取得
+//	m_Subsets = mesh.GetSubsets();
+//
+//	// diffuseテクスチャ情報取得
+//	m_DiffuseTextures = mesh.GetDiffuseTextures();
+//
+//	// マテリアル情報取得	
+//	std::vector<MATERIAL> materials;
+//	materials = mesh.GetMaterials();
+//
+//	// マテリアル数分ループしてマテリアルデータを生成
+//	for (int i = 0; i < materials.size(); i++)
+//	{
+//		// マテリアルオブジェクト生成
+//		std::unique_ptr<CMaterial> m = std::make_unique<CMaterial>();
+//
+//		// マテリアル情報をセット
+//		m->Create(materials[i]);
+//
+//		// マテリアルオブジェクトを配列に追加
+//		m_Materiales.push_back(std::move(m));
+//	}
+//}
 
 void CStaticMeshRenderer::Draw()
 {

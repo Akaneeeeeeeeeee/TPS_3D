@@ -141,7 +141,7 @@ RenderManager::RenderManager()
 
 RenderManager::~RenderManager()
 {
-	this->Uninit();
+	//this->Uninit();
 }
 
 // 初期化処理
@@ -182,11 +182,99 @@ bool RenderManager::Init(GraphicsDevice* graphicsDevice, LightSystem* light, Wea
 	return true;
 }
 
+//void RenderManager::Release(void)
+//{
+//	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
+//	m_RenderComponents.clear();
+//	m_Packets.clear();
+//	m_GBuffer.Release();
+//	m_Shadow.Release();
+//	m_SpotShadow.Release();
+//	m_TileCountBuf.Reset();
+//	m_TileCountUAV.Reset();
+//	m_TileCountSRV.Reset();
+//	m_TileIndexBuf.Reset();
+//	m_TileIndexUAV.Reset();
+//	m_TileIndexSRV.Reset();
+//	//m_SpotLightBuf.Reset();
+//	//m_SpotLightUAV.Reset();
+//	//m_SpotLightSRV.Reset();
+//	m_SpotAccumTex.Reset();
+//	m_SpotAccumUAV.Reset();
+//	m_SpotAccumSRV.Reset();
+//	m_BeamTex.Reset();
+//	m_BeamUAV.Reset();
+//	m_BeamSRV.Reset();
+//}
+
+void RenderManager::Release()
+{
+	// まずGPUの結びつきを外す（内部参照を落とす）
+	if (auto* ctx = Renderer::GetDeviceContext())
+	{
+		ctx->ClearState();
+		ctx->Flush();
+	}
+
+	// 他クラスに渡した参照を先に切る（重要）
+	SkyFogPass::SetBeamSRV(nullptr);
+
+	// 生成したD3Dリソースを全部Reset
+	m_ShadowCmpSampler.Reset();
+
+	m_CBDeferred.Reset();
+	m_CBShadow.Reset();
+	m_CBTile.Reset();
+	m_CBTileInfo.Reset();
+	m_CBBeam.Reset();
+	m_CBSpotShadow.Reset();
+
+	m_SpotSB_SRV.Reset();
+	m_SpotSB.Reset();
+	m_SpotSB_Capacity = 0;
+	m_SpotCountThisFrame = 0;
+
+	m_TileCountBuf.Reset();
+	m_TileCountUAV.Reset();
+	m_TileCountSRV.Reset();
+	m_TileIndexBuf.Reset();
+	m_TileIndexUAV.Reset();
+	m_TileIndexSRV.Reset();
+
+	m_SpotAccumSRV.Reset();
+	m_SpotAccumUAV.Reset();
+	m_SpotAccumTex.Reset();
+
+	m_BeamSRV.Reset();
+	m_BeamUAV.Reset();
+	m_BeamTex.Reset();
+
+	m_GBuffer.Release();
+	m_Shadow.Release();
+	m_SpotShadow.Release();
+
+	// rawポインタは「所有しない」ならnullptrにするだけ
+	m_pDeferredLighting = nullptr;
+	m_pGBufferStatic = nullptr;
+	m_pGBufferSkin = nullptr;
+	m_pShadowStatic = nullptr;
+	m_pShadowSkin = nullptr;
+	m_pCSBuildTile = nullptr;
+	m_pCSSpotLighting = nullptr;
+	m_pCSBeam = nullptr;
+
+	m_RenderComponents.clear();
+	m_Packets.clear();
+}
+
 void RenderManager::Uninit(void)
 {
+	this->Release();
+
 	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
 	m_RenderComponents.clear();
 	m_Packets.clear();
+	m_Shadow.Release();
 
 	// 依存性の解消
 	m_pGraphicsDevice = nullptr;
@@ -290,7 +378,10 @@ void RenderManager::RenderDeferred()
 	cbd.InvProjT = invP.Transpose();
 	Vector3 camPos = invV.Translation();
 	cbd.CameraWorldPos = Vector4(camPos.x, camPos.y, camPos.z, 0);
-	cbd.Screen = Vector4(1920.0f, 1080.0f, 0, 0);
+	const float w = (float)Window::GetInstance().GetWidth();
+	const float h = (float)Window::GetInstance().GetHeight();
+
+	cbd.Screen = Vector4(w, h, 0, 0);
 
 	// タイル情報
 	CBTileInfo ti{};
@@ -636,8 +727,6 @@ void RenderManager::RenderShadowPass()
 	ctx->HSSetShader(nullptr, nullptr, 0);
 	ctx->DSSetShader(nullptr, nullptr, 0);
 
-	// ラスタ：カリングは好み。まずは Front を消す/Back を消すで試す
-
 	// Opaqueだけを影に入れる（必要なら TransparentForward も影に入れる）
 	for (const auto& p : m_Packets)
 	{
@@ -657,6 +746,8 @@ void RenderManager::RenderShadowPass()
 		for (const auto& di : md.items) { if (di.bones) { isSkinned = true; break; } }
 
 		(isSkinned ? m_pShadowSkin : m_pShadowStatic)->SetGPU();
+		// 深度のみなのでピクセルシェーダ無し
+		ctx->PSSetShader(nullptr, nullptr, 0);
 
 		Matrix4x4 w = md.world;
 		Renderer::SetWorldMatrix(&w);
@@ -836,8 +927,8 @@ bool RenderManager::CreateStructuredUAVBuffer(ID3D11Device* dev, UINT numElement
 bool RenderManager::CreateSpotAccum(ID3D11Device* dev)
 {
 	D3D11_TEXTURE2D_DESC td{};
-	td.Width = 1920;
-	td.Height = 1080;
+	td.Width = static_cast<UINT>(Window::GetInstance().GetWidth());
+	td.Height = static_cast<UINT>(Window::GetInstance().GetHeight());
 	td.MipLevels = 1;
 	td.ArraySize = 1;
 	td.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -1019,7 +1110,10 @@ void RenderManager::RunSpotCompute(const CBDeferred& cbDeferred, const Matrix4x4
 	// CBTile(b0)
 	CBTile cbt{};
 	cbt.ViewT = viewT; // 既にTranspose済みを渡す想定
-	cbt.Screen = Vector2(1920.0f, 1080.0f);
+	const float w = static_cast<float>(Window::GetInstance().GetWidth());
+	const float h = static_cast<float>(Window::GetInstance().GetHeight());
+
+	cbt.Screen = Vector2(w, h);
 	cbt.ProjScale = Vector2(proj11, proj22);
 	cbt.SpotCount = (uint32_t)m_SpotCountThisFrame;
 	cbt.MaxPerTile = MAX_LIGHTS_PER_TILE;
@@ -1101,8 +1195,8 @@ void RenderManager::RunSpotCompute(const CBDeferred& cbDeferred, const Matrix4x4
 	ID3D11UnorderedAccessView* nullUAV1[1] = { nullptr };
 	ctx->CSSetUnorderedAccessViews(0, 1, nullUAV1, nullptr);
 
-	ID3D11ShaderResourceView* nulls[9] = {};
-	ctx->CSSetShaderResources(0, 9, nulls);
+	ID3D11ShaderResourceView* nulls[10] = {};
+	ctx->CSSetShaderResources(0, 10, nulls);
 
 	ctx->CSSetShader(nullptr, nullptr, 0);
 }
@@ -1177,6 +1271,8 @@ void RenderManager::RenderSpotShadowPass(const std::vector<SpotLightGPU>& lights
 			bool isSkinned = false;
 			for (const auto& di : md.items) if (di.bones) { isSkinned = true; break; }
 			(isSkinned ? m_pShadowSkin : m_pShadowStatic)->SetGPU();
+
+			ctx->PSSetShader(nullptr, nullptr, 0); // 深度のみ
 
 			Matrix4x4 w = md.world;
 			Renderer::SetWorldMatrix(&w);

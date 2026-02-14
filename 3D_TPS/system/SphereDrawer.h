@@ -4,7 +4,9 @@
 #include	"transform.h"
 
 void SphereDrawerInit(void);
+void SphereDrawerUninit(void);
 void SphereInstancedDrawerInit(void);
+void SphereInstancedDrawerUninit(void);
 void SphereDrawerDraw(float radius, Color col, float ex, float ey, float ez);
 void SphereDrawerDraw(SRT rts, Color col);
 void SphereDrawerDraw(Matrix4x4 mtx, Color col);

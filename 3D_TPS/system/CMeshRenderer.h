@@ -10,6 +10,8 @@ protected:
 	CIndexBuffer				m_IndexBuffer;		// インデックスバッファ
 	int							m_IndexNum = 0;		// インデックス数
 public:
+	virtual ~CMeshRenderer() = default;
+
 	virtual void Init(CMesh& mesh) 
 	{
 		m_VertexBuffer.Create(mesh.GetVertices());

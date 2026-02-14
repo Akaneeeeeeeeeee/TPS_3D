@@ -16,24 +16,28 @@ SOUND_LABEL SoundPlaybackListener::MapLabel(const WorldSoundEvent& ev) const
     }
 }
 
+/*
+* @brief ワールド音イベント受信
+ */
 void SoundPlaybackListener::OnWorldSound(const WorldSoundEvent& ev)
 {
-    if (!m_pBus || !m_pSound) return;
+    if (!m_pBus || !m_pSound) { return; }
 
     const SOUND_LABEL label = MapLabel(ev);
-    if (label == SOUND_LABEL_MAX) return;
+    if (label == SOUND_LABEL_MAX) { return; }
 
     float hearing = 1.0f;
     if (m_pWeather) hearing = m_pWeather->GetHearingFactor();
 
     const float effectiveRadius = ev.Radius * hearing;
-    if (effectiveRadius <= 1e-6f) return;
+    if (effectiveRadius <= 1e-6f) { return; }
 
     // 距離基準点（ここが「プレイヤー位置」になっていれば音量で距離が分かる）
     const Vector3 listener = m_pBus->GetListenerPos();
 
+	// 距離減衰
     const float dist = (ev.Position - listener).Length();
-    if (dist >= effectiveRadius) return;
+    if (dist >= effectiveRadius) { return; }
 
     float att = 1.0f - (dist / effectiveRadius);
     att = std::clamp(att, 0.0f, 1.0f);
@@ -46,7 +50,7 @@ void SoundPlaybackListener::OnWorldSound(const WorldSoundEvent& ev)
         kindMul = 2.0f;          // 投げた石などは少し大きめ
 
     float vol = ev.Volume * att * hearing * kindMul;
-    if (vol <= 0.0f) return;
+    if (vol <= 0.0f) { return; }
 
     m_pSound->PlayOneShot(label, vol);
 }

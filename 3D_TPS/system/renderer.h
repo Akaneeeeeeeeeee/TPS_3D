@@ -220,6 +220,7 @@ private:
 public:
     static void Init();
     static void Uninit();
+    static void UnbindAll();
     static void Begin();
     static void End();
     static void SetDepthEnable(bool Enable);
