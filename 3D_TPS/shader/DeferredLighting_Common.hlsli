@@ -53,19 +53,15 @@ struct VS_OUT
     float2 uv : TEXCOORD0;
 };
 
-// 深度を元にワールド座標を復元
 float3 WorldPosFromDepth(float2 uv, float depth01)
 {
-    // 正規デバイス座標に変換
     float2 ndc = uv * 2.0 - 1.0;
     ndc.y = -ndc.y;
     float4 clip = float4(ndc, depth01, 1.0);
 
-    // クリップ空間→ビュー空間
     float4 view = mul(clip, InvProjT);
     view.xyz /= max(view.w, 1e-6);
 
-    // ビュー空間→ワールド空間
     float4 w = mul(float4(view.xyz, 1.0), InvViewT);
     return w.xyz;
 }
@@ -82,12 +78,11 @@ cbuffer CBShadow : register(b10)
     float4 ShadowParams; // x=bias, y=normalBias, z=pcfRadius(0..2), w=unused
 }
 
-// 光源計算して影の境界をぼかす
 float ShadowPCF(float3 worldPos, float3 N)
 {
     float3 wp = worldPos + N * ShadowParams.y;
     
-    // 光空間へ
+    // world -> light clip
     float4 lc = mul(float4(wp, 1.0), LightViewProjT);
 
     // wが0に近いのは無視

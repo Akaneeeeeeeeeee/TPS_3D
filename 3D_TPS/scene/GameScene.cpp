@@ -302,9 +302,9 @@ void GameScene::Draw(void)
 		m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
 	}
 
-	//Vector3 sp;
-	//sp = m_player->GetTransform().GetPosition();
-	//sp.y -= 500.0f;
+	Vector3 sp;
+	sp = m_player->GetTransform().GetPosition();
+	sp.y -= 500.0f;
 
 	SetLineWidth(3.0f);
 	//LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
@@ -340,7 +340,7 @@ void GameScene::Init(ObjectManager* mgr)
 	m_CameraFocusIssued = false;
 	m_FoundByEnemy = nullptr;
 	m_RequestRebuildEnemies = false;
-	m_Limit.Start(300.0f);
+	m_Limit.Start(1200.0f);
 
 	// カウントダウン用コンポーネントの追加
 	auto* obj = m_pObjectManager->Instantiate<GameObject>("CountdownAudio", Tag::Object, Transform::One());
@@ -378,7 +378,7 @@ void GameScene::Init(ObjectManager* mgr)
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
 	m_Goal->SetScale(Vector3(0.5f, 1.0f, 0.5f));
-	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, 5000.0f));
+	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, -800.0f));
 
 
 	// --- 衝突テスト用障害物 ---
@@ -756,7 +756,7 @@ void GameScene::DrawUI(void)
 	// 既存の表示
 	if (m_player)
 	{
-		const auto p = m_player->GetPosition();
+		const auto p = m_player->GetTransform().GetPosition();
 		wchar_t buf[256];
 		swprintf_s(buf, L"Player (%.1f, %.1f, %.1f)", p.x, p.y, p.z);
 		m_pDirectWrite->DrawString(buf, { 20.0f, 50.0f }, D2D1_DRAW_TEXT_OPTIONS_NONE, true);

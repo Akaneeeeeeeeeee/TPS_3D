@@ -22,10 +22,8 @@ float4 main(VS_OUT pin) : SV_Target
     float3 Ld = normalize(-Light.Direction.xyz);
     float ndl = saturate(dot(N, Ld));
     
-    // ‹«ŠE‚ð‚Ú‚©‚µ‚½‰e
     float shadow = ShadowPCF(worldPos, N); // 0..1
 
-    // Šî–{ŒõŒ¹ŒvŽZ
     float3 col = al.rgb * (Light.Ambient.rgb + Light.Diffuse.rgb * ndl * shadow);
     
     // ComputeŒ‹‰Ê

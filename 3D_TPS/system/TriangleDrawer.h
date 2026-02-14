@@ -3,7 +3,6 @@
 #include	"CommonTypes.h"
 
 void TriangleDrawerInit();
-void TriangleDrawerUninit();
 void TriangleDrawerDraw(
 	std::array<Vector3,3> verices,
 	Color col);

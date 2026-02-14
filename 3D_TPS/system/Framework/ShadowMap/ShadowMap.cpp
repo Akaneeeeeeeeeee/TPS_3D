@@ -59,12 +59,3 @@ void ShadowMap::End(ID3D11DeviceContext* ctx)
     // Ç±Ç±Ç≈ÇÕâΩÇ‡ÇµÇ»Ç¢ÅiåƒÇ—èoÇµë§Ç≈ backbuffer Ç…ñﬂÇ∑Åj
     (void)ctx;
 }
-
-void ShadowMap::Release(void)
-{
-    m_SRV.Reset();
-    m_DSV.Reset();
-    m_Tex.Reset();
-    m_W = 0;
-    m_H = 0;
-}

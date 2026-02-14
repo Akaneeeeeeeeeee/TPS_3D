@@ -57,27 +57,6 @@ void SphereDrawerInit()
 
 }
 
-void SphereDrawerUninit()
-{
-	// ※順番：描画で使うもの→根っこ（メッシュ）の順
-	//g_shader.Uninit();
-	//g_material.Uninit();
-	//g_renderer.Uninit();
-	//g_mesh.Uninit();
-}
-
-void SphereInstancedDrawerUninit()
-{
-	g_cbInstance.Reset();
-	g_cbCamera.Reset();
-
-	//g_instShader.Uninit();
-	//g_instMaterial.Uninit();
-	//g_instRenderer.Uninit();
-	//g_instMesh.Uninit();
-}
-
-
 void SphereDrawerDraw(float radius,Color col,float ex, float ey, float ez)
 {
 	Matrix4x4 mtx = Matrix4x4::CreateScale(radius);

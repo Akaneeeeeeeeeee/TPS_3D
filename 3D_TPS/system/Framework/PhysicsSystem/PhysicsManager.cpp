@@ -52,6 +52,9 @@ PhysicsManager::PhysicsManager()
 
 PhysicsManager::~PhysicsManager()
 {
+#if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG)
+    m_DebugRenderer.reset(); // Ensures ~JoltDebugRendererDX11 -> ~DebugRenderer runs.
+#endif
 }
 
 void PhysicsManager::Init(void)
@@ -85,43 +88,7 @@ void PhysicsManager::Init(void)
 #endif
 }
 
-void PhysicsManager::Uninit()
-{
-    // 物理更新中に呼ばない前提（マルチスレッド更新してるなら停止/同期してから）
-    m_System.SetContactListener(nullptr);
 
-    // 登録済みコンポーネントのボディを必ず破棄
-   /* {
-        auto& bi = m_System.GetBodyInterface();
-        for (auto* comp : m_PhysicsObjects)
-        {
-            if (comp)
-            {
-                comp->DestroyBody(bi);
-            }
-        }
-        m_PhysicsObjects.clear();
-    }*/
-
-    // キューも掃除
-    {
-        std::lock_guard<std::mutex> lk(m_EventMtx);
-        m_EventQueue.clear();
-    }
-
-#if defined(JPH_DEBUG_RENDERER) && defined(_DEBUG) && defined(JPH_DEBUG_RENDERER)
-    m_DebugRenderer.reset();
-#endif
-
-    m_JobSystem.reset();
-    m_TempAllocator.reset();
-
-    // ---- Jolt のグローバル後始末 ----
-    JPH::UnregisterTypes();
-
-    delete JPH::Factory::sInstance;
-    JPH::Factory::sInstance = nullptr;
-}
 
 #ifdef _DEBUG
 

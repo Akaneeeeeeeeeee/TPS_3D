@@ -149,7 +149,7 @@ private:
 	StaticMeshCollider* m_TerrainCol = nullptr;
 
 	bool m_MultiEnemy = true;
-	int  m_MultiCount = 20;
+	int  m_MultiCount = 4;
 	bool m_RequestRebuildEnemies = false;
 
 	int m_EnemyAliveCount = 0;

@@ -11,7 +11,6 @@ public:
     bool Create(ID3D11Device* dev, int w, int h);
     void Begin(ID3D11DeviceContext* ctx);
     void End(ID3D11DeviceContext* ctx);
-	void Release(void);
 
     ID3D11ShaderResourceView* GetSRV() const { return m_SRV.Get(); }
     ID3D11DepthStencilView* GetDSV() const { return m_DSV.Get(); }

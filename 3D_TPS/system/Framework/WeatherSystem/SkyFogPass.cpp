@@ -204,52 +204,6 @@ void SkyFogPass::Resize(int w, int h)
     CreateLowResFogTargets();
 }
 
-void SkyFogPass::Uninit(void)
-{
-    // 1) パイプラインから外す（これをやらないと「まだ掴んでる」状態が残りやすい）
-    if (sCtx)
-    {
-        ID3D11ShaderResourceView* nullSRV[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
-        sCtx->PSSetShaderResources(0, _countof(nullSRV), nullSRV);
-
-        ID3D11Buffer* nullCB[D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT] = {};
-        sCtx->VSSetConstantBuffers(0, _countof(nullCB), nullCB);
-        sCtx->PSSetConstantBuffers(0, _countof(nullCB), nullCB);
-
-        // もし SkyFogPass がOMを触るなら念のため
-        sCtx->OMSetRenderTargets(0, nullptr, nullptr);
-
-        // SkyFogPassが使った可能性があるシェーダも念のため外す
-        sCtx->VSSetShader(nullptr, nullptr, 0);
-        sCtx->PSSetShader(nullptr, nullptr, 0);
-        sCtx->GSSetShader(nullptr, nullptr, 0);
-        sCtx->HSSetShader(nullptr, nullptr, 0);
-        sCtx->DSSetShader(nullptr, nullptr, 0);
-        sCtx->CSSetShader(nullptr, nullptr, 0);
-    }
-
-    // 2) D3Dリソース解放（ComPtrはResetでOK）
-    sCBSky.Reset();
-    sCBFog.Reset();
-
-    sFogLowSRV.Reset();
-    sFogLowRTV.Reset();
-    sFogLowTex.Reset();
-
-    sNoiseSRV.Reset();
-    sNoiseTex.Reset();
-
-    sBeamSRV.Reset();
-    sBeamSamp.Reset();
-
-    // 3) 生ポインタは「所有してない」前提でも null にして事故防止
-    sDev = nullptr;
-    sCtx = nullptr;
-
-    sW = sH = 0;
-    sFogLW = sFogLH = 0;
-}
-
 void SkyFogPass::UpdateFromWeather(const WeatherSystem& ws)
 {
     sHours = ws.GetSun().timeOfDayHours;
@@ -415,12 +369,8 @@ void SkyFogPass::DrawSky()
     Renderer::SetDepthEnable(false);
     Renderer::SetBlendState(BS_NONE);
 
-    // slot0のVBを外す
-    ID3D11Buffer* nullVB[1] = { nullptr };
-    UINT nullStride[1] = { 0 };
-    UINT nullOffset[1] = { 0 };
     sCtx->IASetInputLayout(nullptr);
-    sCtx->IASetVertexBuffers(0, 1, nullVB, nullStride, nullOffset);
+    sCtx->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
     sCtx->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
     sCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

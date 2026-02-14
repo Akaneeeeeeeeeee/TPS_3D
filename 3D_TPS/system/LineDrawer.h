@@ -3,7 +3,6 @@
 #include	"CommonTypes.h"
 
 void LineDrawerInit();
-void LineDrawerUninit();
 void LineDrawerDraw(
 	float length,
 	Vector3 start,
@@ -22,7 +21,6 @@ struct LineInstanceParam
 };
 
 void LineInstancedDrawerInit();
-void LineInstancedDrawerUninit();
 
 // ï°êîñ{Ç‹Ç∆ÇﬂÇƒï`Ç≠
 void LineInstancedDrawerDraw(

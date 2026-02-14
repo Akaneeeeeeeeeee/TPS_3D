@@ -22,7 +22,7 @@ int main(void)
     // プロセスを DPI 対応に設定
     //SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
     //SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    //_CrtSetBreakAlloc(1728078);
+    //_CrtSetBreakAlloc(1386758);
     // アプリケーション実行
     Application app(SCREEN_WIDTH, SCREEN_HEIGHT);
     app.Run();

@@ -16,8 +16,6 @@
 #include <Jolt/Physics/Collision/CollisionCollector.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 
-#include <queue>
-
 namespace {
 	// Y軸回転: 指定したベクトルをY軸（上方向）でradラジアン回転するユーティリティ関数
 	static Vector3 RotateY(const Vector3& v, float rad)
@@ -30,12 +28,6 @@ namespace {
 			v.x * sinA + v.z * cosA
 		);
 	}
-
-	// 胴体(Transform) → 足元までのY差
-	constexpr float BODY_TO_FEET_Y = 75.0f;
-
-	// 胴体Yの上限（これを超える候補は不採用）
-	constexpr float MAX_BODY_Y = 300.0f;
 }
 
 
@@ -426,7 +418,7 @@ void EnemyAIComponent::UpdateStuck(float dt, const Vector3& desiredDir)
 	// しきい値
 	const float MOVE_EPS_SQ = 1.0f; // ほとんど動いていない距離
 	const float TARGET_EPS = 5.0f;  // 目標までの距離が「縮んだ」とみなす量
-	const float STUCK_TIME = 3.0f;  // 何秒続いたらスタックとみなすか
+	const float STUCK_TIME = 1.0f;  // 何秒続いたらスタックとみなすか
 
 	// 位置としては動いているか
 	bool movingPos = (movedSq > MOVE_EPS_SQ);
@@ -605,16 +597,13 @@ void EnemyAIComponent::UpdateSight(const float dt)
 	}
 }
 
-/*
-* @brief	視線情報から不審度を更新する
-*/
 void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 {
 	Vector3 eyePos = GetEyePosition();
 
 	std::vector<Vector3> samples;
 	m_pPlayer->GetVisibilitySamplePoints(eyePos, samples);
-	int samplePoint = std::min<int>((int)samples.size(), SamplePointCount);
+	int n = std::min<int>((int)samples.size(), SamplePointCount);
 
 	m_CanSeeAnyPointThisFrame = false;
 
@@ -626,13 +615,12 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 	env01 = std::clamp(env01, 0.0f, 1.0f);
 
 	// 「暗い＆遠い」は“見えてる扱いにしない”ためのしきい値
-	constexpr float VISIBLE_MIN = 0.15f; // 調整用。通常は空namespaceに。
+	constexpr float VISIBLE_MIN = 0.15f; // 調整用
 
 	float bestC = -1.0f;
 	Vector3 bestP = Vector3::Zero;
 
-	// 各サンプル点について視認判定
-	for (int i = 0; i < samplePoint; ++i)
+	for (int i = 0; i < n; ++i)
 	{
 		const Vector3& p = samples[i];
 
@@ -643,7 +631,6 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 		// 距離の減衰（0..1）
 		float distMul = 1.0f - std::clamp(dist / std::max(1.0f, m_BaseViewDistance), 0.0f, 1.0f);
 
-		// ライトによる見えやすさ補正（0..1）
 		float light01 = (m_Light) ? std::clamp(m_Light->GetLightVisibility01(p), 0.0f, 1.0f) : 0.0f;
 
 		// 夜の暗さをライトが押し上げる
@@ -660,19 +647,16 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 		}
 		else
 		{
-			// 見えてないなら見えてた時間を減衰
 			m_SeenSec[i] = std::max(0.0f, m_SeenSec[i] - dt * m_SeenDecayPerSec);
 		}
 
 		if (!visibleNow)
 			continue; // 見えてる扱いの点だけ寄与
 
-		// 見えてる点の寄与度計算
 		float hold = HoldTimeByDistance(dist);
 		float conf = (hold > 1e-6f) ? (m_SeenSec[i] / hold) : 1.0f;
 		conf = std::clamp(conf, 0.0f, 1.0f);
 
-		// 点の寄与度合計に加算
 		float contribution = conf * distMul * bright01;
 		sumContribution += contribution;
 
@@ -695,9 +679,9 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 	}
 
 	// 4点平均（n で割る）
-	float sight01 = (samplePoint > 0) ? (sumContribution / static_cast<float>(samplePoint)) : 0.0f;
+	float sight01 = (n > 0) ? (sumContribution / (float)n) : 0.0f;
 
-	float countMul = m_PointCountMul[std::clamp(visibleNowCount, 0, SamplePointCount)];
+	float countMul = m_PointCountMul[std::clamp(visibleNowCount, 0, 4)];
 
 	if (sight01 > 0.0f)
 		m_Suspicion += dt * m_SusGainPerSec * sight01 * countMul;
@@ -706,6 +690,7 @@ void EnemyAIComponent::UpdateSuspicionFromSight(float dt)
 
 	m_Suspicion = std::clamp(m_Suspicion, 0.0f, 1.0f);
 }
+
 
 /*
 * @brief	プレイヤーが見えているかを判定する
@@ -732,6 +717,7 @@ bool EnemyAIComponent::CanSeePlayer(void) const
 
 	return false;
 }
+
 
 /*
 * @brief	ターゲット位置が視野円錐内にあるかを判定する
@@ -769,13 +755,11 @@ bool EnemyAIComponent::IsInViewCone(
 	return cosAngle >= cosHalfFov;
 }
 
-/*
-* @brief	ターゲット位置が見えているかを判定する
-*/
+
 bool EnemyAIComponent::CanSeePoint(const Vector3& eyePos, const Vector3& targetPos) const
 {
 	using namespace JPH;
-	if (!m_Physics) { return false; }
+	if (!m_Physics) return false;
 
 	Vector3 toTarget = targetPos - eyePos;
 	float   dist = toTarget.Length();
@@ -807,6 +791,7 @@ bool EnemyAIComponent::CanSeePoint(const Vector3& eyePos, const Vector3& targetP
 	// 遮蔽物がなければ「その点は見えている」
 	return !blocked;
 }
+
 
 /*
 * @brief	ターゲット位置に向かうための移動方向を計算する
@@ -1029,6 +1014,7 @@ Vector3 EnemyAIComponent::ComputeMoveDirToTarget(const Vector3& target)
 	return m_LastMoveDir;
 }
 
+
 bool EnemyAIComponent::ConsumeHeardSoundPosition(Vector3& outPos)
 {
 	if (!m_HeardThisFrame) { return false; }
@@ -1138,28 +1124,25 @@ void EnemyAIComponent::ResolveStuck(void)
 //	if (!m_TerrainCol) { return false; }
 //
 //	Vector3 center = m_pOwner->GetPosition();
-//
-//	// 現在の足元Y（ownerのPositionが足元基準の前提。もし腰基準ならここを補正）
-//	const float curY = center.y;
-//
 //	Vector3 forward = m_pOwner->GetForward();
 //	forward.y = 0.0f;
 //	if (forward.LengthSquared() < 1e-4f)
+//	{
 //		forward = Vector3::Forward;
+//	}
 //	forward.Normalize();
 //
+//	// チェックする角度の一覧（度）
 //	static const float anglesDeg[] =
 //	{ 0.0f, 45.0f, -45.0f, 90.0f, -90.0f, 135.0f, -135.0f, 180.0f };
 //
+//	// キャラの直径を使う
 //	float radius = m_Char ? m_Char->GetRadius() : 50.0f;
 //	float charDiameter = radius * 2.0f;
 //
-//	const float stepR = charDiameter;
+//	// 半径の刻み
+//	const float stepR = charDiameter; // 「キャラ1人分ずつ」外側へ
 //	const float footOffset = 2.0f;
-//
-//	// 高低差許容（調整値）
-//	// 例：段差の上下がこれを超える候補は除外
-//	constexpr float MAX_Y_DELTA = 200.0f;
 //
 //	for (float r = stepR; r <= maxR; r += stepR)
 //	{
@@ -1179,11 +1162,6 @@ void EnemyAIComponent::ResolveStuck(void)
 //
 //			Vector3 candidate(xz.x, groundY + footOffset, xz.z);
 //
-//			// 高低差フィルタ
-//			// 現在の高さから離れすぎる候補は「別の段差/崖下」へのワープになりやすいので捨てる
-//			if (std::fabs(candidate.y - curY) > MAX_Y_DELTA)
-//				continue;
-//
 //			if (IsCapsuleFree(candidate))
 //			{
 //				outPos = candidate;
@@ -1195,59 +1173,65 @@ void EnemyAIComponent::ResolveStuck(void)
 //}
 bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 {
-	if (!m_Physics || !m_pOwner) return false;
-	if (!m_TerrainCol) return false;
+	if (!m_Physics || !m_pOwner) { return false; }
+	if (!m_TerrainCol) { return false; }
 
-	const Vector3 centerBody = m_pOwner->GetPosition();
-	const float   curBodyY = centerBody.y;
+	Vector3 center = m_pOwner->GetPosition();
+
+	// 現在の足元Y（ownerのPositionが足元基準の前提。もし腰基準ならここを補正）
+	const float curY = center.y;
 
 	Vector3 forward = m_pOwner->GetForward();
 	forward.y = 0.0f;
-	if (forward.LengthSquared() < 1e-4f) forward = Vector3::Forward;
+	if (forward.LengthSquared() < 1e-4f)
+		forward = Vector3::Forward;
 	forward.Normalize();
 
 	static const float anglesDeg[] =
 	{ 0.0f, 45.0f, -45.0f, 90.0f, -90.0f, 135.0f, -135.0f, 180.0f };
 
-	const float radius = m_Char ? m_Char->GetRadius() : 50.0f;
-	const float stepR = radius * 2.0f;
+	float radius = m_Char ? m_Char->GetRadius() : 50.0f;
+	float charDiameter = radius * 2.0f;
 
-	// 近場で別の段に飛ばないための許容（胴体Y差）
+	const float stepR = charDiameter;
+	const float footOffset = 2.0f;
+
+	// 高低差許容（調整値）
+	// 例：段差の上下がこれを超える候補は除外
 	constexpr float MAX_Y_DELTA = 200.0f;
 
 	for (float r = stepR; r <= maxR; r += stepR)
 	{
 		for (float deg : anglesDeg)
 		{
-			const float rad = deg * DEG2RAD;
+			float rad = deg * DEG2RAD;
 			Vector3 dir = RotateY(forward, rad);
 			dir.y = 0.0f;
 			if (dir.LengthSquared() < 1e-6f) continue;
 			dir.Normalize();
 
-			Vector3 xz = centerBody + dir * r;
+			Vector3 xz = center + dir * r;
 
-			float groundY = 0.0f;
-			if (!m_TerrainCol->SampleHeight(xz.x, xz.z, groundY)) continue;
+			float groundY;
+			if (!m_TerrainCol->SampleHeight(xz.x, xz.z, groundY))
+				continue;
 
-			Vector3 candBody(xz.x, groundY + BODY_TO_FEET_Y, xz.z);
+			Vector3 candidate(xz.x, groundY + footOffset, xz.z);
 
-			// 上限
-			if (candBody.y > MAX_BODY_Y) continue;
+			// 高低差フィルタ
+			// 現在の高さから離れすぎる候補は「別の段差/崖下」へのワープになりやすいので捨てる
+			if (std::fabs(candidate.y - curY) > MAX_Y_DELTA)
+				continue;
 
-			// 段差が大きい候補は除外
-			if (std::fabs(candBody.y - curBodyY) > MAX_Y_DELTA) continue;
-
-			if (IsCapsuleFreeBody(candBody))
+			if (IsCapsuleFree(candidate))
 			{
-				outPos = candBody;
+				outPos = candidate;
 				return true;
 			}
 		}
 	}
 	return false;
 }
-
 
 
 float EnemyAIComponent::HoldTimeByDistance(float dist) const
@@ -1306,208 +1290,4 @@ bool EnemyAIComponent::IsCapsuleFree(const Vector3& feetPos) const
 
 	// 何も当たっていなければ「この位置は安全」
 	return !collector.HadHit();
-}
-
-bool EnemyAIComponent::SampleBodyOnTerrain(float x, float z, Vector3& outBody) const
-{
-	if (!m_TerrainCol) return false;
-
-	float groundY = 0.0f;
-	if (!m_TerrainCol->SampleHeight(x, z, groundY)) return false;
-
-	// 地形上の足元→胴体へ
-	outBody = Vector3(x, groundY + BODY_TO_FEET_Y, z);
-
-	// 高さ上限
-	if (outBody.y > MAX_BODY_Y) return false;
-
-	return true;
-}
-
-bool EnemyAIComponent::IsCapsuleFreeBody(const Vector3& bodyPos) const
-{
-	using namespace JPH;
-
-	if (!m_Physics || !m_Char) return false;
-
-	auto& system = m_Physics->GetSystem();
-	auto& npq = system.GetNarrowPhaseQuery();
-
-	// 胴体→足元へ変換（既存の IsCapsuleFree(feetPos) と同じ判定に合わせる）
-	Vector3 feetPos = bodyPos;
-	feetPos.y -= BODY_TO_FEET_Y;
-
-	float halfHeight = m_Char->GetCurrentHalfHeight();
-	float radius = m_Char->GetRadius();
-
-	const Shape* capsule = m_Char->GetCurrentShape();
-	if (!capsule) return false;
-
-	RVec3 center(
-		feetPos.x,
-		feetPos.y + halfHeight + radius,
-		feetPos.z);
-
-	RMat44 transform = RMat44::sTranslation(center);
-
-	CollideShapeSettings settings;
-	RVec3 baseOffset = RVec3::sZero();
-	Vec3  scale = Vec3::sReplicate(1.0f);
-
-	auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
-	auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
-
-	EscapeBodyFilter bodyFilter(system);
-	ShapeFilter shapeFilter;
-
-	ClosestHitCollisionCollector<CollideShapeCollector> collector;
-
-	npq.CollideShape(
-		capsule,
-		scale,
-		transform,
-		settings,
-		baseOffset,
-		collector,
-		bpFilter,
-		objFilter,
-		bodyFilter,
-		shapeFilter
-	);
-
-	return !collector.HadHit();
-}
-
-bool EnemyAIComponent::BuildRandomPatrolPoints(Vector3& outStartBody, Vector3& outEndBody, RandomEngine& rng) const
-{
-	if (!m_TerrainCol || !m_Char) return false;
-
-	Vector3 xzMin, xzMax;
-	if (!m_TerrainCol->GetWorldXZBounds(xzMin, xzMax)) return false;
-
-	// --- 調整値 ---
-	const float cell = 200.0f;   // グリッド幅（粗いほど速い）
-	const float maxStepY = 80.0f;    // 隣セルに移れる最大段差（胴体Y差）
-	const float minPatrolD = 900.0f;   // 開始-終点の最低距離（XZ）
-	const int   maxVisit = 6000;     // 探索上限
-
-	const int nx = std::max(1, (int)std::floor((xzMax.x - xzMin.x) / cell) + 1);
-	const int nz = std::max(1, (int)std::floor((xzMax.z - xzMin.z) / cell) + 1);
-
-	auto Idx = [&](int ix, int iz) { return iz * nx + ix; };
-
-	std::vector<int8_t>  walk(nx * nz, -1);      // -1未評価 0不可 1可
-	std::vector<float>   bodyY(nx * nz, 0.0f);
-	std::vector<Vector3> bodyPos(nx * nz, Vector3::Zero);
-
-	auto EvalCell = [&](int ix, int iz) -> bool {
-		const int idx = Idx(ix, iz);
-		if (walk[idx] != -1) return walk[idx] == 1;
-
-		const float x = xzMin.x + (ix + 0.5f) * cell;
-		const float z = xzMin.z + (iz + 0.5f) * cell;
-
-		Vector3 b;
-		if (!SampleBodyOnTerrain(x, z, b)) { walk[idx] = 0; return false; }
-		if (!IsCapsuleFreeBody(b)) { walk[idx] = 0; return false; }
-
-		walk[idx] = 1;
-		bodyPos[idx] = b;
-		bodyY[idx] = b.y;
-		return true;
-		};
-
-	// --- 開始セル：outStartBody（または owner）から近い可セルを探す ---
-	Vector3 startBody = outStartBody;
-	if (m_pOwner) startBody = m_pOwner->GetPosition();
-
-	int sx = (int)std::floor((startBody.x - xzMin.x) / cell);
-	int sz = (int)std::floor((startBody.z - xzMin.z) / cell);
-	sx = std::max(0, std::min(sx, nx - 1));
-	sz = std::max(0, std::min(sz, nz - 1));
-
-	bool foundStart = false;
-	for (int r = 0; r <= 6 && !foundStart; ++r)
-	{
-		for (int dz = -r; dz <= r && !foundStart; ++dz)
-		{
-			for (int dx = -r; dx <= r && !foundStart; ++dx)
-			{
-				const int ix = sx + dx, iz = sz + dz;
-				if (ix < 0 || ix >= nx || iz < 0 || iz >= nz) continue;
-				if (EvalCell(ix, iz)) { sx = ix; sz = iz; foundStart = true; }
-			}
-		}
-	}
-	if (!foundStart) return false;
-
-	outStartBody = bodyPos[Idx(sx, sz)];
-
-	// --- BFS：開始セルと連結なセルだけ集める（段差制限つき） ---
-	std::vector<uint8_t> visited(nx * nz, 0);
-	std::queue<Cell> q;
-
-	q.push({ sx, sz });
-	visited[Idx(sx, sz)] = 1;
-
-	std::vector<Cell> reachable;
-	reachable.reserve(2048);
-	reachable.push_back({ sx, sz });
-
-	const int dir4[4][2] = { {1,0},{-1,0},{0,1},{0,-1} };
-
-	while (!q.empty() && (int)reachable.size() < maxVisit)
-	{
-		Cell c = q.front(); q.pop();
-		const int cidx = Idx(c.x, c.z);
-		const float cy = bodyY[cidx];
-
-		for (auto& d : dir4)
-		{
-			const int nx2 = c.x + d[0];
-			const int nz2 = c.z + d[1];
-			if (nx2 < 0 || nx2 >= nx || nz2 < 0 || nz2 >= nz) continue;
-
-			const int nidx = Idx(nx2, nz2);
-			if (visited[nidx]) continue;
-
-			if (!EvalCell(nx2, nz2)) continue;
-
-			const float ny = bodyY[nidx];
-			if (std::fabs(ny - cy) > maxStepY) continue;
-
-			visited[nidx] = 1;
-			q.push({ nx2, nz2 });
-			reachable.push_back({ nx2, nz2 });
-		}
-	}
-
-	if (reachable.size() < 2) return false;
-
-	// --- 終点：開始から十分遠いセルを優先して選ぶ ---
-	const float minDistSq = minPatrolD * minPatrolD;
-
-	std::vector<Cell> farcell;
-	farcell.reserve(reachable.size());
-
-	for (auto& c : reachable)
-	{
-		Vector3 b = bodyPos[Idx(c.x, c.z)];
-		Vector3 d = b - outStartBody;
-		d.y = 0.0f;
-		if (d.LengthSquared() >= minDistSq) farcell.push_back(c);
-	}
-
-	auto Pick = [&](const std::vector<Cell>& src) -> Cell {
-		const int i = (int)rng.uniformInt(0, (int)src.size() - 1);
-		return src[i];
-		};
-
-	const Cell endCell = farcell.empty() ? Pick(reachable) : Pick(farcell);
-	outEndBody = bodyPos[Idx(endCell.x, endCell.z)];
-
-	// 念のため（ここまでで弾かれているはずだが保険）
-	if (outEndBody.y > MAX_BODY_Y) return false;
-
-	return true;
 }

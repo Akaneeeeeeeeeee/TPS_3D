@@ -3,7 +3,6 @@
 #include "system/transform.h"
 
 void BoxDrawerInit();
-void BoxDrawerUninit();
 void BoxDrawerDraw(
 	float width, float height, float depth,
 	Color col, float posx, float posy, float posz);
@@ -20,7 +19,6 @@ struct BoxInstance
 
 // view/proj ‚ÆAworld s—ñ‚Ì”z—ñ‚ğ“n‚µ‚Ä‚Ü‚Æ‚ß•`‚«
 void BoxInstancedDrawerInit();
-void BoxInstancedDrawerUninit();
 void BoxInstancedDrawerDraw(
     const Matrix4x4& view,
     const Matrix4x4& proj,

@@ -7,7 +7,7 @@ void EngineSystems::Init()
     if (m_Inited) return;
     m_Inited = true;
 
-    //m_Shader.Init();
+    m_Shader.Init();
     //m_Asset.Init();
 	m_Asset.GetInstance().Init();
 
@@ -87,13 +87,6 @@ void EngineSystems::EndFrame()
 
 void EngineSystems::Uninit()
 {
-	m_Weather.Uninit();
 	m_Sound.Uninit();
-    m_Physics.Uninit();
-	m_Asset.GetInstance().Uninit();
-    m_Render.Uninit();
-
-    Renderer::Uninit();
-
     m_Inited = false;
 }

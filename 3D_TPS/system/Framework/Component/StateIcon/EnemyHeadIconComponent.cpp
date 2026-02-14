@@ -40,6 +40,7 @@ void EnemyHeadIconComponent::Init(void)
 
 void EnemyHeadIconComponent::Uninit(void)
 {
+    // CSprite‚ª–¾¦Dispose•K{‚ÌİŒv‚È‚çŒÄ‚Ô
     m_QuestionSprite.Dispose();
     m_AlertSprite.Dispose();
 
