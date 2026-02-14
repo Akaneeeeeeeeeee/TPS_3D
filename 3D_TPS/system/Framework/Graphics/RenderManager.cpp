@@ -216,7 +216,7 @@ void RenderManager::Release()
 		ctx->Flush();
 	}
 
-	// 他クラスに渡した参照を先に切る（重要）
+	// 他クラスに渡した参照を先に切る
 	SkyFogPass::SetBeamSRV(nullptr);
 
 	// 生成したD3Dリソースを全部Reset
@@ -270,12 +270,6 @@ void RenderManager::Release()
 void RenderManager::Uninit(void)
 {
 	this->Release();
-
-	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
-	m_RenderComponents.clear();
-	m_Packets.clear();
-	m_Shadow.Release();
-
 	// 依存性の解消
 	m_pGraphicsDevice = nullptr;
 }
