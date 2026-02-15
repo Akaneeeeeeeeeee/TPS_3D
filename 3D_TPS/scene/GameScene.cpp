@@ -371,13 +371,9 @@ void GameScene::Init(ObjectManager* mgr)
 	// 親からの相対位置（ローカル）
 	weather->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 
-	// 天候オブジェクト
-	//auto weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
-	//weather->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
-
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
-	m_Goal->SetScale(Vector3(0.5f, 1.0f, 0.5f));
+	m_Goal->SetScale(Vector3(0.5f, 1.5f, 0.5f));
 	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, 5000.0f));
 
 

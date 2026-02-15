@@ -3,8 +3,7 @@
 #include "Framework/WeatherSystem/WeatherSystem.h"
 #include "Framework/EngineSystem/EngineSystem.h"
 
-class DayNightObserverComponent final
-    : public IComponent
+class DayNightObserverComponent final : public IComponent
     , public IDayNightListener
 {
 public:

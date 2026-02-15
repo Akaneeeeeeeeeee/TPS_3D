@@ -23,7 +23,6 @@ void StreetLight::Uninit()
 
     m_DayNight = nullptr;
     m_Spot = nullptr;
-	GameObject::Uninit();
 }
 
 void StreetLight::OnDayNightChanged(bool isNight)

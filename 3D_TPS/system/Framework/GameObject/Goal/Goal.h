@@ -1,5 +1,6 @@
 #pragma once
 #include "Framework/GameObject/GameObject.h"
+#include "Framework/Component/DayNightObserver/DayNightObserver.h"
 
 class CStaticMesh;
 class CStaticMeshRenderer;
@@ -12,7 +13,7 @@ class StaticMeshRendererComponent;
 * @auther	赤根　和樹
 * @date		2025/12/10
 */
-class Goal : public GameObject
+class Goal : public GameObject, public IDayNightListener
 {
 public:
 	Goal(ComponentFactory* factory,
@@ -33,6 +34,8 @@ public:
 
 	void OnCollisionCharacterEnter(GameObject& other) override;
 
+	void OnDayNightChanged(bool isNight) override;
+
 	void DebugImGui(void);
 
 private:
@@ -42,6 +45,23 @@ private:
 
 	StaticMeshRendererComponent* m_RenderComp = nullptr;
 
+	GameObject* m_BeamA = nullptr;
+	GameObject* m_BeamB = nullptr;
+	SpotLightComponent* m_SpotA = nullptr;
+	SpotLightComponent* m_SpotB = nullptr;
+	DayNightObserverComponent* m_DayNight = nullptr;
+
+	float m_Yaw = 0.0f;
+	float m_YawSpeed = 1.2f; // rad/s（約69度/秒）
+	float m_BeamHeight = 750.0f; // 灯台の上の高さ
+
 	bool m_Reached = false;
+
+	bool m_IsNight = false;
+	bool m_NightOnly = true;     // 夜だけ点灯にするなら true 固定でもOK
+	bool m_LightEnabled = true;  // 予備（デバッグで切りたい時用）
+	bool m_RuntimeLit = false;   // 前回状態（無駄なSetを減らす）
+
+	void RefreshLighting(void);
 };
 

@@ -253,7 +253,6 @@ void RenderManager::Release()
 	m_Shadow.Release();
 	m_SpotShadow.Release();
 
-	// rawポインタは「所有しない」ならnullptrにするだけ
 	m_pDeferredLighting = nullptr;
 	m_pGBufferStatic = nullptr;
 	m_pGBufferSkin = nullptr;
