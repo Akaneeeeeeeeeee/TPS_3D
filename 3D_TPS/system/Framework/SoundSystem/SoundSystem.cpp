@@ -276,6 +276,7 @@ HRESULT SoundSystem::Init()
     m_Param[SE_SWITCHCURSOR] = { "assets/Sound/SE_SwitchCursor.wav", false };
     m_Param[SE_STARTSLOWMOTION] = { "assets/Sound/SE_StartSlowMotion.wav", false };
     m_Param[SE_ENDSLOWMOTION] = { "assets/Sound/SE_EndSlowMotion.wav", false };
+	m_Param[SE_GATESOUND] = { "assets/Sound/SE_GateSound.wav", true };  // ゲートの動作音はループさせる
 
     for (int i = 0; i < (int)SOUND_LABEL_MAX; ++i)
     {

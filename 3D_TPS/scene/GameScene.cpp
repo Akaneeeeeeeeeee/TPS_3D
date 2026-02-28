@@ -11,6 +11,8 @@
 #include "Framework/GameObject/Goal/Goal.h"
 #include "Framework/GameObject/Terrain/Terrain.h"
 #include "Framework/GameObject/WeatherController/WeatherController.h"
+#include "GameObject/Gate.h"
+#include "GameObject/GateButton.h"
 
 #include "system/TriangleDrawer.h"
 #include "system/meshmanager.h"
@@ -301,30 +303,6 @@ void GameScene::Draw(void)
 		Matrix4x4 rotmtx = Matrix4x4::Identity;
 		m_segments[axisno]->Draw(rotmtx, axiscol[axisno]);
 	}
-
-	//Vector3 sp;
-	//sp = m_player->GetTransform().GetPosition();
-	//sp.y -= 500.0f;
-
-	SetLineWidth(3.0f);
-	//LineDrawerDraw(1000, sp, Vector3(0, 1, 0), Color(1, 1, 0, 1));
-
-	//int sqno = m_field->GetSquareNo(m_player->GetTransform().GetPosition());
-
-	//std::array<Field::Face, 2> retfaces;
-	//std::array<Vector3, 3> vertices1;
-	//std::array<Vector3, 3> vertices2;
-
-	//if (sqno != -1) {
-	//	Vector3 pos = m_player->GetTransform().GetPosition();
-
-	//	m_field->GetFace(pos, retfaces);
-	//	m_field->GetFaceVertex(sqno * 2, vertices1);
-	//	m_field->GetFaceVertex(sqno * 2 + 1, vertices2);
-
-	//	TriangleDrawerDraw(vertices1, Color(1, 0, 0, 1));
-	//	TriangleDrawerDraw(vertices2, Color(1, 1, 0, 1));
-	//}
 }
 
 /**
@@ -361,7 +339,7 @@ void GameScene::Init(ObjectManager* mgr)
 
 	// プレイヤ
 	m_player = m_pObjectManager->Instantiate<Player>("player", Tag::Player);
-	m_player->SetPosition(Vector3(-300.0f, 100.0f, -100.0f));
+	m_player->SetPosition(Vector3(-300.0f, 100.0f, -1000.0f));
 	// 天候オブジェクト（子にする）
 	auto* weather = m_pObjectManager->Instantiate<WeatherController>("WeatherController", Tag::Object);
 
@@ -373,8 +351,28 @@ void GameScene::Init(ObjectManager* mgr)
 
 	// ゴール
 	m_Goal = m_pObjectManager->Instantiate<Goal>("goal", Tag::Goal);
-	m_Goal->SetScale(Vector3(0.5f, 1.5f, 0.5f));
+	m_Goal->SetScale(Vector3(0.5f, 2.0f, 0.5f));
 	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, 5000.0f));
+
+
+	// --- ゲート＆ボタン ---
+	{
+		Transform gateTf = Transform::One();
+		gateTf.SetPosition(Vector3(-450.0f, 180.0f, 1250.0f));
+		gateTf.SetScale(Vector3(100.0f, 100.0f, 100.0f)); // 見た目と当たり判定は子に移る
+		gateTf.SetRotation(Quaternion::CreateFromYawPitchRoll(90.0f * PI / 180.0f, 0.0f, 0.0f)); // 任意の回転をつけてみる（蝶番位置はローカルX+100のまま）
+		auto* gate = m_pObjectManager->Instantiate<Gate>("Gate01", Tag::Object, gateTf);
+
+		gate->SetHingeLocalOffset(Vector3(0.0f, 0.0f, 1.0f)); // +X側を中心方向に（反対開きなら -1）
+		gate->SetOpenYawDeg(90.0f);
+		gate->SetSpeedDegPerSec(12.0f);
+
+		Transform btnTf = Transform::One();
+		btnTf.SetPosition(gateTf.GetPosition() - Vector3(50.0f, 0.0f, 0.0f));
+		btnTf.SetScale(Vector3(300.0f, 300.0f, 300.0f));
+		auto* btn = m_pObjectManager->Instantiate<GateButton>("GateBtn01", Tag::Object, btnTf);
+		btn->BindDoor(gate);
+	}
 
 
 	// --- 衝突テスト用障害物 ---
@@ -438,7 +436,7 @@ void GameScene::Init(ObjectManager* mgr)
 		// 共有点(0,-4000)が重複しないように一部端点を除外
 		// -------------------------
 		{
-			Vector3 pos = Vector3(-300.0f, 600.0f, -100.0f);
+			Vector3 pos = Vector3(-300.0f, 50.0f, -100.0f);
 			const float lightY = pos.y;
 
 			constexpr int TOTAL_LIGHTS = 40;

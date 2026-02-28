@@ -283,7 +283,7 @@ void Player::Start(void)
 		m_pCamera->SetLookAt(lookAt);
 
 		// 2) 方位角をプレイヤー向きに揃える（recenter相当を “代入で” やる）
-		Vector3 f = Vector3::Transform(Vector3(0.0f, 0.0f, -1.0f), m_Transform.GetRotation());
+		Vector3 f = Vector3::Transform(Vector3(0.0f, 0.0f, 1.0f), m_Transform.GetRotation());
 		f.y = 0.0f;
 		if (f.LengthSquared() > 1e-6f) f.Normalize();
 		const float yaw = std::atan2(-f.x, -f.z);

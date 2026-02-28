@@ -72,7 +72,19 @@ void SpotLightComponent::SetTopRadius(float topRadius)
 Vector3 SpotLightComponent::GetLightPos() const
 {
     if (!m_pOwner) return Vector3::Zero;
-    return m_pOwner->GetPosition();
+
+    const Vector3 p = m_pOwner->GetPosition();
+
+    // オフセットなしならそのまま
+    if (m_LocalOffset.LengthSquared() < 1e-12f)
+        return p;
+
+    // ローカル→ワールド（向きに追従）
+    const Vector3 r = Vector3::Right;
+    const Vector3 u = Vector3::Up;
+    const Vector3 f = m_pOwner->GetForward();
+
+    return p + r * m_LocalOffset.x + u * m_LocalOffset.y + f * m_LocalOffset.z;
 }
 
 Vector3 SpotLightComponent::GetLightDir() const
@@ -80,7 +92,7 @@ Vector3 SpotLightComponent::GetLightDir() const
     // 正規化済みを返す
     if (!m_pOwner) return Vector3(0, -1, 0);
 
-    const Vector3 pos = m_pOwner->GetPosition();
+    const Vector3 pos = GetLightPos();
 
     Vector3 dir = Vector3(0, 0, -1);
 
@@ -198,7 +210,7 @@ void SpotLightComponent::FitToGroundCircle(float groundY, float groundRadius,
     nearMinAxis = std::max(nearMinAxis, 0.0f);
     rangeExtraAxis = std::max(rangeExtraAxis, 0.0f);
 
-    const Vector3 pos = m_pOwner->GetPosition();
+    const Vector3 pos = GetLightPos();
     const float H = pos.y - groundY;
     if (H <= 1e-3f) return;
 

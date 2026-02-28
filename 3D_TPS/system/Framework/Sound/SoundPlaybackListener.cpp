@@ -10,9 +10,10 @@ SOUND_LABEL SoundPlaybackListener::MapLabel(const WorldSoundEvent& ev) const
 
     switch (ev.Type)
     {
-    case SoundType::StoneImpact: return SE_STONE;
-    case SoundType::Footstep:    return SE_WALKING_NORMAL;
-    default:                     return SOUND_LABEL_MAX;
+    case SoundType::StoneImpact:    return SE_STONE;
+    case SoundType::Footstep:       return SE_WALKING_NORMAL;
+    case SoundType::Custom:         return SOUND_LABEL_MAX;
+    default:                        return SOUND_LABEL_MAX;
     }
 }
 

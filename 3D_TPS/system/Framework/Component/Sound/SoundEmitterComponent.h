@@ -24,6 +24,9 @@ public:
         SOUND_LABEL playLabel = SOUND_LABEL_MAX);
 
     void PlayUIOneShot(SOUND_LABEL label, float volume01 = 1.0f);
+    void StartLoop(SOUND_LABEL label, float volume01 = 1.0f);
+    void StopLoop(SOUND_LABEL label);
+    void SetLoopVolume(SOUND_LABEL label, float volume01);
 
 private:
     SoundHub* m_pSound = nullptr;

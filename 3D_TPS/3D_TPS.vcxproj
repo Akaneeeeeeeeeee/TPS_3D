@@ -256,7 +256,10 @@
     <ClInclude Include="system\Framework\UIManager\UIManager.h" />
     <ClInclude Include="system\Framework\WeatherSystem\SkyFogPass.h" />
     <ClInclude Include="system\Framework\WeatherSystem\WeatherSystem.h" />
+    <ClInclude Include="system\GameObject\Gate.h" />
+    <ClInclude Include="system\GameObject\GateButton.h" />
     <ClInclude Include="system\GameObject\obstacle.h" />
+    <ClInclude Include="system\GameObject\Radio.h" />
     <ClInclude Include="system\GameObject\Rock.h" />
     <ClInclude Include="system\GameObject\Field.h" />
     <ClInclude Include="system\MyIndexBuffer.h">
@@ -497,7 +500,10 @@
     <ClCompile Include="system\Framework\WeatherSystem\SkyFogPass.cpp" />
     <ClCompile Include="system\Framework\WeatherSystem\WeatherSystem.cpp" />
     <ClCompile Include="system\Framework\Window\Window.cpp" />
+    <ClCompile Include="system\GameObject\Gate.cpp" />
+    <ClCompile Include="system\GameObject\GateButton.cpp" />
     <ClCompile Include="system\GameObject\obstacle.cpp" />
+    <ClCompile Include="system\GameObject\Radio.cpp" />
     <ClCompile Include="system\GameObject\Rock.cpp" />
     <ClCompile Include="system\GameObject\Field.cpp" />
     <ClCompile Include="system\imgui\imgui.cpp" />

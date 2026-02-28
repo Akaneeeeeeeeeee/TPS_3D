@@ -35,8 +35,6 @@ public:
 
 	/**
 	 * @brief コンストラクタ
-	 *
-	 *
 	 */
 	explicit GameScene();
 
@@ -149,13 +147,13 @@ private:
 	StaticMeshCollider* m_TerrainCol = nullptr;
 
 	bool m_MultiEnemy = true;
-	int  m_MultiCount = 20;
+	int  m_MultiCount = 10;
 	bool m_RequestRebuildEnemies = false;
 
 	int m_EnemyAliveCount = 0;
 
 	// 1体モードで出したい「元の座標」
-	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 100.0f, 1750.0f);
+	Vector3 m_SingleEnemyPos = Vector3(-300.0f, 100.0f, 1050.0f);
 
 	std::unique_ptr<DirectWrite> m_pDirectWrite;
 	FontData m_FontData;

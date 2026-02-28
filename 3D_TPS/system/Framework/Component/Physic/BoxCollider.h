@@ -10,6 +10,7 @@
 
 // 前方宣言
 class PhysicsManager;
+class CStaticMesh;
 
 /*
 * @brief	ボックスコライダーコンポーネント
@@ -38,6 +39,7 @@ public:
     JPH::RefConst<JPH::Shape> GetShape(void) const override { return JPH::RefConst<JPH::Shape>(m_Shape); }
     bool IsCollider() const noexcept override { return true; }
 	void SetHalfSize(const DirectX::XMFLOAT3& halfSize) { m_HalfSize = halfSize; }
+    void FitToMeshLocalAABB(const CStaticMesh& mesh, float inflate = 1.0f);
 
 public:
     JPH::RefConst<JPH::Shape> GetShape() { return JPH::RefConst<JPH::Shape>(m_Shape); }

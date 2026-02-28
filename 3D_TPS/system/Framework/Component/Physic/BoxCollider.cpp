@@ -3,6 +3,7 @@
 #include "Framework/GameObject/GameObject.h"
 #include "Framework/PhysicsSystem/PhysicsLayer.h"
 #include "Framework/Component/Physic/Rigidbody.h"
+#include "system/CStaticMesh.h"
 #include <Jolt/Physics/EActivation.h>
 
 BoxCollider::BoxCollider(void)
@@ -19,8 +20,14 @@ void BoxCollider::Init()
 {
     if (!m_Physics) { return; }
 
-    Vector3 scale = m_pOwner->GetScale();
-    m_Shape = new JPH::BoxShape(JPH::Vec3(m_HalfSize.x, m_HalfSize.y, m_HalfSize.z));
+    Vector3 sc = m_pOwner ? m_pOwner->GetScale() : Vector3::One;
+
+    // スケールを当たり判定に反映（負スケール対策でabs）
+    const float hx = std::abs(m_HalfSize.x * sc.x);
+    const float hy = std::abs(m_HalfSize.y * sc.y);
+    const float hz = std::abs(m_HalfSize.z * sc.z);
+
+    m_Shape = new JPH::BoxShape(JPH::Vec3(hx, hy, hz));
 
     // Rigidbody が付いているなら Body は作らない（Rigidbody がまとめて作る）
     if (m_pOwner->GetComponent<Rigidbody>() == nullptr) {
@@ -31,6 +38,25 @@ void BoxCollider::Init()
         // 念のため無効 ID にして、Update で触らないようにしておく
         m_BodyID = JPH::BodyID();
     }
+}
+
+void BoxCollider::FitToMeshLocalAABB(const CStaticMesh& mesh, float inflate)
+{
+    const auto& verts = mesh.GetVertices();
+    if (verts.empty()) return;
+
+    Vector3 mn = verts[0].Position;
+    Vector3 mx = verts[0].Position;
+
+    for (const auto& v : verts)
+    {
+        const Vector3 p = v.Position;
+        mn.x = std::min(mn.x, p.x); mn.y = std::min(mn.y, p.y); mn.z = std::min(mn.z, p.z);
+        mx.x = std::max(mx.x, p.x); mx.y = std::max(mx.y, p.y); mx.z = std::max(mx.z, p.z);
+    }
+
+    Vector3 half = (mx - mn) * 0.5f;
+    m_HalfSize = half * inflate; // ローカル（スケール前）
 }
 
 void BoxCollider::Update(const float deltaTime)

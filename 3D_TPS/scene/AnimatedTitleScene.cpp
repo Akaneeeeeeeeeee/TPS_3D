@@ -209,7 +209,7 @@ void AnimatedTitleScene::Init(ObjectManager* _Mgr)
 	m_Obstacles[0]->SetScale(Vector3(175.0f, 65.0f, 25.0f));
 
 	auto* lightObj = m_pObjectManager->Instantiate<StreetLight>("StreetLight", Tag::Light, Transform::One());
-	lightObj->SetPosition(Vector3(1900.0f, 400.0f, -3650.0f));
+	lightObj->SetPosition(Vector3(1900.0f, 50.0f, -3950.0f));
 	// 地面の明るい円半径を直接指定
 	lightObj->SetGroundCircle(
 		/*groundRadius=*/150.0f,

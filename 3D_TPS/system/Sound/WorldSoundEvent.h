@@ -28,6 +28,7 @@ typedef enum SOUND_LABEL
 	SE_SWITCHCURSOR,	// カーソル移動SE
 	SE_STARTSLOWMOTION,	// スローモーション開始SE
 	SE_ENDSLOWMOTION,	// スローモーション終了SE
+	SE_GATESOUND,		// ゲートの動作音
 
 	SOUND_LABEL_MAX,
 };

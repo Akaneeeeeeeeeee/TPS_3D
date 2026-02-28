@@ -25,7 +25,7 @@ void obstacle::Awake()
 
 
 	auto boxcollider = AddComponent<BoxCollider>("fallingboxcollider");
-    boxcollider->SetHalfSize(Vector3(GetScale().x, GetScale().y, GetScale().z));
+    boxcollider->SetHalfSize(Vector3::One);
     boxcollider->SetOffset(Vector3(0.0f, GetScale().y, 0.0f));
 
     auto rb = AddComponent<Rigidbody>("Rigidbody", 1.0f);

@@ -675,6 +675,15 @@
     <ClInclude Include="system\Framework\ShadowMap\SpotShadowMapArray.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="system\GameObject\Gate.h">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="system\GameObject\Radio.h">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="system\GameObject\GateButton.h">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -1033,6 +1042,15 @@
     </ClCompile>
     <ClCompile Include="system\Framework\ShadowMap\SpotShadowMapArray.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="system\GameObject\Gate.cpp">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="system\GameObject\Radio.cpp">
+      <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="system\GameObject\GateButton.cpp">
+      <Filter>ソース ファイル\system\GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -117,9 +117,6 @@ void Game::Draw()
 	m_SceneManager.DrawWorld();
 	//m_GameFeatures.DrawWorld();
 
-	// デバッグ用当たり判定描画
-	//svc.physics.DebugDraw();
-
 	// 2) 遅延描画（GBuffer→Lighting→(透明Forwardは後で)）
 	svc.render.RenderDeferred();
 
@@ -131,6 +128,9 @@ void Game::Draw()
 
 	// 音の可視化
 	svc.sound.DrawWorldSound();
+
+	// デバッグ用当たり判定描画
+	//svc.physics.DebugDraw();
 
 	// 4) UI
 	m_SceneManager.DrawUI();

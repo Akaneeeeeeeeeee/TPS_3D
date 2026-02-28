@@ -46,27 +46,6 @@ void Goal::Awake(void)
     m_SpotA = m_BeamA->AddComponent<SpotLightComponent>("SpotA");
     m_SpotB = m_BeamB->AddComponent<SpotLightComponent>("SpotB");
 
-    // 向きはオーナーの Forward を使う
-    //m_SpotA->SetAimOwnerForward();
-    //m_SpotB->SetAimOwnerForward();
-
-    //// 見た目・強さ（例）
-    //m_SpotA->SetColor(Color(1, 0.95f, 0.8f, 1));
-    //m_SpotB->SetColor(Color(1, 0.95f, 0.8f, 1));
-    //m_SpotA->SetIntensity(6.0f);
-    //m_SpotB->SetIntensity(6.0f);
-
-    //// 「地面の円」を狙う設定を自動で作る（数値はゲームに合わせて）
-    //const float groundY = 0.0f;
-    //const float groundRadius = 200.0f;   // 地面に映る円の半径
-    //const float topRadiusMin = 10.0f;    // ライト根元の太さ
-    //const float innerRatio = 0.6f;       // 内側の強い部分の割合
-    //const float nearMinAxis = 10.0f;
-    //const float rangeExtraAxis = 50.0f;
-
-    //m_SpotA->FitToGroundCircle(groundY, groundRadius, topRadiusMin, innerRatio, nearMinAxis, rangeExtraAxis);
-    //m_SpotB->FitToGroundCircle(groundY, groundRadius, topRadiusMin, innerRatio, nearMinAxis, rangeExtraAxis);
-
     for (auto* s : { m_SpotA, m_SpotB })
     {
         if (!s) continue;
@@ -85,7 +64,14 @@ void Goal::Awake(void)
 
     if (m_DayNight)
         m_DayNight->SetReceiver(this);
+    // ライト作成した直後は「とりあえず消す」
+    if (m_SpotA) m_SpotA->SetEnabled(false);
+    if (m_SpotB) m_SpotB->SetEnabled(false);
+}
 
+void Goal::Start(void)
+{
+	RefreshLighting();
 }
 
 void Goal::Update(const float deltatime)

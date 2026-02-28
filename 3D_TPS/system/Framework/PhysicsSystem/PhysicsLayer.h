@@ -194,3 +194,21 @@ private:
     const JPH::PhysicsSystem& mSystem;
 };
 
+
+class OcclusionObjectLayerFilter : public JPH::ObjectLayerFilter
+{
+public:
+    bool ShouldCollide(JPH::ObjectLayer layer) const override
+    {
+        // âπÇé’ÇÈÇ‡ÇÃÇæÇØèEÇ§
+        return layer == Layers::NON_MOVING
+            || layer == Layers::MOVING
+            || layer == Layers::TERRAIN;
+    }
+};
+
+class OcclusionBroadPhaseLayerFilter : public JPH::BroadPhaseLayerFilter
+{
+public:
+    bool ShouldCollide(JPH::BroadPhaseLayer) const override { return true; } // STATIC/DYNAMICóºï˚
+};

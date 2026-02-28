@@ -182,31 +182,6 @@ bool RenderManager::Init(GraphicsDevice* graphicsDevice, LightSystem* light, Wea
 	return true;
 }
 
-//void RenderManager::Release(void)
-//{
-//	// 描画コンポーネントリストと描画情報コンテナを単純にクリア
-//	m_RenderComponents.clear();
-//	m_Packets.clear();
-//	m_GBuffer.Release();
-//	m_Shadow.Release();
-//	m_SpotShadow.Release();
-//	m_TileCountBuf.Reset();
-//	m_TileCountUAV.Reset();
-//	m_TileCountSRV.Reset();
-//	m_TileIndexBuf.Reset();
-//	m_TileIndexUAV.Reset();
-//	m_TileIndexSRV.Reset();
-//	//m_SpotLightBuf.Reset();
-//	//m_SpotLightUAV.Reset();
-//	//m_SpotLightSRV.Reset();
-//	m_SpotAccumTex.Reset();
-//	m_SpotAccumUAV.Reset();
-//	m_SpotAccumSRV.Reset();
-//	m_BeamTex.Reset();
-//	m_BeamUAV.Reset();
-//	m_BeamSRV.Reset();
-//}
-
 void RenderManager::Release()
 {
 	// まずGPUの結びつきを外す（内部参照を落とす）
@@ -314,32 +289,17 @@ void RenderManager::CollectRenderPackets()
 // GBuffer→Lighting→Forward
 void RenderManager::RenderDeferred()
 {
-	//CollectRenderPackets();
-
-	//// 1) 太陽影
-	//RenderShadowPass();
-
-	//// 2) 不透明を書き溜め
-	//RenderGBufferPass();
-
-	//// 3) ライトを当てる（ここで ShadowMap を参照）
-	//RenderLightingPass();
-
-	//// 4) 透明
-	//RenderTransparentForwardPass();
-
-	//// 5) オーバーレイ（ワールド空間）
-	//RenderOverlayWorldPass();
-
 	CollectRenderPackets();
 
+	// 1) 太陽影
 	RenderShadowPass();
+	// 2) 不透明を書き溜め
 	RenderGBufferPass();
 
 	// ---- ここでスポット用Computeを回す ----
 	LightSystem& ls = *m_pLightSystem;
 
-	// 1) ライトキャッシュ更新（どこかで呼んでるなら不要）
+	// 1) ライトキャッシュ更新
 	ls.UpdateCache();
 
 	// 2) 近い順でshadowSlice割り当て（今は影マップ未実装なのでsliceだけ付く）
@@ -395,7 +355,9 @@ void RenderManager::RenderDeferred()
 	// ---- ここまで ----
 
 	RenderLightingPass();
+	// 4) 透明
 	RenderTransparentForwardPass();
+	// 5) オーバーレイ（ワールド空間）
 	RenderOverlayWorldPass();
 }
 
@@ -1023,14 +985,6 @@ void RenderManager::RunBeamCompute(const CBDeferred& cbDeferred, const CBTileInf
 	ID3D11Buffer* b1 = m_CBTileInfo.Get();
 	ctx->CSSetConstantBuffers(1, 1, &b1);
 
-	// CBBeam(b0)
-	//CBBeam cb{};
-	//cb.beamMaxDist = 6000.0f;
-	//cb.stepLenWanted = 25.0f;
-	//cb.kBeam = 0.0020f;
-	//cb.beamTint = 1.0f;
-	//cb.BeamSize = Vector2((float)BEAM_W, (float)BEAM_H);
-
 	CBBeam cb{};
 	if (m_pWeatherSystem)
 	{
@@ -1043,7 +997,7 @@ void RenderManager::RunBeamCompute(const CBDeferred& cbDeferred, const CBTileInf
 	}
 	else
 	{
-		cb.beamMaxDist = 6000.0f;
+		cb.beamMaxDist = 12000.0f;
 		cb.stepLenWanted = 10.0f;
 		cb.kBeam = 0.0020f;
 		cb.beamTint = 1.0f;

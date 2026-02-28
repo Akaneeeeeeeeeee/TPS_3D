@@ -147,6 +147,40 @@ void AssetManager::Init()
 			rockRenderer->Init(*meshPtr);
 			RegisterMeshRenderer("Rock", std::move(rockRenderer));
 		}
+
+		// ゲート用
+		{
+			// 本体
+			auto gateMesh = std::make_unique<CStaticMesh>();
+			gateMesh->Load("assets/model/Gate/Fence/uploads_files_4683602_cgtrader_optimized_Old+Metal+Gate.fbx",
+				"assets/model/Gate/Fence/uploads_files_4683602_tex/tex");
+			RegisterMesh("FenceMesh", std::move(gateMesh));
+			auto gateRenderer = std::make_unique<CStaticMeshRenderer>();
+			auto* meshPtr = GetMesh<CStaticMesh>("FenceMesh");
+			gateRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("FenceMesh", std::move(gateRenderer));
+			//ボタン
+			auto buttonMesh = std::make_unique<CStaticMesh>();
+			buttonMesh->Load("assets/model/Gate/Button/Button.fbx",
+				"assets/model/Gate/Button/Button_Textures/Textures");
+			RegisterMesh("GateButton", std::move(buttonMesh));
+			auto buttonRenderer = std::make_unique<CStaticMeshRenderer>();
+			meshPtr = GetMesh<CStaticMesh>("GateButton");
+			buttonRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("GateButton", std::move(buttonRenderer));
+		}
+
+		// 街灯用
+		{
+			auto streetLampMesh = std::make_unique<CStaticMesh>();
+			streetLampMesh->Load("assets/model/StreetLamp/uploads_files_833886_streetlight.fbx",
+				"assets/model/StreetLamp/uploads_files_833886_streetlight_textures/streetlight_textures/PBR");
+			RegisterMesh("StreetLamp", std::move(streetLampMesh));
+			auto streetLampRenderer = std::make_unique<CStaticMeshRenderer>();
+			auto* meshPtr = GetMesh<CStaticMesh>("StreetLamp");
+			streetLampRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("StreetLamp", std::move(streetLampRenderer));
+		}
 	}
 
 	// ==== AnimationMesh / AnimationData（Akai）====

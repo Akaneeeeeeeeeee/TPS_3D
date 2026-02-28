@@ -38,3 +38,19 @@ void SoundEmitterComponent::EmitSound(const Vector3& pos, SoundType type,
 
     EmitSound(ev);
 }
+
+void SoundEmitterComponent::StartLoop(SOUND_LABEL label, float volume01)
+{
+    if (!m_pSound) return;
+    m_pSound->StartUILoop(label, volume01);
+}
+void SoundEmitterComponent::StopLoop(SOUND_LABEL label)
+{
+    if (!m_pSound) return;
+    m_pSound->StopUILoop(label);
+}
+void SoundEmitterComponent::SetLoopVolume(SOUND_LABEL label, float volume01)
+{
+    if (!m_pSound) return;
+    m_pSound->SetUILoopVolume(label, volume01);
+}

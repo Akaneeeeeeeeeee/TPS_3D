@@ -21,12 +21,13 @@ public:
 		const std::string& name = "",
 		const Tag tag = Tag::Goal,
 		const Transform& transform = Transform::One())
-		: GameObject(factory, id, name, tag, transform),
-		m_meshrenderer(nullptr) {
-	}
+		: GameObject(factory, id, name, tag, transform)
+	{
+	};
 	~Goal() = default;
 
 	void Awake(void) override;
+	void Start(void) override;
 	void Update(const float delta) override;
 	void Draw(void) const override;
 	void Uninit(void) override;
@@ -40,8 +41,6 @@ public:
 
 private:
 	CStaticMesh* m_mesh{};
-	CStaticMeshRenderer* m_meshrenderer{};
-	CShader* m_shader{};
 
 	StaticMeshRendererComponent* m_RenderComp = nullptr;
 
@@ -53,7 +52,7 @@ private:
 
 	float m_Yaw = 0.0f;
 	float m_YawSpeed = 1.2f; // rad/si–ñ69“x/•bj
-	float m_BeamHeight = 750.0f; // “”‘ä‚Ìã‚Ì‚‚³
+	float m_BeamHeight = 900.0f; // “”‘ä‚Ìã‚Ì‚‚³
 
 	bool m_Reached = false;
 

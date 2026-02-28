@@ -17,7 +17,7 @@ enum class WeatherType {
 
 struct BeamTuning
 {
-    float maxDist = 6000.0f;
+    float maxDist = 12000.0f;
     float stepLen = 10.0f;
     float kBeam = 0.002f;
     float tint = 1.0f;

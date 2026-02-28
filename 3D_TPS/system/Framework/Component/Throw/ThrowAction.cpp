@@ -96,7 +96,7 @@ namespace
 			// Rock専用の調整値（必要ならここを変える）
 			static ThrowTuning t{};
 			t.holdNorm = 0.20f;
-			t.releaseNorm = 0.55f;
+			t.releaseNorm = 0.4f;
 			t.speed = 900.0f;
 			t.lob = 120.0f;
 			return t;

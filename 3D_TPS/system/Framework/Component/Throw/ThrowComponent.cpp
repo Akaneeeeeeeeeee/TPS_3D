@@ -37,7 +37,7 @@ namespace
             if (len > 1e-4f)
             {
                 d /= len;
-                Color col(0.2f, 1.0f, 0.2f, 1.0f); // 色は好みで
+                Color col(0.2f, 1.0f, 0.2f, 1.0f);
                 // 太さが未設定だと見えない実装になってる可能性があるので、ここで一度入れる
                 SetLineWidth(2.0f);
                 LineDrawerDraw(len, p, d, col);

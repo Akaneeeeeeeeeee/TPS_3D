@@ -17,6 +17,36 @@ Rigidbody::Rigidbody(const float mass)
     m_Mass(mass)
 {
 }
+#include <DirectXMath.h>
+
+static bool DecomposeWorldTRS(const Matrix4x4& world,
+    Vector3& outPos,
+    Quaternion& outRot,
+    Vector3& outScale)
+{
+    // ここはあなたの Matrix4x4 の実体に合わせて読み込みを調整して
+    DirectX::XMFLOAT4X4 f{};
+    // 例：world が float4x4互換なら memcpy / reinterpret でOK
+    std::memcpy(&f, &world, sizeof(DirectX::XMFLOAT4X4));
+
+    DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&f);
+
+    DirectX::XMVECTOR S, R, T;
+    if (!DirectX::XMMatrixDecompose(&S, &R, &T, M))
+        return false;
+
+    DirectX::XMFLOAT3 s, t;
+    DirectX::XMFLOAT4 q;
+    DirectX::XMStoreFloat3(&s, S);
+    DirectX::XMStoreFloat3(&t, T);
+    DirectX::XMStoreFloat4(&q, R);
+
+    outScale = Vector3(s.x, s.y, s.z);
+    outPos = Vector3(t.x, t.y, t.z);
+    outRot = Quaternion(q.x, q.y, q.z, q.w);
+    return true;
+}
+
 
 void Rigidbody::Init()
 {
@@ -46,13 +76,37 @@ void Rigidbody::Update(float dt)
         JPH::Quat rot = bi.GetRotation(m_BodyID);
         m_pOwner->SetRotation(Quaternion(rot.GetX(), rot.GetY(), rot.GetZ(), rot.GetW()));
     }
+  //  else if (m_BodyType == Type::Kinematic)
+  //  {
+		//// 位置と回転を Body に入れる（Kinematic は「Body に合わせて動く」ので、オブジェクトの位置を Body に反映させる）
+  //      Vector3 pos = m_pOwner->GetPosition();
+  //      Quaternion rot = m_pOwner->GetRotation();
+
+  //      bi.SetPositionAndRotation(
+  //          m_BodyID,
+  //          JPH::RVec3(pos.x, pos.y, pos.z),
+  //          JPH::Quat(rot.x, rot.y, rot.z, rot.w),
+  //          JPH::EActivation::DontActivate   // 当たり判定が更新されないなら Activate
+  //      );
+
+  //      bi.SetLinearVelocity(m_BodyID, JPH::Vec3::sZero());
+  //      bi.SetAngularVelocity(m_BodyID, JPH::Vec3::sZero());
+  //  }
     else if (m_BodyType == Type::Kinematic)
     {
-        Vector3 pos = m_pOwner->GetPosition();
-        bi.SetPosition(m_BodyID, RVec3(pos.x, pos.y, pos.z), JPH::EActivation::DontActivate);
-        bi.SetLinearVelocity(m_BodyID, Vec3::sZero());
-        bi.SetAngularVelocity(m_BodyID, Vec3::sZero());
+        Vector3 pos, sc;
+        Quaternion rot;
+
+        if (DecomposeWorldTRS(m_pOwner->TransformRef().GetWorldMatrix(), pos, rot, sc))
+        {
+            bi.SetPosition(m_BodyID, JPH::RVec3(pos.x, pos.y, pos.z), JPH::EActivation::DontActivate);
+            bi.SetRotation(m_BodyID, JPH::Quat(rot.x, rot.y, rot.z, rot.w), JPH::EActivation::DontActivate);
+        }
+
+        bi.SetLinearVelocity(m_BodyID, JPH::Vec3::sZero());
+        bi.SetAngularVelocity(m_BodyID, JPH::Vec3::sZero());
     }
+
 
     // Static は更新なし
 }

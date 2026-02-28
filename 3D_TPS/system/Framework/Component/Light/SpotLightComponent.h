@@ -36,6 +36,8 @@ public:
     void SetColor(const Color& c) { m_Color = c; }
     void SetRange(float r) { m_Range = std::max(r, 0.0f); }
     void SetIntensity(float i) { m_Intensity = std::max(i, 0.0f); }
+    void SetLocalOffset(const Vector3& o) { m_LocalOffset = o; }
+    const Vector3& GetLocalOffset() const { return m_LocalOffset; }
 
     // 角度（度） inner <= outer
     void SetAnglesDeg(float innerDeg, float outerDeg);
@@ -69,6 +71,7 @@ private:
     Vector3 GetLightDir() const; // 正規化済み
 private:
     LightSystem* m_System = nullptr;
+    Vector3 m_LocalOffset = Vector3::Zero;
 
 	bool  m_Enabled = true;             // 有効化フラグ
 	Color m_Color = Color(1, 1, 1, 1);  // 色

@@ -12,7 +12,7 @@ class PhysicsManager;
 class LightSystem
 {
 public:
-    static constexpr int MAX_SPOT = 128;
+    static constexpr int MAX_SPOT = 64;
 
     void Register(SpotLightComponent* c)
     {

@@ -4,6 +4,8 @@
 
 // 前方宣言
 class DayNightObserverComponent;
+class CStaticMesh;
+class StaticMeshRendererComponent;
 
 /*
 * @brief    街灯ゲームオブジェクト
@@ -23,7 +25,7 @@ public:
         const Transform& transform = Transform::One())
         : GameObject(factory, id, name, tag, transform)
     {
-    }
+    };
 
     // GameObjectライフサイクル
     void Awake() override;
@@ -49,7 +51,7 @@ private:
         bool  nightOnly = true;
 
         Color color = Color(1, 0.95f, 0.8f, 1);
-        float intensity = 6.0f;
+        float intensity = 3.0f;
 
         // 自動フィット
         bool  useGroundFit = false;
@@ -65,6 +67,9 @@ private:
     // 生成済みなら直接触る（未生成の間は pending に溜める）
     SpotLightComponent* m_Spot = nullptr;
     DayNightObserverComponent* m_DayNight = nullptr;
+
+    CStaticMesh* m_Mesh{};
+    StaticMeshRendererComponent* m_RenderComp = nullptr;
 
     bool m_IsNight = false;
     bool m_RuntimeLit = true; // 前回の最終状態

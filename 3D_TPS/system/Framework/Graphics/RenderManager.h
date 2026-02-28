@@ -4,6 +4,7 @@
 #include "system/Framework/Graphics/GBuffer.h"
 #include "system/Framework/ShadowMap/ShadowMap.h"
 #include "system/Framework/ShadowMap/SpotShadowMapArray.h"
+#include <d3d11_1.h>
 
 class IRenderer;
 class GraphicsDevice;

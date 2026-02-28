@@ -49,13 +49,6 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 	// 「実効的な聴取半径」 = イベント半径 × 天候係数 × 自分の基準半径比
 	float effectiveRadius = ev.Radius * hearingFactor;
 
-	// さらに、敵ごとの個性を出したい場合：
-	// m_BaseHearingRadius を「晴れの日の標準半径」とみなして、
-	// ev.Radius がその標準に対してどれくらいの音かを見る形もあり。
-	// ここではシンプルに ev.Radius をそのまま使うのでコメントアウト。
-	// float enemyScale = m_BaseHearingRadius / 20.0f;  // 好みで基準を決める
-	// effectiveRadius *= enemyScale;
-
 	// ---- 2) 耳の位置と距離減衰 ----
 	Vector3 earPos = m_pOwner->GetPosition();
 	earPos.y += m_EarHeight;
@@ -95,12 +88,16 @@ float EnemyHearingComponent::ComputePerceivedLoudness(const WorldSoundEvent& ev)
 	RayCastResult hit;
 
 	// レイヤ設定
-	auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::NON_MOVING);
-	auto objFilter = system.GetDefaultLayerFilter(Layers::NON_MOVING);
+	//auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::NON_MOVING);
+	//auto objFilter = system.GetDefaultLayerFilter(Layers::NON_MOVING);
 
-	// 自分自身やトリガーを無視するフィルタ
+	//// 自分自身やトリガーを無視するフィルタ
+	//AvoidCharAndTriggerBodyFilter bodyFilter(system);
+
+	OcclusionBroadPhaseLayerFilter bpFilter;
+	OcclusionObjectLayerFilter    objFilter;
 	AvoidCharAndTriggerBodyFilter bodyFilter(system);
-
+		
 	bool blocked = npq.CastRay(
 		ray,
 		hit,

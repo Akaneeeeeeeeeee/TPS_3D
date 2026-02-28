@@ -1,10 +1,33 @@
 ﻿#include "StreetLight.h"
 #include "Framework/Component/DayNightObserver/DayNightObserver.h"
+#include "Framework/Component/Renderer/MeshRenderer/StaticMeshRenderer.h"
+#include "Framework/Component/Physic/StaticMeshCollider.h"
 
 void StreetLight::Awake()
 {
     m_Spot = AddComponent<SpotLightComponent>("Spot");
     m_DayNight = AddComponent<DayNightObserverComponent>("DayNight");
+
+    auto& am = AssetManager::GetInstance();
+    m_Mesh = am.GetMesh<CStaticMesh>("StreetLamp");
+    //m_Mesh = am.GetMesh<CStaticMesh>("StreetLamp");
+
+    // 描画コンポーネント
+    //m_RenderComp = AddComponent<StaticMeshRendererComponent>("StreetLampRenderer");
+    //m_RenderComp->SetMeshRendererKey("StreetLamp");
+    //m_RenderComp->SetShaderKey("unlightshader");
+    //m_RenderComp->SetTransparent(false);
+
+    //// コライダー
+    //{
+    //    auto collider = AddComponent<StaticMeshCollider>("StreetLampCollider");
+    //    collider->SetMesh(*m_Mesh);
+    //}
+
+	m_Spot->SetLocalOffset(Vector3(0, 600.0f, 300.0f));
+	SetScale(Vector3(5.0f, 5.0f, 5.0f));
+	// 左向きに90度回す（モデルの向きに合わせて）
+    SetRotation(Quaternion::CreateFromAxisAngle(Vector3::Up, 90.0f));
 
     if (m_DayNight)
         m_DayNight->SetReceiver(this);
