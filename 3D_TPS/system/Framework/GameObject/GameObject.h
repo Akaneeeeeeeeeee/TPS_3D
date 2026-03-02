@@ -79,8 +79,8 @@ public:
 	virtual void Awake(void) {};	// オブジェクト“単体”の準備。コンポーネント追加、メモリ確保、デフォルト値セットなど
 	void StartOnce(void);
 	virtual void Start(void) {};	// 他オブジェクト参照の解決、GetComponent / Find / 相互リンク、初回だけ行いたいセットアップ
-	virtual void Update(const float deltatime);
-	virtual void LateUpdate(const float deltatime);
+	virtual void Update([[maybe_unused]] const float deltatime);
+	virtual void LateUpdate([[maybe_unused]] const float deltatime);
 	virtual void Draw(void) const;
 	virtual void Uninit(void);
 

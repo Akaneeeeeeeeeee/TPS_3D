@@ -181,6 +181,18 @@ void AssetManager::Init()
 			streetLampRenderer->Init(*meshPtr);
 			RegisterMeshRenderer("StreetLamp", std::move(streetLampRenderer));
 		}
+
+		// å©í£ÇËë‰óp
+		{
+			auto watchTowerMesh = std::make_unique<CStaticMesh>();
+			watchTowerMesh->Load("assets/model/WatchTower/uploads_files_2898317_watchtower.fbx",
+				"assets/model/WatchTower/uploads_files_2898317_texture");
+			RegisterMesh("WatchTower", std::move(watchTowerMesh));
+			auto watchTowerRenderer = std::make_unique<CStaticMeshRenderer>();
+			auto* meshPtr = GetMesh<CStaticMesh>("WatchTower");
+			watchTowerRenderer->Init(*meshPtr);
+			RegisterMeshRenderer("WatchTower", std::move(watchTowerRenderer));
+		}
 	}
 
 	// ==== AnimationMesh / AnimationDataÅiAkaiÅj====

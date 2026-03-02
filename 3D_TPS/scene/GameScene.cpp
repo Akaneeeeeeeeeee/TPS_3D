@@ -13,6 +13,7 @@
 #include "Framework/GameObject/WeatherController/WeatherController.h"
 #include "GameObject/Gate.h"
 #include "GameObject/GateButton.h"
+#include "Framework/GameObject/WatchTower/WatchTower.h"
 
 #include "system/TriangleDrawer.h"
 #include "system/meshmanager.h"
@@ -354,6 +355,10 @@ void GameScene::Init(ObjectManager* mgr)
 	m_Goal->SetScale(Vector3(0.5f, 2.0f, 0.5f));
 	m_Goal->SetPosition(Vector3(-300.0f, 0.0f, 5000.0f));
 
+	// 見張り台
+	{
+		m_pObjectManager->Instantiate<WatchTower>("WatchTower01", Tag::Object, Transform(Vector3(0.0f, 0.0f, 1000.0f)));
+	}
 
 	// --- ゲート＆ボタン ---
 	{

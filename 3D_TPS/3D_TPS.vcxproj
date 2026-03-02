@@ -210,6 +210,7 @@
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\ISpriteSource.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.h" />
     <ClInclude Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.h" />
+    <ClInclude Include="system\Framework\Component\SearchLightController\SearchLightControllerComponent.h" />
     <ClInclude Include="system\Framework\Component\Sound\CountdownSoundComponent.h" />
     <ClInclude Include="system\Framework\Component\Sound\SlowMotionSoundComponent.h" />
     <ClInclude Include="system\Framework\Component\Sound\SoundEmitterComponent.h" />
@@ -229,6 +230,7 @@
     <ClInclude Include="system\Framework\GameObject\Player\TitlePlayerActor.h" />
     <ClInclude Include="system\Framework\GameObject\StreetLight\StreetLight.h" />
     <ClInclude Include="system\Framework\GameObject\Terrain\Terrain.h" />
+    <ClInclude Include="system\Framework\GameObject\WatchTower\WatchTower.h" />
     <ClInclude Include="system\Framework\GameObject\WeatherController\WeatherController.h" />
     <ClInclude Include="system\Framework\Game\GameResult.h" />
     <ClInclude Include="system\Framework\Graphics\GBuffer.h" />
@@ -435,6 +437,7 @@
     </ClCompile>
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\UISpriteRenderer.cpp" />
     <ClCompile Include="system\Framework\Component\Renderer\SpriteRenderer\SpriteRendererComponent.cpp" />
+    <ClCompile Include="system\Framework\Component\SearchLightController\SearchLightControllerComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Sound\SoundEmitterComponent.cpp" />
     <ClCompile Include="system\Framework\Component\StateIcon\EnemyHeadIconComponent.cpp" />
     <ClCompile Include="system\Framework\Component\Throw\ThrowAction.cpp" />
@@ -452,6 +455,7 @@
     <ClCompile Include="system\Framework\GameObject\Player\TitlePlayerActor.cpp" />
     <ClCompile Include="system\Framework\GameObject\StreetLight\StreetLight.cpp" />
     <ClCompile Include="system\Framework\GameObject\Terrain\Terrain.cpp" />
+    <ClCompile Include="system\Framework\GameObject\WatchTower\WatchTower.cpp" />
     <ClCompile Include="system\Framework\GameObject\WeatherController\WeatherController.cpp" />
     <ClCompile Include="system\Framework\Game\Game.cpp" />
     <ClCompile Include="system\Framework\Graphics\GBuffer.cpp" />

@@ -19,7 +19,8 @@ public:
     {
         OwnerForward, // OwnerのForward方向
         WorldDown,    // 常に(0,-1,0)
-        BelowY        // (x, groundY, z) を狙う
+        BelowY,       // (x, groundY, z) を狙う
+        ManualDir,
     };
 
     SpotLightComponent() = default;
@@ -41,6 +42,14 @@ public:
 
     // 角度（度） inner <= outer
     void SetAnglesDeg(float innerDeg, float outerDeg);
+
+    void SetAimManualDir(const Vector3& dir)
+    {
+        m_AimMode = AimMode::ManualDir;
+        m_ManualDir = dir;
+        if (m_ManualDir.LengthSquared() < 1e-6f) m_ManualDir = Vector3(0, 0, -1);
+        else m_ManualDir.Normalize();
+    }
 
     // 向け方
     void SetAimOwnerForward() { m_AimMode = AimMode::OwnerForward; }
@@ -79,6 +88,7 @@ private:
 	float m_Intensity = 1.0f;           // 強さ
     float m_Near = 30.0f;               // 光が始まる距離（=円錐台の上面位置）
 
+	Vector3 m_ManualDir = Vector3::Zero; // 手動で向きを指定する場合の方向
 
     // cosで持つ（シェーダで使いやすい）
     float m_InnerCos = 0.95f;

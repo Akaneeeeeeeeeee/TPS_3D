@@ -113,6 +113,9 @@ Vector3 SpotLightComponent::GetLightDir() const
         dir = target - pos;
         break;
     }
+    case AimMode::ManualDir:
+        dir = m_ManualDir;
+		break;
     default:
         dir = Vector3(0, -1, 0);
         break;
