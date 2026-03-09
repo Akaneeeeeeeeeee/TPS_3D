@@ -357,7 +357,7 @@ void GameScene::Init(ObjectManager* mgr)
 
 	// 見張り台
 	{
-		m_pObjectManager->Instantiate<WatchTower>("WatchTower01", Tag::Object, Transform(Vector3(0.0f, 0.0f, 1000.0f)));
+		//m_pObjectManager->Instantiate<WatchTower>("WatchTower01", Tag::Object, Transform(Vector3(0.0f, 0.0f, 1000.0f)));
 	}
 
 	// --- ゲート＆ボタン ---

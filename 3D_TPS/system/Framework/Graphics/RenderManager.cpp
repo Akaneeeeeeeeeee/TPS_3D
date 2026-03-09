@@ -1106,7 +1106,7 @@ void RenderManager::RunSpotCompute(const CBDeferred& cbDeferred, const Matrix4x4
 
 	// Samp(s0) をCSにも渡す（Depth/GBufferサンプル用）
 	ID3D11SamplerState* s0 = Renderer::GetSamplerLinearClamp();
-	ctx->CSSetSamplers(0, 1, &s0);	// 例：Rendererが持ってるサンプラを取れるならそれを。無いならRenderManagerで作る。
+	ctx->CSSetSamplers(0, 1, &s0);
 
 	// Samp(s1) 影用サンプラ
 	ID3D11SamplerState* s1 = m_ShadowCmpSampler.Get();

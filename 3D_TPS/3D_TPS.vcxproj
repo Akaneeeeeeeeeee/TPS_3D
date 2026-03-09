@@ -108,7 +108,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;JPH_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED=1;JPH_PROFILE_ENABLED=1;JPH_DEBUG_RENDERER=1;JPH_OBJECT_STREAM=1;JPH_NAMESPACE_BEGIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;JPH_DEBUG;JPH_FLOATING_POINT_EXCEPTIONS_ENABLED=1;JPH_PROFILE_ENABLED=1;JPH_DEBUG_RENDERER=1;JPH_OBJECT_STREAM=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

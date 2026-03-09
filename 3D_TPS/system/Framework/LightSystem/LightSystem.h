@@ -51,7 +51,7 @@ public:
 
 	float ComputeLightVisibilityForPlayer(const class Player& player) const;
 
-    int GetSpotCount(void) const { return m_Cache.size(); }
+    size_t GetSpotCount(void) const { return m_Cache.size(); }
     const SpotLightGPU& GetSpotGPU(int i) const { return m_Cache[i].gpu; }
 private:
     struct CachedSpot

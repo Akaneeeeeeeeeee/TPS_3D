@@ -2,7 +2,7 @@
 #include "system/Framework/GameObject/GameObject.h"
 
 // ‘O•ûéŒ¾
-class EngineServices;
+struct EngineServices;
 class CStaticMesh;
 class CStaticMeshRenderer;
 class CShader;

@@ -11,7 +11,7 @@ class GraphicsDevice;
 class ShaderManager;
 class CShader;
 class LightSystem;
-class SpotLightGPU;
+struct SpotLightGPU;
 class ComputeShader;
 class LightSystem;
 class WeatherSystem;

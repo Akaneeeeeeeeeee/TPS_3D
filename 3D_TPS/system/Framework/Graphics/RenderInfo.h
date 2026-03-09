@@ -6,7 +6,7 @@
 #include <variant>
 #include "commontypes.h"
 
-class BoneCombMatrix;
+struct BoneCombMatrix;
 class CMaterial;
 class CTexture;
 class CShader;

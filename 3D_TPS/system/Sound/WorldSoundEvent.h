@@ -3,7 +3,7 @@
 
 
 // サウンドファイル
-typedef enum SOUND_LABEL
+enum SOUND_LABEL
 {
 	BGM_STAGESELECT,	// ステージ選択BGM
 	BGM_GAMECLEAR,		// ゲームクリアシーンBGM
