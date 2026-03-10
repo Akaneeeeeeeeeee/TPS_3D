@@ -184,7 +184,7 @@ void Gate::SetOpen(bool open)
             WorldSoundEvent ev{};
             ev.Position = GetPosition();
             ev.Type = SoundType::Custom;                  // 既存の範囲でOK
-            ev.Emitter = SoundEmitterKind::Other;      // あなたのenum名に合わせて
+            ev.Emitter = SoundEmitterKind::Other;
             ev.Volume = m_MoveSoundVolume;
             ev.Loudness = m_MoveSoundLoudness;
             ev.Radius = m_MoveSoundRadius;
@@ -227,8 +227,7 @@ void Gate::ApplyPivotYaw(float yawDeg)
     // 親（蝶番）だけYaw回転。子は親子関係で勝手に回る。
     Quaternion yaw = MakeYawQuatDeg(yawDeg);
 
-    // 掛け順はあなたのQuaternion規約次第。
-    // まずは「設置時の回転 + yaw」を狙う形でこれを採用：
+    //「設置時の回転 + yaw」
     SetRotation(m_BaseRot * yaw);
 }
 

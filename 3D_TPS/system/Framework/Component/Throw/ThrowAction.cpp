@@ -115,7 +115,7 @@ namespace
 			TryApplyVelocity(*rock, a.vel);
 
 			// 角速度（投げた瞬間に回す）
-			constexpr float SPIN = 25.0f; // まず 15〜30 で調整（ラジアン/秒）
+			constexpr float SPIN = 25.0f; // ラジアン/秒
 			const Vector3 angVel = MakeSpinAngularVelocity(a.vel, SPIN);
 			TryApplyAngularVelocity(*rock, angVel);
 
@@ -164,8 +164,6 @@ namespace
 			g->SetPosition(a.pos);
 			TryApplyVelocity(*g, a.vel);
 
-			// 例：タイマー開始など
-			// g->Arm(a.owner);
 		}
 	};
 #endif

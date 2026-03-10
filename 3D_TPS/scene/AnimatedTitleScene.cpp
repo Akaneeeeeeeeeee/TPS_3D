@@ -427,11 +427,10 @@ void TitleScript::FaceTo(const Vector3& targetPos)
 void TitleScript::LookLeftRight(float dt)
 {
 	// “見まわし”は、向きだけを左右に振る（移動は0）
-	// 例：障害物の中心を見る → 少し左右へオフセット
 	const Vector3 base = m_Cover ? m_Cover->GetPosition() : m_Player->GetPosition();
 
-	const float t = m_Timer; // 0..2秒など
-	const float x = std::sin(t * 3.0f) * 300.0f;  // 振れ幅（好み）
+	const float t = m_Timer; // 0..2秒
+	const float x = std::sin(t * 3.0f) * 300.0f;  // 振れ幅
 	Vector3 target = base + Vector3(x, 0.0f, 0.0f);
 
 	FaceTo(target);

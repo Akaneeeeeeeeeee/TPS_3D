@@ -50,7 +50,7 @@ bool Window::Init(uint32_t _Screen_width, uint32_t _Screen_height) {
 	rc.right = static_cast<LONG>(m_Width);
 	rc.bottom = static_cast<LONG>(m_Height);
 
-	// ウィンドウサイズを調整.
+	// ウィンドウサイズを調整
 	auto style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 	AdjustWindowRect(&rc, style, FALSE);
 

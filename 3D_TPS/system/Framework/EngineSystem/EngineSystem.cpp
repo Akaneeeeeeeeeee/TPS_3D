@@ -48,7 +48,7 @@ void EngineSystems::UpdateFrame(float dt)
 	// 天候更新
     m_Weather.Update(dt);
 
-    // Weather に view/proj を渡す（あなたの現状の移植）
+    // Weather に view/proj を渡す
     {
         auto* cam = m_Camera.GetMain();
         Matrix4x4 view = Matrix4x4::Identity;

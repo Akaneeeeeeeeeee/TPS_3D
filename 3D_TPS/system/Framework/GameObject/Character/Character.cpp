@@ -19,5 +19,4 @@ void Character::Draw(void) const
 void Character::Uninit(void)
 {
 	// キャラクターの終了処理
-	// 例: リソースの解放など
 }

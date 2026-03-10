@@ -684,6 +684,12 @@
     <ClInclude Include="system\GameObject\GateButton.h">
       <Filter>ソース ファイル\system\GameObject</Filter>
     </ClInclude>
+    <ClInclude Include="system\Framework\Component\SearchLightController\SearchLightControllerComponent.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="system\Framework\GameObject\WatchTower\WatchTower.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="system\AssimpPerse.cpp">
@@ -1051,6 +1057,12 @@
     </ClCompile>
     <ClCompile Include="system\GameObject\GateButton.cpp">
       <Filter>ソース ファイル\system\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\Component\SearchLightController\SearchLightControllerComponent.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="system\Framework\GameObject\WatchTower\WatchTower.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

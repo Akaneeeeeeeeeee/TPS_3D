@@ -29,59 +29,18 @@
 
 namespace {
 	// worldTime（0..24） / dayLengthSeconds（現実何秒で1日回すか）/ timeScale（ゲーム内全体倍率）
-	static float g_worldTime = 12.0f;          // デフォルトは正午
-	static float g_dayLengthSeconds = 60.0f;   // デフォルト：現実60秒で1日まわす（調整しやすい値）
-	static float g_timeScale = 1.0f;           // 1.0 = 普通速度、0 = 停止、0.2 = スロー
-	static bool  g_manualOverride = false;     // マニュアルで方向/色を指定するか
+	static float g_worldTime = 12.0f;			// デフォルトは正午
+	static float g_dayLengthSeconds = 60.0f;	// デフォルト：現実60秒で1日まわす（調整しやすい値）
+	static float g_timeScale = 1.0f;			// 1.0 = 普通速度、0 = 停止、0.2 = スロー
+	static bool  g_manualOverride = false;		// マニュアルで方向/色を指定するか
 	static Vector4 g_manualDirection = Vector4(0, 1, 0, 0);
 	static Color   g_manualColor = Color(1, 1, 1, 1);
 
-	constexpr float TIME_WARN_SEC = 60.0f;   // ここを閾値にする（例：10秒以下）
-	constexpr float TIME_BLINK_SEC = 0.25f;   // 点滅周期（0.25=4回/秒でON/OFF）
+	constexpr float TIME_WARN_SEC = 60.0f;		// 閾値
+	constexpr float TIME_BLINK_SEC = 0.25f;		// 点滅周期（0.25=4回/秒でON/OFF）
 	static float g_timeBlinkTimer = 0.0f;
 	static bool  g_timeBlinkOn = true;
 }
-
-// 現在位置のフィールドの高さ表示
-void GameScene::debugFieldHeight() {
-
-	//ImGui::Begin("debug Field Height");
-
-	//Transform& srt = m_player->TransformRef();
-
-	//ImGui::SliderFloat3("player pos ", &srt.PositionRef().x, -100, 100);
-
-	//int sqno = m_field->GetSquareNo(srt.GetPosition());
-	//ImGui::SliderInt("square no ", &sqno, -100, 100);
-
-	//std::array<Field::Face, 2> retfaces;
-	//if (sqno != -1) {
-	//	m_field->GetFace(srt.GetPosition(), retfaces);
-	//}
-	//ImGui::SliderInt3("Face index1 ", &retfaces[0].idx[0], -100, 100);
-	//ImGui::SliderInt3("Face index2 ", &retfaces[1].idx[0], -100, 100);
-
-	//std::array<Vector3, 3> vertices1;
-	//std::array<Vector3, 3> vertices2;
-
-	//if (sqno != -1) {
-	//	m_field->GetFaceVertex(sqno * 2, vertices1);
-	//	m_field->GetFaceVertex(sqno * 2 + 1, vertices2);
-	//}
-
-	//ImGui::Separator();
-	//ImGui::SliderFloat3("Face1 Vertex1 ", &vertices1[0].x, -500, 500);
-	//ImGui::SliderFloat3("Face1 Vertex2 ", &vertices1[1].x, -500, 500);
-	//ImGui::SliderFloat3("Face1 Vertex3 ", &vertices1[2].x, -500, 500);
-
-	//ImGui::Separator();
-	//ImGui::SliderFloat3("Face2 Vertex1 ", &vertices2[0].x, -500, 500);
-	//ImGui::SliderFloat3("Face2 Vertex2 ", &vertices2[1].x, -500, 500);
-	//ImGui::SliderFloat3("Face2 Vertex3 ", &vertices2[2].x, -500, 500);
-
-	//ImGui::End();
-}
-
 
 // デバッグフリーカメラ
 void GameScene::debugFreeCamera()
@@ -155,8 +114,8 @@ void GameScene::debugFieldUnduration() {
 	ImGui::SliderFloat("low height", &minheight, 0.0f, 10.0f);
 	ImGui::SliderFloat("max hight", &maxheight, 0.0f, 100.0f);
 
-	static float perlinscale = 0.5f;     // ノイズの細かさ（お好みで 0.02～0.2 くらい）
-	static float perlinoffsetX = 10.0f;   // シード代わりのオフセット（任意）
+	static float perlinscale = 0.5f;     // ノイズの細かさ
+	static float perlinoffsetX = 10.0f;   // シード代わりのオフセット
 	static float perlinoffsetZ = 10.0f;
 
 	ImGui::SliderFloat("perlin scale", &perlinscale, 0.0f, 5.0f);
@@ -382,58 +341,9 @@ void GameScene::Init(ObjectManager* mgr)
 
 	// --- 衝突テスト用障害物 ---
 	{
-		// 大きい床（Static）
-		{
-			//m_field = m_pObjectManager->Instantiate<Field>("Field", Tag::Object);
-
-			//Transform tf = m_field->GetTransform();
-			//tf.SetScale(Vector3(500.0f, 1.0f, 500.0f));   // 横長・薄い床
-			//tf.SetPosition(Vector3(0.0f, -50.0f, 0.0f));   // 少し下げて床位置へ
-			//tf.SetRotation(Quaternion::Identity);
-
-			//m_field->SetTransform(tf);
-
-			// Rigidbody を Static に
-			/*ground->AddComponent<BoxCollider>("boxcollider")->Init();
-			auto rb = ground->AddComponent<Rigidbody>("Rigidbody", 1.0f);
-			rb->SetBodyType(Rigidbody::Type::Static);
-			rb->Init();*/
-		}
-
-		// 障害物
-		//auto obstacleObj = m_pObjectManager->Instantiate<obstacle>("Obstacle" + std::to_string(0), Tag::Object, this);
-
-		// 落下テスト用
-		//obstacleObj->SetPosition(Vector3(-300.0f, 500.0f, -100.0f));
-		//obstacleObj->SetScale(Vector3(25.0f, 25.0f, 25.0f));
-		//obstacleObj->SetPosition(Vector3(-300.0f, 205.0f, 0.0f));
-		//obstacleObj->SetScale(Vector3(250.0f, 50.0f, 25.0f));
-		//m_obstacles[0] = obstacleObj;
 
 		// 敵
 		SpawnEnemies(m_MultiEnemy ? m_MultiCount : 1);
-
-		// 街灯
-		//Vector3 pos = Vector3(-300.0f, 800.0f, -100.0f);
-		//Vector3 offset = Vector3(0.0f, 0.0f, 200.0f);
-		//// ライト30個を均等に配置
-		//for (int j = 0; j < 4; ++j)
-		//{
-		//	Vector3 rowStart = pos + Vector3(200.0f * j, 0.0f, 0.0f);
-		//	Vector3 rowOffset = Vector3(1000.0f, 0.0f, -1000.0f);
-		//	for (int i = 0; i < 4; ++i)
-		//	{
-		//		auto streetLight = m_pObjectManager->Instantiate<StreetLight>("StreetLight_" + std::to_string(j * 8 + i), Tag::Light);
-		//		streetLight->SetPosition(rowStart + rowOffset * i);
-		//		// 地面の明るい円半径を直接指定
-		//		streetLight->SetGroundCircle(
-		//			/*groundRadius=*/300.0f,
-		//			/*groundY=*/0.0f,
-		//			/*topRadiusMin=*/10.0f,   // 上面の“口径”を確保
-		//			/*innerRatio=*/0.6f       // 中心が強い範囲
-		//		);
-		//	}
-		//}
 
 		// -------------------------
 		// 街灯（合計100個）
@@ -586,10 +496,6 @@ void GameScene::Init(ObjectManager* mgr)
 	// remake undulation
 	DebugUI::RedistDebugFunction([this]() {
 		debugFieldUnduration();
-		});
-
-	DebugUI::RedistDebugFunction([this]() {
-		debugFieldHeight();
 		});
 
 	TriangleDrawerInit();

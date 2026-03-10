@@ -147,7 +147,7 @@ void WeatherAudioController::Update(float dt)
         StopIfSilent(*s);
     }
 
-    // 雷：雨の強さに比例（好みで砂も混ぜてOK）
+    // 雷：雨の強さに比例（
     UpdateThunder(dt, m_pWeather->GetRainStrength01());
 }
 

@@ -24,8 +24,8 @@ public:
         // 1) 環境係数（天候/時刻）
         m_Env = m_Weather->GetPerceptionFactors(); // visibility/hearing を返すようにする
 
-        // 2) ここでは “最終値の作り方（合成）” を管理してもよい
-        //    例：visibility はライトが当たるほど 1 に近づく、など
+        // 2) ここでは “最終値の作り方（合成）” を管理
+        //    visibility はライトが当たるほど 1 に近づく、など
         //    ※ライトは「地点ごと」なので Query で計算するのが自然
     }
 

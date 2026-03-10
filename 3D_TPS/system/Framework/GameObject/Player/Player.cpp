@@ -88,7 +88,6 @@ namespace
 	constexpr float LANDING_LOUDNESS_MAX = 2.00f;
 
 	// ---- 速度に応じて足音の「強さ/届く範囲」を変えるためのパラメータ ----
-	// ※ここは実測値に合わせて調整する。初期値は仮
 	// horizontalSpeed が FOOTSTEP_SPEED_MIN のとき最小、FOOTSTEP_SPEED_MAX で最大になる。
 	constexpr float FOOTSTEP_SPEED_MIN = 60.0f;   // 歩き時の水平速度の目安
 	constexpr float FOOTSTEP_SPEED_MAX = 250.0f;  // 走り時の水平速度の目安
@@ -434,8 +433,8 @@ void Player::BuildMoveDirection(const InputState& in, Vector3& outMoveDir, float
 void Player::ApplyFacingRotation(const InputState& in, const Vector3& moveDir, float moveAmount)
 {
 	// 向き（回転だけ）
-	// 進行方向へ向ける（座標系に合わせて符号は調整）
-	// 非構え時のみ：進行方向へ
+	// 進行方向へ向ける
+	// 非構え時のみ進行方向へ
 	if (!in.aiming && moveAmount > MOVE_AMOUNT_EPSILON && moveDir.LengthSquared() > 1e-6f)
 	{
 		float targetYaw = std::atan2(-moveDir.x, -moveDir.z);
@@ -534,7 +533,7 @@ void Player::UpdateFootstep(float dt)
 	const float kRadius = m_pCharVirtual->GetFootstepRadiusCoeff();
 	const float kLoudness = m_pCharVirtual->GetFootstepLoudnessCoeff();
 
-	// ---- 速度を0..1へ（あなたの既存）----
+	// ---- 速度を0..1へ ----
 	const float speed01 = REMAP_01_CLAMP(horizontalSpeed, FOOTSTEP_SPEED_MIN, FOOTSTEP_SPEED_MAX);
 
 	// ---- 走りほど間隔を短く（頻繁に）----
@@ -556,8 +555,8 @@ void Player::UpdateFootstep(float dt)
 			float radius = std::lerp(FOOTSTEP_RADIUS_MIN, FOOTSTEP_RADIUS_MAX, speed01);
 			radius *= kRadius;
 
-			// AI向けの強さ（好みで vol と同じでOK）
-			float loud = vol; // or 別カーブにしたいなら別式
+			// AI向けの強さ
+			float loud = vol;
 
 			WorldSoundEvent ev{};
 			ev.Position = GetPosition();
@@ -579,7 +578,7 @@ void Player::UpdateFootstep(float dt)
 		m_Footstep.timer = 0.0f;
 	}
 
-	// ---- 着地音（例）----
+	// ---- 着地音 ----
 	if (!m_Footstep.wasOnGround && onGround)
 	{
 		const Vector3 v = m_pCharVirtual->GetLinearVelocity();
@@ -591,7 +590,7 @@ void Player::UpdateFootstep(float dt)
 			ev.Position = GetPosition();
 			ev.Type = SoundType::Footstep;
 
-			// 落下速度でスケール（例）
+			// 落下速度でスケール
 			const float land01 = std::clamp(impact / LANDING_LOUDNESS_DIV, 0.0f, 1.0f);
 			ev.Volume = std::lerp(0.2f, 1.0f, land01);
 			ev.Loudness = ev.Volume;

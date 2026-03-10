@@ -233,14 +233,6 @@ void TitlePlayerActor::ApplyMovement(float dt)
 	Vector3 pos = m_Transform.GetPosition();
 	pos += dir * (speed * m_MoveAmount * dt);
 	m_Transform.SetPosition(pos);
-
-	// 向きを進行方向へ
-	//if (m_FaceMoveDir)
-	//{
-	//	// あなたの座標系（前が -Z など）に合わせて符号調整
-	//	const float yaw = std::atan2(-dir.x, -dir.z);
-	//	m_Transform.SetRotation(Quaternion::CreateFromAxisAngle(UP, yaw));
-	//}
 }
 
 void TitlePlayerActor::ApplyAnimation(float dt)
@@ -248,9 +240,6 @@ void TitlePlayerActor::ApplyAnimation(float dt)
 	if (!m_pAnimComp) { return; }
 
 	TitleAnim anim = m_TargetAnim;
-
-	// 入力から自動決定したい場合はここで上書き（必要なら）
-	// 今は台本が SetTargetAnim する前提なら、この自動判定は消してもOK
 
 	switch (anim)
 	{

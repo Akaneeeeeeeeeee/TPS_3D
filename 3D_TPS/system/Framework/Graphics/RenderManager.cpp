@@ -345,7 +345,7 @@ void RenderManager::RenderDeferred()
 
 	// ViewT / ProjScale
 	Matrix4x4 viewT = view.Transpose();
-	float proj11 = proj._11; // あなたのMatrix4x4の要素名に合わせて
+	float proj11 = proj._11;
 	float proj22 = proj._22;
 
 	RunSpotCompute(cbd, viewT, proj11, proj22);

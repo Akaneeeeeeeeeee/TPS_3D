@@ -85,22 +85,6 @@ void EnemyAIComponent::Update(const float dt)
 	// ------------------------------------------------------------
 	// 1) 天候・時間に応じて「視界距離」「視野角」を更新する
 	// ------------------------------------------------------------
-	//float visibilityFactor = 1.0f;
-
-	//// WeatherSystem 側で計算済みの「視認性係数」をもらう（0.0 ～ 1.0 想定）
-	//float envVis = m_Weather ? m_Weather->GetVisibilityFactor() : 1.0f;
-
-	//// envVis (0.1～1.0) を 0.7～1.0 に圧縮する
-	//float f = 0.7f + 0.3f * envVis; // envVis=1 → f=1, envVis=0.1 → f=0.73
-	//// 視界距離を係数でスケーリング
-	//// 例: visibilityFactor = 0.5 → 視界距離 半分
-	//m_CurrentViewDistance = m_BaseViewDistance * f;
-
-	//// 視野角も暗いほど少し狭くする（好みで調整）
-	//// visibilityFactor = 1.0 → fovScale = 1.0（昼は基準そのまま）
-	//// visibilityFactor = 0.0 → fovScale = 0.7（真っ暗なら 70% 程度）
-	//m_CurrentFOV = m_BaseFOV * f;
-
 	m_CurrentViewDistance = m_BaseViewDistance;
 	m_CurrentFOV = m_BaseFOV;
 
@@ -181,7 +165,7 @@ Vector3 EnemyAIComponent::ComputeAvoidDir(const Vector3& desired_dir)
 	fwd.Normalize();
 
 	Vector3 pos = m_pOwner->GetPosition();
-	float rayLen = m_RayLength;       // 例：200〜400
+	float rayLen = m_RayLength;
 
 	// Ray の原点と方向
 	RVec3 origin(pos.x, pos.y + m_EyeHeight, pos.z);   // 目の高さあたり
@@ -1130,69 +1114,7 @@ void EnemyAIComponent::ResolveStuck(void)
 	// ResolveStuckFallback();
 }
 
-
 // ローカル範囲での脱出地点探索
-//bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
-//{
-//	if (!m_Physics || !m_pOwner) { return false; }
-//	if (!m_TerrainCol) { return false; }
-//
-//	Vector3 center = m_pOwner->GetPosition();
-//
-//	// 現在の足元Y（ownerのPositionが足元基準の前提。もし腰基準ならここを補正）
-//	const float curY = center.y;
-//
-//	Vector3 forward = m_pOwner->GetForward();
-//	forward.y = 0.0f;
-//	if (forward.LengthSquared() < 1e-4f)
-//		forward = Vector3::Forward;
-//	forward.Normalize();
-//
-//	static const float anglesDeg[] =
-//	{ 0.0f, 45.0f, -45.0f, 90.0f, -90.0f, 135.0f, -135.0f, 180.0f };
-//
-//	float radius = m_Char ? m_Char->GetRadius() : 50.0f;
-//	float charDiameter = radius * 2.0f;
-//
-//	const float stepR = charDiameter;
-//	const float footOffset = 2.0f;
-//
-//	// 高低差許容（調整値）
-//	// 例：段差の上下がこれを超える候補は除外
-//	constexpr float MAX_Y_DELTA = 200.0f;
-//
-//	for (float r = stepR; r <= maxR; r += stepR)
-//	{
-//		for (float deg : anglesDeg)
-//		{
-//			float rad = deg * DEG2RAD;
-//			Vector3 dir = RotateY(forward, rad);
-//			dir.y = 0.0f;
-//			if (dir.LengthSquared() < 1e-6f) continue;
-//			dir.Normalize();
-//
-//			Vector3 xz = center + dir * r;
-//
-//			float groundY;
-//			if (!m_TerrainCol->SampleHeight(xz.x, xz.z, groundY))
-//				continue;
-//
-//			Vector3 candidate(xz.x, groundY + footOffset, xz.z);
-//
-//			// 高低差フィルタ
-//			// 現在の高さから離れすぎる候補は「別の段差/崖下」へのワープになりやすいので捨てる
-//			if (std::fabs(candidate.y - curY) > MAX_Y_DELTA)
-//				continue;
-//
-//			if (IsCapsuleFree(candidate))
-//			{
-//				outPos = candidate;
-//				return true;
-//			}
-//		}
-//	}
-//	return false;
-//}
 bool EnemyAIComponent::FindLocalEscape(Vector3& outPos, const float maxR)
 {
 	if (!m_Physics || !m_pOwner) return false;

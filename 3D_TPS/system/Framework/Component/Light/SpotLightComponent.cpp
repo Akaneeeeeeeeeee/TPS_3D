@@ -143,10 +143,6 @@ bool SpotLightComponent::BuildGPU(SpotLightGPU& out) const
 
     // 既存の並びを維持（描画用）
     out.Params1 = Vector4(m_Range, m_InnerCos, m_OuterCos, m_Intensity);
-
-    // ここはあなたの SpotLightGPU 定義次第。
-    // 「near を描画でも使う」なら Params2 の空きに入れるのが簡単。
-    //out.Params2 = Vector4(1.0f, m_Near, 0.0f, 0.0f);
     
     // 影は後で割り当てるので、初期は -1（影なし）
     out.Params2 = Vector4(1.0f, m_Near, -1.0f, 0.0f); // (enabled, near, shadowSlice, unused)

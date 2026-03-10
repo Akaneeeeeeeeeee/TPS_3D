@@ -19,14 +19,13 @@ Rigidbody::Rigidbody(const float mass)
 }
 #include <DirectXMath.h>
 
+// DirectXMath を使って Matrix4x4 から位置/回転/スケールを分解する
 static bool DecomposeWorldTRS(const Matrix4x4& world,
     Vector3& outPos,
     Quaternion& outRot,
     Vector3& outScale)
 {
-    // ここはあなたの Matrix4x4 の実体に合わせて読み込みを調整して
     DirectX::XMFLOAT4X4 f{};
-    // 例：world が float4x4互換なら memcpy / reinterpret でOK
     std::memcpy(&f, &world, sizeof(DirectX::XMFLOAT4X4));
 
     DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&f);

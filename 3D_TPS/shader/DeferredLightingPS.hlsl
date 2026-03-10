@@ -77,7 +77,7 @@ float4 main(VS_OUT pin) : SV_Target
     //    float ndlS = saturate(dot(N, Ls));
     //    float atten = angle01 * dist01 * intensity;
 
-    //    ndlS = max(ndlS, 0.2); // あなたのテスト値
+    //    ndlS = max(ndlS, 0.2); // テスト値
     //    atten *= ndlS;
 
     //    col += al.rgb * (s.Color.rgb * atten);

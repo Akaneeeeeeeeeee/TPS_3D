@@ -64,7 +64,7 @@ private:
         // CSpriteは中心原点なので、pos = (アンカー位置 + オフセット) が中心点になる
         Vector3 pos(anchorPos.x + m_PosPx.x, anchorPos.y + m_PosPx.y, 0.0f);
 
-        // 2DなのでZ回転だけ使う想定（あなたのSRTがXYZ回転ならZに入れる）
+        // 2DなのでZ回転だけ使う
         Vector3 rot(0.0f, 0.0f, m_RotRad);
 
         // scale は「倍率」。サイズ自体はCSpriteの頂点で持っているので 1 が基本

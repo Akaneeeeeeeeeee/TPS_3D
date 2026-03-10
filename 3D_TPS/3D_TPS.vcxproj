@@ -236,7 +236,10 @@
     <ClInclude Include="system\Framework\Graphics\GBuffer.h" />
     <ClInclude Include="system\Framework\LightSystem\LightSystem.h" />
     <ClInclude Include="system\Framework\Material\MyMaterial.h" />
-    <ClInclude Include="system\Framework\PerceptionManager\PerceptionManager.h" />
+    <ClInclude Include="system\Framework\PerceptionManager\PerceptionManager.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="system\Framework\PhysicsSystem\CharacterContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\ObjectContactListener.h" />
     <ClInclude Include="system\Framework\PhysicsSystem\PhysicsLayer.h" />
@@ -470,7 +473,10 @@
     <ClCompile Include="system\Framework\ObjectManager\ObjectManager.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="system\Framework\PerceptionManager\PerceptionManager.cpp" />
+    <ClCompile Include="system\Framework\PerceptionManager\PerceptionManager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="system\Framework\PhysicsSystem\CharacterContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\ObjectContactListener.cpp" />
     <ClCompile Include="system\Framework\PhysicsSystem\PhysicsManager.cpp" />

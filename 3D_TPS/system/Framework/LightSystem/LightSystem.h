@@ -38,7 +38,7 @@ public:
     // 知覚用：指定位置の “ライトによる視認性(0..1)” を返す
     float GetLightVisibility01(const Vector3& worldPos) const;
 
-    // 係数にしたい場合（例：1.0〜2.0）
+    // 係数にしたい場合
     float GetVisibilityMul(const Vector3& worldPos) const
     {
         float t = GetLightVisibility01(worldPos); // 0..1

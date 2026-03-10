@@ -149,9 +149,6 @@ void Game::Draw()
 		//ImGui::Text("PAUSED");
 		//ImGui::Text("Press P (or ESC) to resume.");
 		//ImGui::End();
-
-		// DirectWriteで描くなら、あなたの描画経路に合わせてここで DrawString
-		// (DirectWriteのrender targetがBegin/Endと噛むならUI専用の描画フェーズに寄せる)
 	}
 
 	// ポーズ中はシーン切替確定も止めたいならガードする

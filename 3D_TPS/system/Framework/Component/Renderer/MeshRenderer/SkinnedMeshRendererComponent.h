@@ -25,10 +25,10 @@ public:
     void Update(const float) override {}
     void Uninit() override {}
 
-    // AssetManagerに登録した CAnimationMesh のキー（例："Akai"）
+    // AssetManagerに登録した CAnimationMesh のキー
     void SetMeshKey(const std::string& key) { m_MeshKey = key; }
 
-    // AssetManagerに登録した CShader のキー（例："animshader"）
+    // AssetManagerに登録した CShader のキー
     void SetShaderKey(const std::string& key) { m_ShaderKey = key; }
 
     // Animator等が更新するボーン定数バッファ（b5）

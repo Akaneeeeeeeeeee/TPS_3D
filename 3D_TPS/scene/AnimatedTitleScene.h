@@ -190,7 +190,7 @@ private:
 	bool m_fadeOut = false;
 	float m_fadeT = 0.0f;             // 0..1
 	float m_fadeSec = 0.6f;           // フェード時間（秒）
-	int m_nextSceneId = 0;            // 次シーン識別（あなたの仕組みに合わせる）
+	int m_nextSceneId = 0;            // 次シーン識別
 
 	/**
 	 * @brief このシーンで使用するカメラ

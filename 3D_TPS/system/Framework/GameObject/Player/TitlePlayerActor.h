@@ -28,7 +28,7 @@ public:
     ~TitlePlayerActor() override = default;
 
     void Awake(void) override;
-    void Start(void) override;           // あなたの基底にあるなら
+    void Start(void) override;
     void Update(const float dt) override;
     void Draw(void) const override;
     void Uninit(void) override;
@@ -83,7 +83,7 @@ public:
     void EmitWorldSoundAt(const Vector3& pos, const WorldSoundEvent& ev);
 private:
     // ---- 台本入力 ----
-    Vector3   m_MoveDir = Vector3::Zero;  // 正規化済みが理想（z前進などはあなたの座標系に合わせる）
+    Vector3   m_MoveDir = Vector3::Zero;
     float     m_MoveAmount = 0.0f;
 
     bool      m_UseTargetPose = false;
@@ -107,7 +107,6 @@ private:
     TitleAnim m_TargetAnim = TitleAnim::Idle;
 
     // クリップ（AssetManagerから取って保持）
-    // 型はあなたの実装に合わせて（例：CAnimationData / aiAnimation 等）
     aiAnimation* m_Idle = nullptr;
     aiAnimation* m_CrouchWalk = nullptr;
     aiAnimation* m_CheckOverWall = nullptr;

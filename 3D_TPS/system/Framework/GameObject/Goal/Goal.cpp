@@ -33,7 +33,7 @@ void Goal::Awake(void)
 		rb->SetObjectLayer(Layers::NON_MOVING);
 	}
 
-    // BeamA / BeamB を生成（※あなたの生成APIに合わせて）
+    // BeamA / BeamB を生成
     m_BeamA = m_pObjectManager->Instantiate<GameObject>("BeamA", Tag::Light, this->TransformRef());
     m_BeamB = m_pObjectManager->Instantiate<GameObject>("BeamB", Tag::Light, this->TransformRef());
 
@@ -76,7 +76,7 @@ void Goal::Start(void)
 
 void Goal::Update(const float deltatime)
 {
-    // 例：回転速度（ラジアン/秒）
+    // 回転速度（ラジアン/秒）
     const float yawSpeed = PI * 0.5f; // 90度/秒
 
     m_Yaw += yawSpeed * deltatime;

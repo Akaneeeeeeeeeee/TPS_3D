@@ -30,7 +30,7 @@ void ShaderManager::Init()
 /// <summary>
 /// 指定されたシェーダーステージとCSOファイルパスからシェーダーを読み込みと作成を行う
 /// </summary>
-/// <param name="_stage">読み込むシェーダーのステージ（例: Vertex, Pixel など）。</param>
+/// <param name="_stage">読み込むシェーダーのステージ（Vertex, Pixel など）。</param>
 /// <param name="csoPath">CSOファイルのパス</param>
 /// <returns>シェーダーの読み込みと作成が成功した場合は S_OK、失敗した場合は E_FAIL を返す</returns>
 HRESULT ShaderManager::Load(ShaderStage _stage, const std::filesystem::path& csoPath, const std::string& _name)

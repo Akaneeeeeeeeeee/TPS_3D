@@ -56,9 +56,6 @@ private:
 	// 深度バッファ
 	ComPtr<ID3D11DepthStencilState> m_pDepthStateEnable;
 	ComPtr<ID3D11DepthStencilState> m_pDepthStateDisable;
-	
-
-
 
 	
 	// 最終的にGPUに送る定数バッファ用変数

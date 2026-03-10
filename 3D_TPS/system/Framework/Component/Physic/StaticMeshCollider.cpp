@@ -60,7 +60,7 @@ bool StaticMeshCollider::SampleHeight(float x, float z, float& outY) const
     RRayCast ray(origin, dir * MAX_DIST);
     RayCastResult hit;
 
-    // Layers::TERRAIN「TERRAIN と衝突する側」のレイヤーにする（例: CHARACTER）
+    // Layers::TERRAIN「TERRAIN と衝突する側」のレイヤーにする
     auto bpFilter = system.GetDefaultBroadPhaseLayerFilter(Layers::CHARACTER);
     auto objFilter = system.GetDefaultLayerFilter(Layers::CHARACTER);
 

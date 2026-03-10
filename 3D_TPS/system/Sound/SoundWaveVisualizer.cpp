@@ -31,7 +31,7 @@ void SoundWaveVisualizer::OnEmit(const WorldSoundEvent& ev)
     // 音量も天候で減衰させた値を可視化に使う
     w.loudness = ev.Loudness * hearingFactor;
 
-    // 色は天候で少し変えてもよい（例として HeavyRain で少し青くする）
+    // 色は天候で少し変える（HeavyRain で少し青くする）
     Color base = Color(1.0f, 1.0f, 1.0f, 1.0f);
     if (m_pWeather)
     {
@@ -103,7 +103,7 @@ void SoundWaveVisualizer::DrawWorld(void)
         Color col = w.baseColor;
         col.w *= alpha * normL; // 時間・音量で透明度を変える
 
-        // 線の太さも loudness 依存にする例
+        // 線の太さも loudness 依存にする
         float baseWidth = 3.0f;
         float width = baseWidth * (0.5f + 0.5f * normL);
         SetLineWidth(width);   // ここで太さをセット

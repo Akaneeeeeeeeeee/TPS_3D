@@ -106,7 +106,7 @@ public:
         }
 
         // --- 2) Trigger の扱い ---
-        // Trigger は「キャラ」と「動くもの」とだけ当てる（例）
+        // Trigger は「キャラ」と「動くもの」とだけ当てる
         if (k == Key(TRIGGER, MOVING)
             || k == Key(TRIGGER, CHARACTER))
         {

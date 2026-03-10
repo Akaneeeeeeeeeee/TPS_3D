@@ -16,7 +16,7 @@ void SearchLightControllerComponent::Init()
         if (f.LengthSquared() > 1e-6f) f.Normalize();
         else f = Vector3(0, 0, -1);
 
-        // あなたの Player の流儀（atan2(-x,-z)）と揃える
+		// Player::Start() と同じ式で Yaw を取る
         const float yawRad = std::atan2(-f.x, -f.z);
         m_baseYawDeg = yawRad * (180.0f / PI);
     }
@@ -77,7 +77,7 @@ Vector3 SearchLightControllerComponent::MakeDirFromYawPitchDeg(float yawDeg, flo
     const float ca = std::cos(yaw);
     const float sa = std::sin(yaw);
 
-    // yaw=0 で (0,0,-1) を向く（あなたの式と同系）
+    // yaw=0 で (0,0,-1) を向く
     Vector3 d(-sa * ce, se, -ca * ce);
 
     if (d.LengthSquared() < 1e-6f) return Vector3(0, 0, -1);

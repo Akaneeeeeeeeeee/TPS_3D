@@ -629,7 +629,7 @@ bool WeatherSystem::ComputeIsNightByHour(float h) const
     const float on = m_NightOnHour;
     const float off = m_NightOffHour;
 
-    // 例: 18 -> 6（日付またぎ）
+    // 18 -> 6（日付またぎ）
     if (on < off)
         return (h >= on && h < off);
     return (h >= on || h < off);

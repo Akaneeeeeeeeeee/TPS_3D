@@ -70,7 +70,7 @@ struct SunState
     float   timeOfDayHours = 12.0f;
 
     // 1 日の長さ（現実何秒か）
-    // 例: 600.0f → 現実 10 分でゲーム内 24 時間が 1 周
+    // 600.0f → 現実 10 分でゲーム内 24 時間が 1 周
     float   dayLengthSec = 600.0f;
 
     // 太陽の回り込み（東西方向）

@@ -98,13 +98,13 @@ void Rock::Awake(void)
 	m_MeshRenderer = AssetManager::GetInstance().GetMeshRenderer<CStaticMeshRenderer>("Rock");
 	m_Shader = AssetManager::GetInstance().GetShader<CShader>("unlightshader");
 
-	m_Transform.SetScale(Vector3(0.05f, 0.05f, 0.05f)); // とりあえず。見た目に合わせて調整
+	m_Transform.SetScale(Vector3(0.05f, 0.05f, 0.05f));
 
 	// -------------------------
 	// 物理：SphereCollider(Shape) → Rigidbody(Body)
 	// -------------------------
 	m_Sphere = AddComponent<SphereCollider>("RockSphere");
-	m_Sphere->SetRadius(20.0f); // とりあえず。見た目に合わせて調整
+	m_Sphere->SetRadius(20.0f);
 	//float r = ComputeRadiusFromMesh(*m_Mesh);
 	//m_Sphere->SetRadius(r);
 
@@ -193,9 +193,7 @@ void Rock::OnCollisionEnter(GameObject& other)
 		ev.Emitter = SoundEmitterKind::PlayerItem; // 投げた石なので
 
 		m_pSoundEmitter->EmitSound(ev);
-		//auto L = ev.Position;
-		//printf("[Rock] SoundPosition=(%.2f,%.2f,%.2f)!!!!!!!!!!!!!!!\n", L.x, L.y, L.z);
 	}
 	// ---- 少し待って消滅 ----
-	m_DespawnTimer = 0.35f; // 調整（秒）
+	m_DespawnTimer = 0.35f; //（秒）
 }

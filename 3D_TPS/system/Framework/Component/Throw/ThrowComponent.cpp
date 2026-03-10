@@ -89,7 +89,6 @@ void ThrowComponent::OnAimEnd()
     m_current = nullptr;
     m_hasSpawned = false;
     m_elapsed = 0.0f;
-    // cooldown は維持してもいいし、解除してもいい（好み）
 }
 
 void ThrowComponent::Throw(ThrowItemId id)
@@ -315,7 +314,6 @@ Vector3 ThrowComponent::ComputeThrowVelocity(const ThrowTuning& t) const
 
     // t.lob を「角度の上乗せ」として使いたいなら（任意）
     // lob を “上向き速度っぽい値” としているなら、角度に変換して足すと扱いやすい
-    // 例：speed=900, lob=120 -> atan2(120,900) ≒ 0.13rad(約7.5度)
     if (t.lob != 0.0f)
     {
         const float lobBias = std::atan2(t.lob, std::max(t.speed, 1e-6f));

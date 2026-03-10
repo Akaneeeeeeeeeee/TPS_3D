@@ -56,7 +56,6 @@ EnemyHeadIconComponent::IconKind EnemyHeadIconComponent::PickIcon() const
 
     const auto st = m_pAI->GetState();
 
-    // ※State名はあなたのEnemyAIComponentに合わせて調整
     // Idle/Patrolは表示なし
     if (st == EnemyAIComponent::State::Idle || st == EnemyAIComponent::State::Patrol)
         return IconKind::None;
@@ -86,13 +85,12 @@ void EnemyHeadIconComponent::Update(const float /*dt*/)
     // 頭上位置
     Vector3 pos = m_pOwner->GetTransform().GetPosition() + m_Offset;
 
-    // ビルボード行列作成（あなたのBillboardと同じ作り）
+    // ビルボード行列作成
     Vector3 look = m_pCamera->GetPosition() - pos;
     look.Normalize();
 
     // 上下反転解決用
     Matrix4x4 scale = Matrix4x4::CreateScale(Vector3(1, -1, 1));
-    //Matrix4x4 scale = Matrix4x4::CreateScale(m_Scale);
     Matrix4x4 bb = Matrix4x4::CreateBillboard(pos, m_pCamera->GetPosition(), Vector3::Up, &look);
 
     m_World = scale * bb;

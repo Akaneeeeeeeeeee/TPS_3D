@@ -33,7 +33,7 @@ void ParticleComponent::Detach(void)
 
 void ParticleComponent::Init(void)
 {
-    // デフォルト設定（例として雨を想定）
+    // デフォルト設定（雨を想定）
     m_Emitter.SetEmitRate(0.0f);          // 最初は出さない
     m_Emitter.SetLifeRange(0.5f, 1.0f);
     m_Emitter.SetSpeedRange(10.0f, 20.0f);

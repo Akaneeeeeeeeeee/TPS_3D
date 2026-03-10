@@ -32,9 +32,6 @@ Vector3 ResolveCameraCollision_Jolt(
 	// 自分を無視（プレイヤーのBodyID）
 	JPH::IgnoreSingleBodyFilter body_filter(ignoreBody);
 
-	// ここはあなたのレイヤー設計に合わせて差し替えが必要。
-	// 「壁も地形も全部」にしたいなら、基本は“全レイヤー許可”のフィルタを使う。
-	// 既にAI視線Rayで使ってるBroadPhase/ObjectLayerフィルタがあるならそれを流用するのが確実。
 	const auto& npq = physics->GetNarrowPhaseQuery();
 
 	JPH::BroadPhaseLayerFilter broadphase_filter;
@@ -159,7 +156,7 @@ void CameraComponent::ApplyCamera()
 	// Eye と Focus が同じになるのを防ぐ
 	Vector3 eyeDir = m_LookAt - m_Position;
 
-	constexpr float MIN_DIST = 1.0f;          // あなたの単位に合わせて（1～10くらいでOK）
+	constexpr float MIN_DIST = 1.0f;
 	constexpr float MIN_DIST_SQ = MIN_DIST * MIN_DIST;
 
 	if (eyeDir.LengthSquared() < MIN_DIST_SQ)
