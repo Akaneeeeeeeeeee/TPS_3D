@@ -42,8 +42,8 @@ void Game::Init()
 	m_ObjectManager.Init(&m_ObjectFactory);
 
 	// シーン開始
-	//m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
-	m_SceneManager.Init(&m_ObjectManager, "GameScene");
+	m_SceneManager.Init(&m_ObjectManager, "AnimatedTitleScene");
+	//m_SceneManager.Init(&m_ObjectManager, "GameScene");
 
 #ifdef _DEBUG
 	DebugUI::Init(Renderer::GetDevice(), Renderer::GetDeviceContext());
