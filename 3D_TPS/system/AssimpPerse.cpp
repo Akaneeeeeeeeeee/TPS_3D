@@ -54,607 +54,602 @@ static void DumpTex(aiMaterial* mat, aiTextureType type, const char* label)
 	}
 }
 
-namespace GM31 {
-	namespace GE {
-		namespace {}
-		namespace myAssimp {
+namespace myAssimp {
 
-			std::vector<std::vector<VERTEX>> g_vertices{};				// 頂点データ（メッシュ単位）
+	std::vector<std::vector<VERTEX>> g_vertices{};				// 頂点データ（メッシュ単位）
 
-			std::vector<std::vector<unsigned int>> g_indices{};			// インデックスデータ（メッシュ単位）
+	std::vector<std::vector<unsigned int>> g_indices{};			// インデックスデータ（メッシュ単位）
 
-			std::vector<SUBSET> g_subsets{};							// サブセット情報
+	std::vector<SUBSET> g_subsets{};							// サブセット情報
 
-			std::vector<MATERIAL> g_materials{};						// マテリアル
+	std::vector<MATERIAL> g_materials{};						// マテリアル
 
-			std::vector<std::unique_ptr<CTexture>> g_diffuseTextures;	// ディフューズテクスチャ群
+	std::vector<std::unique_ptr<CTexture>> g_diffuseTextures;	// ディフューズテクスチャ群
 
-			std::unordered_map<std::string, BONE> g_BoneDictionary;		// ボーン辞書（キー：ボーン名）
+	std::unordered_map<std::string, BONE> g_BoneDictionary;		// ボーン辞書（キー：ボーン名）
 
-			std::vector<std::vector<BONE>>	g_BonesPerMeshes;			// メッシュ単位でボーン情報を集めたもの
+	std::vector<std::vector<BONE>>	g_BonesPerMeshes;			// メッシュ単位でボーン情報を集めたもの
 
-			CTreeNode<std::string>	g_AssimpNodeNameTree;				// assimpノード名ツリー
+	CTreeNode<std::string>	g_AssimpNodeNameTree;				// assimpノード名ツリー
 
-			// ノード名ツリーを生成する
-			void CreateNodeTree(aiNode* node, CTreeNode<std::string>* ptree) {
+	// ノード名ツリーを生成する
+	void CreateNodeTree(aiNode* node, CTreeNode<std::string>* ptree) {
 
-				ptree->m_nodedata = std::string(node->mName.C_Str());
-				//		std::cout << node->mName.C_Str() << std::endl;
+		ptree->m_nodedata = std::string(node->mName.C_Str());
+		//		std::cout << node->mName.C_Str() << std::endl;
 
-				for (unsigned int n = 0; n < node->mNumChildren; n++)
+		for (unsigned int n = 0; n < node->mNumChildren; n++)
+		{
+			std::unique_ptr<CTreeNode<std::string>> pchild = std::make_unique<CTreeNode<std::string>>();
+			pchild->m_parent = ptree;
+			ptree->Addchild(std::move(pchild));
+			CreateNodeTree(node->mChildren[n], ptree->m_children[n].get());
+		}
+	}
+
+	CTreeNode<std::string> GetBoneNameTree()
+	{
+		return std::move(g_AssimpNodeNameTree);
+	}
+
+	// ボーン辞書を返す	
+	std::unordered_map<std::string, BONE> GetBoneDictionary()
+	{
+		return g_BoneDictionary;
+	}
+
+	// 空のボーン辞書（キーはボーン名）を作成する（ノードを再帰で辿り空の辞書を作成する）
+	void CreateEmptyBoneDictionary(aiNode* node)
+	{
+		BONE bone{};
+
+		bone.bonename = node->mName.C_Str();
+		// バインド時のローカル変換を保存しておく
+		bone.AnimationMatrix = node->mTransformation;
+
+		// ボーン名で参照できるように空のボーン情報をセットする
+		g_BoneDictionary[node->mName.C_Str()] = bone;
+
+		ASSIMP_LOG("%s", node->mName.C_Str());
+
+		for (unsigned int n = 0; n < node->mNumChildren; n++)
+		{
+			CreateEmptyBoneDictionary(node->mChildren[n]);
+		}
+	}
+
+	// サブセットに紐づいているボーン情報を取得する
+	std::vector<BONE> GetBonesPerMesh(const aiMesh* mesh)
+	{
+		std::vector<BONE> bones;		// このサブセットメッシュで使用されているボーンコンテナ
+		const std::string meshname = mesh->mName.C_Str();
+		// ボーン数分ループ
+		for (unsigned int bidx = 0; bidx < mesh->mNumBones; bidx++) {
+
+			//BONE bone{};
+
+			////// ボーン名取得
+			//bone.bonename = std::string(mesh->mBones[bidx]->mName.C_Str());
+
+			//// メッシュノード名
+			//bone.meshname = std::string(mesh->mBones[bidx]->mNode->mName.C_Str());
+
+			//// アーマチュアノード名
+			//bone.armaturename = std::string(mesh->mBones[bidx]->mArmature->mName.C_Str());
+
+			const aiBone* ab = mesh->mBones[bidx];
+			BONE bone{};
+			bone.bonename = std::string(ab->mName.C_Str());
+
+			// mNodeを使わない
+			bone.meshname = meshname;
+
+			// armature は無いことがあるのでガード
+			if (ab->mArmature)
+				bone.armaturename = std::string(ab->mArmature->mName.C_Str());
+			else
+				bone.armaturename.clear();
+
+
+			// デバッグ用
+			ASSIMP_LOG("%s(%s)(%s)",
+				bone.bonename.c_str(),
+				bone.meshname.c_str(),
+				bone.armaturename.c_str()
+			);
+
+			// ボーンオフセット行列取得
+			bone.OffsetMatrix = mesh->mBones[bidx]->mOffsetMatrix;
+
+			// ウェイト情報抽出
+			bone.weights.clear();
+			for (unsigned int widx = 0; widx < mesh->mBones[bidx]->mNumWeights; widx++) {
+
+				WEIGHT w;
+				w.meshname = bone.meshname;										// メッシュ名
+				w.bonename = bone.bonename;										// ボーン名
+
+				w.weight = mesh->mBones[bidx]->mWeights[widx].mWeight;			// 重み
+				w.vertexindex = mesh->mBones[bidx]->mWeights[widx].mVertexId;	// 頂点インデックス
+				bone.weights.emplace_back(w);
+			}
+
+			// コンテナに登録
+			bones.emplace_back(bone);
+
+			// ボーン辞書にも反映させる
+			g_BoneDictionary[mesh->mBones[bidx]->mName.C_Str()].OffsetMatrix = mesh->mBones[bidx]->mOffsetMatrix;
+		}
+
+		return bones;
+	}
+
+	// ボーン名、ボーンインデックス、ボーンウェイトを頂点にセット
+	void SetBoneDataToVertices()
+	{
+		// 1) 初期化（必ずここでゼロクリア）
+		for (auto& vtbl : g_vertices)
+		{
+			for (auto& v : vtbl)
+			{
+				v.bonecnt = 0;
+				for (int i = 0; i < 4; ++i)
 				{
-					std::unique_ptr<CTreeNode<std::string>> pchild = std::make_unique<CTreeNode<std::string>>();
-					pchild->m_parent = ptree;
-					ptree->Addchild(std::move(pchild));
-					CreateNodeTree(node->mChildren[n], ptree->m_children[n].get());
+					v.BoneIndex[i] = 0;     // -1禁止（安全）
+					v.BoneWeight[i] = 0.0f;
+					v.BoneName[i].clear();
 				}
 			}
+		}
 
-			CTreeNode<std::string> GetBoneNameTree()
+		// メッシュ毎のボーンコンテナ
+		// 2) ウェイトを詰める
+		int subsetid = 0;
+		for (auto& bones : g_BonesPerMeshes)
+		{
+			for (auto& bone : bones)
 			{
-				return std::move(g_AssimpNodeNameTree);
-			}
-
-			// ボーン辞書を返す	
-			std::unordered_map<std::string, BONE> GetBoneDictionary()
-			{
-				return g_BoneDictionary;
-			}
-
-			// 空のボーン辞書（キーはボーン名）を作成する（ノードを再帰で辿り空の辞書を作成する）
-			void CreateEmptyBoneDictionary(aiNode* node)
-			{
-				BONE bone{};
-
-				bone.bonename = node->mName.C_Str();
-				// バインド時のローカル変換を保存しておく
-				bone.AnimationMatrix = node->mTransformation;
-
-				// ボーン名で参照できるように空のボーン情報をセットする
-				g_BoneDictionary[node->mName.C_Str()] = bone;
-
-				ASSIMP_LOG("%s", node->mName.C_Str());
-
-				for (unsigned int n = 0; n < node->mNumChildren; n++)
+				for (auto& w : bone.weights)
 				{
-					CreateEmptyBoneDictionary(node->mChildren[n]);
+					if (w.vertexindex < 0) continue;
+					if (w.vertexindex >= (int)g_vertices[subsetid].size()) continue;
+
+					auto& v = g_vertices[subsetid][w.vertexindex];
+
+					if (v.bonecnt >= 4) continue; // 4本まで
+
+					const int idx = v.bonecnt;
+
+					v.BoneName[idx] = w.bonename;
+					v.BoneWeight[idx] = w.weight;
+					v.BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
+
+					v.bonecnt++;
 				}
 			}
+			subsetid++;
+		}
+
+		// 3) 正規化 + “ゼロ救済”（ここでやる）
+		for (auto& vtbl : g_vertices)
+		{
+			for (auto& v : vtbl)
+			{
+				float sum = v.BoneWeight[0] + v.BoneWeight[1] + v.BoneWeight[2] + v.BoneWeight[3];
+
+				if (sum > 1e-6f)
+				{
+					for (int i = 0; i < 4; ++i) v.BoneWeight[i] /= sum;
+				}
+				else
+				{
+					// ウェイト無し頂点はボーン0固定
+					v.BoneIndex[0] = 0;
+					v.BoneWeight[0] = 1.0f;
+					v.bonecnt = 1;
+				}
+			}
+		}
+	}
+
+	// ボーン情報を取得する（ノードを再帰で辿りボーン情報を取得する）
+	void GetBone(const aiScene* pScene)
+	{
+		// 空のボーン辞書を作成する（キー（ボーン名）だけの取り出し）
+		CreateEmptyBoneDictionary(pScene->mRootNode);
+
+		// ボーンの配列位置（インデックス値）を格納する
+		unsigned int num = 0;
+		for (auto& data : g_BoneDictionary)
+		{
+			data.second.idx = num;
+			num++;
+		}
+
+		// メッシュ数分ループ
+		for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
+		{
+			aiMesh* mesh = pScene->mMeshes[m];
 
 			// サブセットに紐づいているボーン情報を取得する
-			std::vector<BONE> GetBonesPerMesh(const aiMesh* mesh)
-			{
-				std::vector<BONE> bones;		// このサブセットメッシュで使用されているボーンコンテナ
-				const std::string meshname = mesh->mName.C_Str();
-				// ボーン数分ループ
-				for (unsigned int bidx = 0; bidx < mesh->mNumBones; bidx++) {
+			std::vector<BONE> BonesPerMesh = GetBonesPerMesh(mesh);
+			g_BonesPerMeshes.emplace_back(BonesPerMesh);
+		}
 
-					//BONE bone{};
+		// 頂点データにボーン情報をセットする
+		SetBoneDataToVertices();
 
-					////// ボーン名取得
-					//bone.bonename = std::string(mesh->mBones[bidx]->mName.C_Str());
+		// ボーンのノード名ツリーを生成する
+		CreateNodeTree(pScene->mRootNode, &g_AssimpNodeNameTree);
+	}
 
-					//// メッシュノード名
-					//bone.meshname = std::string(mesh->mBones[bidx]->mNode->mName.C_Str());
+	// ディフューズＣＴｅｘｔｕｒｅコンテナを返す
+	std::vector<std::unique_ptr<CTexture>> GetDiffuseTextures()
+	{
+		return std::move(g_diffuseTextures);
+	}
 
-					//// アーマチュアノード名
-					//bone.armaturename = std::string(mesh->mBones[bidx]->mArmature->mName.C_Str());
+	// マテリアル情報をａｓｓｉｍｐを使用して取得する
+	void GetMaterialData(const aiScene* pScene, std::string texturedirectory)
+	{
+		// マテリアル数分テクスチャ格納エリアを用意する
+		g_diffuseTextures.resize(pScene->mNumMaterials);
 
-					const aiBone* ab = mesh->mBones[bidx];
-					BONE bone{};
-					bone.bonename = std::string(ab->mName.C_Str());
+		// マテリアル数文ループ
+		for (unsigned int m = 0; m < pScene->mNumMaterials; m++)
+		{
+			aiMaterial* material = pScene->mMaterials[m];
 
-					// mNodeを使わない
-					bone.meshname = meshname;
+			// マテリアル名取得
+			std::string mtrlname = std::string(material->GetName().C_Str());
+			ASSIMP_LOG("%s", mtrlname.c_str());
 
-					// armature は無いことがあるのでガード
-					if (ab->mArmature)
-						bone.armaturename = std::string(ab->mArmature->mName.C_Str());
-					else
-						bone.armaturename.clear();
+			// マテリアル情報
+			aiColor4D ambient;
+			aiColor4D diffuse;
+			aiColor4D specular;
+			aiColor4D emission;
+			float shiness;
 
-
-					// デバッグ用
-					ASSIMP_LOG("%s(%s)(%s)",
-						bone.bonename.c_str(),
-						bone.meshname.c_str(),
-						bone.armaturename.c_str()
-					);
-
-					// ボーンオフセット行列取得
-					bone.OffsetMatrix = mesh->mBones[bidx]->mOffsetMatrix;
-
-					// ウェイト情報抽出
-					bone.weights.clear();
-					for (unsigned int widx = 0; widx < mesh->mBones[bidx]->mNumWeights; widx++) {
-
-						WEIGHT w;
-						w.meshname = bone.meshname;										// メッシュ名
-						w.bonename = bone.bonename;										// ボーン名
-
-						w.weight = mesh->mBones[bidx]->mWeights[widx].mWeight;			// 重み
-						w.vertexindex = mesh->mBones[bidx]->mWeights[widx].mVertexId;	// 頂点インデックス
-						bone.weights.emplace_back(w);
-					}
-
-					// コンテナに登録
-					bones.emplace_back(bone);
-
-					// ボーン辞書にも反映させる
-					g_BoneDictionary[mesh->mBones[bidx]->mName.C_Str()].OffsetMatrix = mesh->mBones[bidx]->mOffsetMatrix;
-				}
-
-				return bones;
+			// アンビエント
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
+			}
+			else {
+				ambient = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
-			// ボーン名、ボーンインデックス、ボーンウェイトを頂点にセット
-			void SetBoneDataToVertices()
-			{
-				// 1) 初期化（必ずここでゼロクリア）
-				for (auto& vtbl : g_vertices)
-				{
-					for (auto& v : vtbl)
-					{
-						v.bonecnt = 0;
-						for (int i = 0; i < 4; ++i)
-						{
-							v.BoneIndex[i] = 0;     // -1禁止（安全）
-							v.BoneWeight[i] = 0.0f;
-							v.BoneName[i].clear();
-						}
-					}
-				}
-
-				// メッシュ毎のボーンコンテナ
-				// 2) ウェイトを詰める
-				int subsetid = 0;
-				for (auto& bones : g_BonesPerMeshes)
-				{
-					for (auto& bone : bones)
-					{
-						for (auto& w : bone.weights)
-						{
-							if (w.vertexindex < 0) continue;
-							if (w.vertexindex >= (int)g_vertices[subsetid].size()) continue;
-
-							auto& v = g_vertices[subsetid][w.vertexindex];
-
-							if (v.bonecnt >= 4) continue; // 4本まで
-
-							const int idx = v.bonecnt;
-
-							v.BoneName[idx] = w.bonename;
-							v.BoneWeight[idx] = w.weight;
-							v.BoneIndex[idx] = g_BoneDictionary[w.bonename].idx;
-
-							v.bonecnt++;
-						}
-					}
-					subsetid++;
-				}
-
-				// 3) 正規化 + “ゼロ救済”（ここでやる）
-				for (auto& vtbl : g_vertices)
-				{
-					for (auto& v : vtbl)
-					{
-						float sum = v.BoneWeight[0] + v.BoneWeight[1] + v.BoneWeight[2] + v.BoneWeight[3];
-
-						if (sum > 1e-6f)
-						{
-							for (int i = 0; i < 4; ++i) v.BoneWeight[i] /= sum;
-						}
-						else
-						{
-							// ウェイト無し頂点はボーン0固定
-							v.BoneIndex[0] = 0;
-							v.BoneWeight[0] = 1.0f;
-							v.bonecnt = 1;
-						}
-					}
-				}
+			// ディフューズ
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
+			}
+			else {
+				diffuse = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
 			}
 
-			// ボーン情報を取得する（ノードを再帰で辿りボーン情報を取得する）
-			void GetBone(const aiScene* pScene)
-			{
-				// 空のボーン辞書を作成する（キー（ボーン名）だけの取り出し）
-				CreateEmptyBoneDictionary(pScene->mRootNode);
-
-				// ボーンの配列位置（インデックス値）を格納する
-				unsigned int num = 0;
-				for (auto& data : g_BoneDictionary)
-				{
-					data.second.idx = num;
-					num++;
-				}
-
-				// メッシュ数分ループ
-				for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
-				{
-					aiMesh* mesh = pScene->mMeshes[m];
-
-					// サブセットに紐づいているボーン情報を取得する
-					std::vector<BONE> BonesPerMesh = GetBonesPerMesh(mesh);
-					g_BonesPerMeshes.emplace_back(BonesPerMesh);
-				}
-
-				// 頂点データにボーン情報をセットする
-				SetBoneDataToVertices();
-
-				// ボーンのノード名ツリーを生成する
-				CreateNodeTree(pScene->mRootNode, &g_AssimpNodeNameTree);
+			// スペキュラ
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specular)) {
+			}
+			else {
+				specular = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
-			// ディフューズＣＴｅｘｔｕｒｅコンテナを返す
-			std::vector<std::unique_ptr<CTexture>> GetDiffuseTextures()
-			{
-				return std::move(g_diffuseTextures);
+			// エミッション
+			if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_EMISSIVE, &emission)) {
+			}
+			else {
+				emission = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
 			}
 
-			// マテリアル情報をａｓｓｉｍｐを使用して取得する
-			void GetMaterialData(const aiScene* pScene, std::string texturedirectory)
-			{
-				// マテリアル数分テクスチャ格納エリアを用意する
-				g_diffuseTextures.resize(pScene->mNumMaterials);
-
-				// マテリアル数文ループ
-				for (unsigned int m = 0; m < pScene->mNumMaterials; m++)
-				{
-					aiMaterial* material = pScene->mMaterials[m];
-
-					// マテリアル名取得
-					std::string mtrlname = std::string(material->GetName().C_Str());
-					ASSIMP_LOG("%s", mtrlname.c_str());
-
-					// マテリアル情報
-					aiColor4D ambient;
-					aiColor4D diffuse;
-					aiColor4D specular;
-					aiColor4D emission;
-					float shiness;
-
-					// アンビエント
-					if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
-					}
-					else {
-						ambient = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
-					}
-
-					// ディフューズ
-					if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
-					}
-					else {
-						diffuse = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
-					}
-
-					// スペキュラ
-					if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specular)) {
-					}
-					else {
-						specular = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
-					}
-
-					// エミッション
-					if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_EMISSIVE, &emission)) {
-					}
-					else {
-						emission = aiColor4D(0.0f, 0.0f, 0.0f, 0.0f);
-					}
-
-					// シャイネス
-					if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shiness)) {
-					}
-					else {
-						shiness = 0.0f;
-					}
+			// シャイネス
+			if (AI_SUCCESS == aiGetMaterialFloat(material, AI_MATKEY_SHININESS, &shiness)) {
+			}
+			else {
+				shiness = 0.0f;
+			}
 
 #if _DEBUG
-					// マテリアル情報ダンプ
-					ASSIMP_LOG("[Material] %s", mtrlname.c_str());
-					DumpTex(material, aiTextureType_BASE_COLOR, "BASE_COLOR");
-					DumpTex(material, aiTextureType_DIFFUSE, "DIFFUSE");
-					DumpTex(material, aiTextureType_NORMALS, "NORMALS");
-					DumpTex(material, aiTextureType_HEIGHT, "HEIGHT");
-					DumpTex(material, aiTextureType_METALNESS, "METALNESS");
-					DumpTex(material, aiTextureType_DIFFUSE_ROUGHNESS, "ROUGHNESS");
-					DumpTex(material, aiTextureType_AMBIENT_OCCLUSION, "AO");
-					DumpTex(material, aiTextureType_EMISSIVE, "EMISSIVE");
-					DumpTex(material, aiTextureType_OPACITY, "OPACITY");
-					DumpTex(material, aiTextureType_UNKNOWN, "UNKNOWN");
+			// マテリアル情報ダンプ
+			ASSIMP_LOG("[Material] %s", mtrlname.c_str());
+			DumpTex(material, aiTextureType_BASE_COLOR, "BASE_COLOR");
+			DumpTex(material, aiTextureType_DIFFUSE, "DIFFUSE");
+			DumpTex(material, aiTextureType_NORMALS, "NORMALS");
+			DumpTex(material, aiTextureType_HEIGHT, "HEIGHT");
+			DumpTex(material, aiTextureType_METALNESS, "METALNESS");
+			DumpTex(material, aiTextureType_DIFFUSE_ROUGHNESS, "ROUGHNESS");
+			DumpTex(material, aiTextureType_AMBIENT_OCCLUSION, "AO");
+			DumpTex(material, aiTextureType_EMISSIVE, "EMISSIVE");
+			DumpTex(material, aiTextureType_OPACITY, "OPACITY");
+			DumpTex(material, aiTextureType_UNKNOWN, "UNKNOWN");
 #endif
 
-					// このマテリアルに紐づいているディフューズテクスチャ数分ループ
-					std::vector<std::string> texpaths{};
+			// このマテリアルに紐づいているディフューズテクスチャ数分ループ
+			std::vector<std::string> texpaths{};
 
-					for (unsigned int t = 0; t < material->GetTextureCount(aiTextureType_DIFFUSE); t++)
+			for (unsigned int t = 0; t < material->GetTextureCount(aiTextureType_DIFFUSE); t++)
+			{
+				aiString path{};
+
+				// t番目のテクスチャパス取得
+				if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, t), path))
+				{
+					// 生のパス文字列
+					std::string texpath_raw = std::string(path.C_Str());
+					ASSIMP_LOG("raw texpath: %s", texpath_raw.c_str());
+
+					texpaths.push_back(texpath_raw);
+
+					// まず埋め込みテクスチャかどうかだけ判定
+					if (auto tex = pScene->GetEmbeddedTexture(path.C_Str()))
 					{
-						aiString path{};
+						std::unique_ptr<CTexture> texture = std::make_unique<CTexture>();
 
-						// t番目のテクスチャパス取得
-						if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, t), path))
+						bool sts = texture->LoadFromFemory(
+							(unsigned char*)tex->pcData,    // 先頭アドレス
+							tex->mWidth                     // 埋め込みの場合は幅=サイズ
+						);
+						if (sts)
 						{
-							// 生のパス文字列
-							std::string texpath_raw = std::string(path.C_Str());
-							ASSIMP_LOG("raw texpath: %s", texpath_raw.c_str());
+							g_diffuseTextures[m] = std::move(texture);
+						}
 
-							texpaths.push_back(texpath_raw);
+						ASSIMP_LOG("Embedded texture");
+					}
+					else
+					{
+						// ==== ここから外部テクスチャ用のパス整形 ====
 
-							// まず埋め込みテクスチャかどうかだけ判定
-							if (auto tex = pScene->GetEmbeddedTexture(path.C_Str()))
+						// バックスラッシュをスラッシュに統一
+						std::string normalized = texpath_raw;
+						std::replace(normalized.begin(), normalized.end(), '\\', '/');
+
+						// ファイル名だけ取り出す
+						std::string filename;
+						{
+							const size_t slash_pos = normalized.find_last_of('/');
+							if (slash_pos == std::string::npos)
 							{
-								std::unique_ptr<CTexture> texture = std::make_unique<CTexture>();
-
-								bool sts = texture->LoadFromFemory(
-									(unsigned char*)tex->pcData,    // 先頭アドレス
-									tex->mWidth                     // 埋め込みの場合は幅=サイズ
-								);
-								if (sts)
-								{
-									g_diffuseTextures[m] = std::move(texture);
-								}
-
-								ASSIMP_LOG("Embedded texture");
+								// "details.jpg" みたいにパス無しのとき
+								filename = normalized;
 							}
 							else
 							{
-								// ==== ここから外部テクスチャ用のパス整形 ====
-
-								// バックスラッシュをスラッシュに統一
-								std::string normalized = texpath_raw;
-								std::replace(normalized.begin(), normalized.end(), '\\', '/');
-
-								// ファイル名だけ取り出す
-								std::string filename;
-								{
-									const size_t slash_pos = normalized.find_last_of('/');
-									if (slash_pos == std::string::npos)
-									{
-										// "details.jpg" みたいにパス無しのとき
-										filename = normalized;
-									}
-									else
-									{
-										// "textures/details.jpg" や "F:/.../textures/details.jpg" から
-										// 最後の '/' より後ろだけ取る → "details.jpg"
-										filename = normalized.substr(slash_pos + 1);
-									}
-								}
-
-								// texturedirectory と結合（末尾の / 有無を吸収）
-								std::string base_dir = texturedirectory;
-								if (!base_dir.empty() &&
-									base_dir.back() != '/' &&
-									base_dir.back() != '\\')
-								{
-									base_dir += '/';
-								}
-
-								const std::string texname = base_dir + filename;
-								ASSIMP_LOG("final texname: %s", texname.c_str());
-
-								std::unique_ptr<CTexture> texture = std::make_unique<CTexture>();
-								bool sts = texture->Load(texname);
-								if (sts)
-								{
-									g_diffuseTextures[m] = std::move(texture);
-								}
-								else
-								{
-									// 必要ならここでログだけ出す
-									ASSIMP_LOG("failed to load texture: %s", texname.c_str());
-								}
-
-								// ==== 外部テクスチャ処理終わり ====
+								// "textures/details.jpg" や "F:/.../textures/details.jpg" から
+								// 最後の '/' より後ろだけ取る → "details.jpg"
+								filename = normalized.substr(slash_pos + 1);
 							}
 						}
 
+						// texturedirectory と結合（末尾の / 有無を吸収）
+						std::string base_dir = texturedirectory;
+						if (!base_dir.empty() &&
+							base_dir.back() != '/' &&
+							base_dir.back() != '\\')
+						{
+							base_dir += '/';
+						}
+
+						const std::string texname = base_dir + filename;
+						ASSIMP_LOG("final texname: %s", texname.c_str());
+
+						std::unique_ptr<CTexture> texture = std::make_unique<CTexture>();
+						bool sts = texture->Load(texname);
+						if (sts)
+						{
+							g_diffuseTextures[m] = std::move(texture);
+						}
+						else
+						{
+							// 必要ならここでログだけ出す
+							ASSIMP_LOG("failed to load texture: %s", texname.c_str());
+						}
+
+						// ==== 外部テクスチャ処理終わり ====
 					}
-
-					// マテリアル情報を保存
-					MATERIAL mtrl{};
-
-					mtrl.mtrlname = mtrlname;
-					mtrl.Ambient = ambient;
-					mtrl.Diffuse = diffuse;
-					mtrl.Specular = specular;
-					mtrl.Emission = emission;
-					mtrl.Shiness = shiness;
-
-					if (texpaths.size() == 0)
-						mtrl.diffusetexturename = "";
-					else
-						mtrl.diffusetexturename = texpaths[0];
-
-					g_materials.push_back(mtrl);
 				}
 
 			}
 
-			void GetModelData(std::string filename, std::string texturedirectory)
-			{
-				// シーン情報構築
-				Assimp::Importer importer;
+			// マテリアル情報を保存
+			MATERIAL mtrl{};
 
-				ASSIMP_LOG("[Assimp] filename(size)=%zu strlen=%zu",
-					filename.size(), std::strlen(filename.c_str()));
-				ASSIMP_LOG("[Assimp] filename=%s", filename.c_str());
+			mtrl.mtrlname = mtrlname;
+			mtrl.Ambient = ambient;
+			mtrl.Diffuse = diffuse;
+			mtrl.Specular = specular;
+			mtrl.Emission = emission;
+			mtrl.Shiness = shiness;
 
-				std::error_code ec;
-				auto abs = std::filesystem::absolute(filename, ec);
-				ASSIMP_LOG("[Assimp] abs=%s ec=%s", abs.string().c_str(), ec.message().c_str());
-				ASSIMP_LOG("[Assimp] exists=%d", (int)std::filesystem::exists(abs));
+			if (texpaths.size() == 0)
+				mtrl.diffusetexturename = "";
+			else
+				mtrl.diffusetexturename = texpaths[0];
 
-				std::ifstream ifs(abs, std::ios::binary);
-				ASSIMP_LOG("[Assimp] can_open=%d", (int)ifs.good());
+			g_materials.push_back(mtrl);
+		}
 
-				// シーン情報を構築
-				const aiScene* pScene = importer.ReadFile(
-					filename.c_str(),
-					//			aiProcess_ConvertToLeftHanded |	// 左手座標系に変換する
-					//			aiProcess_Triangulate);			// 三角形化する
-					aiProcessPreset_TargetRealtime_MaxQuality |
-					aiProcess_ConvertToLeftHanded |
-					aiProcess_PopulateArmatureData);
+	}
 
-				if (pScene == nullptr)
-				{
-					ASSIMP_LOG("load error %s %s", filename.c_str(), importer.GetErrorString());
-				}
-				assert(pScene != nullptr);
+	void GetModelData(std::string filename, std::string texturedirectory)
+	{
+		// シーン情報構築
+		Assimp::Importer importer;
+
+		ASSIMP_LOG("[Assimp] filename(size)=%zu strlen=%zu",
+			filename.size(), std::strlen(filename.c_str()));
+		ASSIMP_LOG("[Assimp] filename=%s", filename.c_str());
+
+		std::error_code ec;
+		auto abs = std::filesystem::absolute(filename, ec);
+		ASSIMP_LOG("[Assimp] abs=%s ec=%s", abs.string().c_str(), ec.message().c_str());
+		ASSIMP_LOG("[Assimp] exists=%d", (int)std::filesystem::exists(abs));
+
+		std::ifstream ifs(abs, std::ios::binary);
+		ASSIMP_LOG("[Assimp] can_open=%d", (int)ifs.good());
+
+		// シーン情報を構築
+		const aiScene* pScene = importer.ReadFile(
+			filename.c_str(),
+			//			aiProcess_ConvertToLeftHanded |	// 左手座標系に変換する
+			//			aiProcess_Triangulate);			// 三角形化する
+			aiProcessPreset_TargetRealtime_MaxQuality |
+			aiProcess_ConvertToLeftHanded |
+			aiProcess_PopulateArmatureData);
+
+		if (pScene == nullptr)
+		{
+			ASSIMP_LOG("load error %s %s", filename.c_str(), importer.GetErrorString());
+		}
+		assert(pScene != nullptr);
 
 #if _DEBUG
-				DumpSceneSummary(pScene);
+		DumpSceneSummary(pScene);
 #endif
 
-				// 読み込み領域をクリア
-				g_vertices.clear();				//20240908
-				g_indices.clear();				//20240908	
-				g_materials.clear();			//20240908
-				g_diffuseTextures.clear();		//20240908
-				g_subsets.clear();				//20240908
-				g_BoneDictionary.clear();		//20240908
-				g_BonesPerMeshes.clear();		//20240908
+		// 読み込み領域をクリア
+		g_vertices.clear();				//20240908
+		g_indices.clear();				//20240908	
+		g_materials.clear();			//20240908
+		g_diffuseTextures.clear();		//20240908
+		g_subsets.clear();				//20240908
+		g_BoneDictionary.clear();		//20240908
+		g_BonesPerMeshes.clear();		//20240908
 
-				// マテリアル情報取得
-				GetMaterialData(pScene, texturedirectory);
+		// マテリアル情報取得
+		GetMaterialData(pScene, texturedirectory);
 
-				g_vertices.resize(pScene->mNumMeshes);
+		g_vertices.resize(pScene->mNumMeshes);
 
-				for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
+		for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
+		{
+			aiMesh* mesh = pScene->mMeshes[m];
+
+			// メッシュ名取得
+			std::string meshname = std::string(mesh->mName.C_Str());
+
+			//　頂点数分ループ
+			for (unsigned int vidx = 0; vidx < mesh->mNumVertices; vidx++)
+			{
+				// 頂点データ
+				VERTEX	v{};
+				v.meshname = meshname;		// メッシュ名セット
+
+				// 座標		
+				v.pos = mesh->mVertices[vidx];
+
+				// この頂点が使用しているマテリアルのインデックス番号（メッシュ内の）
+				// を使用してマテリアル名をセット
+				v.materialindex = mesh->mMaterialIndex;
+
+				v.mtrlname = g_materials[mesh->mMaterialIndex].mtrlname;
+
+				// 法線あり？
+				if (mesh->HasNormals()) {
+					v.normal = mesh->mNormals[vidx];
+				}
+				else
 				{
-					aiMesh* mesh = pScene->mMeshes[m];
-
-					// メッシュ名取得
-					std::string meshname = std::string(mesh->mName.C_Str());
-
-					//　頂点数分ループ
-					for (unsigned int vidx = 0; vidx < mesh->mNumVertices; vidx++)
-					{
-						// 頂点データ
-						VERTEX	v{};
-						v.meshname = meshname;		// メッシュ名セット
-
-						// 座標		
-						v.pos = mesh->mVertices[vidx];
-
-						// この頂点が使用しているマテリアルのインデックス番号（メッシュ内の）
-						// を使用してマテリアル名をセット
-						v.materialindex = mesh->mMaterialIndex;
-
-						v.mtrlname = g_materials[mesh->mMaterialIndex].mtrlname;
-
-						// 法線あり？
-						if (mesh->HasNormals()) {
-							v.normal = mesh->mNormals[vidx];
-						}
-						else
-						{
-							v.normal = aiVector3D(0.0f, 0.0f, 0.0f);
-						}
-
-						// 頂点カラー？（０番目）
-						if (mesh->HasVertexColors(0)) {
-							v.color = mesh->mColors[0][vidx];
-						}
-						else
-						{
-							v.color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
-						}
-
-						// テクスチャあり？（０番目）
-						if (mesh->HasTextureCoords(0)) {
-							v.texcoord = mesh->mTextureCoords[0][vidx];
-						}
-						else
-						{
-							v.texcoord = aiVector3D(0.0f, 0.0f, 0.0f);
-						}
-
-						// 頂点データを追加
-						g_vertices[m].push_back(v);
-					}
+					v.normal = aiVector3D(0.0f, 0.0f, 0.0f);
 				}
 
-				// メッシュ数文ループ
-				// インデックスデータ作成
-				g_indices.resize(pScene->mNumMeshes);
-				for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
+				// 頂点カラー？（０番目）
+				if (mesh->HasVertexColors(0)) {
+					v.color = mesh->mColors[0][vidx];
+				}
+				else
 				{
-					aiMesh* mesh = pScene->mMeshes[m];
-
-					// メッシュ名取得
-					std::string meshname = std::string(mesh->mName.C_Str());
-
-					// インデックス数分ループ
-					for (unsigned int fidx = 0; fidx < mesh->mNumFaces; fidx++)
-					{
-						aiFace face = mesh->mFaces[fidx];
-
-						//				assert(face.mNumIndices == 3);	// 三角形のみ対応   car000.x　対応
-						assert(face.mNumIndices <= 3);	// 三角形以下であればOK（縮退ポリゴン）
-
-						// インデックスデータを追加
-						for (unsigned int i = 0; i < face.mNumIndices; i++)
-						{
-							g_indices[m].push_back(face.mIndices[i]);
-						}
-					}
+					v.color = aiColor4D(1.0f, 1.0f, 1.0f, 1.0f);
 				}
 
-				// サブセット情報を生成
-				g_subsets.resize(pScene->mNumMeshes);
-				for (unsigned int m = 0; m < g_subsets.size(); m++)
+				// テクスチャあり？（０番目）
+				if (mesh->HasTextureCoords(0)) {
+					v.texcoord = mesh->mTextureCoords[0][vidx];
+				}
+				else
 				{
-					g_subsets[m].IndexNum = static_cast<unsigned int>(g_indices[m].size());
-					g_subsets[m].VertexNum = static_cast<unsigned int>(g_vertices[m].size());
-					g_subsets[m].VertexBase = 0;
-					g_subsets[m].IndexBase = 0;
-					g_subsets[m].meshname = g_vertices[m][0].meshname;
-					g_subsets[m].mtrlname = g_vertices[m][0].mtrlname;
-					g_subsets[m].materialindex = g_vertices[m][0].materialindex;
+					v.texcoord = aiVector3D(0.0f, 0.0f, 0.0f);
 				}
 
-				// サブセット情報を相対的なものにする	
-				for (int m = 0; m < (int)g_subsets.size(); m++)
-				{
-					// 頂点バッファのベースを計算
-					g_subsets[m].VertexBase = 0;
-					for (int i = m - 1; i >= 0; i--) {
-						g_subsets[m].VertexBase += g_subsets[i].VertexNum;
-					}
-
-					// インデックスバッファのベースを計算
-					g_subsets[m].IndexBase = 0;
-					for (int i = m - 1; i >= 0; i--) {
-						g_subsets[m].IndexBase += g_subsets[i].IndexNum;
-					}
-				}
-
-				// ボーン情報取得	
-				GetBone(pScene);
-			}
-
-			std::vector<SUBSET> GetSubsets()
-			{
-				return g_subsets;
-			}
-
-			// サブセット情報{
-			std::vector<std::vector<VERTEX>> GetVertices()
-			{
-				return g_vertices;		// 頂点データ（メッシュ単位）
-			}
-
-			std::vector<std::vector<unsigned int>> GetIndices()
-			{
-				return g_indices;		// インデックスデータ（メッシュ単位）
-			}
-
-			std::vector<MATERIAL> GetMaterials()
-			{
-				return g_materials;		// マテリアル
+				// 頂点データを追加
+				g_vertices[m].push_back(v);
 			}
 		}
+
+		// メッシュ数文ループ
+		// インデックスデータ作成
+		g_indices.resize(pScene->mNumMeshes);
+		for (unsigned int m = 0; m < pScene->mNumMeshes; m++)
+		{
+			aiMesh* mesh = pScene->mMeshes[m];
+
+			// メッシュ名取得
+			std::string meshname = std::string(mesh->mName.C_Str());
+
+			// インデックス数分ループ
+			for (unsigned int fidx = 0; fidx < mesh->mNumFaces; fidx++)
+			{
+				aiFace face = mesh->mFaces[fidx];
+
+				//				assert(face.mNumIndices == 3);	// 三角形のみ対応   car000.x　対応
+				assert(face.mNumIndices <= 3);	// 三角形以下であればOK（縮退ポリゴン）
+
+				// インデックスデータを追加
+				for (unsigned int i = 0; i < face.mNumIndices; i++)
+				{
+					g_indices[m].push_back(face.mIndices[i]);
+				}
+			}
+		}
+
+		// サブセット情報を生成
+		g_subsets.resize(pScene->mNumMeshes);
+		for (unsigned int m = 0; m < g_subsets.size(); m++)
+		{
+			g_subsets[m].IndexNum = static_cast<unsigned int>(g_indices[m].size());
+			g_subsets[m].VertexNum = static_cast<unsigned int>(g_vertices[m].size());
+			g_subsets[m].VertexBase = 0;
+			g_subsets[m].IndexBase = 0;
+			g_subsets[m].meshname = g_vertices[m][0].meshname;
+			g_subsets[m].mtrlname = g_vertices[m][0].mtrlname;
+			g_subsets[m].materialindex = g_vertices[m][0].materialindex;
+		}
+
+		// サブセット情報を相対的なものにする	
+		for (int m = 0; m < (int)g_subsets.size(); m++)
+		{
+			// 頂点バッファのベースを計算
+			g_subsets[m].VertexBase = 0;
+			for (int i = m - 1; i >= 0; i--) {
+				g_subsets[m].VertexBase += g_subsets[i].VertexNum;
+			}
+
+			// インデックスバッファのベースを計算
+			g_subsets[m].IndexBase = 0;
+			for (int i = m - 1; i >= 0; i--) {
+				g_subsets[m].IndexBase += g_subsets[i].IndexNum;
+			}
+		}
+
+		// ボーン情報取得	
+		GetBone(pScene);
+	}
+
+	std::vector<SUBSET> GetSubsets()
+	{
+		return g_subsets;
+	}
+
+	// サブセット情報{
+	std::vector<std::vector<VERTEX>> GetVertices()
+	{
+		return g_vertices;		// 頂点データ（メッシュ単位）
+	}
+
+	std::vector<std::vector<unsigned int>> GetIndices()
+	{
+		return g_indices;		// インデックスデータ（メッシュ単位）
+	}
+
+	std::vector<MATERIAL> GetMaterials()
+	{
+		return g_materials;		// マテリアル
 	}
 }

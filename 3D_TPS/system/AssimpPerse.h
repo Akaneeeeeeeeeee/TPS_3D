@@ -6,7 +6,6 @@
 #include	"CTexture.h"
 #include	"CTreeNode.h"
 
-namespace GM31 {namespace GE {namespace {}
 namespace myAssimp
 {
 	struct VERTEX {
@@ -81,5 +80,3 @@ namespace myAssimp
 
 	CTreeNode<std::string> GetBoneNameTree();
 }
-}	
-} // namespace GM31::GE::AssimpPerse

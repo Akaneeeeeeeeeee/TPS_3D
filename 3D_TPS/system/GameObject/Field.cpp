@@ -337,11 +337,11 @@ float Field::GetHeight(Vector3 pos)
 		PLANEINFO pinfo = m_planequataions[trianglenum].GetPlaneInfo();				// あらかじめ作成していた平面のデータを取得
 
 		// 交点を求める
-		bool sts = GM31::GE::Collision::LinetoPlaneCross(pinfo.plane, startpoint, up, t, ans);
+		bool sts = Collision::LinetoPlaneCross(pinfo.plane, startpoint, up, t, ans);
 		// 交点が存在していた場合
 		if (sts) {
 			// 内外判定
-			bool sts = GM31::GE::Collision::CheckInTriangle(
+			bool sts = Collision::CheckInTriangle(
 				pinfo.p0,
 				pinfo.p1,
 				pinfo.p2,
@@ -372,7 +372,7 @@ float Field::GetHeight2(Vector3 pos)
 		GetFaceVertex(sqno * 2 + 1, vertices2);		// 矩形を構成する三角形２の頂点情報取得
 
 		// 内外判定
-		bool sts = GM31::GE::Collision::CheckInTriangle(
+		bool sts = Collision::CheckInTriangle(
 			vertices1[0],							// ３角形の頂点０
 			vertices1[1],							// ３角形の頂点１
 			vertices1[2],							// ３角形の頂点２
@@ -390,7 +390,7 @@ float Field::GetHeight2(Vector3 pos)
 			Vector3 ans;
 
 			// 交点を求める
-			bool sts = GM31::GE::Collision::LinetoPlaneCross(
+			bool sts = Collision::LinetoPlaneCross(
 				pl.GetPlaneInfo().plane,
 				pos, Vector3(0, 1, 0), t, ans);
 
@@ -408,7 +408,7 @@ float Field::GetHeight2(Vector3 pos)
 			Vector3 ans;
 
 			// 交点を求める
-			bool sts = GM31::GE::Collision::LinetoPlaneCross(
+			bool sts = Collision::LinetoPlaneCross(
 				pl.GetPlaneInfo().plane,
 				pos, Vector3(0, 1, 0), t, ans);
 

@@ -76,12 +76,7 @@ public:
 			DirectX::XMMatrixLookAtLH(
 				m_position,
 				m_lookat,
-				m_up);				// 左手系にした　20230511 by suzuki.tomoki
-
-		// DIRECTXTKのメソッドは右手系　20230511 by suzuki.tomoki
-		// 右手系にすると３角形頂点が反時計回りになるので描画されなくなるので注意
-		// このコードは確認テストのために残す
-		//	m_ViewMatrix = m_ViewMatrix.CreateLookAt(m_Position, m_Target, up);					
+				m_up);
 
 		Renderer::SetViewMatrix(&m_viewmtx);
 
@@ -99,15 +94,9 @@ public:
 				fieldOfView,
 				aspectRatio,
 				nearPlane,
-				farPlane);	// 左手系にした　20230511 by suzuki.tomoki
-
-		// DIRECTXTKのメソッドは右手系　20230511 by suzuki.tomoki
-		// 右手系にすると３角形頂点が反時計回りになるので描画されなくなるので注意
-		// このコードは確認テストのために残す
-	//	projectionMatrix = DirectX::SimpleMath::Matrix::CreatePerspectiveFieldOfView(fieldOfView, aspectRatio, nearPlane, farPlane);
+				farPlane);
 
 		Renderer::SetProjectionMatrix(&projectionMatrix);
-
 	}
 };
 

@@ -20,7 +20,6 @@
 /**
  * @struct WEIGHT
  * @brief ボーンの影響情報を保持する構造体
- * @date 20231225 追加
  */
 struct WEIGHT {
     std::string bonename;   ///< ボーン名
@@ -31,8 +30,7 @@ struct WEIGHT {
 
 /**
  * @struct BONE
- * @brief ボーン構造体（DX対応版）
- * @date 20231231 修正（DX化）
+ * @brief ボーン構造体
  */
 struct BONE
 {
@@ -57,10 +55,10 @@ struct VERTEX_3D
     Vector3 Normal;              // 法線ベクトル
     Color Diffuse;               // 拡散反射色
     Vector2 TexCoord;            // テクスチャ座標
-    int BoneIndex[4];            // ボーンインデックス（最大4つ） 20231225
-    float BoneWeight[4];         // 各ボーンのウェイト値 20231225
-    std::string BoneName[4];     // 各ボーンの名前 20231226
-    int bonecnt = 0;             // 影響を与えるボーン数 20231226
+    int BoneIndex[4];            // ボーンインデックス
+    float BoneWeight[4];         // 各ボーンのウェイト値
+    std::string BoneName[4];     // 各ボーンの名前
+    int bonecnt = 0;             // 影響を与えるボーン数
 };
 
 struct VERTEX_SKINNED_GPU
@@ -151,7 +149,6 @@ enum EBlendState {
 /**
  * @struct CBBoneCombMatrix
  * @brief ボーンコンビネーション行列を保持する構造体
- * @date 20240713
  */
 constexpr int MAX_BONE = 400;
 struct CBBoneCombMatrix {

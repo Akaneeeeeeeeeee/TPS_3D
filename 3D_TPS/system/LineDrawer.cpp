@@ -46,7 +46,7 @@ void LineDrawerInit()
 		"shader/GeometryShader.hlsl"			// ジオメトリシェーダ
 	);
 
-	// 定数バッファを作成する（線の太さを渡すため）add 20250724 by tomoki suzuki
+	// 定数バッファを作成する（線の太さを渡すため）
 	bool sts = CreateConstantBuffer(
 		Renderer::GetDevice(),					// デバイスオブジェクト
 		sizeof(LINEWIDTHCBUFFER),				// コンスタントバッファサイズ

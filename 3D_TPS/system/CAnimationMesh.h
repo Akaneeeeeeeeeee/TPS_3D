@@ -31,7 +31,7 @@ public:
 		std::unordered_map<std::string, Transform>& blendedLocalPose);
 
 	// 階層構造を考慮したボーンコンビネーション行列を更新
-	void UpdateBoneMatrix(CTreeNode<std::string>* ptree, DirectX::SimpleMath::Matrix matrix);		// 20240714 DX化	
+	void UpdateBoneMatrix(CTreeNode<std::string>* ptree, DirectX::SimpleMath::Matrix matrix);
 
 	// アニメーションの更新
 	void Update(BoneCombMatrix& bonecombarray, const aiAnimation* animation, const float& timeSec);
@@ -52,7 +52,7 @@ public:
 	
 private:
 	// ボーン辞書
-	std::unordered_map<std::string, BONE> m_BoneDictionary{};	// 20240714 DX化
+	std::unordered_map<std::string, BONE> m_BoneDictionary{};
 
 	// assimp ノード名ツリー（親子関係がわかる）
 	CTreeNode<std::string>	m_AssimpNodeNameTree{};

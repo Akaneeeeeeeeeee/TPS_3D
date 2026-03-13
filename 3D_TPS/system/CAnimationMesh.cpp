@@ -29,42 +29,42 @@ void CAnimationMesh::Load(std::string filename, std::string texturedirectory)
 	CStaticMesh::Load(filename, texturedirectory);
 
 	// アニメーションデータ(ASSIMP用）
-	std::unordered_map<std::string, GM31::GE::myAssimp::BONE> assimp_BoneDictionary{};	// 20240714 DX化
+	std::unordered_map<std::string, myAssimp::BONE> assimp_BoneDictionary{};
 
 	// ボーン辞書取得（ボーン名をキーにしてボーン情報が取れる）
-	assimp_BoneDictionary = GM31::GE::myAssimp::GetBoneDictionary();					// 20240714 DX化
+	assimp_BoneDictionary = myAssimp::GetBoneDictionary();
 
-	for (auto& asimpbone : assimp_BoneDictionary) {										// 20240714 DX化
-		BONE dxbone;																	// 20240714 DX化	
+	for (auto& asimpbone : assimp_BoneDictionary) {
+		BONE dxbone;
 
-		dxbone.meshname = asimpbone.second.meshname;									// 20240714 DX化
-		dxbone.armaturename = asimpbone.second.armaturename;							// 20240714 DX化
-		dxbone.bonename = asimpbone.second.bonename;									// 20240714 DX化
-		dxbone.idx = asimpbone.second.idx;												// 20240714 DX化
+		dxbone.meshname = asimpbone.second.meshname;
+		dxbone.armaturename = asimpbone.second.armaturename;
+		dxbone.bonename = asimpbone.second.bonename;
+		dxbone.idx = asimpbone.second.idx;
 
 		dxbone.OffsetMatrix = utility::aiMtxToDxMtx(asimpbone.second.OffsetMatrix);
-		//dxbone.AnimationMatrix = Matrix::Identity;										// 20240714 DX化
-		dxbone.Matrix = Matrix::Identity;												// 20240714 DX化
+		//dxbone.AnimationMatrix = Matrix::Identity;
+		dxbone.Matrix = Matrix::Identity;
 		// identity じゃなく bindローカルにする
 		dxbone.BindLocalMatrix = utility::aiMtxToDxMtx(asimpbone.second.AnimationMatrix);
 		dxbone.AnimationMatrix = dxbone.BindLocalMatrix;
 
-		dxbone.weights.clear();															// 20240714 DX化
-		for (auto& asimpweight : asimpbone.second.weights)								// 20240714 DX化	
+		dxbone.weights.clear();
+		for (auto& asimpweight : asimpbone.second.weights)
 		{
-			WEIGHT dxweight;															// 20240714 DX化			
-			dxweight.bonename = asimpweight.bonename;									// 20240714 DX化
-			dxweight.meshname = asimpweight.meshname;									// 20240714 DX化
-			dxweight.vertexindex = asimpweight.vertexindex;								// 20240714 DX化
-			dxweight.weight = asimpweight.weight;										// 20240714 DX化
-			dxbone.weights.push_back(dxweight);											// 20240714 DX化		
-		}																				// 20240714 DX化
+			WEIGHT dxweight;
+			dxweight.bonename = asimpweight.bonename;
+			dxweight.meshname = asimpweight.meshname;
+			dxweight.vertexindex = asimpweight.vertexindex;
+			dxweight.weight = asimpweight.weight;
+			dxbone.weights.push_back(dxweight);
+		}
 
-		m_BoneDictionary[asimpbone.first] = dxbone;										// 20240714 DX化
+		m_BoneDictionary[asimpbone.first] = dxbone;										
 	}																	
 
 	// ボーン名ツリー取得
-	m_AssimpNodeNameTree = GM31::GE::myAssimp::GetBoneNameTree();
+	m_AssimpNodeNameTree = myAssimp::GetBoneNameTree();
 
 	// レンダラ初期化
 	m_StaticMeshRenderer.Init(*this);

@@ -4,21 +4,21 @@
 
 void CStaticMesh::Load(std::string filename, std::string texturedirectory)
 {
-	std::vector<GM31::GE::myAssimp::SUBSET> subsets{};					// サブセット情報
-	std::vector<std::vector<GM31::GE::myAssimp::VERTEX>> vertices{};	// 頂点データ（メッシュ単位）
+	std::vector<myAssimp::SUBSET> subsets{};					// サブセット情報
+	std::vector<std::vector<myAssimp::VERTEX>> vertices{};	// 頂点データ（メッシュ単位）
 	std::vector<std::vector<unsigned int>> indices{};					// インデックスデータ（メッシュ単位）
-	std::vector<GM31::GE::myAssimp::MATERIAL> materials{};				// マテリアル
+	std::vector<myAssimp::MATERIAL> materials{};				// マテリアル
 	std::vector<std::unique_ptr<CTexture>> embededtextures{};			// 内蔵テクスチャ群
 
 	// assimpを使用してモデルデータを取得
-	GM31::GE::myAssimp::GetModelData(filename, texturedirectory);
+	myAssimp::GetModelData(filename, texturedirectory);
 
-	subsets = GM31::GE::myAssimp::GetSubsets();							// サブセット情報取得
-	vertices = GM31::GE::myAssimp::GetVertices();						// 頂点データ（メッシュ単位）
-	indices = GM31::GE::myAssimp::GetIndices();							// インデックスデータ（メッシュ単位）
-	materials = GM31::GE::myAssimp::GetMaterials();						// マテリアル情報取得
+	subsets = myAssimp::GetSubsets();							// サブセット情報取得
+	vertices = myAssimp::GetVertices();						// 頂点データ（メッシュ単位）
+	indices = myAssimp::GetIndices();							// インデックスデータ（メッシュ単位）
+	materials = myAssimp::GetMaterials();						// マテリアル情報取得
 
-	m_diffusetextures = GM31::GE::myAssimp::GetDiffuseTextures();		// ｄｉｆｆｕｓｅテクスチャ情報取得	
+	m_diffusetextures = myAssimp::GetDiffuseTextures();		// ｄｉｆｆｕｓｅテクスチャ情報取得	
 
 	// 頂点データ作成
 	int meshidx = 0;
